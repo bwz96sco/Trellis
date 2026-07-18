@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check public CLI signatures and error behavior remain represented in committed implementation."}
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Check workflow selection and session state behavior in the root variant."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check root-only dispatch and hook authority boundaries."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check ledger and projection implementation scope during staged review."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check explicit staging, portable paths, and preservation of submodule-local state."}

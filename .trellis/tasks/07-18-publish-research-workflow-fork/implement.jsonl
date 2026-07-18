@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Defines shipped Research Workflow CLI contract included in root publication."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Defines managed workflow update behavior that must remain covered by the variant."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Defines worker and hook boundaries included in V1."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Defines canonical research ledger, projection, and lifecycle contracts."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Defines path, atomicity, and submodule-safe filesystem boundaries relevant to staging and publication."}
