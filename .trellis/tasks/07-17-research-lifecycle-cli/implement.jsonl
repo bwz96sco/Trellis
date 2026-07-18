@@ -1,0 +1,5 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical research ledger, mutation, lifecycle, projection, recovery, and public API contracts consumed by CLI."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Core/CLI ownership boundary, public subpath import rules, structured return and error behavior."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"CLI error ownership, rendering, and process-exit conventions."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Backend command structure, routing safety, and forbidden implementation patterns."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Vitest integration, temp-filesystem isolation, JSON assertions, and meaningful regression coverage."}

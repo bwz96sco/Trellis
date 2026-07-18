@@ -1,0 +1,5 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify canonical ledger, deterministic rebuild, lifecycle, and portable reference behavior."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify Quest repository validation and full Result/Proposal/apply/replay command flow."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Verify legacy inputs remain proposal-only and no worker/Mempal authority expands."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify update ownership and canonical research-state preservation."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Verify isolated multi-repository fixtures, recovery, malformed-state, and cleanup assertions."}

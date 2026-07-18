@@ -1,0 +1,6 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical research entities, events, portable paths, artifact verification, reducer/store authority, and public subpath contracts."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Existing research root, mutation, dry-run, idempotency, JSON, recovery, and command registration contracts."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Atomic durable/runtime JSON writes, path chokepoints, and user-data safety rules."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Core/CLI ownership, public import boundary, typed errors, and no duplicated ledger logic."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Top-level command error rendering and committed-state recovery messaging."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Filesystem-backed integration fixtures, exact assertions, isolation, and regression coverage."}

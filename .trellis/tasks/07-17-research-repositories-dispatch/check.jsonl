@@ -1,0 +1,6 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify portable contracts and canonical mutation/reducer behavior remain strict and deterministic."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify repository/dispatch commands preserve root, JSON, dry-run, idempotency, and recovery rules."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify all tracked/runtime dispatch writes are atomic and path-safe."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Verify Git/runtime concerns stay in CLI and ledger logic stays in core."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Verify pre-commit versus post-commit failures are represented honestly."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify meaningful multi-repo and proposal-apply behavior coverage."}

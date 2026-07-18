@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify Task link/unlink signatures, hierarchy validation, ledger non-mutation, and Run pointer post-commit behavior."}
+{"file":".trellis/spec/cli/backend/script-conventions.md","reason":"Verify pointer-specific session RMW preserves current_run and unknown keys across finish/archive."}
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Verify Task status and lifecycle events stay unchanged while session cleanup semantics become non-destructive."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify Task direct-child resolution, symlink containment, and atomic session writes."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify focused behavior tests cover success, no-op, malformed, traversal, and post-commit runtime failure cases."}

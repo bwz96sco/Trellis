@@ -1,0 +1,7 @@
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Verify research sequence branch does not regress native/custom per-turn breadcrumbs or session pointer semantics."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Verify all new bundled skills/cards are installed and update-tracked through existing registries."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify Claude-only dispatch routing and unchanged behavior for every other platform adapter."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify strict containment, malformed-state preservation, atomic watermark writes, and runtime-only absolute paths."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify injected worker JSON and dispatch validation remain compatible with public research CLI/core contracts."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify workers cannot become canonical mutation authority and Proposal remains untrusted until root review."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify meaningful behavior coverage includes valid, unchanged, malformed, escape, idempotent, Task-linked, and Task-free cases."}

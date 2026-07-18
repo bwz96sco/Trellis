@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/backend/commands-workflow.md","reason":"Verify bundled versus user-owned workflow identity, switching, and parser compatibility."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify selected bundled update, invalid metadata safety, local-edit protection, and no-op behavior."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify atomic metadata and non-destructive workflow ownership changes."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Verify malformed/unknown selection fails conservatively and visibly."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify behavior-focused ownership and update matrix coverage."}

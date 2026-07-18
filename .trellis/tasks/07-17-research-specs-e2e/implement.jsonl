@@ -1,0 +1,5 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Keep ledger, lifecycle, rebuild, idempotency, and portable path behavior authoritative."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Implement Quest repository reachability and consolidated public-command E2E using shipped signatures."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Add legacy proposal-only setup behavior without changing root/worker authority."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify bundled research update and custom workflow ownership without research-state mutation."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Use isolated real filesystem/Git fixtures for the cross-layer workflow proof."}

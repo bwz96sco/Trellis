@@ -1,0 +1,7 @@
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Preserve native breadcrumb semantics while adding Claude-only research sequence silence and additive session watermark state."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Use existing recursive bundled-skill and shared-hook distribution paths without new platform-specific installer branches."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Keep automatic research dispatch officially Claude-only and preserve non-Claude class-1/class-2 behavior."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Validate dispatch/request/repository containment and use atomic session metadata writes without tracked absolute paths."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Match current Dispatch, Result, Proposal, repository binding, and root-authority contracts used by hook injection."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Keep hooks and workers read-only toward canonical ledger/projections and use current schema/lifecycle/portable reference rules."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Add focused runtime regressions for hook branches, silence/no-op behavior, malformed inputs, and template registry growth."}

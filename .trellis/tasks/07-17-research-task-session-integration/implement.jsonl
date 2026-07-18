@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Implement exact-root research Task link/unlink and post-commit Run pointer behavior without ledger side effects."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Use public core Task and research subpaths; keep CLI orchestration thin and core session-agnostic."}
+{"file":".trellis/spec/cli/backend/script-conventions.md","reason":"Preserve unknown Task/session fields, use atomic Python JSON writes, and extend active-task runtime through pointer-specific helpers."}
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Preserve active-task lifecycle semantics while changing finish/archive cleanup from whole-file deletion to current_task-only removal."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Apply direct-child and realpath containment checks for Task resolution plus atomic session writes."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Keep research ledger authoritative and Task/session integrations outside core mutation authority."}

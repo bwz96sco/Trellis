@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/backend/commands-workflow.md","reason":"Workflow resolver, switching, ownership, hash, conflict, and runtime parser contracts."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Template collection, selected workflow updates, local-edit protection, idempotency, and update plan behavior."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Atomic durable selection metadata writes and overwrite safety."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Resolver, malformed selection, and command failure reporting."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Workflow runtime grammar and packaged template compatibility across platforms."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Meaningful init/update integration matrices, no-op snapshots, and exact assertions."}

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/core/backend/index.md","reason":"Core package boundary, source map, and package-scoped quality commands."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Public subpath, storage ownership, idempotency, and CLI/core separation contracts."}
+{"file":".trellis/spec/cli/backend/commands-channel.md","reason":"Existing event, lock, sequence, idempotency, and filesystem storage contracts that research store must preserve when sharing primitives."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Vitest structure, isolation, and meaningful behavior coverage rules for new core tests."}

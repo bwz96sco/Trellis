@@ -1,0 +1,4 @@
+{"file":".trellis/spec/core/backend/index.md","reason":"Check core package boundary and required package-scoped verification."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Check public export, dependency, error, and storage ownership contracts."}
+{"file":".trellis/spec/cli/backend/commands-channel.md","reason":"Check Channel lock/event behavior remains compatible after shared primitive changes."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check test coverage is behavior-based, isolated, and non-duplicative."}
