@@ -7,7 +7,9 @@
 > two root causes distilled to.
 
 Applies to: `commands/update.ts`, `commands/uninstall.ts`, `utils/*`,
-`core/channel/**`, and the shipped Python under `templates/trellis/scripts/`.
+`core/channel/**`, the shipped Python under `templates/trellis/scripts/`, and
+shared hook templates that update session runtime metadata or resolve explicit
+research Dispatch paths.
 
 ---
 
@@ -65,6 +67,8 @@ delete escapes the store.
 |---|---|---|
 | channel / worker name | `assertSafeName(name, kind)` — `^[A-Za-z0-9._-]+$`, rejects `.`/`..` — called inside `channelDir` (the single chokepoint every path helper passes through) | `core` + `cli` `channel/store/paths.ts` |
 | `task.py archive <name>` target | `is_within_tasks_dir(task_dir_abs, repo_root)` — dir must be a direct child of `.trellis/tasks/` | `scripts/common/task_utils.py` |
+| explicit research Dispatch | exact first-line grammar + prefixed UUID + canonical containment under `.trellis/research/dispatches/<same-id>/request.json`; repository/artifact/write paths resolve against canonical roots | `shared-hooks/inject-subagent-context.py` |
+| research session watermark | preserve malformed/non-object files; clone valid objects; replace only `research_last_seen_seq` through same-directory temp + `os.replace` | `shared-hooks/session-start.py`, `shared-hooks/inject-workflow-state.py` |
 | rename-dir migration source | `dirHasManifestEntries(fromDir, hashes)` — only auto-move a dir Trellis provably created | `commands/update.ts` |
 
 > **Why the chokepoint, not the entrypoint**: validating inside `channelDir`

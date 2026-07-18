@@ -144,6 +144,22 @@ describe("init() integration", () => {
         ),
       ),
     ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(
+          tmpDir,
+          ".claude",
+          "skills",
+          "trellis-research-literature",
+          "SKILL.md",
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".trellis", "agents", "research.md"),
+      ),
+    ).toBe(true);
   });
 
   it("#1b does not print the promotional pain-point block", async () => {
@@ -869,6 +885,15 @@ describe("init() integration", () => {
       "utf-8",
     );
     expect(hashes[FILE_NAMES.AGENTS]).toBe(computeHash(agentsContent));
+    const researchAgentPath = ".trellis/agents/research.md";
+    const researchSkillPath =
+      ".claude/skills/trellis-research-literature/SKILL.md";
+    expect(hashes[researchAgentPath]).toBe(
+      computeHash(fs.readFileSync(path.join(tmpDir, researchAgentPath), "utf-8")),
+    );
+    expect(hashes[researchSkillPath]).toBe(
+      computeHash(fs.readFileSync(path.join(tmpDir, researchSkillPath), "utf-8")),
+    );
     expect(Object.keys(hashes).length).toBeGreaterThan(0);
   });
 

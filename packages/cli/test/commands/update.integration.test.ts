@@ -54,8 +54,16 @@ import { init } from "../../src/commands/init.js";
 import { update } from "../../src/commands/update.js";
 import { VERSION } from "../../src/constants/version.js";
 import { DIR_NAMES, FILE_NAMES, PATHS } from "../../src/constants/paths.js";
-import { computeHash } from "../../src/utils/template-hash.js";
-import { workflowMdTemplate } from "../../src/templates/trellis/index.js";
+import { computeHash, removeHash } from "../../src/utils/template-hash.js";
+import {
+  clearWorkflowSelection,
+  loadWorkflowSelection,
+  saveBundledWorkflowSelection,
+} from "../../src/utils/workflow-selection.js";
+import {
+  researchWorkflowMdTemplate,
+  workflowMdTemplate,
+} from "../../src/templates/trellis/index.js";
 import {
   COPILOT_INSTRUCTIONS_BLOCK_END,
   COPILOT_INSTRUCTIONS_BLOCK_START,
@@ -909,6 +917,37 @@ describe("update() integration", () => {
     expect(fs.existsSync(targetPath)).toBe(true);
   });
 
+  it("backfills new research worker and skill templates with hashes", async () => {
+    await setupProject();
+
+    const researchTemplates = [
+      ".trellis/agents/research.md",
+      ".claude/skills/trellis-research-literature/SKILL.md",
+    ];
+    const expectedContents = Object.fromEntries(
+      researchTemplates.map((relativePath) => [
+        relativePath,
+        readProjectFile(relativePath),
+      ]),
+    );
+    let hashes = readHashesV2(hashFilePath());
+
+    for (const relativePath of researchTemplates) {
+      hashes = removeHashEntry(hashes, relativePath) as Record<string, string>;
+      fs.unlinkSync(projectFile(relativePath));
+    }
+    writeHashesV2(hashFilePath(), hashes);
+
+    await update({ force: true });
+
+    const updatedHashes = readHashesV2(hashFilePath());
+    for (const relativePath of researchTemplates) {
+      const content = readProjectFile(relativePath);
+      expect(content).toBe(expectedContents[relativePath]);
+      expect(updatedHashes[relativePath]).toBe(computeHash(content));
+    }
+  });
+
   it("#16 config.yaml update.skip prevents file from being updated", async () => {
     await setupProject();
 
@@ -1378,6 +1417,137 @@ describe("update() integration", () => {
 
     expect(readHashesV2(hashFile)[PATHS.WORKFLOW_GUIDE_FILE]).toBe(
       computeHash(updated),
+    );
+  });
+
+  it("selected bundled research update is idempotent", async () => {
+    await init({ yes: true, force: true, workflow: "research" });
+    const workflowBefore = readProjectFile(PATHS.WORKFLOW_GUIDE_FILE);
+    const hashesBefore = fs.readFileSync(hashFilePath(), "utf-8");
+    const selectionBefore = fs.readFileSync(
+      projectFile(PATHS.WORKFLOW_SELECTION_FILE),
+      "utf-8",
+    );
+
+    await update({});
+    await update({});
+
+    expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toBe(workflowBefore);
+    expect(fs.readFileSync(hashFilePath(), "utf-8")).toBe(hashesBefore);
+    expect(
+      fs.readFileSync(projectFile(PATHS.WORKFLOW_SELECTION_FILE), "utf-8"),
+    ).toBe(selectionBefore);
+    expect(
+      fs
+        .readdirSync(projectFile(DIR_NAMES.WORKFLOW))
+        .filter((entry) => entry.startsWith(".backup-")),
+    ).toEqual([]);
+  });
+
+  it("updates a pristine selected bundled research workflow to research bytes", async () => {
+    await setupProject();
+    const workflowPath = projectFile(PATHS.WORKFLOW_GUIDE_FILE);
+    const staleResearch =
+      "# Research Workflow\n\n## Phase Index\nlegacy research\n";
+    fs.writeFileSync(workflowPath, staleResearch, "utf-8");
+    const hashes = readHashesV2(hashFilePath());
+    hashes[PATHS.WORKFLOW_GUIDE_FILE] = computeHash(staleResearch);
+    writeHashesV2(hashFilePath(), hashes);
+    saveBundledWorkflowSelection(tmpDir, "research");
+
+    await update({ force: true });
+
+    const updated = fs.readFileSync(workflowPath, "utf-8");
+    expect(updated).toBe(
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
+    );
+    expect(updated).not.toBe(replacePythonCommandLiterals(workflowMdTemplate));
+    expect(readHashesV2(hashFilePath())[PATHS.WORKFLOW_GUIDE_FILE]).toBe(
+      computeHash(updated),
+    );
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "research",
+    });
+  });
+
+  it("protects a locally modified selected bundled research workflow", async () => {
+    await setupProject();
+    const workflowPath = projectFile(PATHS.WORKFLOW_GUIDE_FILE);
+    const installedResearch = "# Installed research workflow\n";
+    const localResearch = "# Locally modified research workflow\n";
+    fs.writeFileSync(workflowPath, localResearch, "utf-8");
+    const hashes = readHashesV2(hashFilePath());
+    hashes[PATHS.WORKFLOW_GUIDE_FILE] = computeHash(installedResearch);
+    writeHashesV2(hashFilePath(), hashes);
+    saveBundledWorkflowSelection(tmpDir, "research");
+
+    await update({ skipAll: true });
+
+    expect(fs.readFileSync(workflowPath, "utf-8")).toBe(localResearch);
+  });
+
+  it("omits a user-owned workflow with missing metadata and performs no workflow fetch", async () => {
+    await setupProject();
+    const customWorkflow = "# User-owned workflow\n\n## Phase Index\ncustom\n";
+    fs.writeFileSync(
+      projectFile(PATHS.WORKFLOW_GUIDE_FILE),
+      customWorkflow,
+      "utf-8",
+    );
+    clearWorkflowSelection(tmpDir);
+    removeHash(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockClear();
+
+    await update({ force: true });
+
+    expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toBe(customWorkflow);
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        String(input).includes("marketplace/index.json"),
+      ),
+    ).toBe(false);
+  });
+
+  it("omits workflow.md when bundled selection metadata is invalid", async () => {
+    await setupProject();
+    const customWorkflow = "# Preserve invalid selection workflow\n";
+    fs.writeFileSync(
+      projectFile(PATHS.WORKFLOW_GUIDE_FILE),
+      customWorkflow,
+      "utf-8",
+    );
+    fs.writeFileSync(
+      projectFile(PATHS.WORKFLOW_SELECTION_FILE),
+      JSON.stringify({
+        schemaVersion: 1,
+        id: "unknown",
+        source: "bundled",
+      }),
+      "utf-8",
+    );
+
+    await update({ force: true });
+
+    expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toBe(customWorkflow);
+    expect(loadWorkflowSelection(tmpDir).kind).toBe("invalid");
+  });
+
+  it("legacy missing metadata infers native only from safe managed evidence", async () => {
+    await setupProject();
+    clearWorkflowSelection(tmpDir);
+    const workflowPath = projectFile(PATHS.WORKFLOW_GUIDE_FILE);
+    const staleNative = "# Legacy pristine native workflow\n";
+    fs.writeFileSync(workflowPath, staleNative, "utf-8");
+    const hashes = readHashesV2(hashFilePath());
+    hashes[PATHS.WORKFLOW_GUIDE_FILE] = computeHash(staleNative);
+    writeHashesV2(hashFilePath(), hashes);
+
+    await update({ force: true });
+
+    expect(fs.readFileSync(workflowPath, "utf-8")).toBe(
+      replacePythonCommandLiterals(workflowMdTemplate),
     );
   });
 });

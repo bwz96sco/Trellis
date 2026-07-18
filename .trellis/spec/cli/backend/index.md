@@ -33,6 +33,8 @@ This directory contains guidelines for backend development. Fill in each file wi
 | [`trellis uninstall` Command](./commands-uninstall.md) | Uninstall orchestration: plan composition, structured-file dispatch, execute phases, `.trellis/` removal | Done |
 | [Uninstall Scrubbers](./uninstall-scrubbers.md) | Pure scrubber contract for structured config files (`settings.json`, `hooks.json`, `package.json`, `config.toml`) | Done |
 | [`trellis channel` Command](./commands-channel.md) | Multi-agent collaboration runtime: events.jsonl protocol, per-worker supervisor, provider adapters (claude / codex), project buckets, ephemeral / run lifecycle, ShutdownController state machine | Done |
+| [`trellis research` Command](./commands-research.md) | Deterministic research workspace inspection, validation, projection recovery, and Quest/Campaign/Run/Evidence/Claim lifecycle mutations | Done |
+| [Research Worker Skills and Claude Hooks](./research-worker-hooks.md) | Stage-owner skills, bounded worker cards, compact research session state, sequence watermark, and explicit Claude Dispatch validation | Done |
 ---
 
 ## Pre-Development Checklist
@@ -57,6 +59,8 @@ Before writing backend code, read the relevant guidelines based on your task:
 - Editing `commands/workflow.ts`, `utils/workflow-resolver.ts`, workflow marketplace entries, or `init --workflow` behavior → [commands-workflow.md](./commands-workflow.md)
 - Editing `commands/uninstall.ts` or `utils/uninstall-scrubbers.ts` → [commands-uninstall.md](./commands-uninstall.md) + [uninstall-scrubbers.md](./uninstall-scrubbers.md)
 - Editing `commands/channel/**` (events.jsonl protocol, supervisors, adapters, project buckets, channel-lifecycle commands) → [commands-channel.md](./commands-channel.md)
+- Editing `commands/research/**` or root research command registration/output behavior → [commands-research.md](./commands-research.md) + [trellis-core-sdk.md](./trellis-core-sdk.md)
+- Editing research stage-owner skills, worker cards, SessionStart research orientation, Claude sequence watermarking, or explicit research Dispatch injection → [research-worker-hooks.md](./research-worker-hooks.md)
 
 Also read [unit-test/conventions.md](../unit-test/conventions.md) — specifically the "When to Write Tests" section.
 

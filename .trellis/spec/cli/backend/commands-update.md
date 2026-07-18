@@ -65,7 +65,7 @@ Note that `force` / `skipAll` / `createNew` are mutually exclusive in spirit but
 | Python scripts under `.trellis/scripts/` | `templates/trellis/index.ts:getAllScripts` |
 | `.trellis/config.yaml` | `templates/trellis/index.ts:configYamlTemplate` |
 | `.trellis/.gitignore` | `templates/trellis/index.ts:gitignoreTemplate` |
-| `.trellis/workflow.md` | `templates/trellis/index.ts:workflowMdTemplate` (whole-file hash-gated, see below) |
+| `.trellis/workflow.md` | Selected bundled template from strict `.trellis/.workflow.json`, or safely inferred legacy native; omitted for invalid/user-owned selection (whole-file hash-gated, see below) |
 | Root `AGENTS.md` | `commands/update.ts:buildAgentsMdTemplate` (managed-block merge) |
 | Per-platform files | `configurators/index.ts:collectPlatformTemplates` for each detected platform via `configurators/index.ts:getConfiguredPlatforms` |
 | `.claude/settings.json` `statusLine` | preserved through `commands/update.ts:preserveExistingClaudeStatusLine` |
@@ -81,8 +81,18 @@ After collection, `collectTemplateFiles` runs two final passes:
 
 These two runtime-facing files have different update contracts:
 
-- **`.trellis/workflow.md`** stays on the normal whole-file template path. `collectTemplateFiles` inserts the bundled `workflowMdTemplate`; `analyzeChanges` decides whether to auto-update, prompt, skip, or create `.new` by comparing the current file hash with `.trellis/.template-hashes.json`. Do not partially merge only `[workflow-state:*]` blocks.
+- **`.trellis/workflow.md`** stays on the normal whole-file template path when bundled ownership is valid or safely inferred. `collectSelectedWorkflowTemplate` reads strict `.trellis/.workflow.json`; valid `native` or `research` selection supplies that bundled template, then `analyzeChanges` applies the existing hash conflict policy. Do not partially merge only `[workflow-state:*]` blocks.
 - **`AGENTS.md`** (`commands/update.ts:buildAgentsMdTemplate`) merges only the `<!-- TRELLIS:START -->`…`<!-- TRELLIS:END -->` region via `commands/update.ts:replaceTrellisManagedBlock`; if no markers exist, the template managed block is appended. The legacy untracked-hash whitelist `LEGACY_UNTRACKED_AGENTS_MD_BLOCK_HASHES` lets a pristine pre-tracking AGENTS.md auto-update without a "modified by you" false positive (see `commands/update.ts:isKnownUntrackedTemplate`).
+
+Workflow selection matrix:
+
+| Selection state | Desired workflow behavior |
+|---|---|
+| valid bundled metadata | collect the selected bundled bytes; never fetch marketplace |
+| missing metadata + current bytes equal bundled native | infer legacy native |
+| missing metadata + stored workflow hash matches current bytes | infer legacy managed native |
+| missing metadata without either evidence | omit workflow as unknown/user-owned |
+| malformed, wrong-version/source, or unknown id | warn and omit workflow; continue unrelated planning |
 
 Why workflow is whole-file: `.trellis/workflow.md` is parsed by `get_context.py`,
 `workflow_phase.py`, SessionStart strippers, and per-turn workflow-state hooks.
@@ -90,10 +100,10 @@ Runtime-significant headings and platform markers live outside
 `[workflow-state:*]` blocks. Updating only tag blocks can make breadcrumbs
 current while leaving stale phase or platform routing sections behind.
 
-Non-native workflow variants selected through `trellis workflow --template` or
-`trellis init --workflow` are deliberately removed from
-`.trellis/.template-hashes.json`. That makes `trellis update` classify the file
-as user-managed instead of auto-updating it back to bundled native workflow.
+Marketplace/custom selection clears `.trellis/.workflow.json` and removes the
+workflow hash. Because missing metadata without native/hash evidence omits the
+path entirely, update preserves those bytes without a remote lookup. The
+selection file itself is durable state and is excluded from template hashing.
 
 ### 3. Analyze on-disk state
 

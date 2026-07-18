@@ -72,6 +72,9 @@ export const addSessionScript = readTemplate("scripts/add_session.py");
 
 // Configuration files
 export const workflowMdTemplate = readTemplate("workflow.md");
+export const researchWorkflowMdTemplate = readTemplate(
+  "workflows/research/workflow.md",
+);
 export const configYamlTemplate = readTemplate("config.yaml");
 export const gitignoreTemplate = readTemplate("gitignore.txt");
 
@@ -81,6 +84,7 @@ export const gitignoreTemplate = readTemplate("gitignore.txt");
 // and refreshed by `trellis update`.
 export const implementAgentTemplate = readTemplate("agents/implement.md");
 export const checkAgentTemplate = readTemplate("agents/check.md");
+export const researchAgentTemplate = readTemplate("agents/research.md");
 
 /**
  * Get all script templates as a map of relative path to content
@@ -136,5 +140,6 @@ export function getAllAgents(): Map<string, string> {
   const agents = new Map<string, string>();
   agents.set("implement.md", implementAgentTemplate);
   agents.set("check.md", checkAgentTemplate);
+  agents.set("research.md", researchAgentTemplate);
   return agents;
 }

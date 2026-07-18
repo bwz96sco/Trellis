@@ -62,10 +62,9 @@ export interface WorkflowOptions {
   remoteSpecPackages?: Set<string>;
   /**
    * Optional override for `.trellis/workflow.md` content. When omitted the
-   * bundled native template is written. Set by `init --workflow` (or
-   * `--workflow-source`) after the resolver has fetched marketplace content.
-   * Caller is still responsible for removing the `.trellis/workflow.md` hash
-   * entry for non-native workflows so update.ts treats them as user-managed.
+   * bundled native template is written. Set by `init --workflow` for another
+   * bundled workflow or after marketplace resolution. The caller applies hash
+   * and `.workflow.json` ownership from the resolved template source.
    */
   workflowMdOverride?: string;
 }
@@ -101,7 +100,7 @@ export async function createWorkflowStructure(
     executable: true,
   });
 
-  // Copy workflow.md (native bundled template or selected marketplace variant)
+  // Copy workflow.md (default native or a selected bundled/marketplace variant)
   await writeFile(
     path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE),
     replacePythonCommandLiterals(workflowMd),

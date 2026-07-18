@@ -13,6 +13,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -440,15 +441,25 @@ def _read_json(path: Path) -> dict[str, Any] | None:
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> bool:
+    """Atomically write one session JSON object."""
+    tmp_path: Path | None = None
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
+        fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+        tmp_path = Path(tmp_name)
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        os.replace(tmp_path, path)
+        tmp_path = None
         return True
-    except OSError:
+    except (OSError, IOError):
         return False
+    finally:
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
 
 
 def _canonical_task_ref(task_path: str, repo_root: Path) -> str | None:
@@ -561,6 +572,84 @@ def _context_metadata(
     return metadata
 
 
+_SESSION_POINTERS = {"current_task", "current_run"}
+
+
+def _has_meaningful_session_state(context: dict[str, Any]) -> bool:
+    """Return True when a session contains a non-empty pointer or other state."""
+    for key, value in context.items():
+        if key not in _SESSION_POINTERS:
+            return True
+        if _string_value(value):
+            return True
+    return False
+
+
+def _set_session_pointer(
+    pointer_name: str,
+    pointer_value: str,
+    repo_root: Path,
+    platform_input: dict[str, Any] | None = None,
+    platform: str | None = None,
+    update_metadata: bool = False,
+) -> str | None:
+    context_key = resolve_context_key(platform_input, platform)
+    if not context_key:
+        return None
+
+    context_path = _context_path(repo_root, context_key)
+    context = _read_json(context_path)
+    if context is None:
+        if context_path.exists():
+            return None
+        context = {}
+    if update_metadata:
+        context.update(_context_metadata(platform_input, platform, context_key))
+    context[pointer_name] = pointer_value
+    if not _write_json(context_path, context):
+        return None
+    return pointer_value
+
+
+def _clear_session_pointer_at_path(
+    context_path: Path,
+    pointer_name: str,
+    expected_value: str | None = None,
+) -> tuple[str | None, bool]:
+    context = _read_json(context_path)
+    if context is None:
+        return None, False
+
+    previous = _string_value(context.get(pointer_name))
+    if expected_value is not None and previous != expected_value:
+        return previous, False
+    if pointer_name not in context:
+        return previous, False
+
+    del context[pointer_name]
+    if _has_meaningful_session_state(context):
+        return previous, _write_json(context_path, context)
+    return previous, _remove_file(context_path)
+
+
+def _clear_session_pointer(
+    pointer_name: str,
+    repo_root: Path,
+    expected_value: str | None = None,
+    platform_input: dict[str, Any] | None = None,
+    platform: str | None = None,
+) -> str | None:
+    context_key = resolve_context_key(platform_input, platform)
+    if not context_key:
+        return None
+    previous, _ = _clear_session_pointer_at_path(
+        _context_path(repo_root, context_key),
+        pointer_name,
+        expected_value,
+    )
+    return previous
+
+
 def set_active_task(
     task_path: str,
     repo_root: Path,
@@ -579,14 +668,22 @@ def set_active_task(
     context_key = resolve_context_key(platform_input, platform)
     if not context_key:
         return None
+    if _set_session_pointer(
+        "current_task",
+        canonical,
+        repo_root,
+        platform_input,
+        platform,
+        update_metadata=True,
+    ) is None:
+        return None
 
     context_path = _context_path(repo_root, context_key)
-    context = _read_json(context_path) or {}
-    context.update(_context_metadata(platform_input, platform, context_key))
-    context["current_task"] = canonical
-    context.setdefault("current_run", None)
-    if not _write_json(context_path, context):
-        return None
+    context = _read_json(context_path)
+    if context is not None and "current_run" not in context:
+        context["current_run"] = None
+        if not _write_json(context_path, context):
+            return None
     return ActiveTask(canonical, "session", context_key)
 
 
@@ -595,20 +692,69 @@ def clear_active_task(
     platform_input: dict[str, Any] | None = None,
     platform: str | None = None,
 ) -> ActiveTask:
-    """Clear the active task by deleting the current session context file."""
+    """Clear only current_task from the current session context."""
     context_key = resolve_context_key(platform_input, platform)
     if not context_key:
         return ActiveTask(None, "none")
 
-    previous = resolve_active_task(repo_root, platform_input, platform)
     context_path = _context_path(repo_root, context_key)
-    if context_path.is_file():
-        _remove_file(context_path)
-    return previous
+    context = _read_json(context_path)
+    task_ref = _string_value(context.get("current_task")) if context else None
+    previous = _active_from_ref(task_ref, repo_root, "session", context_key)
+    _clear_session_pointer_at_path(context_path, "current_task")
+    return previous or ActiveTask(None, "none", context_key)
+
+
+def resolve_current_run(
+    repo_root: Path,
+    platform_input: dict[str, Any] | None = None,
+    platform: str | None = None,
+) -> str | None:
+    """Resolve current_run from the current session, without fallback guessing."""
+    context_key = resolve_context_key(platform_input, platform)
+    if not context_key:
+        return None
+    context = _read_json(_context_path(repo_root, context_key))
+    return _string_value(context.get("current_run")) if context else None
+
+
+def set_current_run(
+    run_id: str,
+    repo_root: Path,
+    platform_input: dict[str, Any] | None = None,
+    platform: str | None = None,
+) -> str | None:
+    """Set current_run in the current session while preserving other state."""
+    value = _string_value(run_id)
+    if not value:
+        return None
+    return _set_session_pointer(
+        "current_run",
+        value,
+        repo_root,
+        platform_input,
+        platform,
+    )
+
+
+def clear_current_run(
+    repo_root: Path,
+    expected_run_id: str | None = None,
+    platform_input: dict[str, Any] | None = None,
+    platform: str | None = None,
+) -> str | None:
+    """Clear current_run only when it matches the optional expected Run ID."""
+    return _clear_session_pointer(
+        "current_run",
+        repo_root,
+        expected_run_id,
+        platform_input,
+        platform,
+    )
 
 
 def clear_task_from_sessions(task_path: str, repo_root: Path) -> int:
-    """Delete all session runtime files that point at a task."""
+    """Clear matching current_task pointers from every session file."""
     target = _canonical_task_ref(task_path, repo_root) or normalize_task_ref(task_path)
     if not target:
         return 0
@@ -619,14 +765,17 @@ def clear_task_from_sessions(task_path: str, repo_root: Path) -> int:
         return cleared
 
     for session_path in sessions_dir.glob("*.json"):
-        context = _read_json(session_path) or {}
+        context = _read_json(session_path)
+        if context is None:
+            continue
         current = _string_value(context.get("current_task"))
         if not current:
             continue
         current_ref = _canonical_task_ref(current, repo_root) or normalize_task_ref(current)
         if current_ref != target:
             continue
-        if session_path.is_file() and _remove_file(session_path):
+        _, did_clear = _clear_session_pointer_at_path(session_path, "current_task")
+        if did_clear:
             cleared += 1
 
     return cleared

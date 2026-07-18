@@ -43,6 +43,15 @@ import {
 const BUNDLED_SKILL_NAMES = [
   "trellis-channel",
   "trellis-meta",
+  "trellis-research-audit",
+  "trellis-research-computation",
+  "trellis-research-experiment",
+  "trellis-research-ideation",
+  "trellis-research-literature",
+  "trellis-research-quest",
+  "trellis-research-setup",
+  "trellis-research-theory",
+  "trellis-research-writing",
   "trellis-session-insight",
   "trellis-spec-bootstrap",
 ];

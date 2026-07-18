@@ -15,6 +15,7 @@ import {
 } from "../configurators/index.js";
 import {
   getPythonCommandForPlatform,
+  replacePythonCommandLiterals,
   setResolvedPythonCommand,
 } from "../configurators/shared.js";
 import { AI_TOOLS, type CliFlag } from "../types/ai-tools.js";
@@ -36,11 +37,22 @@ import {
   type ProjectType,
   type DetectedPackage,
 } from "../utils/project-detector.js";
-import { initializeHashes, removeHash } from "../utils/template-hash.js";
+import {
+  computeHash,
+  initializeHashes,
+  loadHashes,
+  removeHash,
+  saveHashes,
+} from "../utils/template-hash.js";
 import {
   NATIVE_WORKFLOW_ID,
+  isBundledWorkflowId,
   resolveWorkflowTemplate,
 } from "../utils/workflow-resolver.js";
+import {
+  clearWorkflowSelection,
+  saveBundledWorkflowSelection,
+} from "../utils/workflow-selection.js";
 import {
   isCwdHomedir,
   homedirGuardMessage,
@@ -1188,7 +1200,11 @@ export async function init(options: InitOptions): Promise<void> {
   const tasksDirEarly = path.join(cwd, PATHS.TASKS);
   const tasksEmptyEarly =
     !fs.existsSync(tasksDirEarly) || fs.readdirSync(tasksDirEarly).length === 0;
-  const hasTemplateRequest = !!options.template || !!options.registry;
+  const hasTemplateRequest =
+    !!options.template ||
+    !!options.registry ||
+    !!options.workflow ||
+    !!options.workflowSource;
 
   if (
     !isFirstInit &&
@@ -1885,17 +1901,20 @@ export async function init(options: InitOptions): Promise<void> {
     workflowIdInput && workflowIdInput.length > 0
       ? workflowIdInput
       : NATIVE_WORKFLOW_ID;
-  let workflowMdOverride: string | undefined;
-  if (workflowId !== NATIVE_WORKFLOW_ID || options.workflowSource) {
-    const resolved = await resolveWorkflowTemplate(workflowId, {
-      source: options.workflowSource,
-    });
-    if (resolved.id !== NATIVE_WORKFLOW_ID) {
-      workflowMdOverride = resolved.content;
-      console.log(
-        chalk.blue(`🧭 Using workflow template: ${chalk.cyan(resolved.id)}`),
-      );
-    }
+  const resolvedWorkflow = await resolveWorkflowTemplate(workflowId, {
+    source: options.workflowSource,
+  });
+  const workflowMdOverride =
+    resolvedWorkflow.id === NATIVE_WORKFLOW_ID &&
+    resolvedWorkflow.source === "bundled"
+      ? undefined
+      : resolvedWorkflow.content;
+  if (resolvedWorkflow.id !== NATIVE_WORKFLOW_ID) {
+    console.log(
+      chalk.blue(
+        `🧭 Using workflow template: ${chalk.cyan(resolvedWorkflow.id)}`,
+      ),
+    );
   }
 
   // ==========================================================================
@@ -1965,6 +1984,10 @@ export async function init(options: InitOptions): Promise<void> {
     writeSpecRegistryConfig(cwd, registrySpecConfigToPersist);
   }
 
+  // Preserve the prior workflow ownership signal in case --skip-existing (or a
+  // declined prompt) left the active workflow unchanged.
+  const previousWorkflowHash = loadHashes(cwd)[PATHS.WORKFLOW_GUIDE_FILE];
+
   // Initialize template hashes for modification tracking
   const hashedCount = initializeHashes(cwd, { trackedPaths: writtenPaths });
   if (useRemoteTemplate) {
@@ -1983,12 +2006,47 @@ export async function init(options: InitOptions): Promise<void> {
     );
   }
 
-  // Non-native workflow is user-managed local content. Drop the
-  // `.trellis/workflow.md` hash entry so `trellis update` classifies it as
-  // modified and does not silently restore native bytes. See design.md
-  // "Durable-state contract".
-  if (workflowMdOverride !== undefined && workflowId !== NATIVE_WORKFLOW_ID) {
-    removeHash(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+  const activeWorkflowPath = path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+  const expectedWorkflowContent = replacePythonCommandLiterals(
+    resolvedWorkflow.content,
+  );
+  const activeWorkflowContent = fs.existsSync(activeWorkflowPath)
+    ? fs.readFileSync(activeWorkflowPath, "utf-8")
+    : undefined;
+  const activeWorkflowMatchesResolved =
+    activeWorkflowContent === expectedWorkflowContent;
+  const activeWorkflowWasWritten = writtenPaths.has(PATHS.WORKFLOW_GUIDE_FILE);
+  const activeWorkflowWasPreviouslyManaged =
+    activeWorkflowContent !== undefined &&
+    previousWorkflowHash !== undefined &&
+    previousWorkflowHash === computeHash(activeWorkflowContent);
+
+  if (
+    (activeWorkflowWasWritten || activeWorkflowWasPreviouslyManaged) &&
+    activeWorkflowMatchesResolved
+  ) {
+    if (
+      resolvedWorkflow.source === "bundled" &&
+      isBundledWorkflowId(resolvedWorkflow.id)
+    ) {
+      saveBundledWorkflowSelection(cwd, resolvedWorkflow.id);
+    } else {
+      // Marketplace/custom workflow is user-managed local content. Drop both
+      // bundled ownership signals so update never restores or remotely fetches it.
+      removeHash(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+      clearWorkflowSelection(cwd);
+    }
+  } else {
+    // The selected workflow was not installed (for example --skip-existing).
+    // Restore the previous workflow hash and leave durable selection metadata
+    // untouched so ownership never transfers without an active replacement.
+    if (previousWorkflowHash === undefined) {
+      removeHash(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+    } else {
+      const hashes = loadHashes(cwd);
+      hashes[PATHS.WORKFLOW_GUIDE_FILE] = previousWorkflowHash;
+      saveHashes(cwd, hashes);
+    }
   }
 
   // Initialize developer identity (silent - no output)

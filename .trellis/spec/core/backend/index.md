@@ -15,6 +15,7 @@ independent of CLI rendering and process-control concerns.
 | Channel API | `packages/core/src/channel/` | Durable channel/event APIs, reducers, workers, inbox, runtime contracts. |
 | Mem API | `packages/core/src/mem/` | Persisted AI session readers, search, filtering, dialogue extraction, and project aggregation. |
 | Task API | `packages/core/src/task/` | Reusable task record, schema, phase, and path helpers. |
+| Research API | `packages/core/src/research/` | Strict research ledger, lifecycle validation, deterministic projections, and portable artifact/repository references. See [Research State and Deterministic Store](./research-state.md). |
 | Testing API | `packages/core/src/testing/` | Public test helpers intended for package consumers. |
 | Tests | `packages/core/test/` | Core-owned unit/integration coverage. |
 
@@ -40,6 +41,9 @@ independent of CLI rendering and process-control concerns.
 - For channel changes, also read
   `.trellis/spec/cli/backend/commands-channel.md`.
 - For mem changes, also read `.trellis/spec/cli/backend/commands-mem.md`.
+- For research-state, event-store, projection, lifecycle, or portable artifact
+  changes, also read
+  `.trellis/spec/core/backend/research-state.md`.
 
 ## Quality Check
 

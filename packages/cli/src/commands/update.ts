@@ -42,7 +42,6 @@ import {
   // Configuration
   configYamlTemplate,
   gitignoreTemplate,
-  workflowMdTemplate,
 } from "../templates/trellis/index.js";
 import { agentsMdContent } from "../templates/markdown/index.js";
 import {
@@ -71,6 +70,11 @@ import {
   type RegistrySource,
 } from "../utils/template-fetcher.js";
 import { loadSpecRegistryConfig } from "../utils/registry-config.js";
+import { loadWorkflowSelection } from "../utils/workflow-selection.js";
+import {
+  NATIVE_WORKFLOW_ID,
+  resolveBundledWorkflowTemplate,
+} from "../utils/workflow-resolver.js";
 
 export interface UpdateOptions {
   dryRun?: boolean;
@@ -842,8 +846,46 @@ async function collectRegistrySpecTemplates(
   return result.files;
 }
 
+function collectSelectedWorkflowTemplate(
+  cwd: string,
+  hashes: TemplateHashes,
+): string | undefined {
+  const selection = loadWorkflowSelection(cwd);
+  if (selection.kind === "bundled") {
+    return resolveBundledWorkflowTemplate(selection.id).content;
+  }
+  if (selection.kind === "invalid") {
+    console.log(
+      chalk.yellow(
+        `Warning: ${PATHS.WORKFLOW_SELECTION_FILE} is invalid (${selection.reason}); preserving ${PATHS.WORKFLOW_GUIDE_FILE} as user-owned.`,
+      ),
+    );
+    return undefined;
+  }
+
+  const workflowPath = path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+  if (!fs.existsSync(workflowPath)) {
+    return undefined;
+  }
+
+  const current = fs.readFileSync(workflowPath, "utf-8");
+  const native = replacePythonCommandLiterals(
+    resolveBundledWorkflowTemplate(NATIVE_WORKFLOW_ID).content,
+  );
+  const storedHash = hashes[PATHS.WORKFLOW_GUIDE_FILE];
+  if (
+    current === native ||
+    (storedHash !== undefined && storedHash === computeHash(current))
+  ) {
+    return resolveBundledWorkflowTemplate(NATIVE_WORKFLOW_ID).content;
+  }
+
+  return undefined;
+}
+
 async function collectTemplateFiles(
   cwd: string,
+  hashes: TemplateHashes,
   extraPlatforms?: Set<AITool>,
   /**
    * Bypass `update.skip` when collecting templates. Enable this for breaking
@@ -882,14 +924,14 @@ async function collectTemplateFiles(
     preserveExistingRegistryConfig(cwd, configYamlTemplate),
   );
   files.set(`${DIR_NAMES.WORKFLOW}/.gitignore`, gitignoreTemplate);
-  // workflow.md is included here because it is runtime-parsed by
-  // get_context.py and shared hooks. Keep it on the normal template update
-  // path: if the installed file still matches the tracked hash, update the
-  // whole file. If the user edited it, the standard modified-file prompt /
-  // --force behavior applies. Partial tag-block merging is unsafe because
-  // platform routing markers outside [workflow-state:*] blocks are also
-  // script-consumed.
-  files.set(`${DIR_NAMES.WORKFLOW}/workflow.md`, workflowMdTemplate);
+  // workflow.md remains a whole-file runtime template, but only when bundled
+  // ownership is valid or safely inferred from a legacy native installation.
+  // Invalid or user-owned workflows are omitted so unrelated updates proceed
+  // without restoring native bytes or fetching marketplace content.
+  const selectedWorkflow = collectSelectedWorkflowTemplate(cwd, hashes);
+  if (selectedWorkflow !== undefined) {
+    files.set(PATHS.WORKFLOW_GUIDE_FILE, selectedWorkflow);
+  }
   // workspace/index.md stays excluded — it's runtime-appended by add_session.py
   // (journal index) and has no script-parsed structure.
   files.set(FILE_NAMES.AGENTS, buildAgentsMdTemplate(cwd));
@@ -2164,6 +2206,7 @@ export async function update(options: UpdateOptions): Promise<void> {
   // Collect templates (used for both migration classification and change analysis)
   const templates = await collectTemplateFiles(
     cwd,
+    hashes,
     codexUpgradeNeeded ? new Set<AITool>(["codex"]) : undefined,
     breakingBypass,
   );

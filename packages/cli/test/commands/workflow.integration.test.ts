@@ -33,10 +33,24 @@ vi.mock("node:child_process", () => ({
 
 import { init } from "../../src/commands/init.js";
 import { update } from "../../src/commands/update.js";
-import { runWorkflowCommand, WorkflowCommandError } from "../../src/commands/workflow.js";
+import {
+  runWorkflowCommand,
+  WorkflowCommandError,
+} from "../../src/commands/workflow.js";
 import { PATHS } from "../../src/constants/paths.js";
-import { loadHashes } from "../../src/utils/template-hash.js";
-import { workflowMdTemplate } from "../../src/templates/trellis/index.js";
+import {
+  loadHashes,
+  removeHash,
+  updateHashes,
+} from "../../src/utils/template-hash.js";
+import {
+  clearWorkflowSelection,
+  loadWorkflowSelection,
+} from "../../src/utils/workflow-selection.js";
+import {
+  researchWorkflowMdTemplate,
+  workflowMdTemplate,
+} from "../../src/templates/trellis/index.js";
 import { replacePythonCommandLiterals } from "../../src/configurators/shared.js";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -110,11 +124,136 @@ describe("trellis workflow integration", () => {
     );
     const hashes = loadHashes(tmpDir);
     expect(hashes[PATHS.WORKFLOW_GUIDE_FILE]).toBeTruthy();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "native",
+    });
+  });
+
+  it("init --workflow research installs and tracks the bundled research workflow", async () => {
+    await init({ yes: true, workflow: "research" });
+
+    const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    expect(fs.readFileSync(wfPath, "utf-8")).toBe(
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
+    );
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeTruthy();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "research",
+    });
+  });
+
+  it("init preserves ownership when --skip-existing leaves the active workflow unchanged", async () => {
+    await init({ yes: true });
+
+    const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    const originalContent = fs.readFileSync(wfPath, "utf-8");
+    const originalHash = loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE];
+    const originalSelection = loadWorkflowSelection(tmpDir);
+
+    await init({
+      yes: true,
+      skipExisting: true,
+      workflow: "research",
+    });
+
+    expect(fs.readFileSync(wfPath, "utf-8")).toBe(originalContent);
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBe(originalHash);
+    expect(loadWorkflowSelection(tmpDir)).toEqual(originalSelection);
+  });
+
+  it("init does not claim a byte-identical pre-existing workflow it did not write", async () => {
+    const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    fs.mkdirSync(path.dirname(wfPath), { recursive: true });
+    fs.writeFileSync(
+      wfPath,
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
+      "utf-8",
+    );
+
+    await init({
+      yes: true,
+      workflow: "research",
+    });
+
+    expect(fs.readFileSync(wfPath, "utf-8")).toBe(
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
+    );
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({ kind: "missing" });
+  });
+
+  it("init repairs missing selection for byte-identical managed workflow bytes", async () => {
+    const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    const researchContent = replacePythonCommandLiterals(
+      researchWorkflowMdTemplate,
+    );
+    fs.mkdirSync(path.dirname(wfPath), { recursive: true });
+    fs.writeFileSync(wfPath, researchContent, "utf-8");
+    updateHashes(
+      tmpDir,
+      new Map([[PATHS.WORKFLOW_GUIDE_FILE, researchContent]]),
+    );
+
+    await init({
+      yes: true,
+      workflow: "research",
+    });
+
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeTruthy();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "research",
+    });
+  });
+
+  it("init explicit source may override bundled research as user-owned", async () => {
+    const customResearch =
+      "# Custom research workflow\n\n## Phase Index\ncustom\n";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL) => {
+        const url = String(input);
+        if (url.endsWith("/index.json")) {
+          return new Response(
+            JSON.stringify({
+              version: 1,
+              templates: [
+                {
+                  id: "research",
+                  type: "workflow",
+                  name: "Custom Research",
+                  path: "workflows/research/workflow.md",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        if (url.endsWith("workflows/research/workflow.md")) {
+          return new Response(customResearch, { status: 200 });
+        }
+        return new Response("", { status: 404 });
+      }),
+    );
+
+    await init({
+      yes: true,
+      workflow: "research",
+      workflowSource: "gh:example/workflows",
+    });
+
+    expect(
+      fs.readFileSync(path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE), "utf-8"),
+    ).toBe(customResearch);
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({ kind: "missing" });
   });
 
   it("init --workflow tdd writes marketplace content and removes the hash entry", async () => {
     stubMarketplaceFetch();
-    await init({ yes: true, workflow: "tdd" } as Record<string, unknown>);
+    await init({ yes: true, workflow: "tdd" });
 
     const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
     const written = fs.readFileSync(wfPath, "utf-8");
@@ -122,6 +261,7 @@ describe("trellis workflow integration", () => {
 
     const hashes = loadHashes(tmpDir);
     expect(hashes[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({ kind: "missing" });
   });
 
   it("init --workflow-source resolves custom workflow marketplace content", async () => {
@@ -136,7 +276,8 @@ describe("trellis workflow integration", () => {
         },
       ],
     };
-    const customContent = "# Custom Workflow\n\n## Phase Index\nCustom phase.\n";
+    const customContent =
+      "# Custom Workflow\n\n## Phase Index\nCustom phase.\n";
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: string | URL) => {
@@ -155,29 +296,28 @@ describe("trellis workflow integration", () => {
       yes: true,
       workflow: "custom",
       workflowSource: "gh:example/workflows",
-    } as Record<string, unknown>);
+    });
 
     const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
     expect(fs.readFileSync(wfPath, "utf-8")).toBe(
       replacePythonCommandLiterals(customContent),
     );
     expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({ kind: "missing" });
   });
 
   it("init --workflow missing-id rejects instead of exiting successfully", async () => {
     stubMarketplaceFetch();
 
     await expect(
-      init({ yes: true, workflow: "missing-id" } as Record<string, unknown>),
+      init({ yes: true, workflow: "missing-id" }),
     ).rejects.toThrow(/workflow template/i);
   });
 
   it("trellis workflow --template native refreshes hash after switching from tdd", async () => {
     stubMarketplaceFetch();
-    await init({ yes: true, workflow: "tdd" } as Record<string, unknown>);
-    expect(
-      loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE],
-    ).toBeUndefined();
+    await init({ yes: true, workflow: "tdd" });
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
 
     // Switching FROM a non-native workflow requires --force because the file
     // has no stored hash → the resolver conservatively flags it as "modified",
@@ -190,6 +330,40 @@ describe("trellis workflow integration", () => {
     );
     // Switching back to native re-tracks the hash so update() can manage it.
     expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeTruthy();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "native",
+    });
+  });
+
+  it("trellis workflow --template research tracks bundled ownership", async () => {
+    await init({ yes: true });
+
+    await runWorkflowCommand({ template: "research" });
+
+    const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    expect(fs.readFileSync(wfPath, "utf-8")).toBe(
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
+    );
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeTruthy();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "research",
+    });
+  });
+
+  it("explicit bundled selection repairs missing ownership when bytes are identical", async () => {
+    await init({ yes: true, workflow: "research" });
+    removeHash(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
+    clearWorkflowSelection(tmpDir);
+
+    await runWorkflowCommand({ template: "research" });
+
+    expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeTruthy();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "research",
+    });
   });
 
   it("trellis workflow --template tdd writes marketplace content and removes the hash", async () => {
@@ -204,6 +378,7 @@ describe("trellis workflow integration", () => {
       replacePythonCommandLiterals(TDD_CONTENT),
     );
     expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
+    expect(loadWorkflowSelection(tmpDir)).toEqual({ kind: "missing" });
   });
 
   it("non-interactive run with a locally-modified workflow.md fails without --force", async () => {
@@ -212,6 +387,8 @@ describe("trellis workflow integration", () => {
 
     const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
     fs.writeFileSync(wfPath, "# My custom edits", "utf-8");
+    const originalHash = loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE];
+    const originalSelection = loadWorkflowSelection(tmpDir);
 
     // Simulate non-interactive shell.
     const originalIsTTY = process.stdin.isTTY;
@@ -225,8 +402,10 @@ describe("trellis workflow integration", () => {
         WorkflowCommandError,
       );
 
-      // File must remain untouched, and hash must not have been re-stamped.
+      // Active bytes and both ownership signals must remain untouched.
       expect(fs.readFileSync(wfPath, "utf-8")).toBe("# My custom edits");
+      expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBe(originalHash);
+      expect(loadWorkflowSelection(tmpDir)).toEqual(originalSelection);
     } finally {
       Object.defineProperty(process.stdin, "isTTY", {
         configurable: true,
@@ -268,6 +447,7 @@ describe("trellis workflow integration", () => {
     const wfPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
     const originalContent = fs.readFileSync(wfPath, "utf-8");
     const originalHash = loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE];
+    const originalSelection = loadWorkflowSelection(tmpDir);
 
     await runWorkflowCommand({ template: "tdd", createNew: true });
 
@@ -279,6 +459,7 @@ describe("trellis workflow integration", () => {
     // Active workflow file and hash must both be untouched.
     expect(fs.readFileSync(wfPath, "utf-8")).toBe(originalContent);
     expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBe(originalHash);
+    expect(loadWorkflowSelection(tmpDir)).toEqual(originalSelection);
   });
 
   it("trellis update after switching to tdd does not silently restore native workflow", async () => {

@@ -12,9 +12,11 @@ import {
   WorkflowCommandError,
 } from "../commands/workflow.js";
 import { registerChannelCommand } from "../commands/channel/index.js";
+import { registerResearchCommand } from "../commands/research/index.js";
 import { DIR_NAMES } from "../constants/paths.js";
 import { PACKAGE_NAME, VERSION } from "../constants/version.js";
 import { compareVersions } from "../utils/compare-versions.js";
+import { shouldCheckForUpdates } from "../utils/update-notice.js";
 
 // Re-export for backwards compatibility (consumers should prefer constants/version.js)
 export { VERSION, PACKAGE_NAME };
@@ -52,7 +54,10 @@ function checkForUpdates(cwd: string): void {
 
 // Check for updates at CLI startup (only if .trellis exists)
 const cwd = process.cwd();
-if (fs.existsSync(path.join(cwd, DIR_NAMES.WORKFLOW))) {
+if (
+  shouldCheckForUpdates(process.argv) &&
+  fs.existsSync(path.join(cwd, DIR_NAMES.WORKFLOW))
+) {
   checkForUpdates(cwd);
 }
 
@@ -116,7 +121,7 @@ program
   )
   .option(
     "--workflow <id>",
-    "Workflow template id for .trellis/workflow.md (default: native; e.g., tdd, channel-driven-subagent-dispatch)",
+    "Workflow template id for .trellis/workflow.md (default: native; bundled: native, research)",
   )
   .option(
     "--workflow-source <source>",
@@ -258,11 +263,11 @@ program
 program
   .command("workflow")
   .description(
-    "List or switch the project's .trellis/workflow.md template (native, tdd, channel-driven-subagent-dispatch, or marketplace)",
+    "List or switch the project's .trellis/workflow.md template (bundled native/research or marketplace)",
   )
   .option(
     "-t, --template <id>",
-    "Workflow template id (e.g., native, tdd, channel-driven-subagent-dispatch)",
+    "Workflow template id (e.g., native, research, tdd)",
   )
   .option(
     "-m, --marketplace <source>",
@@ -300,5 +305,6 @@ program
   });
 
 registerChannelCommand(program);
+registerResearchCommand(program);
 
 program.parse();

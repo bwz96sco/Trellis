@@ -88,10 +88,15 @@ function makeTask(repo: string, name: string, prdBody: string): void {
   );
 }
 
-function runArchive(repo: string, taskName: string): void {
+function runArchive(repo: string, taskName: string, noCommit = false): void {
   const r = spawnSync(
     "python3",
-    [".trellis/scripts/task.py", "archive", taskName],
+    [
+      ".trellis/scripts/task.py",
+      "archive",
+      taskName,
+      ...(noCommit ? ["--no-commit"] : []),
+    ],
     { cwd: repo, encoding: "utf-8" },
   );
   if (r.status !== 0) {
@@ -146,6 +151,53 @@ describe.skipIf(!hasPython())(
       // task-b dirty change still in working tree.
       const status = git(tmp, "status", "--porcelain");
       expect(status).toMatch(/M\s+\.trellis\/tasks\/task-b\/prd\.md/);
+    });
+
+    it("clears only matching current_task pointers and preserves other session state", () => {
+      makeTask(tmp, "task-a", "task A prd\n");
+      makeTask(tmp, "task-b", "task B prd\n");
+      const sessionsDir = path.join(tmp, ".trellis", ".runtime", "sessions");
+      fs.mkdirSync(sessionsDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(sessionsDir, "matching.json"),
+        `${JSON.stringify(
+          {
+            current_task: ".trellis/tasks/task-a",
+            current_run: "run_keep",
+            future: { keep: true },
+          },
+          null,
+          2,
+        )}\n`,
+      );
+      fs.writeFileSync(
+        path.join(sessionsDir, "other.json"),
+        `${JSON.stringify(
+          {
+            current_task: ".trellis/tasks/task-b",
+            current_run: "run_other",
+          },
+          null,
+          2,
+        )}\n`,
+      );
+
+      runArchive(tmp, "task-a", true);
+
+      const matching = JSON.parse(
+        fs.readFileSync(path.join(sessionsDir, "matching.json"), "utf-8"),
+      ) as Record<string, unknown>;
+      expect(matching).not.toHaveProperty("current_task");
+      expect(matching).toMatchObject({
+        current_run: "run_keep",
+        future: { keep: true },
+      });
+      expect(
+        JSON.parse(fs.readFileSync(path.join(sessionsDir, "other.json"), "utf-8")),
+      ).toMatchObject({
+        current_task: ".trellis/tasks/task-b",
+        current_run: "run_other",
+      });
     });
 
     it(

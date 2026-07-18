@@ -73,12 +73,15 @@ describe("settingsTemplate SessionStart matchers", () => {
 // =============================================================================
 
 describe("getAllAgents", () => {
-  it("each agent has name and content", () => {
+  it("each agent has name and content, including both research roles", () => {
     const agents = getAllAgents();
     for (const agent of agents) {
       expect(agent.name.length).toBeGreaterThan(0);
       expect(agent.content.length).toBeGreaterThan(0);
     }
+    const names = agents.map((agent) => agent.name);
+    expect(names).toContain("trellis-research");
+    expect(names).toContain("trellis-research-worker");
   });
 });
 

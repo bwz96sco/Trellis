@@ -3,11 +3,10 @@
  *
  * Behavior contracts:
  *
- * - Hash boundary: after writing native content, refresh the
- *   `.trellis/workflow.md` entry in `.template-hashes.json`. After writing
- *   any non-native content, remove that entry. This prevents `trellis update`
- *   from silently restoring native bytes over a user-selected variant
- *   (see design.md "Durable-state contract").
+ * - Ownership boundary: after writing bundled content, refresh the workflow
+ *   hash and persist `.trellis/.workflow.json`. After marketplace/custom
+ *   content, remove both bundled ownership signals so update preserves it
+ *   without a remote lookup.
  *
  * - Modified-file protection: if the on-disk workflow has been edited (hash
  *   mismatch and it isn't already byte-identical to the chosen template),
@@ -35,11 +34,15 @@ import {
 import {
   listWorkflowTemplates,
   resolveWorkflowTemplate,
-  NATIVE_WORKFLOW_ID,
+  isBundledWorkflowId,
   WorkflowResolveError,
   type ResolvedWorkflowTemplate,
   type WorkflowTemplateListing,
 } from "../utils/workflow-resolver.js";
+import {
+  clearWorkflowSelection,
+  saveBundledWorkflowSelection,
+} from "../utils/workflow-selection.js";
 
 export interface WorkflowCommandOptions {
   template?: string;
@@ -141,19 +144,21 @@ async function confirmOverwriteInteractively(): Promise<
   return action as "overwrite" | "skip" | "create-new";
 }
 
-function applyHashContract(cwd: string, templateId: string): void {
+function applyOwnershipContract(
+  cwd: string,
+  template: ResolvedWorkflowTemplate,
+): void {
   const relPath = PATHS.WORKFLOW_GUIDE_FILE;
-  if (templateId === NATIVE_WORKFLOW_ID) {
+  if (template.source === "bundled" && isBundledWorkflowId(template.id)) {
     const filePath = workflowFilePath(cwd);
     const current = fs.readFileSync(filePath, "utf-8");
-    const files = new Map<string, string>();
-    files.set(relPath, current);
-    updateHashes(cwd, files);
+    updateHashes(cwd, new Map([[relPath, current]]));
+    saveBundledWorkflowSelection(cwd, template.id);
   } else {
-    // Non-native workflow is user-managed local content. Drop the hash entry
-    // so `trellis update` treats it as modified and does not silently restore
-    // native bytes.
+    // Marketplace/custom workflow is user-managed local content. Drop both
+    // bundled ownership signals so update preserves it without remote lookup.
     removeHash(cwd, relPath);
+    clearWorkflowSelection(cwd);
   }
 }
 
@@ -189,7 +194,7 @@ async function writeWorkflow(
         `  ○ ${PATHS.WORKFLOW_GUIDE_FILE} already matches "${template.id}" — refreshing hash entry`,
       ),
     );
-    applyHashContract(cwd, template.id);
+    applyOwnershipContract(cwd, template);
     return;
   }
 
@@ -219,12 +224,12 @@ async function writeWorkflow(
   }
 
   fs.writeFileSync(filePath, finalContent, "utf-8");
+  applyOwnershipContract(cwd, template);
   console.log(
     chalk.green(
       `  ✓ Replaced ${PATHS.WORKFLOW_GUIDE_FILE} with "${template.id}"`,
     ),
   );
-  applyHashContract(cwd, template.id);
 }
 
 /**

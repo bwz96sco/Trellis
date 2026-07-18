@@ -41,6 +41,8 @@ Resolver signatures:
 
 ```typescript
 export const NATIVE_WORKFLOW_ID = "native";
+export const RESEARCH_WORKFLOW_ID = "research";
+export type BundledWorkflowId = "native" | "research";
 
 export interface ResolvedWorkflowTemplate {
   id: string;
@@ -71,6 +73,19 @@ export function resolveWorkflowTemplate(
 ): Promise<ResolvedWorkflowTemplate>;
 ```
 
+Selection metadata signatures:
+
+```typescript
+type WorkflowSelectionResult =
+  | { kind: "missing" }
+  | { kind: "bundled"; id: BundledWorkflowId }
+  | { kind: "invalid"; reason: string };
+
+loadWorkflowSelection(cwd: string): WorkflowSelectionResult;
+saveBundledWorkflowSelection(cwd: string, id: BundledWorkflowId): void;
+clearWorkflowSelection(cwd: string): void;
+```
+
 Configurator signature:
 
 ```typescript
@@ -98,22 +113,35 @@ Marketplace entries use `type: "workflow"` and point to one markdown file:
 }
 ```
 
-Required built-ins:
+Bundled workflows:
 
-- `native`
-- `tdd`
-- `channel-driven-subagent-dispatch`
+- `native` — default Plan / Execute / Finish workflow.
+- `research` — offline managed research workflow.
+
+Marketplace workflows such as `tdd` and
+`channel-driven-subagent-dispatch` remain remote/user-owned.
+
+Resolution contract:
+
+1. `native` is reserved and always resolves bundled, even with an explicit source.
+2. Without an explicit source, every known bundled id resolves offline.
+3. With an explicit source, non-native ids (including `research`) resolve from
+   that source.
+4. Listings emit bundled entries first and de-duplicate marketplace id collisions.
 
 Ownership contract:
 
-- `native` is Trellis-managed. After writing it, refresh the
-  `.trellis/workflow.md` hash with `updateHashes`.
-- Every non-native workflow is user-managed local content. After writing it,
-  remove `.trellis/workflow.md` from `.trellis/.template-hashes.json` with
-  `removeHash`.
-- Do not add `workflow.variant` or any other long-lived config field to make
-  `trellis update` chase a selected variant. Switching is an explicit project
-  action.
+- Bundled workflows are Trellis-managed. After writing one, refresh the
+  `.trellis/workflow.md` hash and atomically persist `.trellis/.workflow.json`:
+  `{ "schemaVersion": 1, "id": <bundled-id>, "source": "bundled" }`.
+- Marketplace/custom workflows are user-managed. After writing one, remove the
+  workflow hash and clear `.trellis/.workflow.json`.
+- `.workflow.json` is durable state, not template content, and must be excluded
+  from `.template-hashes.json`.
+- `--create-new` changes neither active bytes, hash ownership, nor selection metadata.
+- Do not persist marketplace URL/id or add a user-owned tombstone. Missing
+  bundled metadata plus missing managed-hash evidence is enough for update to
+  preserve unknown content.
 
 Runtime parser contract:
 
@@ -137,48 +165,66 @@ Native source-of-truth contract:
 |---|---|
 | `trellis workflow --template <id>` and current workflow is modified | Exit 1 with guidance to use `--force` or `--create-new`; do not prompt, even on a TTY |
 | Interactive `trellis workflow` picker and current workflow is modified | Prompt for overwrite, create-new, or skip |
-| `--create-new` | Write a generated `workflow.md.new` file beside `.trellis/workflow.md`; do not change active workflow or hash file |
-| `--force` | Overwrite active workflow and apply the native/non-native hash contract |
+| `--create-new` | Write a generated `workflow.md.new` file beside `.trellis/workflow.md`; do not change active workflow, hash file, or selection metadata |
+| `--force` | Overwrite active workflow and apply bundled/user-owned ownership from `resolved.source` |
 | Missing workflow id | Throw `WorkflowResolveError` / command error; CLI exits non-zero |
-| Marketplace index fetch fails | List can still show bundled native with warning; resolve fails with workflow-specific error |
+| Marketplace index fetch fails | List can still show both bundled workflows with warning; remote resolve fails with workflow-specific error |
 | Workflow entry path is missing, not `.md`, absolute, or contains `..` | Fail with workflow-specific error |
 | `init --workflow missing-id` | Reject; do not print and return success |
-| `init --workflow tdd` | Write marketplace content and remove `.trellis/workflow.md` hash |
-| `trellis update` after switching to non-native | Treat workflow as modified/user-managed; never silently restore native |
+| `init --workflow research` | Write bundled research content, hash workflow.md, and save bundled selection |
+| `init --workflow-source <source> --workflow research` | Resolve source collision as marketplace content, clear selection, and remove workflow hash |
+| Malformed/unknown `.workflow.json` | Update warns, omits workflow.md from desired templates, and continues unrelated planning |
+| Missing `.workflow.json` + native bytes or matching stored workflow hash | Infer legacy native management |
+| Missing `.workflow.json` without native/hash evidence | Treat workflow as unknown/user-owned and omit it from update |
+| `trellis update` after switching to marketplace/custom | Preserve active bytes and never fetch workflow marketplace content |
 
 ### 5. Good/Base/Bad Cases
 
-- Good: `trellis workflow --template tdd` replaces a pristine native workflow,
-  removes the workflow hash, and later `trellis update --skip-all` leaves TDD
-  content in place.
-- Base: `trellis init --workflow native` writes bundled native workflow and
-  keeps `.trellis/workflow.md` hash-tracked.
-- Bad: `trellis workflow --template tdd` writes TDD content and records the TDD
-  hash. The next `trellis update` sees a pristine file and overwrites it with
-  native workflow.
+- Good: `trellis workflow --template research` replaces pristine native,
+  records bundled research selection, and later update targets current research
+  bytes while protecting local edits.
+- Base: `trellis init --workflow native` writes bundled native, hash-tracks it,
+  and records native bundled selection.
+- Good user-owned case: `trellis workflow --template tdd` removes both bundled
+  ownership signals, so later update leaves TDD content out of its desired plan.
+- Bad: determine ownership from `id !== "native"`. That misclassifies bundled
+  research as user-owned and misclassifies an explicit-source `research`
+  collision as bundled.
 
 ### 6. Tests Required
 
 Unit tests:
 
-- `resolveWorkflowTemplate("native")` returns bundled content without fetch.
+- `resolveWorkflowTemplate("native")` and `("research")` return bundled content without fetch.
+- Explicit-source `research` resolves marketplace while `native` stays bundled.
+- Listing emits native/research first and de-duplicates marketplace collisions.
 - Marketplace workflow resolution fetches `index.json` and one markdown file.
 - Missing id errors mention workflow templates, not spec templates.
 - Invalid / escaping workflow paths fail before fetch or file read.
+- Selection loader distinguishes missing from invalid and rejects extra fields,
+  wrong schema/source, malformed JSON, and unknown bundled ids.
+- Selection save is atomic; template hash initialization excludes `.workflow.json`.
 
 Integration tests:
 
-- `init --workflow native` keeps `.trellis/workflow.md` hash-tracked.
-- `init --workflow tdd` writes marketplace content and removes the hash.
+- `init --workflow native` keeps workflow hash-tracked and records native selection.
+- `init --workflow research` writes bundled research, hashes it, and records research selection.
+- `init --workflow tdd` writes marketplace content and clears hash/selection.
+- `init --workflow-source <source> --workflow research` writes source content as user-owned.
 - `init --workflow-source <source> --workflow custom-id` writes custom content.
 - `init --workflow missing-id` rejects.
-- `trellis workflow --template tdd` writes marketplace content and removes the
-  hash.
+- `trellis workflow --template research` records managed bundled ownership.
+- `trellis workflow --template tdd` writes marketplace content and clears managed ownership.
+- Applying byte-identical bundled content repairs missing hash/selection metadata.
 - Explicit `--template` with modified workflow fails even when `stdin.isTTY` is
   true.
-- `--create-new` writes a generated `workflow.md.new` file beside `.trellis/workflow.md` and does not touch the active
-  workflow or hash.
-- `trellis update` after switching to non-native does not restore native.
+- `--create-new` writes a generated `workflow.md.new` file beside `.trellis/workflow.md` and does not touch active
+  workflow, hash, or selection.
+- Update is idempotent for selected research and updates pristine old research to current research.
+- Modified selected research uses the existing conflict policy.
+- Missing selection infers legacy native only from native bytes or matching hash evidence.
+- Invalid selection and unknown/user-owned bytes are omitted from the desired workflow plan.
+- Update after switching to marketplace/custom does not restore native or fetch workflow content.
 - Marketplace native mirror matches bundled native workflow when the mirror file
   exists.
 - Real `marketplace/workflows/tdd/workflow.md` planning breadcrumbs include the
@@ -200,22 +246,29 @@ python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1 --platform cla
 #### Wrong
 
 ```typescript
-// Records non-native content as the pristine template hash.
-fs.writeFileSync(".trellis/workflow.md", tddContent);
-updateHashes(cwd, new Map([[PATHS.WORKFLOW_GUIDE_FILE, tddContent]]));
+// Wrong: id-based ownership cannot distinguish bundled research from a
+// custom-source research collision.
+if (template.id === "native") {
+  updateHashes(cwd, workflowFiles);
+} else {
+  removeHash(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+}
 ```
-
-This makes `trellis update` auto-replace TDD with bundled native workflow later.
 
 #### Correct
 
 ```typescript
-fs.writeFileSync(".trellis/workflow.md", tddContent);
-removeHash(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+if (template.source === "bundled" && isBundledWorkflowId(template.id)) {
+  updateHashes(cwd, workflowFiles);
+  saveBundledWorkflowSelection(cwd, template.id);
+} else {
+  removeHash(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+  clearWorkflowSelection(cwd);
+}
 ```
 
-Missing hash means update conservatively treats the workflow as user-managed and
-routes it through the normal modified-file decision path.
+Resolved source owns the boundary. Bundled variants remain update-managed;
+marketplace/custom content remains absent from update's desired workflow plan.
 
 #### Wrong
 

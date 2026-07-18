@@ -263,6 +263,7 @@ export function getModificationStatus(
  */
 const EXCLUDE_FROM_HASH = [
   ".template-hashes.json", // Hash file itself
+  ".workflow.json", // Durable bundled workflow selection state
   ".version", // Version file
   ".gitignore", // Git ignore files
   ".developer", // Developer identity file

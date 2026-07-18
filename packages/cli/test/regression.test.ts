@@ -1765,7 +1765,7 @@ describe("regression: current-task path normalization", () => {
     );
   });
 
-  it("[session-current-task] task.py finish deletes the session runtime context", () => {
+  it("[session-current-task] task.py finish clears only current_task and preserves other session state", () => {
     setupTaskRepo();
     const taskScriptPath = path.join(tmpDir, ".trellis", "scripts", "task.py");
     const contextPath = path.join(
@@ -1784,7 +1784,13 @@ describe("regression: current-task path normalization", () => {
         env: sessionEnv({ TRELLIS_CONTEXT_ID: "session-finish" }),
       },
     );
-    expect(fs.existsSync(contextPath)).toBe(true);
+    const context = JSON.parse(fs.readFileSync(contextPath, "utf-8")) as Record<
+      string,
+      unknown
+    >;
+    context.current_run = "run_session-finish";
+    context.future = { keep: true };
+    fs.writeFileSync(contextPath, `${JSON.stringify(context, null, 2)}\n`, "utf-8");
 
     const output = execSync(
       `${pythonCmd} ${JSON.stringify(taskScriptPath)} finish`,
@@ -1797,7 +1803,13 @@ describe("regression: current-task path normalization", () => {
 
     expect(output).toContain("Cleared current task");
     expect(output).toContain("Source: session:session-finish");
-    expect(fs.existsSync(contextPath)).toBe(false);
+    expect(JSON.parse(fs.readFileSync(contextPath, "utf-8"))).toMatchObject({
+      current_run: "run_session-finish",
+      future: { keep: true },
+    });
+    expect(JSON.parse(fs.readFileSync(contextPath, "utf-8"))).not.toHaveProperty(
+      "current_task",
+    );
   });
 
   it("[workflow-state-r7] task.py create auto-sets session pointer when TRELLIS_CONTEXT_ID is set (planning breadcrumb reachable)", () => {
@@ -2191,7 +2203,15 @@ describe("regression: current-task path normalization", () => {
       "sessions",
       "archive-collision.json",
     );
-    expect(fs.existsSync(contextPath)).toBe(false);
+    expect(fs.existsSync(contextPath)).toBe(true);
+    const archivedContextBefore = fs.readFileSync(contextPath, "utf-8");
+    const archivedContext = JSON.parse(archivedContextBefore) as Record<
+      string,
+      unknown
+    >;
+    expect(archivedContext.current_task).toBeUndefined();
+    expect(archivedContext.platform).toBe("session");
+    expect(archivedContext.last_seen_at).toEqual(expect.any(String));
 
     const result = spawnSync(pythonCmd, createArgs, {
       cwd: tmpDir,
@@ -2210,7 +2230,7 @@ describe("regression: current-task path normalization", () => {
       archivedTaskJsonBefore,
     );
     expect(fs.readFileSync(archivedPrdPath, "utf-8")).toBe(archivedPrdBefore);
-    expect(fs.existsSync(contextPath)).toBe(false);
+    expect(fs.readFileSync(contextPath, "utf-8")).toBe(archivedContextBefore);
   });
 
   it("[issue-377] task.py create normalizes a --slug carrying today's date prefix", () => {

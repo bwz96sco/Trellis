@@ -9,14 +9,18 @@
  *
  * Boundary: command-layer callers (init.ts, commands/workflow.ts) should NOT
  * touch raw marketplace structures. They go through `resolveWorkflowTemplate`
- * and `listWorkflowTemplates` only.
+ * and `listWorkflowTemplates` only. Bundled definitions are registry-backed and
+ * resolve offline; marketplace/custom definitions retain the existing remote path.
  */
 
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { workflowMdTemplate } from "../templates/trellis/index.js";
+import {
+  researchWorkflowMdTemplate,
+  workflowMdTemplate,
+} from "../templates/trellis/index.js";
 import {
   TIMEOUTS,
   TEMPLATE_INDEX_URL,
@@ -31,13 +35,17 @@ import {
 /**
  * The id used to refer to the bundled native workflow.
  *
- * Treated as Trellis-managed for hash-tracking: when this id is selected by
- * `init --workflow` or `trellis workflow`, `.trellis/workflow.md` stays in
- * `.template-hashes.json`. Any other id is user-managed local workflow and
- * must be removed from the hash file (the durable-state contract in
- * design.md "Durable-state contract").
+ * Native is the default bundled id and remains reserved even when a custom
+ * marketplace source is supplied. Other bundled ids resolve offline unless an
+ * explicit source is supplied.
  */
 export const NATIVE_WORKFLOW_ID = "native";
+export const RESEARCH_WORKFLOW_ID = "research";
+export const BUNDLED_WORKFLOW_IDS = [
+  NATIVE_WORKFLOW_ID,
+  RESEARCH_WORKFLOW_ID,
+] as const;
+export type BundledWorkflowId = (typeof BUNDLED_WORKFLOW_IDS)[number];
 
 /**
  * Resolved workflow template entry.
@@ -84,25 +92,58 @@ export class WorkflowResolveError extends Error {
   }
 }
 
-/**
- * Bundled native workflow entry — virtual, resolved without network access.
- */
-function nativeListingEntry(): WorkflowTemplateListing {
+interface BundledWorkflowDefinition {
+  id: BundledWorkflowId;
+  name: string;
+  description: string;
+  path: string;
+  content: string;
+}
+
+const BUNDLED_WORKFLOWS: Record<BundledWorkflowId, BundledWorkflowDefinition> =
+  {
+    [NATIVE_WORKFLOW_ID]: {
+      id: NATIVE_WORKFLOW_ID,
+      name: "Native Trellis Workflow",
+      description:
+        "Default Trellis Plan / Execute / Finish workflow bundled with the CLI",
+      path: "bundled:trellis/workflow.md",
+      content: workflowMdTemplate,
+    },
+    [RESEARCH_WORKFLOW_ID]: {
+      id: RESEARCH_WORKFLOW_ID,
+      name: "Managed Research Workflow",
+      description:
+        "Root-controlled Quest / Campaign / Run research with explicit Evidence, Claim, Result, and Proposal review",
+      path: "bundled:trellis/workflows/research/workflow.md",
+      content: researchWorkflowMdTemplate,
+    },
+  };
+
+export function isBundledWorkflowId(id: string): id is BundledWorkflowId {
+  return BUNDLED_WORKFLOW_IDS.some((bundledId) => bundledId === id);
+}
+
+function bundledListingEntry(
+  definition: BundledWorkflowDefinition,
+): WorkflowTemplateListing {
   return {
-    id: NATIVE_WORKFLOW_ID,
+    id: definition.id,
     type: "workflow",
-    name: "Native Trellis Workflow",
-    description:
-      "Default Trellis Plan / Execute / Finish workflow bundled with the CLI",
-    path: "bundled:trellis/workflow.md",
+    name: definition.name,
+    description: definition.description,
+    path: definition.path,
     source: "bundled",
   };
 }
 
-function nativeResolvedEntry(): ResolvedWorkflowTemplate {
+export function resolveBundledWorkflowTemplate(
+  id: BundledWorkflowId,
+): ResolvedWorkflowTemplate {
+  const definition = BUNDLED_WORKFLOWS[id];
   return {
-    ...nativeListingEntry(),
-    content: workflowMdTemplate,
+    ...bundledListingEntry(definition),
+    content: definition.content,
   };
 }
 
@@ -147,13 +188,13 @@ async function fetchWorkflowEntries(
 
 /**
  * List available workflow templates from the default marketplace (or a
- * user-supplied source). The bundled native entry is always included first.
+ * user-supplied source). All bundled entries are included first.
  *
  * Returns metadata only — no content is fetched. Use `resolveWorkflowTemplate`
  * to fetch the actual workflow.md bytes for a chosen id.
  *
- * Network errors are surfaced as `errorMessage`. The native entry is still
- * returned so callers can fall back to it offline.
+ * Network errors are surfaced as `errorMessage`. Bundled entries are still
+ * returned so callers can use them offline.
  */
 export async function listWorkflowTemplates(
   options: WorkflowResolveOptions = {},
@@ -161,7 +202,9 @@ export async function listWorkflowTemplates(
   templates: WorkflowTemplateListing[];
   errorMessage?: string;
 }> {
-  const result: WorkflowTemplateListing[] = [nativeListingEntry()];
+  const result = BUNDLED_WORKFLOW_IDS.map((id) =>
+    bundledListingEntry(BUNDLED_WORKFLOWS[id]),
+  );
 
   let registry: RegistrySource | undefined;
   let indexUrl = TEMPLATE_INDEX_URL;
@@ -177,7 +220,7 @@ export async function listWorkflowTemplates(
 
   for (const t of fetched.templates) {
     if (t.type !== "workflow") continue;
-    if (t.id === NATIVE_WORKFLOW_ID) continue;
+    if (isBundledWorkflowId(t.id)) continue;
     result.push({
       id: t.id,
       type: "workflow",
@@ -194,9 +237,10 @@ export async function listWorkflowTemplates(
 /**
  * Resolve a workflow id to its content.
  *
- * - `native` → bundled `workflowMdTemplate` (offline, never errors).
- * - other id → fetch index via `template-fetcher`, find the matching
- *   `type: "workflow"` entry, then fetch its single file content.
+ * - `native` → reserved bundled native template (offline, never errors).
+ * - known bundled id without explicit source → bundled content (offline).
+ * - non-native id with explicit source, or unknown bundled id → fetch index via
+ *   `template-fetcher`, find the matching workflow entry, then fetch one file.
  *
  * Errors are workflow-specific (do NOT reuse "spec template not found" copy).
  */
@@ -204,8 +248,11 @@ export async function resolveWorkflowTemplate(
   id: string,
   options: WorkflowResolveOptions = {},
 ): Promise<ResolvedWorkflowTemplate> {
-  if (id === NATIVE_WORKFLOW_ID) {
-    return nativeResolvedEntry();
+  if (
+    id === NATIVE_WORKFLOW_ID ||
+    (!options.source && isBundledWorkflowId(id))
+  ) {
+    return resolveBundledWorkflowTemplate(id as BundledWorkflowId);
   }
 
   let registry: RegistrySource | undefined;
@@ -304,7 +351,8 @@ async function fetchWorkflowFileHttp(
 function validateWorkflowPath(relativePath: string): void {
   const normalized = relativePath.replace(/\\/g, "/");
   if (
-    normalized.startsWith("/") ||
+    path.posix.isAbsolute(normalized) ||
+    path.win32.isAbsolute(relativePath) ||
     normalized.split("/").some((part) => part === "..")
   ) {
     throw new WorkflowResolveError(

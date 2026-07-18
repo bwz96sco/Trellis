@@ -20,9 +20,13 @@ safe when read by a sub-agent.** If required gates are absent, the AI in the
 main session will silently skip them. Prior bugs around planning gates and
 Phase 3.4 commit reminders hit exactly this failure mode.
 
-This document is the source of truth for the runtime mechanics. The user-facing
+This document is the source of truth for the native Task-breadcrumb mechanics. The user-facing
 breadcrumb body lives in `.trellis/workflow.md`; this spec covers everything
-**around** it (parsers, writers, lifecycle, reachability).
+**around** it (parsers, writers, lifecycle, reachability). Claude sessions that
+strictly select the bundled `research` workflow use the additive ledger-head
+sequence branch instead of a Task breadcrumb; see
+[Research Worker Skills and Claude Hooks](./research-worker-hooks.md). All
+non-Claude, native, custom, and OpenCode paths keep the contract below.
 
 ---
 
@@ -70,8 +74,10 @@ Both regexes MUST use the `\1` backreference variant — `[workflow-state:([A-Za
    matrix below), the hook receives stdin JSON containing `cwd`.
 2. It walks up from `cwd` to find `.trellis/`. If none, exit 0.
 3. It calls `common.active_task.resolve_active_task()` to look up the
-   per-session active task. If absent → status is the pseudo `no_task`. If
-   the pointer is stale (task dir deleted) → status is `stale_<source_type>`.
+   per-session `current_task` pointer. If absent → status is the pseudo
+   `no_task`. If the pointer is stale (task dir deleted) → status is
+   `stale_<source_type>`. Other session fields, including `current_run`, are
+   independent runtime state and do not select the workflow breadcrumb.
 4. Otherwise it reads `task.json.status` from the resolved task directory.
 5. It opens `.trellis/workflow.md` and parses every `[workflow-state:STATUS]`
    block.
@@ -185,6 +191,11 @@ Subscribers must understand the difference:
 external system (Linear, Jira). `after_finish` means "AI session closed its
 pointer to this task" — the task may resume in a different session. The
 correct event for "task is done" is `after_archive`.
+
+Pointer cleanup is field-specific: finish removes only the current session's
+`current_task`, and archive removes matching `current_task` values across
+sessions. `current_run`, platform/session metadata, and unknown runtime state
+must survive; the session file is removed only when no meaningful state remains.
 
 ---
 

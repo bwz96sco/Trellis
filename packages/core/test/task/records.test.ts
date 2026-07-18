@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   TASK_RECORD_FIELD_ORDER,
@@ -18,6 +18,7 @@ describe("loadTaskRecord / writeTaskRecord", () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-core-task-"));
   });
   afterEach(() => {
+    vi.restoreAllMocks();
     fs.rmSync(tmp, { recursive: true, force: true });
   });
 
@@ -97,6 +98,29 @@ describe("loadTaskRecord / writeTaskRecord", () => {
     ).toThrow(/task.createdAt is required/);
 
     expect(fs.readFileSync(file, "utf-8")).toBe(before);
+  });
+
+  it("preserves the original task.json when atomic replacement fails", () => {
+    const dir = path.join(tmp, "05-13-atomic-failure");
+    const file = path.join(dir, "task.json");
+    writeTaskRecord({
+      taskDir: dir,
+      record: emptyTaskRecord({ id: "before", name: "before", title: "Before" }),
+    });
+    const before = fs.readFileSync(file, "utf-8");
+    vi.spyOn(fs, "renameSync").mockImplementation(() => {
+      throw new Error("simulated rename failure");
+    });
+
+    expect(() =>
+      writeTaskRecord({
+        taskDir: dir,
+        record: emptyTaskRecord({ id: "after", name: "after", title: "After" }),
+      }),
+    ).toThrow("simulated rename failure");
+
+    expect(fs.readFileSync(file, "utf-8")).toBe(before);
+    expect(fs.readdirSync(dir)).toEqual(["task.json"]);
   });
 
   it("loadTaskRecord rejects non-object task.json records", () => {

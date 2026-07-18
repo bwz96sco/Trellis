@@ -35,6 +35,7 @@ import os
 import re
 import sys
 import queue
+import tempfile
 import threading
 from pathlib import Path
 
@@ -143,6 +144,15 @@ def _resolve_active_task(root: Path, input_data: dict):
     from common.active_task import resolve_active_task  # type: ignore[import-not-found]
 
     return resolve_active_task(root, input_data, platform=_detect_platform(input_data))
+
+
+def _resolve_context_key(root: Path, input_data: dict) -> str | None:
+    scripts_dir = root / ".trellis" / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    from common.active_task import resolve_context_key  # type: ignore[import-not-found]
+
+    return resolve_context_key(input_data, platform=_detect_platform(input_data))
 
 
 def get_active_task(root: Path, input_data: dict) -> Optional[tuple[str, str, str]]:
@@ -350,6 +360,146 @@ def _load_hook_input() -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _research_workflow_selection(root: Path) -> str:
+    selection_path = root / ".trellis" / ".workflow.json"
+    if not selection_path.is_file():
+        return "other"
+    try:
+        selection = json.loads(selection_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return "invalid"
+    if not isinstance(selection, dict) or set(selection) != {
+        "schemaVersion",
+        "id",
+        "source",
+    }:
+        return "invalid"
+    if (
+        selection.get("schemaVersion") != 1
+        or not isinstance(selection.get("id"), str)
+        or not isinstance(selection.get("source"), str)
+    ):
+        return "invalid"
+    if selection["id"] == "research" and selection["source"] == "bundled":
+        return "research"
+    return "other"
+
+
+def _research_ledger_head(root: Path) -> int | None:
+    ledger_path = root / ".trellis" / "research" / "events.jsonl"
+    if not ledger_path.is_file():
+        return 0
+    try:
+        lines = ledger_path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return None
+    expected = 1
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            return None
+        seq = event.get("seq") if isinstance(event, dict) else None
+        if isinstance(seq, bool) or not isinstance(seq, int) or seq != expected:
+            return None
+        expected += 1
+    return expected - 1
+
+
+def _read_session_state(
+    root: Path, context_key: str
+) -> tuple[Path, dict | None]:
+    session_path = (
+        root / ".trellis" / ".runtime" / "sessions" / f"{context_key}.json"
+    )
+    if not session_path.exists():
+        return session_path, {}
+    try:
+        session_data = json.loads(session_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return session_path, None
+    return session_path, session_data if isinstance(session_data, dict) else None
+
+
+def _atomic_write_session(session_path: Path, session_data: dict) -> bool:
+    temp_path: str | None = None
+    try:
+        session_path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=session_path.parent,
+            prefix=f".{session_path.stem}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temp_path = handle.name
+            json.dump(session_data, handle, ensure_ascii=False, indent=2)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, session_path)
+        return True
+    except OSError:
+        return False
+    finally:
+        if temp_path:
+            try:
+                Path(temp_path).unlink(missing_ok=True)
+            except OSError:
+                pass  # Best-effort temp cleanup; preserve hook output on failure.
+
+
+def _research_sequence_context(root: Path, input_data: dict) -> str | None:
+    context_key = _resolve_context_key(root, input_data)
+    if not context_key:
+        return None
+    session_path, session_data = _read_session_state(root, context_key)
+    if session_data is None:
+        return None
+
+    head = _research_ledger_head(root)
+    if head is None:
+        return (
+            "<research-state-changed>\n"
+            "Warning: research state invalid; run `trellis research validate --json`.\n"
+            "</research-state-changed>"
+        )
+
+    stored = session_data.get("research_last_seen_seq")
+    if isinstance(stored, bool) or not isinstance(stored, int):
+        stored = None
+    if stored == head:
+        return None
+
+    updated = dict(session_data)
+    updated["research_last_seen_seq"] = head
+    if not _atomic_write_session(session_path, updated):
+        return None
+    old_label = "missing" if stored is None else str(stored)
+    return (
+        "<research-state-changed>\n"
+        f"Ledger head changed: {old_label} -> {head}\n"
+        "Run `trellis research status --json` before continuing research work.\n"
+        "</research-state-changed>"
+    )
+
+
+def _emit_additional_context(context: str, event_name: str = "UserPromptSubmit") -> None:
+    print(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "hookEventName": event_name,
+                    "additionalContext": context,
+                }
+            }
+        )
+    )
+
+
 def main() -> int:
     if os.environ.get("TRELLIS_HOOKS") == "0" or os.environ.get("TRELLIS_DISABLE_HOOKS") == "1":
         return 0
@@ -363,8 +513,24 @@ def main() -> int:
     if root is None:
         return 0  # not a Trellis project
 
-    templates = load_breadcrumbs(root)
     platform = _detect_platform(data)
+    if platform == "claude":
+        selection = _research_workflow_selection(root)
+        if selection == "invalid":
+            if _resolve_context_key(root, data):
+                _emit_additional_context(
+                    "<research-state-changed>\n"
+                    "Warning: research state invalid; run `trellis research validate --json`.\n"
+                    "</research-state-changed>"
+                )
+            return 0
+        if selection == "research":
+            research_context = _research_sequence_context(root, data)
+            if research_context:
+                _emit_additional_context(research_context)
+            return 0
+
+    templates = load_breadcrumbs(root)
     config = _read_trellis_config(root)
     task = get_active_task(root, data)
     if task is None:

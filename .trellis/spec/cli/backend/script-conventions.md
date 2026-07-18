@@ -324,8 +324,11 @@ for session/window scoped task state:
 |----------|---------|
 | `resolve_context_key(platform_input, platform)` | Accepts `session_id` / `sessionId` / `sessionID`, Cursor `conversation_id`, and transcript path fallbacks |
 | `resolve_active_task(repo_root, platform_input, platform)` | Returns an `ActiveTask` with `task_path`, `source_type`, `context_key`, and `stale` |
-| `set_active_task(...)` | Writes session runtime state when a context key exists; returns `None` without a context key |
-| `clear_active_task(...)` | Deletes the current session file; returns no active task without a context key |
+| `set_active_task(...)` | Sets only `current_task` when a context key exists; preserves other session state |
+| `clear_active_task(...)` | Clears only `current_task`; deletes the file only when no meaningful state remains |
+| `resolve_current_run(repo_root, ...)` | Returns the current session's non-empty `current_run`, or `None` |
+| `set_current_run(run_id, repo_root, ...)` | Sets only `current_run`; preserves task, metadata, and unknown fields |
+| `clear_current_run(repo_root, expected_run_id=None, ...)` | Clears `current_run` unconditionally or only when it matches the optional expected ID |
 
 `TRELLIS_CONTEXT_ID` is a context-key override for subprocesses. It is not a
 second task pointer and must never store a task path. A plain AI-run shell
@@ -383,6 +386,9 @@ a `.current-task` fallback or a Python hook directory.
 - `resolve_active_task(repo_root, platform_input=None, platform=None) -> ActiveTask`
 - `set_active_task(task_path, repo_root, platform_input=None, platform=None) -> ActiveTask | None`
 - `clear_active_task(repo_root, platform_input=None, platform=None) -> ActiveTask`
+- `resolve_current_run(repo_root, platform_input=None, platform=None) -> str | None`
+- `set_current_run(run_id, repo_root, platform_input=None, platform=None) -> str | None`
+- `clear_current_run(repo_root, expected_run_id=None, platform_input=None, platform=None) -> str | None`
 
 ##### 3. Contracts
 
@@ -422,11 +428,19 @@ a `.current-task` fallback or a Python hook directory.
   - transcript fallback -> `<platform>_transcript_<sha256-prefix>.json`
 - `TRELLIS_CONTEXT_ID` is already a complete context key. Do not prepend a
   platform name to it.
-- `task.py finish` deletes only the current session file. Without a
-  context key it returns "no current task" and must not delete
-  `.trellis/.current-task`.
-- `task.py archive <task>` deletes every runtime session file whose
-  `current_task` points at the archived task before moving the task directory.
+- Session files reserve `current_task` and `current_run`. Set/clear operations
+  perform pointer-specific read-modify-write, preserve platform/session metadata
+  and unknown keys, and write atomically in the target directory.
+- Empty/null reserved pointers are not meaningful. Any non-empty reserved
+  pointer or any unknown key is meaningful, including false, zero, or an empty
+  container. A clear deletes the file only when no meaningful state remains.
+- Malformed session JSON is never erased by a pointer clear.
+- `task.py finish` clears only the current session's `current_task`; `current_run`
+  and unknown state survive. Without a context key it returns "no current task"
+  and must not delete `.trellis/.current-task`.
+- `task.py archive <task>` clears matching `current_task` pointers from every
+  runtime session before moving the task directory. Non-matching pointers and
+  all other session state survive.
 - Before moving anything, `cmd_archive` (`task_store.py`) calls
   `is_within_tasks_dir(task_dir_abs, repo_root)` (`task_utils.py`) and refuses
   with "refusing to archive ..." (exit 1) unless the resolved dir is a direct
@@ -451,9 +465,11 @@ a `.current-task` fallback or a Python hook directory.
 | `current --source` with same context key | Prints `Source: session:<key>` |
 | `current --source` without context | Prints `(none)` and `Source: none` |
 | stale session task + stale `.current-task` exists | Returns stale session state; no `.current-task` fallback |
-| `finish` with context key and active task | Deletes `.runtime/sessions/<key>.json` |
+| `finish` with context key and active task | Clears only matching `current_task`; preserves `current_run` and unknown state; deletes file only if nothing meaningful remains |
 | `finish` without context key | Returns no current task; does not delete `.current-task` |
-| `archive` for a task referenced by runtime sessions | Deletes those session files even when `finish` was skipped |
+| `archive` for a task referenced by runtime sessions | Clears matching `current_task` from all sessions; preserves other pointers/state and non-matching sessions |
+| clear against malformed session JSON | Leaves the file byte-unchanged |
+| `clear_current_run(repo_root, expected)` with a non-matching pointer | Returns the existing pointer and leaves the file unchanged |
 | `archive` on a name that resolves outside `.trellis/tasks/` (e.g. `archive src` falling back to `repo_root/src`) | Refuses with "refusing to archive ..." and exit 1; source directory is left untouched |
 
 ##### 5. Good/Base/Bad Cases
@@ -483,6 +499,12 @@ a `.current-task` fallback or a Python hook directory.
 - Hook/statusline/plugin tests proving the resolver source is surfaced.
 - Stale session tests proving no `.current-task` fallback occurs when the session task
   path is stale.
+- Run-pointer tests covering set, resolve, conditional/unconditional clear,
+  meaningful-state deletion, and malformed JSON preservation.
+- Finish/archive regressions proving only matching `current_task` is cleared and
+  `current_run`, unknown state, and non-matching sessions survive.
+- Shipped template and repository dogfood `active_task.py` copies remain
+  byte-identical.
 
 ##### 7. Wrong vs Correct
 

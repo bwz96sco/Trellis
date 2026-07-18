@@ -68,6 +68,8 @@ When adding a new platform `{platform}`, update the following:
 > Note: These platforms use `writeSharedHooks()` from `shared.ts` to copy platform-independent hook scripts from `src/templates/shared-hooks/` into each platform's hooks directory. Commands and skills come from `src/templates/common/` via `resolveCommands()` / `resolveSkills()` / `resolveAllAsSkills()`. The `createTemplateReader()` factory provides `listMdAgents()`, `getSettings()`, etc. without per-platform boilerplate.
 >
 > Trae follows this shared-hook template pattern but writes `.trae/hooks.json`, `.trae/commands/trellis-*.md` with command frontmatter, `.trae/skills/`, `.trae/agents/`, and `.trae/hooks/`. Its main session uses `SessionStart` / `UserPromptSubmit` hooks; sub-agent context remains class-2 pull-based because Trae does not expose a Trellis-supported sub-agent prompt mutation surface.
+>
+> Research stage-owner skills remain common bundled skills and therefore use the same recursive distribution path on every platform. Automatic explicit research Dispatch prompt mutation and per-turn ledger-sequence signaling are Claude-only V1 branches; other platforms retain their existing hook/pull-based behavior. See [Research Worker Skills and Claude Hooks](./research-worker-hooks.md).
 
 **Claude Code pattern** (full hooks + agents + settings):
 

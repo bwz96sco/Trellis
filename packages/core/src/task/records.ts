@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -61,7 +62,9 @@ export function loadTaskRecord(
  * present but cannot be parsed as a JSON object, the write is rejected instead
  * of silently replacing potentially recoverable local data.
  *
- * The directory containing `task.json` is created if it does not exist.
+ * The directory containing `task.json` is created if it does not exist. Writes
+ * use a same-directory temporary file plus atomic rename so a failed replacement
+ * cannot truncate the existing Task record.
  */
 export function writeTaskRecord(options: WriteTaskRecordOptions): void {
   const record = taskRecordSchema.parse(options.record);
@@ -84,7 +87,21 @@ export function writeTaskRecord(options: WriteTaskRecordOptions): void {
   }
 
   const json = JSON.stringify(out, null, 2) + "\n";
-  fs.writeFileSync(file, json, "utf-8");
+  const tempFile = path.join(
+    path.dirname(file),
+    `.${path.basename(file)}.${process.pid}.${randomUUID()}.tmp`,
+  );
+  try {
+    fs.writeFileSync(tempFile, json, "utf-8");
+    fs.renameSync(tempFile, file);
+  } catch (error) {
+    try {
+      fs.rmSync(tempFile, { force: true });
+    } catch {
+      // Best-effort cleanup; preserve the original write error.
+    }
+    throw error;
+  }
 }
 
 function readExistingObject(file: string): Record<string, unknown> | null {

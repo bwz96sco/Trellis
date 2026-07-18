@@ -327,7 +327,9 @@ describe("matchesOriginalTemplate", () => {
   });
 
   it("returns false when file does not exist", () => {
-    expect(matchesOriginalTemplate(tmpDir, "missing.txt", "content")).toBe(false);
+    expect(matchesOriginalTemplate(tmpDir, "missing.txt", "content")).toBe(
+      false,
+    );
   });
 
   it("returns true when file matches original content exactly", () => {
@@ -457,9 +459,25 @@ describe("initializeHashes", () => {
     expect(hashes).not.toHaveProperty("AGENTS.md");
   });
 
+  it("excludes durable workflow selection metadata", () => {
+    fs.mkdirSync(path.join(tmpDir, ".trellis"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, ".trellis", ".workflow.json"),
+      '{"schemaVersion":1,"id":"research","source":"bundled"}\n',
+    );
+
+    expect(initializeHashes(tmpDir)).toBe(0);
+    expect(loadHashes(tmpDir)).not.toHaveProperty(".trellis/.workflow.json");
+  });
+
   it("excludes workspace and tasks directories", () => {
-    fs.mkdirSync(path.join(tmpDir, ".trellis", "workspace"), { recursive: true });
-    fs.writeFileSync(path.join(tmpDir, ".trellis", "workspace", "data.md"), "user data");
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "workspace"), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(tmpDir, ".trellis", "workspace", "data.md"),
+      "user data",
+    );
     fs.mkdirSync(path.join(tmpDir, ".trellis", "tasks"), { recursive: true });
     fs.writeFileSync(path.join(tmpDir, ".trellis", "tasks", "task.json"), "{}");
 
@@ -473,12 +491,27 @@ describe("initializeHashes", () => {
   });
 
   it("excludes spec/ directory files from hashing", () => {
-    fs.mkdirSync(path.join(tmpDir, ".trellis", "spec", "guides"), { recursive: true });
-    fs.mkdirSync(path.join(tmpDir, ".trellis", "spec", "frontend"), { recursive: true });
-    fs.mkdirSync(path.join(tmpDir, ".trellis", "spec", "backend"), { recursive: true });
-    fs.writeFileSync(path.join(tmpDir, ".trellis", "spec", "guides", "index.md"), "# Guides");
-    fs.writeFileSync(path.join(tmpDir, ".trellis", "spec", "frontend", "index.md"), "# Frontend");
-    fs.writeFileSync(path.join(tmpDir, ".trellis", "spec", "backend", "index.md"), "# Backend");
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "spec", "guides"), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "spec", "frontend"), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "spec", "backend"), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(tmpDir, ".trellis", "spec", "guides", "index.md"),
+      "# Guides",
+    );
+    fs.writeFileSync(
+      path.join(tmpDir, ".trellis", "spec", "frontend", "index.md"),
+      "# Frontend",
+    );
+    fs.writeFileSync(
+      path.join(tmpDir, ".trellis", "spec", "backend", "index.md"),
+      "# Backend",
+    );
 
     const count = initializeHashes(tmpDir);
     const hashes = loadHashes(tmpDir);
@@ -533,9 +566,7 @@ describe("initializeHashes", () => {
     });
     const hashes = loadHashes(tmpDir);
 
-    expect(hashes).toHaveProperty(
-      ".pi/skills/trellis-update-spec/SKILL.md",
-    );
+    expect(hashes).toHaveProperty(".pi/skills/trellis-update-spec/SKILL.md");
     expect(count).toBe(1);
   });
 });

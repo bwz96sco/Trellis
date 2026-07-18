@@ -9,23 +9,78 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   NATIVE_WORKFLOW_ID,
+  RESEARCH_WORKFLOW_ID,
   WorkflowResolveError,
   listWorkflowTemplates,
   resolveWorkflowTemplate,
 } from "../../src/utils/workflow-resolver.js";
-import { workflowMdTemplate } from "../../src/templates/trellis/index.js";
+import {
+  researchWorkflowMdTemplate,
+  workflowMdTemplate,
+} from "../../src/templates/trellis/index.js";
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("resolveWorkflowTemplate(native)", () => {
+describe("resolveWorkflowTemplate(bundled)", () => {
   it("returns the bundled native workflow content without network access", async () => {
     // No fetch stub installed — proves we never call the network for native.
     const resolved = await resolveWorkflowTemplate(NATIVE_WORKFLOW_ID);
     expect(resolved.id).toBe(NATIVE_WORKFLOW_ID);
     expect(resolved.source).toBe("bundled");
     expect(resolved.content).toBe(workflowMdTemplate);
+  });
+
+  it("returns the bundled research workflow without network access", async () => {
+    const resolved = await resolveWorkflowTemplate(RESEARCH_WORKFLOW_ID);
+    expect(resolved.id).toBe(RESEARCH_WORKFLOW_ID);
+    expect(resolved.source).toBe("bundled");
+    expect(resolved.content).toBe(researchWorkflowMdTemplate);
+  });
+
+  it("keeps native reserved but lets an explicit source override research", async () => {
+    const customResearch = "# Custom research workflow\n";
+    const index = {
+      version: 1,
+      templates: [
+        {
+          id: "native",
+          type: "workflow",
+          name: "Remote Native",
+          path: "workflows/native/workflow.md",
+        },
+        {
+          id: "research",
+          type: "workflow",
+          name: "Remote Research",
+          path: "workflows/research/workflow.md",
+        },
+      ],
+    };
+    const fetchMock = vi.fn(async (input: string | URL) => {
+      const url = String(input);
+      if (url.endsWith("/index.json")) {
+        return new Response(JSON.stringify(index), { status: 200 });
+      }
+      if (url.endsWith("workflows/research/workflow.md")) {
+        return new Response(customResearch, { status: 200 });
+      }
+      return new Response("remote native must not be fetched", { status: 500 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const native = await resolveWorkflowTemplate(NATIVE_WORKFLOW_ID, {
+      source: "gh:example/workflows",
+    });
+    const research = await resolveWorkflowTemplate(RESEARCH_WORKFLOW_ID, {
+      source: "gh:example/workflows",
+    });
+
+    expect(native.source).toBe("bundled");
+    expect(native.content).toBe(workflowMdTemplate);
+    expect(research.source).toBe("marketplace");
+    expect(research.content).toBe(customResearch);
   });
 });
 
@@ -85,9 +140,7 @@ describe("resolveWorkflowTemplate(marketplace)", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(
-        async () => new Response(JSON.stringify(index), { status: 200 }),
-      ),
+      vi.fn(async () => new Response(JSON.stringify(index), { status: 200 })),
     );
 
     await expect(resolveWorkflowTemplate("does-not-exist")).rejects.toThrow(
@@ -123,9 +176,7 @@ describe("resolveWorkflowTemplate(marketplace)", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(
-        async () => new Response(JSON.stringify(index), { status: 200 }),
-      ),
+      vi.fn(async () => new Response(JSON.stringify(index), { status: 200 })),
     );
 
     await expect(resolveWorkflowTemplate("broken")).rejects.toThrow(
@@ -147,33 +198,69 @@ describe("resolveWorkflowTemplate(marketplace)", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(
-        async () => new Response(JSON.stringify(index), { status: 200 }),
-      ),
+      vi.fn(async () => new Response(JSON.stringify(index), { status: 200 })),
     );
 
     await expect(resolveWorkflowTemplate("escape")).rejects.toThrow(
       /marketplace root/,
     );
   });
+
+  it.each(["/tmp/workflow.md", "C:\\outside\\workflow.md"])(
+    "rejects absolute workflow path %s before fetching template content",
+    async (absolutePath) => {
+      const index = {
+        version: 1,
+        templates: [
+          {
+            id: "absolute",
+            type: "workflow",
+            name: "Absolute",
+            path: absolutePath,
+          },
+        ],
+      };
+      const fetchMock = vi.fn(
+        async () => new Response(JSON.stringify(index), { status: 200 }),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(resolveWorkflowTemplate("absolute")).rejects.toThrow(
+        /marketplace root/,
+      );
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    },
+  );
 });
 
 describe("listWorkflowTemplates", () => {
-  it("always includes the bundled native entry first", async () => {
+  it("always includes bundled native and research first", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response("", { status: 500 })),
     );
     const { templates, errorMessage } = await listWorkflowTemplates();
     expect(errorMessage).toBeTruthy();
-    expect(templates[0].id).toBe(NATIVE_WORKFLOW_ID);
-    expect(templates[0].source).toBe("bundled");
+    expect(templates.slice(0, 2).map((template) => template.id)).toEqual([
+      NATIVE_WORKFLOW_ID,
+      RESEARCH_WORKFLOW_ID,
+    ]);
+    expect(templates.slice(0, 2).map((template) => template.source)).toEqual([
+      "bundled",
+      "bundled",
+    ]);
   });
 
-  it("includes workflow entries from the marketplace index", async () => {
+  it("includes marketplace entries after bundled entries and de-duplicates collisions", async () => {
     const index = {
       version: 1,
       templates: [
+        {
+          id: "research",
+          type: "workflow",
+          name: "Marketplace Research",
+          path: "workflows/research/workflow.md",
+        },
         {
           id: "tdd",
           type: "workflow",
@@ -196,14 +283,13 @@ describe("listWorkflowTemplates", () => {
     };
     vi.stubGlobal(
       "fetch",
-      vi.fn(
-        async () => new Response(JSON.stringify(index), { status: 200 }),
-      ),
+      vi.fn(async () => new Response(JSON.stringify(index), { status: 200 })),
     );
 
     const { templates } = await listWorkflowTemplates();
     const ids = templates.map((t) => t.id);
-    expect(ids).toContain(NATIVE_WORKFLOW_ID);
+    expect(ids.slice(0, 2)).toEqual([NATIVE_WORKFLOW_ID, RESEARCH_WORKFLOW_ID]);
+    expect(ids.filter((id) => id === RESEARCH_WORKFLOW_ID)).toHaveLength(1);
     expect(ids).toContain("tdd");
     expect(ids).toContain("channel-driven-subagent-dispatch");
     expect(ids).not.toContain("electron-fullstack");
