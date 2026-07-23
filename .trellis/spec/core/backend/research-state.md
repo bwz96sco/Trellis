@@ -16,7 +16,7 @@ Use this spec when changing any of these contracts:
 - Research event parsing, reduction, transition validation, or batch commit.
 - `.trellis/research/events.jsonl` or tracked projection layout.
 - `.trellis/.runtime/research` lock, sequence, or projection cache behavior.
-- Quest-stage capability, execution-host validation, and skill fallback resolution.
+- Immutable Research capability selection and execution-host validation.
 - `@mindfoldhq/trellis-core/research` exports.
 
 Authority rules:
@@ -55,7 +55,7 @@ Disposable runtime layout:
 
 ### Mixed-ledger rollout scope
 
-C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03-C06 later add immutable capability selection, validated emitters, Context gating, and approval consumption commands. Existing v1 entities, mutations, and projection schemas remain compatibility authority.
+C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03 implements immutable capability selection. C04-C06 later add Procedure/policy resolution, validated emitters, Context gating, and approval consumption commands. Existing v1 entities, mutations, and projection schemas remain compatibility authority.
 
 ## 2. Signatures
 
@@ -173,70 +173,100 @@ wsp_ rep_ art_ qst_ cmp_ run_ evd_ clm_ evt_ dsp_ res_ prp_ dec_ act_ apr_
 exports to the small package root barrel unless a separate compatibility change
 requires it.
 
-Stage capability APIs are pure and public only through the Research subpath:
+Capability APIs are pure and public only through the Research subpath:
 
 ```ts
 type ResearchExecutionHost = "claude" | "codex";
+type ResearchCapabilityKind = "bounded" | "workflow" | "advisory";
+type ResearchActivationMode = "automatic" | "explicit";
+
+type ResearchCapabilityResolutionErrorCode =
+  | "UNKNOWN_CAPABILITY"
+  | "CAPABILITY_STAGE_MISMATCH"
+  | "QUEST_STAGE_NOT_DISPATCHABLE";
 
 function parseResearchExecutionHost(value: string): ResearchExecutionHost;
-function normalizeDiscoveredResearchSkillNames(
-  names: readonly string[],
-): ReadonlySet<string>;
-function resolveResearchStageCapability(
-  input: {
-    stage: QuestStage;
-    host: ResearchExecutionHost;
-    discoveredSkillNames: readonly string[];
-  },
-): ResearchStageCapabilityResolution;
+function getResearchCapabilityDefinition(
+  capabilityId: string,
+): ResearchCapabilityDefinition | undefined;
+function resolveResearchCapability(input: {
+  stage: QuestStage;
+  capabilityId?: string;
+}): {
+  stage: DispatchableQuestStage;
+  capability: ResearchCapabilityDefinition;
+  selection: "explicit" | "default";
+};
 ```
 
-`RESEARCH_EXECUTION_HOSTS` is exactly `["claude", "codex"]` and
-`RESEARCH_STAGE_CAPABILITIES` is an exhaustive
-`Readonly<Record<QuestStage, ResearchStageCapabilityDefinition>>`.
+`RESEARCH_EXECUTION_HOSTS` remains exactly `["claude", "codex"]`.
+`RESEARCH_CAPABILITY_REGISTRY` is the exact immutable 14-entry inventory, and
+`RESEARCH_DEFAULT_CAPABILITY_BY_STAGE` explicitly maps every dispatchable stage.
+The registry array, each definition, nested Procedure reference, approval array,
+and default map are frozen at runtime. The old Skill-oriented resolver, discovery
+normalizer, descriptors, and related public types are absent from the Research
+subpath.
 
 ### C02 mixed-ledger signatures
 
-The Research subpath exports `ActivationId`, `ApprovalId`, `ResearchActivation`, `ResearchApprovalGrant`, terminal `ResearchApprovalState`, `ResearchSchemaV1Event`, `ResearchSchemaV2Event`, the mixed `ResearchEvent` union, strict schemas, `RESEARCH_EVENT_SCHEMA_VERSION`, and both ordered event-kind inventories. `ResearchState` adds only activation/approval maps and indexes. Existing v1 signatures, `ResearchMutation`, package export keys, and root-barrel behavior do not change. C03-C06 contracts remain frozen in the archived C01 Procedure and activation/approval artifacts.
+The Research subpath exports `ActivationId`, `ApprovalId`, `ResearchActivation`, `ResearchApprovalGrant`, terminal `ResearchApprovalState`, `ResearchSchemaV1Event`, `ResearchSchemaV2Event`, the mixed `ResearchEvent` union, strict schemas, `RESEARCH_EVENT_SCHEMA_VERSION`, and both ordered event-kind inventories. `ResearchState` adds only activation/approval maps and indexes. Existing v1 signatures, `ResearchMutation`, package export keys, and root-barrel behavior do not change. C03 adds the immutable registry without emit authority; C04-C06 contracts remain frozen in the archived C01 Procedure and activation/approval artifacts.
 
 ## 3. Contracts
 
-### Quest-stage capability resolution
+### Immutable capability registry and resolution
 
-Quest stage is the sole capability-routing authority. The core descriptor has
-all ten `QuestStage` keys and uses these exact active-stage triples:
+Canonical Quest stage plus an optional exact capability ID are the sole core
+selection inputs. Host, Skill discovery, Dispatch metadata, filesystem order,
+and registry array order are not capability authority.
 
-| Quest stage | Logical capability | Optional host skill | Bundled fallback |
-| --- | --- | --- | --- |
-| `setup` | `research.setup` | `research-project-setup` | `trellis-research-setup` |
-| `framing` | `research.framing` | `research-quest` | `trellis-research-quest` |
-| `literature` | `research.literature` | `research-literature` | `trellis-research-literature` |
-| `ideation` | `research.ideation` | `research-ideation` | `trellis-research-ideation` |
-| `experiment` | `research.experiment` | `research-experiment` | `trellis-research-experiment` |
-| `computation` | `research.computation` | `research-computation` | `trellis-research-computation` |
-| `theory` | `research.theory` | `research-theory` | `trellis-research-theory` |
-| `audit` | `research.audit` | `research-review-case` | `trellis-research-audit` |
-| `writing` | `research.writing` | `research-writing` | `trellis-research-writing` |
+| Stage | Capability ID | Kind | Activation | Procedure | Network | Repositories | Limits |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `setup` | `research.setup.project` | workflow | explicit | `project-setup-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `framing` | `research.framing.quest` | bounded | automatic | `quest-framing-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `framing` | `research.framing.admin` | workflow | explicit | `quest-admin-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `literature` | `research.literature.scan` | bounded | automatic | `literature-scan-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `literature` | `research.literature.review` | workflow | explicit | `literature-review-v1@1.0.0` | declared-only | multiple | 60 / 4 |
+| `ideation` | `research.ideation.generate` | bounded | automatic | `idea-generation-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `ideation` | `research.ideation.evaluate` | workflow | explicit | `idea-evaluation-v1@1.0.0` | forbidden | single | 30 / 2 |
+| `experiment` | `research.experiment.round` | bounded | automatic | `experiment-round-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `experiment` | `research.experiment.campaign` | workflow | explicit | `experiment-campaign-v1@1.0.0` | declared-only | multiple | 120 / 8 |
+| `computation` | `research.computation.case` | bounded | automatic | `computation-case-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `theory` | `research.theory.case` | bounded | automatic | `theory-case-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `audit` | `research.audit.case` | bounded | automatic | `review-case-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `audit` | `research.audit.campaign` | workflow | explicit | `review-campaign-v1@1.0.0` | forbidden | multiple | 60 / 4 |
+| `writing` | `research.writing.case` | bounded | automatic | `writing-case-v1@1.0.0` | forbidden | single | 15 / 1 |
 
-`complete` is an explicit descriptor with `dispatchable: false` and null
-capability, optional skill, and fallback skill. Its resolution also has null
-selected skill and source. Supplied skill names never make it dispatchable.
+There is no `complete` or initial `advisory` entry. Every definition uses
+`workerAuthority: "proposal-only"`. Bounded approval requirements are ordered
+`network`, `external-cost`, `multiple-repositories`, `canonical-mutation`, then
+`capability-chaining`; workflow entries prepend `workflow`.
 
-Host parsing accepts only exact lowercase `claude` and `codex`. Discovery
-normalization trims JavaScript whitespace, drops empty entries, and deduplicates
-exact strings without mutating the caller's array. Matching remains
-case-sensitive and exact: invocation adornments, filesystem paths, namespaces,
-aliases, and skill bodies are not interpreted.
+The explicit default map is:
 
-For an active stage, the exact optional skill wins with source `host`; otherwise
-the bundled fallback wins with source `bundled`. Discovery order and duplicates
-cannot affect the result. The resolver performs no filesystem, process, host,
-state, ledger, projection, or mutation access.
+```text
+setup -> research.setup.project
+framing -> research.framing.quest
+literature -> research.literature.scan
+ideation -> research.ideation.generate
+experiment -> research.experiment.round
+computation -> research.computation.case
+theory -> research.theory.case
+audit -> research.audit.case
+writing -> research.writing.case
+```
 
-Historical `Dispatch.ownerSkill`, `provider`, and `taskRef` remain readable
-schema-v1 compatibility metadata. They are not rewritten, persisted as computed
-capability fields, or used to infer stage. The descriptor and resolution remain
-outside Dispatch events and projections.
+Resolution validates stage first. `complete` and any runtime value outside the
+nine dispatchable stages throw `QUEST_STAGE_NOT_DISPATCHABLE`, even when a
+capability ID is supplied. Only `capabilityId: undefined` selects the default.
+Every supplied string is exact, case-sensitive, and untrimmed; absent lookup
+throws `UNKNOWN_CAPABILITY`, while a known capability for another stage throws
+`CAPABILITY_STAGE_MISMATCH`. Resolution returns one frozen canonical definition
+and never chains, reads files, parses policy or Procedures, or depends on host.
+
+Host parsing remains a separate exact validation API accepting only lowercase
+`claude` and `codex`. Historical `Dispatch.ownerSkill`, `provider`, and `taskRef`
+remain readable schema-v1 compatibility metadata. They are not rewritten,
+persisted as computed capability fields, or used to select a capability.
 
 ### Canonical research lifecycle protection
 
@@ -444,9 +474,9 @@ regression coverage.
 | Sequence starts above 1, skips, repeats, or is out of order | Reject with expected and received sequence |
 | Duplicate `eventId` | Reject ledger |
 | Host is blank, case-varied, an installer ID, retired, or arbitrary | Throw `research execution host must be one of: claude, codex` |
-| Discovered skill name has whitespace around an exact optional name | Trim and select the optional host skill |
-| Discovered name is case-varied, adorned, namespaced, path-like, or unrelated | Do not reinterpret it; select the bundled fallback |
-| Stage is `complete`, regardless of discovered names | Return explicit non-dispatchable null resolution |
+| Capability ID is empty, whitespace, case-varied, adorned, or unknown | Throw typed `UNKNOWN_CAPABILITY` |
+| Known capability belongs to another stage | Throw typed `CAPABILITY_STAGE_MISMATCH` |
+| Stage is `complete` or runtime-invalid, regardless of supplied capability | Throw typed `QUEST_STAGE_NOT_DISPATCHABLE` before lookup |
 | Empty mutation batch | Throw `Research event batch must contain at least one mutation` |
 | Existing `idempotencyKey` | Return prior matching events with `replayed: true`; append nothing |
 | Batch contains valid mutation followed by invalid mutation | Reject whole batch; append nothing |
@@ -508,15 +538,14 @@ await commitResearchBatch({
 Assertions: both events append with contiguous sequences, both projections use
 same ledger head, retry with same idempotency key returns prior events.
 
-Exact optional skill discovery selects the host capability without persistence:
+An exact explicit capability selects one frozen stage-matched definition without persistence:
 
 ```ts
-resolveResearchStageCapability({
+resolveResearchCapability({
   stage: "audit",
-  host: "claude",
-  discoveredSkillNames: ["unrelated", " research-review-case "],
+  capabilityId: "research.audit.campaign",
 });
-// selectedSkill: "research-review-case", source: "host"
+// selection: "explicit", capability.id: "research.audit.campaign"
 ```
 
 ### Base
@@ -530,15 +559,11 @@ const state = await readResearchState(root);   // emptyResearchState()
 
 No projection or runtime file is required to reconstruct canonical state.
 
-An absent or non-exact optional name selects the bundled stage fallback:
+An omitted capability selects the explicit stage default independently of registry order:
 
 ```ts
-resolveResearchStageCapability({
-  stage: "writing",
-  host: "codex",
-  discoveredSkillNames: ["Research-Writing", "/research-writing"],
-});
-// selectedSkill: "trellis-research-writing", source: "bundled"
+resolveResearchCapability({ stage: "writing" });
+// selection: "default", capability.id: "research.writing.case"
 ```
 
 ### Bad
@@ -565,18 +590,17 @@ await commitResearchBatch({
 Required result: reject before append. Do not normalize platform-specific input
 into tracked state.
 
-Do not route from historical Dispatch metadata or dispatch a terminal stage:
+Do not route from historical Dispatch metadata or accept a terminal stage:
 
 ```ts
-resolveResearchStageCapability({
+resolveResearchCapability({
   stage: "complete",
-  host: "claude",
-  discoveredSkillNames: [historicalDispatch.ownerSkill],
+  capabilityId: historicalDispatch.ownerSkill,
 });
 ```
 
-Required result: an explicit non-dispatchable resolution with null capability and
-skill fields. `ownerSkill` does not override the current Quest stage.
+Required result: typed `QUEST_STAGE_NOT_DISPATCHABLE` before capability lookup.
+`ownerSkill` does not override the current Quest stage or become a capability ID.
 
 ### C02 mixed-ledger cases
 
@@ -589,13 +613,16 @@ skill fields. `ownerSkill` does not override the current Quest stage.
 Core research tests live under `packages/core/test/research/`.
 
 - `stage-capabilities.test.ts`
-  - exact exhaustive descriptor for all ten stages and exactly nine active stages.
-  - exact logical capability, optional skill, and bundled fallback triples.
-  - `audit` keeps the asymmetric `research-review-case` optional mapping.
-  - host parser accepts only `claude` and `codex`.
-  - trim/drop-empty/exact-dedupe normalization preserves caller input.
-  - exact optional selection, deterministic bundled fallback, and explicit
-    `complete` rejection.
+  - exact 14-entry registry inventory, field values, order, and no `complete` or
+    initial `advisory` entry.
+  - exact nine-stage default map independent of registry order.
+  - explicit/default resolution for every stage and alternate workflow entries.
+  - typed unknown, stage-mismatch, `complete`, and runtime-invalid failures with
+    stage-first precedence.
+  - runtime freezing of the registry, definitions, Procedure refs, approval
+    arrays, default map, and returned canonical definitions.
+  - host parser accepts only `claude` and `codex`; capability input/output has no
+    host, discovery, Skill, fallback, selected-Skill, or source concept.
 - `schema.test.ts`
   - All ID prefixes and entity shapes.
   - Unknown keys rejected.
@@ -657,13 +684,15 @@ Also verify built consumer import:
 
 ```ts
 import {
+  RESEARCH_CAPABILITY_REGISTRY,
   readResearchState,
-  resolveResearchStageCapability,
+  resolveResearchCapability,
 } from "@mindfoldhq/trellis-core/research";
 ```
 
-The resolver must not appear on the `@mindfoldhq/trellis-core` root barrel, and
-adding it must not change package export keys.
+The registry and resolver must not appear on the `@mindfoldhq/trellis-core` root
+barrel, retired Skill-routing exports must be absent from the Research subpath,
+and this change must not alter package export keys.
 
 C02 tests additionally require exact v1 fixture hashes/non-regression, strict v2 payload/version/timestamp vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry equality inputs, exact relation order, consumption adjacency, and proof that no v2 mutation/emitter was added. Run fresh GitNexus impact and warn before editing the HIGH parser or CRITICAL reducer symbols listed in the C01 impact map. Store mutation/batch/commit changes belong to C05/C06, not C02.
 
@@ -739,18 +768,18 @@ const selectedSkill = dispatch.ownerSkill;
 This makes arbitrary schema-v1 compatibility metadata authoritative and can
 route a Quest through a stale or generic owner.
 
-### Correct: resolve from current Quest stage
+### Correct: resolve from current Quest stage and an optional exact capability ID
 
 ```ts
-const resolution = resolveResearchStageCapability({
+const resolution = resolveResearchCapability({
   stage: quest.stage,
-  host,
-  discoveredSkillNames,
+  capabilityId: requestedCapabilityId,
 });
 ```
 
-The stage selects the logical capability. Exact optional discovery or the
-bundled fallback selects execution; no result is written into tracked state.
+The stage is validated first, and omission selects the explicit default map.
+Host, discovery order, Skill names, and Dispatch compatibility metadata never
+select the canonical capability; no result is written into tracked state.
 
 ### C02: mixed versions without premature write authority
 

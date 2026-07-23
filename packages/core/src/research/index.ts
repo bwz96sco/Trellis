@@ -88,21 +88,22 @@ export { researchPaths } from "./paths.js";
 export type { ResearchPaths } from "./paths.js";
 
 export {
+  RESEARCH_CAPABILITY_REGISTRY,
+  RESEARCH_DEFAULT_CAPABILITY_BY_STAGE,
   RESEARCH_EXECUTION_HOSTS,
-  RESEARCH_STAGE_CAPABILITIES,
-  normalizeDiscoveredResearchSkillNames,
+  ResearchCapabilityResolutionError,
+  getResearchCapabilityDefinition,
   parseResearchExecutionHost,
-  resolveResearchStageCapability,
+  resolveResearchCapability,
 } from "./stage-capabilities.js";
 export type {
   DispatchableQuestStage,
+  ResearchActivationMode,
+  ResearchCapabilityDefinition,
+  ResearchCapabilityId,
+  ResearchCapabilityKind,
+  ResearchCapabilityResolutionErrorCode,
   ResearchExecutionHost,
-  ResearchCapability,
-  OptionalResearchSkill,
-  BundledResearchSkill,
-  ResearchStageCapabilityDefinition,
-  ResolveResearchStageCapabilityInput,
-  ResearchStageCapabilityResolution,
 } from "./stage-capabilities.js";
 
 export {

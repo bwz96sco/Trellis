@@ -112,6 +112,12 @@ All event-producing commands support `--idempotency-key`, `--dry-run`, and `--js
 - `--skill-name` is repeatable name-only discovery input. Values are trimmed,
   empty values dropped, exact-deduplicated, and restricted to canonical lowercase
   slugs. The command does not scan skill roots or read skill bodies/frontmatter.
+- During the C03 transition, this frozen stage/host/Skill selection exists only in
+  the package-private `commands/research/legacy-skill-routing.ts` bridge. The
+  bridge is not a core or CLI package export, is not persisted, does not call the
+  immutable capability registry, and is not canonical authority. C06 removes it
+  from production Context with `--skill-name`; C07 removes residual worker/hook
+  characterization imports and deletes the bridge module.
 - Current Quest stage, requested host, and exact discovered names are the only
   capability authority. Historical `ownerSkill`, `provider`, and `taskRef` are
   emitted as compatibility metadata with deterministic warnings and never cause
@@ -378,7 +384,9 @@ idempotent replay, post-commit file recovery, digest/revision mismatch, and a
 bound-repository digest success case that fails if core re-resolves only the
 tracked locator. Shared production-built fixtures must additionally cover all
 nine active-stage Claude/Codex decisions, `complete`, warning-only compatibility
-metadata, descriptive `expectedOutputs`, exact Claude envelope/process argv,
+metadata, and the private bridge's exact frozen table, normalization, optional/
+fallback selection, discovery determinism, and complete behavior. Coverage also
+includes descriptive `expectedOutputs`, exact Claude envelope/process argv,
 two-pass direct metadata discovery, denial anomalies, exact injected JSON,
 selected-skill behavior, and full-tree zero-write.
 
@@ -419,15 +427,21 @@ persists observations.
 const selectedSkill = dispatch.ownerSkill;
 ```
 
-### Correct: route from current Quest stage and explicit host discovery
+### Correct during C03: isolate frozen routing in the private transition bridge
 
 ```ts
+import { resolveResearchStageCapability } from "./legacy-skill-routing.js";
+
 const selectedSkill = resolveResearchStageCapability({
   stage: quest.stage,
   host,
   discoveredSkillNames,
 }).selectedSkill;
 ```
+
+This is temporary active compatibility behavior, not the public core capability
+API. C06 removes this production use instead of teaching the successor registry
+about hosts or Skills.
 
 ### Wrong: accept Quest repository strings without canonical validation
 

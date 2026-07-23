@@ -1,10 +1,7 @@
-import {
-  proposalSchema,
-  RESEARCH_STAGE_CAPABILITIES,
-  resultSchema,
-} from "@mindfoldhq/trellis-core/research";
+import { proposalSchema, resultSchema } from "@mindfoldhq/trellis-core/research";
 import { describe, expect, it } from "vitest";
 
+import { RESEARCH_STAGE_CAPABILITIES } from "../../src/commands/research/legacy-skill-routing.js";
 import {
   getConfigTemplate,
   getHooksConfig,

@@ -6,7 +6,6 @@ import path from "node:path";
 import {
   commitResearchBatch,
   proposalSchema,
-  RESEARCH_STAGE_CAPABILITIES,
   resultSchema,
   type QuestStage,
 } from "@mindfoldhq/trellis-core/research";
@@ -16,6 +15,7 @@ import {
   PLATFORM_IDS,
   collectPlatformTemplates,
 } from "../../src/configurators/index.js";
+import { RESEARCH_STAGE_CAPABILITIES } from "../../src/commands/research/legacy-skill-routing.js";
 import { getResearchWorkerTemplate as getClaudeResearchWorkerTemplate } from "../../src/templates/claude/index.js";
 import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
 import { getResearchDispatchContext } from "../../src/commands/research/dispatch-context.js";

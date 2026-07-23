@@ -55,7 +55,7 @@ const expectations = [
   ["channel.parseChannelType", channel.parseChannelType],
   ["mem.searchMemSessions", mem.searchMemSessions],
   ["research.readResearchState", research.readResearchState],
-  ["research.resolveResearchStageCapability", research.resolveResearchStageCapability],
+  ["research.resolveResearchCapability", research.resolveResearchCapability],
   ["task.emptyTaskRecord", task.emptyTaskRecord],
 ];
 for (const [name, value] of expectations) {
@@ -97,8 +97,8 @@ import { parseChannelType } from "${PACKAGE_NAME}/channel";
 import type { ChannelType } from "${PACKAGE_NAME}/channel";
 import { searchMemSessions } from "${PACKAGE_NAME}/mem";
 import type { MemSessionInfo } from "${PACKAGE_NAME}/mem";
-import { readResearchState } from "${PACKAGE_NAME}/research";
-import type { ResearchState } from "${PACKAGE_NAME}/research";
+import { readResearchState, resolveResearchCapability } from "${PACKAGE_NAME}/research";
+import type { ResearchCapabilityId, ResearchState } from "${PACKAGE_NAME}/research";
 import * as taskNamespace from "${PACKAGE_NAME}/task";
 import { emptyTaskRecord } from "${PACKAGE_NAME}/task";
 import type { TrellisTaskRecord } from "${PACKAGE_NAME}/task";
@@ -119,6 +119,7 @@ const channelType: ChannelType = parseChannelType("project");
 const taskRecord: TrellisTaskRecord = emptyTaskRecord();
 const memReader: typeof searchMemSessions = searchMemSessions;
 const researchReader: (root: string) => Promise<ResearchState> = readResearchState;
+const capabilityId: ResearchCapabilityId = resolveResearchCapability({ stage: "audit" }).capability.id;
 const memSession = undefined as MemSessionInfo | undefined;
 root.parseChannelType;
 root.emptyTaskRecord;
@@ -126,7 +127,7 @@ root.emptyTaskRecord;
 root.searchMemSessions;
 // @ts-expect-error Research remains outside the root compatibility barrel.
 root.readResearchState;
-void [channelType, taskRecord, memReader, researchReader, memSession, testing];
+void [channelType, taskRecord, memReader, researchReader, capabilityId, memSession, testing];
 `,
   );
   fs.writeFileSync(

@@ -1,0 +1,9 @@
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/procedure-capability-policy-contract.md","reason":"Verify exact 14-entry values, defaults, limits, approval ordering, immutability, and no Procedure or policy overreach."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/compatibility-freeze.md","reason":"Verify current Context, worker, Skill, historical Dispatch, payload, cleanup, and packed compatibility remain intentional."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/gitnexus-impact-map.md","reason":"Compare changed symbols and processes with the predicted C03 blast radius and enforce warning boundaries."}
+{"file":".trellis/spec/core/backend/index.md","reason":"Check core package boundaries, Research subpath ownership, and required quality commands."}
+{"file":".trellis/spec/cli/backend/index.md","reason":"Check CLI module boundaries, command behavior ownership, and final package quality requirements."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Check exact export keys, root non-leakage, Research-only CLI imports, version lock, and packed-core proof."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Check strict typing, explicit returns, forbidden patterns, and required lint/typecheck quality."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check exact non-tautological capability, compatibility, export, and payload assertions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check Context zero-write, clean-build import boundaries, payload parity, and real packed-core verification."}

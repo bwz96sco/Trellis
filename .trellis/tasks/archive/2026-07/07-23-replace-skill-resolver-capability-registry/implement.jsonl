@@ -1,0 +1,9 @@
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/procedure-capability-policy-contract.md","reason":"Normative 14-capability inventory, exact defaults, Procedure bindings, limits, approval ordering, and Skill-neutral authority contract."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/compatibility-freeze.md","reason":"Frozen current Skill resolver, Dispatch metadata, Context, worker, payload, cleanup, and packed behavior that C03 must preserve or isolate."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/gitnexus-impact-map.md","reason":"C03 lower-bound symbol blast radius, static-analysis limitations, warning gates, and required test coverage."}
+{"file":".trellis/spec/core/backend/index.md","reason":"Core package boundaries, Research subpath ownership, pre-development guidance, and quality commands."}
+{"file":".trellis/spec/cli/backend/index.md","reason":"CLI package boundaries, command-module guidance, cross-package checks, and quality requirements."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Exact core export map, root non-leakage, CLI Research-only import boundary, version lock, and packed-core proof."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Strict TypeScript and ESLint requirements for the private CLI bridge and related test updates."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Core/CLI test ownership, exact assertions, compatibility fixtures, and successor capability coverage conventions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Context zero-write, production import-boundary, payload compatibility, and packed-artifact integration patterns."}

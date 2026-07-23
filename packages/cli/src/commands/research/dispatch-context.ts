@@ -8,8 +8,6 @@ import {
   normalizeArtifactPath,
   parseResearchExecutionHost,
   readResearchState,
-  RESEARCH_STAGE_CAPABILITIES,
-  resolveResearchStageCapability,
   type ArtifactRef,
   type Dispatch,
   type DispatchId,
@@ -22,6 +20,10 @@ import {
   ResearchDispatchContextError,
   type ResearchDispatchContextErrorCode,
 } from "./errors.js";
+import {
+  RESEARCH_STAGE_CAPABILITIES,
+  resolveResearchStageCapability,
+} from "./legacy-skill-routing.js";
 import {
   resolveResearchRepositoryContext,
   type ResearchRepositoryContextResolution,

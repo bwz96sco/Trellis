@@ -96,7 +96,8 @@ describe("@mindfoldhq/trellis-core package compatibility", () => {
     expect(root.emptyTaskRecord).toBe(task.emptyTaskRecord);
     expect(root).not.toHaveProperty("searchMemSessions");
     expect(root).not.toHaveProperty("readResearchState");
-    expect(root).not.toHaveProperty("resolveResearchStageCapability");
+    expect(root).not.toHaveProperty("resolveResearchCapability");
+    expect(root).not.toHaveProperty("RESEARCH_CAPABILITY_REGISTRY");
   });
 
   it("imports every explicit subpath with representative public values", async () => {
@@ -110,7 +111,16 @@ describe("@mindfoldhq/trellis-core package compatibility", () => {
     expect(mem.searchMemSessions).toBeTypeOf("function");
     expect(mem.listMemProjects).toBeTypeOf("function");
     expect(research.readResearchState).toBeTypeOf("function");
-    expect(research.resolveResearchStageCapability).toBeTypeOf("function");
+    expect(research.resolveResearchCapability).toBeTypeOf("function");
+    expect(research.getResearchCapabilityDefinition).toBeTypeOf("function");
+    expect(research.RESEARCH_CAPABILITY_REGISTRY).toHaveLength(14);
+    for (const retired of [
+      "RESEARCH_STAGE_CAPABILITIES",
+      "normalizeDiscoveredResearchSkillNames",
+      "resolveResearchStageCapability",
+    ]) {
+      expect(research).not.toHaveProperty(retired);
+    }
     expect(task.emptyTaskRecord).toBeTypeOf("function");
     expect(Object.keys(testing)).toEqual([]);
   });
