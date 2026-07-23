@@ -53,9 +53,9 @@ Disposable runtime layout:
   projection-cache.json
 ```
 
-### Frozen successor scope (not implemented in C01)
+### Mixed-ledger rollout scope
 
-C02-C06 additionally trigger this spec when adding mixed schema-v1/schema-v2 activation and approval events, immutable capability selection, approval consumption, or related reduced state. Existing v1 entities and projection schemas remain compatibility authority.
+C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03-C06 later add immutable capability selection, validated emitters, Context gating, and approval consumption commands. Existing v1 entities, mutations, and projection schemas remain compatibility authority.
 
 ## 2. Signatures
 
@@ -118,19 +118,42 @@ interface ResearchStatus {
 Event and projection envelopes:
 
 ```ts
-interface ResearchEvent {
+const RESEARCH_SCHEMA_VERSION = 1;       // entity/projection/v1-event authority
+const RESEARCH_EVENT_SCHEMA_VERSION = 2; // activation/approval events only
+
+interface ResearchSchemaV1Event {
   schemaVersion: 1;
   eventId: `evt_${string}`;
-  seq: number; // positive, contiguous, starts at 1
-  timestamp: string;
-  kind: ResearchEventKind;
-  aggregate: { type: ResearchAggregateType; id: string };
-  related: Array<{ type: ResearchAggregateType; id: string }>;
+  seq: number; // positive, globally contiguous, starts at 1
+  timestamp: string; // existing v1 ISO compatibility remains unchanged
+  kind: ResearchEventKind; // exact existing 21-kind union
+  aggregate: ResearchAggregateRef; // existing 12 aggregate types only
+  related: ResearchAggregateRef[];
   payload: Record<string, unknown>;
   actor: { type: "agent" | "user" | "system"; id: string };
   idempotencyKey: string;
   provenance: { source: string; sourceId?: string };
 }
+
+interface ResearchSchemaV2Event {
+  schemaVersion: 2;
+  eventId: `evt_${string}`;
+  seq: number;
+  timestamp: string; // exactly YYYY-MM-DDTHH:mm:ss.sssZ
+  kind:
+    | "activation.planned"
+    | "approval.granted"
+    | "approval.revoked"
+    | "approval.consumed";
+  aggregate: ResearchSchemaV2AggregateRef; // v1 types plus activation/approval
+  related: ResearchSchemaV2AggregateRef[];
+  payload: Record<string, unknown>;
+  actor: { type: "agent" | "user" | "system"; id: string };
+  idempotencyKey: string;
+  provenance: { source: string; sourceId?: string };
+}
+
+type ResearchEvent = ResearchSchemaV1Event | ResearchSchemaV2Event;
 
 interface Projected<T> {
   schemaVersion: 1;
@@ -143,7 +166,7 @@ interface Projected<T> {
 IDs use `crypto.randomUUID()` plus prefixes:
 
 ```text
-wsp_ rep_ art_ qst_ cmp_ run_ evd_ clm_ evt_ dsp_ res_ prp_ dec_
+wsp_ rep_ art_ qst_ cmp_ run_ evd_ clm_ evt_ dsp_ res_ prp_ dec_ act_ apr_
 ```
 
 `packages/core/package.json` must declare `./research`. Do not add research
@@ -172,9 +195,9 @@ function resolveResearchStageCapability(
 `RESEARCH_STAGE_CAPABILITIES` is an exhaustive
 `Readonly<Record<QuestStage, ResearchStageCapabilityDefinition>>`.
 
-### Frozen successor signatures (not implemented in C01)
+### C02 mixed-ledger signatures
 
-Successor public types add `ActivationId` (`act_`), `ApprovalId` (`apr_`), activation/approval entities and state maps, four schema-v2 event kinds, immutable capability definitions, and mixed-ledger event unions. Existing v1 signatures and root export behavior do not change. Exact shapes are frozen in the active C01 task's `research/procedure-capability-policy-contract.md` and `research/activation-approval-contract.md`.
+The Research subpath exports `ActivationId`, `ApprovalId`, `ResearchActivation`, `ResearchApprovalGrant`, terminal `ResearchApprovalState`, `ResearchSchemaV1Event`, `ResearchSchemaV2Event`, the mixed `ResearchEvent` union, strict schemas, `RESEARCH_EVENT_SCHEMA_VERSION`, and both ordered event-kind inventories. `ResearchState` adds only activation/approval maps and indexes. Existing v1 signatures, `ResearchMutation`, package export keys, and root-barrel behavior do not change. C03-C06 contracts remain frozen in the archived C01 Procedure and activation/approval artifacts.
 
 ## 3. Contracts
 
@@ -247,12 +270,14 @@ uninstall byte-for-byte.
 ### Event ledger
 
 - One strict JSON object per non-empty line.
-- Every line must match `schemaVersion: 1` and an allowed event kind/payload.
-- Sequence must equal prior parsed event count plus one.
-- `eventId` must be unique across the complete ledger.
+- `schemaVersion: 1` accepts only the exact existing 21 kinds, v1 aggregate refs, payloads, and timestamp behavior.
+- `schemaVersion: 2` accepts only `activation.planned`, `approval.granted`, `approval.revoked`, and `approval.consumed`, with activation/approval aggregate refs where specified.
+- V2 envelope and entity timestamps must match `YYYY-MM-DDTHH:mm:ss.sssZ`, parse to the same UTC instant, and use a four-digit year. Expanded years are rejected only for v2; v1 compatibility is unchanged.
+- Kind/version mismatch, unknown version, unknown key, `null` substitution, malformed digest/hash, and extra/missing/reordered refs fail closed.
+- Sequence must equal prior parsed event count plus one across the complete mixed ledger.
+- `eventId` must be unique across the complete mixed ledger.
 - Parser errors include source path and line number.
-- Empty or missing ledger means empty state. Malformed existing ledger never
-  degrades to partial state.
+- Empty or missing ledger means empty state. Malformed existing ledger never degrades to partial state.
 
 Commit order:
 
@@ -399,12 +424,15 @@ Do not import from `channel/internal/**`. Any future shared-lock extraction
 requires fresh upstream impact analysis plus complete Channel and Research lock
 regression coverage.
 
-### Frozen successor contracts (not implemented in C01)
+### C02 activation/approval replay contracts
 
-- Parse all existing kinds only as schema v1 and exactly four new activation/approval kinds only as schema v2; replay one globally contiguous mixed ledger.
-- Keep every v1 payload and existing projection schema unchanged. Activation/approval-only events advance the existing projection watermark but do not change entity data or `updatedAt`.
-- Allow exactly one immutable activation per Dispatch and canonical grant/revoke/consume approval transitions. Expiry is computed at command/Context boundaries, never by reducer wall-clock access.
-- Consume approval only as the third event in the same validated batch as v1 Result then v1 Proposal.
+- Parse all existing kinds only as schema v1 and exactly four activation/approval kinds only as schema v2; replay one globally contiguous mixed ledger.
+- Keep every v1 payload, mutation, and existing projection schema unchanged. Activation/approval-only ledger heads advance existing projection watermarks but do not change entity data or `updatedAt`.
+- Reduce exactly one immutable activation per Dispatch. Require existing matching Dispatch/Quest hierarchy and reject activation after Result or Proposal.
+- Grant only against matching activation/Dispatch/Quest bindings. Approval IDs are globally unique. A new still-granted approval for the same activation/host is allowed only when every prior still-granted approval has `expiresAt <= newEvent.timestamp`; reducer never reads wall clock.
+- Revocation and consumption are terminal. Revocation allows pre/post-expiry transition from `granted`; consumption requires `event.timestamp < expiresAt`, so equality is expired.
+- Reduce consumption only when it immediately follows matching v1 Result then v1 Proposal events. All three events must share timestamp, actor, provenance, and idempotency key.
+- C02 adds no v2 `ResearchMutation`, event-draft, batch, commit, or CLI emitter. Existing two-event Result + Proposal mutation behavior remains unchanged until C06 adds mandatory approval consumption.
 - Once a v2 event exists, rollback is forward-fix only; never rewrite or down-convert ledger history.
 
 ## 4. Validation & Error Matrix
@@ -439,7 +467,7 @@ regression coverage.
 | Migration source/destination is research or recursively contains research | Classify and execute as protected skip; `--force` cannot bypass |
 | Two writers overlap | Lock serializes commits; ledger remains contiguous |
 
-Successor matrix additions: reject kind/schema mismatches, duplicate activation, invalid approval transitions, reordered/mismatched consumption, and mixed-ledger relation errors. Activation/approval-only events must preserve entity data while advancing projection watermarks. Existing v1 matrix rows remain unchanged.
+C02 matrix additions: reject kind/schema mismatches, non-canonical v2 timestamps (including expanded years), malformed bindings, duplicate activation, invalid/terminal approval transitions, premature duplicate-host grants, expired consumption including equality, reordered/mismatched/non-adjacent consumption, and mixed-ledger relation errors. Prebuilt activation/approval-only ledger heads must preserve entity data while advancing projection watermarks. Existing v1 matrix rows and mutation behavior remain unchanged.
 
 ## 5. Good / Base / Bad Cases
 
@@ -550,11 +578,11 @@ resolveResearchStageCapability({
 Required result: an explicit non-dispatchable resolution with null capability and
 skill fields. `ownerSkill` does not override the current Quest stage.
 
-### Frozen successor cases
+### C02 mixed-ledger cases
 
-- **Good**: unchanged v1 events replay with v2 activation/grant and a Result/Proposal/consumption batch; rebuild is deterministic.
-- **Base**: a pure v1 ledger reduces exactly as before with empty activation/approval maps.
-- **Bad**: a reducer consults wall clock/policy/filesystem, rewrites v1, or accepts consumption outside its matching batch.
+- **Good**: unchanged v1 events replay with v2 activation/grant and adjacent Result/Proposal/consumption events; rebuild is deterministic and advances existing watermarks.
+- **Base**: a pure v1 ledger reduces exactly as before with empty activation/approval maps; existing two-event Result + Proposal mutation still works.
+- **Bad**: v2 uses expanded-year/non-millisecond timestamps, reducer consults wall clock/policy/filesystem, v1 bytes change, consumption is non-adjacent/expired, or C02 introduces an emit-capable v2 mutation.
 
 ## 6. Tests Required
 
@@ -583,6 +611,13 @@ Core research tests live under `packages/core/test/research/`.
   - invalid payload/schema version rejected.
   - sequence gap/repeat and duplicate event ID rejected.
   - serialize/parse round trip preserves events and trailing newline.
+- `activation-approval.test.ts`
+  - exact v2 kind/version/payload/aggregate/ref vectors and mixed serialization.
+  - v2 requires four-digit RFC3339 UTC millisecond timestamps; expanded years fail while v1 compatibility remains accepted.
+  - activation uniqueness/hierarchy/late-planning, grant binding/host/expiry replacement, terminal revocation, and event-time consumption expiry.
+  - consumption adjacency plus shared timestamp/actor/provenance/idempotency key.
+  - prebuilt mixed-ledger rebuild advances existing projection watermarks without changing entity data, `updatedAt`, projection schemas, or file inventory.
+  - public `ResearchMutation` and current two-event Result + Proposal behavior remain unchanged; no v2 emitter exists.
 - `store.test.ts`
   - duplicate idempotency key returns original events and no append.
   - complete batch validation prevents partial append.
@@ -630,7 +665,7 @@ import {
 The resolver must not appear on the `@mindfoldhq/trellis-core` root barrel, and
 adding it must not change package export keys.
 
-Frozen successor tests additionally require exact v1 non-regression, strict v2 payload/version vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry boundary inputs, exact relation order, and three-event atomicity. Run fresh GitNexus impact and warn before editing the CRITICAL reducer/store symbols listed in the C01 impact map.
+C02 tests additionally require exact v1 fixture hashes/non-regression, strict v2 payload/version/timestamp vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry equality inputs, exact relation order, consumption adjacency, and proof that no v2 mutation/emitter was added. Run fresh GitNexus impact and warn before editing the HIGH parser or CRITICAL reducer symbols listed in the C01 impact map. Store mutation/batch/commit changes belong to C05/C06, not C02.
 
 ## 7. Wrong vs Correct
 
@@ -717,9 +752,9 @@ const resolution = resolveResearchStageCapability({
 The stage selects the logical capability. Exact optional discovery or the
 bundled fallback selects execution; no result is written into tracked state.
 
-### Frozen successor: mixed versions
+### C02: mixed versions without premature write authority
 
 ```text
-Wrong: rewrite schema-v1 events or store approval in sidecars only.
-Correct: preserve v1 bytes, append strict v2 activation/approval events, and reduce one mixed canonical ledger.
+Wrong: rewrite schema-v1 events, store approval in sidecars only, or expose v2 ResearchMutation before validation dependencies exist.
+Correct: preserve v1 bytes, strictly read/reduce one mixed canonical ledger in C02, then add validated v2 emitters only in C05/C06.
 ```

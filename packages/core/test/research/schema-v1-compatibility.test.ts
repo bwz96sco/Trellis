@@ -158,8 +158,45 @@ describe("schema-v1 golden research compatibility", () => {
 
     const expectedState = JSON.parse(fixtureText(EXPECTED_STATE_FILE));
     const reducedState = reduceResearchEvents(events);
-    expect(reducedState).toEqual(expectedState);
-    expect(await readResearchState(root)).toEqual(expectedState);
+    const {
+      activations,
+      activationByDispatchId,
+      approvals,
+      approvalIdsByActivationId,
+      ...schemaV1State
+    } = reducedState;
+    expect(schemaV1State).toEqual(expectedState);
+    expect({
+      activations,
+      activationByDispatchId,
+      approvals,
+      approvalIdsByActivationId,
+    }).toEqual({
+      activations: {},
+      activationByDispatchId: {},
+      approvals: {},
+      approvalIdsByActivationId: {},
+    });
+
+    const {
+      activations: readActivations,
+      activationByDispatchId: readActivationByDispatchId,
+      approvals: readApprovals,
+      approvalIdsByActivationId: readApprovalIdsByActivationId,
+      ...readSchemaV1State
+    } = await readResearchState(root);
+    expect(readSchemaV1State).toEqual(expectedState);
+    expect({
+      readActivations,
+      readActivationByDispatchId,
+      readApprovals,
+      readApprovalIdsByActivationId,
+    }).toEqual({
+      readActivations: {},
+      readActivationByDispatchId: {},
+      readApprovals: {},
+      readApprovalIdsByActivationId: {},
+    });
 
     const dispatch = reducedState.dispatches[
       "dsp_77777777-7777-4777-8777-777777777777"
@@ -246,6 +283,6 @@ describe("schema-v1 golden research compatibility", () => {
         `${JSON.stringify(incompatible)}\n`,
         "golden-schema.jsonl",
       ),
-    ).toThrow(/golden-schema\.jsonl line 1: research event\.schemaVersion must be 1/);
+    ).toThrow(/golden-schema\.jsonl line 1: schema-v2 research event\.kind/);
   });
 });

@@ -12,6 +12,8 @@ export type {
   ResultId,
   ProposalId,
   DecisionId,
+  ActivationId,
+  ApprovalId,
   QuestStatus,
   QuestStage,
   CampaignStatus,
@@ -38,16 +40,28 @@ export type {
   ProposalOperation,
   Proposal,
   Decision,
+  ApprovalStatus,
+  ResearchActivation,
+  ResearchApprovalGrant,
+  ResearchApprovalState,
   ResearchAggregateType,
   ResearchAggregateRef,
+  ResearchSchemaV2AggregateType,
+  ResearchSchemaV2AggregateRef,
   ResearchActor,
   ResearchProvenance,
   ResearchEventKind,
+  ResearchSchemaV2EventKind,
+  ResearchSchemaV1Event,
+  ResearchSchemaV2Event,
   ResearchEvent,
   Projected,
   ResearchState,
 } from "./types.js";
-export { RESEARCH_SCHEMA_VERSION } from "./types.js";
+export {
+  RESEARCH_SCHEMA_VERSION,
+  RESEARCH_EVENT_SCHEMA_VERSION,
+} from "./types.js";
 
 export {
   RESEARCH_ID_PREFIXES,
@@ -65,6 +79,8 @@ export {
   createResultId,
   createProposalId,
   createDecisionId,
+  createActivationId,
+  createApprovalId,
 } from "./ids.js";
 export type { ResearchIdKind } from "./ids.js";
 
@@ -103,9 +119,15 @@ export {
   proposalOperationSchema,
   proposalSchema,
   decisionSchema,
+  activationIdSchema,
+  approvalIdSchema,
+  researchActivationSchema,
+  researchApprovalGrantSchema,
+  researchApprovalStateSchema,
   researchActorSchema,
   researchProvenanceSchema,
   researchAggregateRefSchema,
+  researchSchemaV2AggregateRefSchema,
   eventIdSchema,
   parseQuestStatus,
   parseQuestStage,
@@ -127,6 +149,7 @@ export {
 
 export {
   RESEARCH_EVENT_KINDS,
+  RESEARCH_SCHEMA_V2_EVENT_KINDS,
   researchEventSchema,
   parseResearchEvent,
   parseResearchLedger,

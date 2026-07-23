@@ -1,0 +1,4 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Review implementation against strict mixed-ledger, projection, public export, and test requirements."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/activation-approval-contract.md","reason":"Verify exact event shapes, aggregate refs, transitions, expiry semantics, and atomic ordering."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/compatibility-freeze.md","reason":"Verify no schema-v1 payload, parser, projection, or Dispatch compatibility drift."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/gitnexus-impact-map.md","reason":"Check predicted blast radius, required warning gates, and affected process coverage."}

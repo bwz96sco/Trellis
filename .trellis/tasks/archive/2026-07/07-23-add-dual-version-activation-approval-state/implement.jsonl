@@ -1,0 +1,4 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Executable core ledger, reducer, store, projection, compatibility, and successor-contract rules."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/activation-approval-contract.md","reason":"Normative schema-v2 activation/approval entity, event, transition, batch, replay, and rollback contract."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/compatibility-freeze.md","reason":"Frozen schema-v1 event, payload, projection, and Dispatch compatibility baseline."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/gitnexus-impact-map.md","reason":"Mandatory HIGH/CRITICAL symbol gates and required direct-caller/process coverage for C02."}

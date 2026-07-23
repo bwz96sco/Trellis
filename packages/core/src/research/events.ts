@@ -1,4 +1,5 @@
 import {
+  approvalIdSchema,
   artifactRefSchema,
   campaignSchema,
   claimSchema,
@@ -13,22 +14,34 @@ import {
   parseNonEmptyString,
   parseQuestStage,
   parseQuestStatus,
+  parseResearchSchemaV2Timestamp,
   parseRunStatus,
+  proposalIdSchema,
   proposalSchema,
   questSchema,
   repositorySchema,
+  researchActivationSchema,
   researchActorSchema,
   researchAggregateRefSchema,
+  researchApprovalGrantSchema,
   researchProvenanceSchema,
+  researchSchemaV2AggregateRefSchema,
+  resultIdSchema,
   resultSchema,
   runSchema,
   type RuntimeSchema,
   workspaceSchema,
 } from "./schema.js";
 import {
+  RESEARCH_EVENT_SCHEMA_VERSION,
   RESEARCH_SCHEMA_VERSION,
+  type ResearchAggregateRef,
   type ResearchEvent,
   type ResearchEventKind,
+  type ResearchSchemaV1Event,
+  type ResearchSchemaV2AggregateRef,
+  type ResearchSchemaV2Event,
+  type ResearchSchemaV2EventKind,
 } from "./types.js";
 
 export const RESEARCH_EVENT_KINDS: readonly ResearchEventKind[] = [
@@ -53,6 +66,13 @@ export const RESEARCH_EVENT_KINDS: readonly ResearchEventKind[] = [
   "result.recorded",
   "proposal.recorded",
   "decision.recorded",
+];
+
+export const RESEARCH_SCHEMA_V2_EVENT_KINDS: readonly ResearchSchemaV2EventKind[] = [
+  "activation.planned",
+  "approval.granted",
+  "approval.revoked",
+  "approval.consumed",
 ];
 
 function object(
@@ -143,6 +163,156 @@ function parsePayload(
   }
 }
 
+function parseBoundedPayloadString(
+  value: unknown,
+  name: string,
+  maximumLength: number,
+): string {
+  if (typeof value !== "string" || value.length === 0 || value.length > maximumLength) {
+    throw new Error(`${name} must contain between 1 and ${maximumLength} characters`);
+  }
+  return value;
+}
+
+function parseSchemaV2Payload(
+  kind: ResearchSchemaV2EventKind,
+  input: unknown,
+): Record<string, unknown> {
+  switch (kind) {
+    case "activation.planned":
+      return oneField(input, "activation", researchActivationSchema.parse);
+    case "approval.granted":
+      return oneField(input, "approval", researchApprovalGrantSchema.parse);
+    case "approval.revoked": {
+      const value = object(input, "event.payload", [
+        "approvalId",
+        "revokedAt",
+        "reason",
+      ]);
+      return {
+        approvalId: approvalIdSchema.parse(value.approvalId),
+        revokedAt: parseResearchSchemaV2Timestamp(
+          value.revokedAt,
+          "event.payload.revokedAt",
+        ),
+        reason: parseBoundedPayloadString(
+          value.reason,
+          "event.payload.reason",
+          1_024,
+        ),
+      };
+    }
+    case "approval.consumed": {
+      const value = object(input, "event.payload", [
+        "approvalId",
+        "resultId",
+        "proposalId",
+        "consumedAt",
+      ]);
+      return {
+        approvalId: approvalIdSchema.parse(value.approvalId),
+        resultId: resultIdSchema.parse(value.resultId),
+        proposalId: proposalIdSchema.parse(value.proposalId),
+        consumedAt: parseResearchSchemaV2Timestamp(
+          value.consumedAt,
+          "event.payload.consumedAt",
+        ),
+      };
+    }
+  }
+}
+
+function assertSchemaV2Ref(
+  refs: readonly ResearchSchemaV2AggregateRef[],
+  index: number,
+  type: ResearchSchemaV2AggregateRef["type"],
+  id?: string,
+): void {
+  const ref = refs[index];
+  if (ref?.type !== type || (id !== undefined && ref?.id !== id)) {
+    const expected = id === undefined ? type : `${type}:${id}`;
+    const received = ref ? `${ref.type}:${ref.id}` : "missing";
+    throw new Error(
+      `research event.related[${index}] must be ${expected}, received ${received}`,
+    );
+  }
+}
+
+function validateSchemaV2Relations(event: ResearchSchemaV2Event): void {
+  switch (event.kind) {
+    case "activation.planned": {
+      const activation = event.payload.activation as ReturnType<
+        typeof researchActivationSchema.parse
+      >;
+      if (
+        event.aggregate.type !== "activation" ||
+        event.aggregate.id !== activation.id
+      ) {
+        throw new Error(
+          `activation.planned aggregate must be activation:${activation.id}`,
+        );
+      }
+      if (event.related.length !== 2) {
+        throw new Error("activation.planned must contain exactly 2 related refs");
+      }
+      assertSchemaV2Ref(event.related, 0, "dispatch", activation.dispatchId);
+      assertSchemaV2Ref(event.related, 1, "quest", activation.questId);
+      return;
+    }
+    case "approval.granted": {
+      const approval = event.payload.approval as ReturnType<
+        typeof researchApprovalGrantSchema.parse
+      >;
+      if (
+        event.aggregate.type !== "approval" ||
+        event.aggregate.id !== approval.id
+      ) {
+        throw new Error(
+          `approval.granted aggregate must be approval:${approval.id}`,
+        );
+      }
+      if (event.related.length !== 3) {
+        throw new Error("approval.granted must contain exactly 3 related refs");
+      }
+      assertSchemaV2Ref(event.related, 0, "activation", approval.activationId);
+      assertSchemaV2Ref(event.related, 1, "dispatch", approval.dispatchId);
+      assertSchemaV2Ref(event.related, 2, "quest");
+      return;
+    }
+    case "approval.revoked": {
+      const approvalId = event.payload.approvalId as string;
+      if (event.aggregate.type !== "approval" || event.aggregate.id !== approvalId) {
+        throw new Error(
+          `approval.revoked aggregate must be approval:${approvalId}`,
+        );
+      }
+      if (event.related.length !== 2) {
+        throw new Error("approval.revoked must contain exactly 2 related refs");
+      }
+      assertSchemaV2Ref(event.related, 0, "activation");
+      assertSchemaV2Ref(event.related, 1, "dispatch");
+      return;
+    }
+    case "approval.consumed": {
+      const approvalId = event.payload.approvalId as string;
+      const resultId = event.payload.resultId as string;
+      const proposalId = event.payload.proposalId as string;
+      if (event.aggregate.type !== "approval" || event.aggregate.id !== approvalId) {
+        throw new Error(
+          `approval.consumed aggregate must be approval:${approvalId}`,
+        );
+      }
+      if (event.related.length !== 4) {
+        throw new Error("approval.consumed must contain exactly 4 related refs");
+      }
+      assertSchemaV2Ref(event.related, 0, "activation");
+      assertSchemaV2Ref(event.related, 1, "dispatch");
+      assertSchemaV2Ref(event.related, 2, "result", resultId);
+      assertSchemaV2Ref(event.related, 3, "proposal", proposalId);
+    }
+  }
+}
+
 export function parseResearchEvent(input: unknown): ResearchEvent {
   const value = object(input, "research event", [
     "schemaVersion",
@@ -157,9 +327,12 @@ export function parseResearchEvent(input: unknown): ResearchEvent {
     "idempotencyKey",
     "provenance",
   ]);
-  if (value.schemaVersion !== RESEARCH_SCHEMA_VERSION) {
+  if (
+    value.schemaVersion !== RESEARCH_SCHEMA_VERSION &&
+    value.schemaVersion !== RESEARCH_EVENT_SCHEMA_VERSION
+  ) {
     throw new Error(
-      `research event.schemaVersion must be ${RESEARCH_SCHEMA_VERSION}`,
+      `research event.schemaVersion must be one of: ${RESEARCH_SCHEMA_VERSION}, ${RESEARCH_EVENT_SCHEMA_VERSION}`,
     );
   }
   if (
@@ -169,36 +342,78 @@ export function parseResearchEvent(input: unknown): ResearchEvent {
   ) {
     throw new Error("research event.seq must be a positive integer");
   }
-  if (
-    typeof value.kind !== "string" ||
-    !RESEARCH_EVENT_KINDS.includes(value.kind as ResearchEventKind)
-  ) {
-    throw new Error(
-      `research event.kind must be one of: ${RESEARCH_EVENT_KINDS.join(", ")}`,
-    );
+  if (typeof value.kind !== "string") {
+    throw new Error("research event.kind must be a string");
   }
   if (!Array.isArray(value.related)) {
     throw new Error("research event.related must be an array");
   }
-  const idempotencyKey = parseNonEmptyString(
-    value.idempotencyKey,
-    "research event.idempotencyKey",
-  );
-  return {
-    schemaVersion: RESEARCH_SCHEMA_VERSION,
+  const common = {
     eventId: eventIdSchema.parse(value.eventId),
     seq: value.seq,
-    timestamp: parseIsoTimestamp(value.timestamp, "research event.timestamp"),
-    kind: value.kind as ResearchEventKind,
-    aggregate: researchAggregateRefSchema.parse(value.aggregate),
-    related: value.related.map((entry) =>
-      researchAggregateRefSchema.parse(entry),
-    ),
-    payload: parsePayload(value.kind as ResearchEventKind, value.payload),
     actor: researchActorSchema.parse(value.actor),
-    idempotencyKey,
+    idempotencyKey: parseNonEmptyString(
+      value.idempotencyKey,
+      "research event.idempotencyKey",
+    ),
     provenance: researchProvenanceSchema.parse(value.provenance),
   };
+
+  if (value.schemaVersion === RESEARCH_SCHEMA_VERSION) {
+    if (!RESEARCH_EVENT_KINDS.includes(value.kind as ResearchEventKind)) {
+      throw new Error(
+        `schema-v1 research event.kind must be one of: ${RESEARCH_EVENT_KINDS.join(", ")}`,
+      );
+    }
+    return {
+      schemaVersion: RESEARCH_SCHEMA_VERSION,
+      eventId: common.eventId,
+      seq: common.seq,
+      timestamp: parseIsoTimestamp(value.timestamp, "research event.timestamp"),
+      kind: value.kind as ResearchEventKind,
+      aggregate: researchAggregateRefSchema.parse(value.aggregate),
+      related: value.related.map((entry) =>
+        researchAggregateRefSchema.parse(entry),
+      ) as ResearchAggregateRef[],
+      payload: parsePayload(value.kind as ResearchEventKind, value.payload),
+      actor: common.actor,
+      idempotencyKey: common.idempotencyKey,
+      provenance: common.provenance,
+    } satisfies ResearchSchemaV1Event;
+  }
+
+  if (
+    !RESEARCH_SCHEMA_V2_EVENT_KINDS.includes(
+      value.kind as ResearchSchemaV2EventKind,
+    )
+  ) {
+    throw new Error(
+      `schema-v2 research event.kind must be one of: ${RESEARCH_SCHEMA_V2_EVENT_KINDS.join(", ")}`,
+    );
+  }
+  const event = {
+    schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+    eventId: common.eventId,
+    seq: common.seq,
+    timestamp: parseResearchSchemaV2Timestamp(
+      value.timestamp,
+      "research event.timestamp",
+    ),
+    kind: value.kind as ResearchSchemaV2EventKind,
+    aggregate: researchSchemaV2AggregateRefSchema.parse(value.aggregate),
+    related: value.related.map((entry) =>
+      researchSchemaV2AggregateRefSchema.parse(entry),
+    ),
+    payload: parseSchemaV2Payload(
+      value.kind as ResearchSchemaV2EventKind,
+      value.payload,
+    ),
+    actor: common.actor,
+    idempotencyKey: common.idempotencyKey,
+    provenance: common.provenance,
+  } satisfies ResearchSchemaV2Event;
+  validateSchemaV2Relations(event);
+  return event;
 }
 
 export const researchEventSchema: RuntimeSchema<ResearchEvent> = {

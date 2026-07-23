@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 
 import type {
+  ActivationId,
+  ApprovalId,
   ArtifactId,
   CampaignId,
   ClaimId,
@@ -30,6 +32,8 @@ export const RESEARCH_ID_PREFIXES = {
   result: "res",
   proposal: "prp",
   decision: "dec",
+  activation: "act",
+  approval: "apr",
 } as const;
 
 export type ResearchIdKind = keyof typeof RESEARCH_ID_PREFIXES;
@@ -63,3 +67,7 @@ export const createProposalId = (): ProposalId =>
   createResearchId("proposal") as ProposalId;
 export const createDecisionId = (): DecisionId =>
   createResearchId("decision") as DecisionId;
+export const createActivationId = (): ActivationId =>
+  createResearchId("activation") as ActivationId;
+export const createApprovalId = (): ApprovalId =>
+  createResearchId("approval") as ApprovalId;

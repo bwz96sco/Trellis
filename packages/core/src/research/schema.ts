@@ -4,6 +4,8 @@ import {
 } from "./artifacts.js";
 import { RESEARCH_ID_PREFIXES, type ResearchIdKind } from "./ids.js";
 import type {
+  ActivationId,
+  ApprovalId,
   ArtifactId,
   ArtifactRef,
   Campaign,
@@ -34,10 +36,15 @@ import type {
   QuestStatus,
   Repository,
   RepositoryId,
+  ResearchActivation,
   ResearchActor,
   ResearchAggregateRef,
   ResearchAggregateType,
+  ResearchApprovalGrant,
+  ResearchApprovalState,
   ResearchProvenance,
+  ResearchSchemaV2AggregateRef,
+  ResearchSchemaV2AggregateType,
   Result,
   ResultId,
   Run,
@@ -110,6 +117,43 @@ function timestamp(value: unknown, name: string): string {
   const parsed = stringValue(value, name, { nonEmpty: true });
   if (Number.isNaN(Date.parse(parsed)) || new Date(parsed).toISOString() !== parsed) {
     throw new Error(`${name} must be an ISO 8601 UTC timestamp`);
+  }
+  return parsed;
+}
+
+function schemaV2Timestamp(value: unknown, name: string): string {
+  const parsed = timestamp(value, name);
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(parsed)) {
+    throw new Error(
+      `${name} must be a canonical RFC3339 UTC timestamp with millisecond precision`,
+    );
+  }
+  return parsed;
+}
+
+function boundedString(
+  value: unknown,
+  name: string,
+  maximumLength: number,
+): string {
+  const parsed = stringValue(value, name);
+  if (parsed.length === 0 || parsed.length > maximumLength) {
+    throw new Error(`${name} must contain between 1 and ${maximumLength} characters`);
+  }
+  return parsed;
+}
+
+function positiveInteger(value: unknown, name: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive integer`);
+  }
+  return value;
+}
+
+function sha256Binding(value: unknown, name: string): string {
+  const parsed = stringValue(value, name, { nonEmpty: true });
+  if (!/^sha256:[0-9a-f]{64}$/.test(parsed)) {
+    throw new Error(`${name} must be sha256: followed by 64 lowercase hex characters`);
   }
   return parsed;
 }
@@ -944,6 +988,220 @@ export const decisionSchema = schema<Decision>((input) => {
   };
 });
 
+export const activationIdSchema = schema<ActivationId>((input) =>
+  idValue<ActivationId>(input, "activationId", "activation"),
+);
+
+export const approvalIdSchema = schema<ApprovalId>((input) =>
+  idValue<ApprovalId>(input, "approvalId", "approval"),
+);
+
+export const resultIdSchema = schema<ResultId>((input) =>
+  idValue<ResultId>(input, "resultId", "result"),
+);
+
+export const proposalIdSchema = schema<ProposalId>((input) =>
+  idValue<ProposalId>(input, "proposalId", "proposal"),
+);
+
+export const researchActivationSchema = schema<ResearchActivation>((input) => {
+  const value = object(input, "activation", [
+    "id",
+    "dispatchId",
+    "questId",
+    "capabilityId",
+    "mode",
+    "procedure",
+    "policyDigest",
+    "requestDigest",
+    "scopeHash",
+    "maxDurationMinutes",
+    "maxDispatches",
+    "createdAt",
+  ]);
+  const procedure = object(value.procedure, "activation.procedure", [
+    "id",
+    "version",
+    "digest",
+  ]);
+  return {
+    id: idValue<ActivationId>(value.id, "activation.id", "activation"),
+    dispatchId: idValue<DispatchId>(
+      value.dispatchId,
+      "activation.dispatchId",
+      "dispatch",
+    ),
+    questId: idValue<QuestId>(value.questId, "activation.questId", "quest"),
+    capabilityId: stringValue(value.capabilityId, "activation.capabilityId", {
+      nonEmpty: true,
+    }),
+    mode: enumValue(value.mode, "activation.mode", [
+      "automatic",
+      "explicit",
+    ] as const),
+    procedure: {
+      id: stringValue(procedure.id, "activation.procedure.id", {
+        nonEmpty: true,
+      }),
+      version: stringValue(procedure.version, "activation.procedure.version", {
+        nonEmpty: true,
+      }),
+      digest: sha256Binding(
+        procedure.digest,
+        "activation.procedure.digest",
+      ),
+    },
+    policyDigest: sha256Binding(
+      value.policyDigest,
+      "activation.policyDigest",
+    ),
+    requestDigest: sha256Binding(
+      value.requestDigest,
+      "activation.requestDigest",
+    ),
+    scopeHash: sha256Binding(value.scopeHash, "activation.scopeHash"),
+    maxDurationMinutes: positiveInteger(
+      value.maxDurationMinutes,
+      "activation.maxDurationMinutes",
+    ),
+    maxDispatches: positiveInteger(
+      value.maxDispatches,
+      "activation.maxDispatches",
+    ),
+    createdAt: schemaV2Timestamp(value.createdAt, "activation.createdAt"),
+  };
+});
+
+export const researchApprovalGrantSchema = schema<ResearchApprovalGrant>(
+  (input) => {
+    const value = object(input, "approval", [
+      "id",
+      "activationId",
+      "dispatchId",
+      "host",
+      "mode",
+      "approverLabel",
+      "rationale",
+      "requestDigest",
+      "procedureDigest",
+      "policyDigest",
+      "scopeHash",
+      "grantedAt",
+      "expiresAt",
+    ]);
+    return {
+      id: idValue<ApprovalId>(value.id, "approval.id", "approval"),
+      activationId: idValue<ActivationId>(
+        value.activationId,
+        "approval.activationId",
+        "activation",
+      ),
+      dispatchId: idValue<DispatchId>(
+        value.dispatchId,
+        "approval.dispatchId",
+        "dispatch",
+      ),
+      host: enumValue(value.host, "approval.host", ["claude", "codex"] as const),
+      mode: enumValue(value.mode, "approval.mode", [
+        "automatic",
+        "interactive",
+      ] as const),
+      approverLabel: boundedString(
+        value.approverLabel,
+        "approval.approverLabel",
+        128,
+      ),
+      rationale: boundedString(value.rationale, "approval.rationale", 1_024),
+      requestDigest: sha256Binding(
+        value.requestDigest,
+        "approval.requestDigest",
+      ),
+      procedureDigest: sha256Binding(
+        value.procedureDigest,
+        "approval.procedureDigest",
+      ),
+      policyDigest: sha256Binding(
+        value.policyDigest,
+        "approval.policyDigest",
+      ),
+      scopeHash: sha256Binding(value.scopeHash, "approval.scopeHash"),
+      grantedAt: schemaV2Timestamp(value.grantedAt, "approval.grantedAt"),
+      expiresAt: schemaV2Timestamp(value.expiresAt, "approval.expiresAt"),
+    };
+  },
+);
+
+export const researchApprovalStateSchema = schema<ResearchApprovalState>(
+  (input) => {
+    const base = object(
+      input,
+      "approval state",
+      [
+        "grant",
+        "status",
+        "revokedAt",
+        "revocationReason",
+        "consumedAt",
+        "resultId",
+        "proposalId",
+      ],
+      ["grant", "status"],
+    );
+    const grant = researchApprovalGrantSchema.parse(base.grant);
+    const status = enumValue(base.status, "approval state.status", [
+      "granted",
+      "revoked",
+      "consumed",
+    ] as const);
+    if (status === "granted") {
+      object(input, "approval state", ["grant", "status"]);
+      return { grant, status };
+    }
+    if (status === "revoked") {
+      const value = object(input, "approval state", [
+        "grant",
+        "status",
+        "revokedAt",
+        "revocationReason",
+      ]);
+      return {
+        grant,
+        status,
+        revokedAt: schemaV2Timestamp(
+          value.revokedAt,
+          "approval state.revokedAt",
+        ),
+        revocationReason: boundedString(
+          value.revocationReason,
+          "approval state.revocationReason",
+          1_024,
+        ),
+      };
+    }
+    const value = object(input, "approval state", [
+      "grant",
+      "status",
+      "consumedAt",
+      "resultId",
+      "proposalId",
+    ]);
+    return {
+      grant,
+      status,
+      consumedAt: schemaV2Timestamp(
+        value.consumedAt,
+        "approval state.consumedAt",
+      ),
+      resultId: idValue<ResultId>(value.resultId, "approval state.resultId", "result"),
+      proposalId: idValue<ProposalId>(
+        value.proposalId,
+        "approval state.proposalId",
+        "proposal",
+      ),
+    };
+  },
+);
+
 export const researchActorSchema = schema<ResearchActor>((input) => {
   const value = object(input, "actor", ["type", "id"]);
   return {
@@ -979,6 +1237,21 @@ export const researchAggregateRefSchema = schema<ResearchAggregateRef>((input) =
   };
 });
 
+export const researchSchemaV2AggregateRefSchema =
+  schema<ResearchSchemaV2AggregateRef>((input) => {
+    const value = object(input, "aggregate", ["type", "id"]);
+    const type = enumValue<ResearchSchemaV2AggregateType>(
+      value.type,
+      "aggregate.type",
+      [...AGGREGATE_TYPES, "activation", "approval"] as const,
+    );
+    const kind: ResearchIdKind = type === "workspace" ? "workspace" : type;
+    return {
+      type,
+      id: idValue(value.id, "aggregate.id", kind),
+    };
+  });
+
 export const eventIdSchema = schema<EventId>((input) =>
   idValue<EventId>(input, "eventId", "event"),
 );
@@ -1004,6 +1277,13 @@ export function parseClaimStatus(input: unknown): ClaimStatus {
 
 export function parseIsoTimestamp(input: unknown, name = "timestamp"): string {
   return timestamp(input, name);
+}
+
+export function parseResearchSchemaV2Timestamp(
+  input: unknown,
+  name = "timestamp",
+): string {
+  return schemaV2Timestamp(input, name);
 }
 
 export function parseNonEmptyString(input: unknown, name: string): string {

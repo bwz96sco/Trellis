@@ -9,6 +9,7 @@ import {
   assertRunStatusTransition,
 } from "./transitions.js";
 import type {
+  ApprovalId,
   ArtifactRef,
   Campaign,
   CampaignStatus,
@@ -23,8 +24,12 @@ import type {
   QuestStage,
   QuestStatus,
   Repository,
+  ResearchActivation,
   ResearchAggregateType,
+  ResearchApprovalGrant,
   ResearchEvent,
+  ResearchSchemaV2AggregateRef,
+  ResearchSchemaV2Event,
   ResearchState,
   Result,
   Run,
@@ -46,6 +51,10 @@ export function emptyResearchState(): ResearchState {
     results: {},
     proposals: {},
     decisions: {},
+    activations: {},
+    activationByDispatchId: {},
+    approvals: {},
+    approvalIdsByActivationId: {},
     entitySeq: {},
     projectedThroughSeq: 0,
     updatedAt: null,
@@ -70,11 +79,64 @@ export function reduceResearchEvents(
       throw new Error(`Duplicate research eventId '${event.eventId}'`);
     }
     eventIds.add(event.eventId);
+    if (event.kind === "approval.consumed") {
+      assertApprovalConsumptionAdjacency(events, index, event);
+    }
     applyEvent(state, event);
     state.projectedThroughSeq = event.seq;
     state.updatedAt = event.timestamp;
   }
   return state;
+}
+
+function sameAuthorityEnvelope(
+  left: ResearchEvent,
+  right: ResearchEvent,
+): boolean {
+  return (
+    left.timestamp === right.timestamp &&
+    left.idempotencyKey === right.idempotencyKey &&
+    left.actor.type === right.actor.type &&
+    left.actor.id === right.actor.id &&
+    left.provenance.source === right.provenance.source &&
+    left.provenance.sourceId === right.provenance.sourceId
+  );
+}
+
+function assertApprovalConsumptionAdjacency(
+  events: readonly ResearchEvent[],
+  index: number,
+  consumption: ResearchSchemaV2Event,
+): void {
+  const resultEvent = events[index - 2];
+  const proposalEvent = events[index - 1];
+  if (
+    resultEvent?.kind !== "result.recorded" ||
+    proposalEvent?.kind !== "proposal.recorded"
+  ) {
+    throw new Error(
+      "approval.consumed must immediately follow matching Result and Proposal events",
+    );
+  }
+  const result = resultEvent.payload.result as Result;
+  const proposal = proposalEvent.payload.proposal as Proposal;
+  if (
+    result.id !== consumption.payload.resultId ||
+    proposal.id !== consumption.payload.proposalId ||
+    result.dispatchId !== proposal.dispatchId
+  ) {
+    throw new Error(
+      "approval.consumed must match the immediately preceding Result and Proposal",
+    );
+  }
+  if (
+    !sameAuthorityEnvelope(resultEvent, proposalEvent) ||
+    !sameAuthorityEnvelope(proposalEvent, consumption)
+  ) {
+    throw new Error(
+      "Result, Proposal, and approval consumption must share timestamp, actor, provenance, and idempotency key",
+    );
+  }
 }
 
 function assertAggregate(
@@ -113,6 +175,45 @@ function touchWorkspace(state: ResearchState, event: ResearchEvent): Workspace {
   workspace.updatedAt = event.timestamp;
   mark(state, "workspace", event);
   return workspace;
+}
+
+function assertSchemaV2Aggregate(
+  event: ResearchSchemaV2Event,
+  type: "activation" | "approval",
+  id: string,
+): void {
+  if (event.aggregate.type !== type || event.aggregate.id !== id) {
+    throw new Error(
+      `${event.kind} aggregate must be ${type}:${id}, received ${event.aggregate.type}:${event.aggregate.id}`,
+    );
+  }
+}
+
+function assertSchemaV2Related(
+  event: ResearchSchemaV2Event,
+  expected: readonly ResearchSchemaV2AggregateRef[],
+): void {
+  if (
+    event.related.length !== expected.length ||
+    expected.some((ref, index) => {
+      const actual = event.related[index];
+      return actual?.type !== ref.type || actual.id !== ref.id;
+    })
+  ) {
+    throw new Error(`${event.kind} related refs do not match canonical state`);
+  }
+}
+
+function dispatchHasResult(state: ResearchState, dispatchId: string): boolean {
+  return Object.values(state.results).some(
+    (result) => result.dispatchId === dispatchId,
+  );
+}
+
+function dispatchHasProposal(state: ResearchState, dispatchId: string): boolean {
+  return Object.values(state.proposals).some(
+    (proposal) => proposal.dispatchId === dispatchId,
+  );
 }
 
 function applyEvent(state: ResearchState, event: ResearchEvent): void {
@@ -453,6 +554,225 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       }
       state.proposals[proposal.id] = { ...proposal };
       mark(state, proposal.id, event);
+      return;
+    }
+    case "activation.planned": {
+      const activation = event.payload.activation as ResearchActivation;
+      assertSchemaV2Aggregate(event, "activation", activation.id);
+      assertSchemaV2Related(event, [
+        { type: "dispatch", id: activation.dispatchId },
+        { type: "quest", id: activation.questId },
+      ]);
+      const dispatch = requireEntity(
+        state.dispatches,
+        activation.dispatchId,
+        "dispatch",
+      );
+      const quest = requireEntity(state.quests, activation.questId, "quest");
+      const run = requireEntity(state.runs, dispatch.runId, "run");
+      const campaign = requireEntity(
+        state.campaigns,
+        run.campaignId,
+        "campaign",
+      );
+      requireEntity(state.repositories, dispatch.repositoryId, "repository");
+      if (
+        dispatch.questId !== quest.id ||
+        campaign.questId !== quest.id ||
+        run.dispatchId !== dispatch.id ||
+        (dispatch.campaignId !== undefined && dispatch.campaignId !== campaign.id)
+      ) {
+        throw new Error(
+          `Activation '${activation.id}' does not match its Dispatch hierarchy`,
+        );
+      }
+      if (state.activations[activation.id]) {
+        throw new Error(`Research activation '${activation.id}' already exists`);
+      }
+      if (state.activationByDispatchId[dispatch.id]) {
+        throw new Error(`Dispatch '${dispatch.id}' already has an activation`);
+      }
+      if (
+        dispatchHasResult(state, dispatch.id) ||
+        dispatchHasProposal(state, dispatch.id)
+      ) {
+        throw new Error(`Activation for Dispatch '${dispatch.id}' was planned too late`);
+      }
+      if (activation.createdAt !== event.timestamp) {
+        throw new Error("Activation createdAt must equal its event timestamp");
+      }
+      state.activations[activation.id] = {
+        ...activation,
+        procedure: { ...activation.procedure },
+      };
+      state.activationByDispatchId[dispatch.id] = activation.id;
+      return;
+    }
+    case "approval.granted": {
+      const grant = event.payload.approval as ResearchApprovalGrant;
+      const activation = requireEntity(
+        state.activations,
+        grant.activationId,
+        "activation",
+      );
+      const dispatch = requireEntity(
+        state.dispatches,
+        grant.dispatchId,
+        "dispatch",
+      );
+      const quest = requireEntity(state.quests, activation.questId, "quest");
+      assertSchemaV2Aggregate(event, "approval", grant.id);
+      assertSchemaV2Related(event, [
+        { type: "activation", id: activation.id },
+        { type: "dispatch", id: dispatch.id },
+        { type: "quest", id: quest.id },
+      ]);
+      if (
+        activation.dispatchId !== dispatch.id ||
+        dispatch.questId !== quest.id ||
+        state.activationByDispatchId[dispatch.id] !== activation.id
+      ) {
+        throw new Error(
+          `Approval '${grant.id}' does not match its Activation hierarchy`,
+        );
+      }
+      if (
+        grant.requestDigest !== activation.requestDigest ||
+        grant.procedureDigest !== activation.procedure.digest ||
+        grant.policyDigest !== activation.policyDigest ||
+        grant.scopeHash !== activation.scopeHash
+      ) {
+        throw new Error(`Approval '${grant.id}' bindings do not match activation`);
+      }
+      if (state.approvals[grant.id]) {
+        throw new Error(`Research approval '${grant.id}' already exists`);
+      }
+      if (dispatchHasResult(state, dispatch.id)) {
+        throw new Error(`Dispatch '${dispatch.id}' already has a result`);
+      }
+      if (grant.grantedAt !== event.timestamp) {
+        throw new Error("Approval grantedAt must equal its event timestamp");
+      }
+      const expectedExpiry =
+        Date.parse(grant.grantedAt) + activation.maxDurationMinutes * 60_000;
+      if (
+        !Number.isFinite(expectedExpiry) ||
+        grant.expiresAt !== new Date(expectedExpiry).toISOString() ||
+        expectedExpiry <= Date.parse(grant.grantedAt)
+      ) {
+        throw new Error(
+          `Approval '${grant.id}' expiresAt does not match activation duration`,
+        );
+      }
+      for (const approvalId of state.approvalIdsByActivationId[activation.id] ?? []) {
+        const existing = requireEntity(state.approvals, approvalId, "approval");
+        if (
+          existing.status === "granted" &&
+          existing.grant.host === grant.host &&
+          Date.parse(event.timestamp) < Date.parse(existing.grant.expiresAt)
+        ) {
+          throw new Error(
+            `Activation '${activation.id}' already has a granted ${grant.host} approval`,
+          );
+        }
+      }
+      state.approvals[grant.id] = {
+        grant: { ...grant },
+        status: "granted",
+      };
+      state.approvalIdsByActivationId[activation.id] = [
+        ...(state.approvalIdsByActivationId[activation.id] ?? []),
+        grant.id,
+      ];
+      return;
+    }
+    case "approval.revoked": {
+      const approvalId = event.payload.approvalId as ApprovalId;
+      const revokedAt = event.payload.revokedAt as string;
+      const reason = event.payload.reason as string;
+      const approval = requireEntity(state.approvals, approvalId, "approval");
+      const activation = requireEntity(
+        state.activations,
+        approval.grant.activationId,
+        "activation",
+      );
+      assertSchemaV2Aggregate(event, "approval", approvalId);
+      assertSchemaV2Related(event, [
+        { type: "activation", id: activation.id },
+        { type: "dispatch", id: approval.grant.dispatchId },
+      ]);
+      if (approval.status !== "granted") {
+        throw new Error(
+          `Invalid approval transition: ${approval.status} -> revoked`,
+        );
+      }
+      if (
+        revokedAt !== event.timestamp ||
+        Date.parse(revokedAt) < Date.parse(approval.grant.grantedAt)
+      ) {
+        throw new Error("Approval revokedAt must equal a valid event timestamp");
+      }
+      state.approvals[approvalId] = {
+        grant: approval.grant,
+        status: "revoked",
+        revokedAt,
+        revocationReason: reason,
+      };
+      return;
+    }
+    case "approval.consumed": {
+      const approvalId = event.payload.approvalId as ApprovalId;
+      const resultId = event.payload.resultId as Result["id"];
+      const proposalId = event.payload.proposalId as Proposal["id"];
+      const consumedAt = event.payload.consumedAt as string;
+      const approval = requireEntity(state.approvals, approvalId, "approval");
+      const activation = requireEntity(
+        state.activations,
+        approval.grant.activationId,
+        "activation",
+      );
+      const dispatch = requireEntity(
+        state.dispatches,
+        approval.grant.dispatchId,
+        "dispatch",
+      );
+      const result = requireEntity(state.results, resultId, "result");
+      const proposal = requireEntity(state.proposals, proposalId, "proposal");
+      assertSchemaV2Aggregate(event, "approval", approvalId);
+      assertSchemaV2Related(event, [
+        { type: "activation", id: activation.id },
+        { type: "dispatch", id: dispatch.id },
+        { type: "result", id: result.id },
+        { type: "proposal", id: proposal.id },
+      ]);
+      if (approval.status !== "granted") {
+        throw new Error(
+          `Invalid approval transition: ${approval.status} -> consumed`,
+        );
+      }
+      if (
+        consumedAt !== event.timestamp ||
+        Date.parse(event.timestamp) >= Date.parse(approval.grant.expiresAt)
+      ) {
+        throw new Error(`Approval '${approvalId}' is expired`);
+      }
+      if (
+        activation.dispatchId !== dispatch.id ||
+        result.dispatchId !== dispatch.id ||
+        proposal.dispatchId !== dispatch.id ||
+        proposal.questId !== activation.questId
+      ) {
+        throw new Error(
+          `Approval '${approvalId}' consumption relations do not match canonical state`,
+        );
+      }
+      state.approvals[approvalId] = {
+        grant: approval.grant,
+        status: "consumed",
+        consumedAt,
+        resultId,
+        proposalId,
+      };
       return;
     }
     case "decision.recorded": {

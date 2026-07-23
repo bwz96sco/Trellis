@@ -1,4 +1,5 @@
 export const RESEARCH_SCHEMA_VERSION = 1 as const;
+export const RESEARCH_EVENT_SCHEMA_VERSION = 2 as const;
 
 export type WorkspaceId = `wsp_${string}`;
 export type RepositoryId = `rep_${string}`;
@@ -13,6 +14,8 @@ export type DispatchId = `dsp_${string}`;
 export type ResultId = `res_${string}`;
 export type ProposalId = `prp_${string}`;
 export type DecisionId = `dec_${string}`;
+export type ActivationId = `act_${string}`;
+export type ApprovalId = `apr_${string}`;
 
 export type QuestStatus = "active" | "paused" | "completed" | "abandoned";
 export type QuestStage =
@@ -241,6 +244,62 @@ export interface Decision {
   createdAt: string;
 }
 
+export type ApprovalStatus = "granted" | "revoked" | "consumed";
+
+export interface ResearchActivation {
+  id: ActivationId;
+  dispatchId: DispatchId;
+  questId: QuestId;
+  capabilityId: string;
+  mode: "automatic" | "explicit";
+  procedure: {
+    id: string;
+    version: string;
+    digest: string;
+  };
+  policyDigest: string;
+  requestDigest: string;
+  scopeHash: string;
+  maxDurationMinutes: number;
+  maxDispatches: number;
+  createdAt: string;
+}
+
+export interface ResearchApprovalGrant {
+  id: ApprovalId;
+  activationId: ActivationId;
+  dispatchId: DispatchId;
+  host: "claude" | "codex";
+  mode: "automatic" | "interactive";
+  approverLabel: string;
+  rationale: string;
+  requestDigest: string;
+  procedureDigest: string;
+  policyDigest: string;
+  scopeHash: string;
+  grantedAt: string;
+  expiresAt: string;
+}
+
+export type ResearchApprovalState =
+  | {
+      grant: ResearchApprovalGrant;
+      status: "granted";
+    }
+  | {
+      grant: ResearchApprovalGrant;
+      status: "revoked";
+      revokedAt: string;
+      revocationReason: string;
+    }
+  | {
+      grant: ResearchApprovalGrant;
+      status: "consumed";
+      consumedAt: string;
+      resultId: ResultId;
+      proposalId: ProposalId;
+    };
+
 export type ResearchAggregateType =
   | "workspace"
   | "repository"
@@ -257,6 +316,16 @@ export type ResearchAggregateType =
 
 export interface ResearchAggregateRef {
   type: ResearchAggregateType;
+  id: string;
+}
+
+export type ResearchSchemaV2AggregateType =
+  | ResearchAggregateType
+  | "activation"
+  | "approval";
+
+export interface ResearchSchemaV2AggregateRef {
+  type: ResearchSchemaV2AggregateType;
   id: string;
 }
 
@@ -293,7 +362,13 @@ export type ResearchEventKind =
   | "proposal.recorded"
   | "decision.recorded";
 
-export interface ResearchEvent {
+export type ResearchSchemaV2EventKind =
+  | "activation.planned"
+  | "approval.granted"
+  | "approval.revoked"
+  | "approval.consumed";
+
+export interface ResearchSchemaV1Event {
   schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
   eventId: EventId;
   seq: number;
@@ -306,6 +381,22 @@ export interface ResearchEvent {
   idempotencyKey: string;
   provenance: ResearchProvenance;
 }
+
+export interface ResearchSchemaV2Event {
+  schemaVersion: typeof RESEARCH_EVENT_SCHEMA_VERSION;
+  eventId: EventId;
+  seq: number;
+  timestamp: string;
+  kind: ResearchSchemaV2EventKind;
+  aggregate: ResearchSchemaV2AggregateRef;
+  related: ResearchSchemaV2AggregateRef[];
+  payload: Record<string, unknown>;
+  actor: ResearchActor;
+  idempotencyKey: string;
+  provenance: ResearchProvenance;
+}
+
+export type ResearchEvent = ResearchSchemaV1Event | ResearchSchemaV2Event;
 
 export interface Projected<T> {
   schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
@@ -327,6 +418,10 @@ export interface ResearchState {
   results: Record<ResultId, Result>;
   proposals: Record<ProposalId, Proposal>;
   decisions: Record<DecisionId, Decision>;
+  activations: Record<ActivationId, ResearchActivation>;
+  activationByDispatchId: Partial<Record<DispatchId, ActivationId>>;
+  approvals: Record<ApprovalId, ResearchApprovalState>;
+  approvalIdsByActivationId: Partial<Record<ActivationId, ApprovalId[]>>;
   entitySeq: Record<string, number>;
   projectedThroughSeq: number;
   updatedAt: string | null;
