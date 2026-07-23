@@ -1,0 +1,4 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Defines the schema-v1 ledger, projection, replay, and compatibility invariants frozen by this child."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Defines Dispatch request/result/proposal/decision and legacy metadata contracts."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Provides ownership-manifest context for the legacy installation fixture."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Requires portable fixture paths and non-destructive ownership handling."}

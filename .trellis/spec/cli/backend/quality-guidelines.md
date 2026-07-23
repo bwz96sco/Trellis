@@ -523,9 +523,11 @@ const TOOLS = [
 - Display name, flag key, and default are co-located
 - Less code duplication, fewer bugs
 
-### Auto-Detect Modes Must Probe in ALL Code Paths
+### Historical Mode-Detection Lesson
 
-When a CLI auto-detects mode (e.g., marketplace vs direct download) by probing a resource, the probe must run in **every** code path that uses the result — including `-y` (non-interactive) mode:
+> Compatibility history only: current Research init has no registry, template, marketplace, or direct-download mode, and the related options are unregistered. Keep this lesson for any future mode-detection design; do not treat the examples below as active Trellis CLI signatures.
+
+When a CLI auto-detects a mode by probing a resource, the probe must run in **every** code path that uses the result, including non-interactive mode:
 
 ```typescript
 // Bad: Probe only runs in interactive mode
@@ -614,7 +616,7 @@ fetchedTemplates = []; // Clear stale data from previous source
 
 #### 1. Scope / Trigger
 
-When a CLI registry flow probes one backend to decide marketplace vs direct-download mode, and then downloads content later, the chosen backend is part of the control-flow contract. This applies to `trellis init --registry`, especially private/self-hosted Git registries.
+This is a historical generic-registry design lesson, not a current CLI contract. If a future product flow probes one backend to decide between modes and downloads later, the chosen backend must remain part of that flow. Current `trellis init` has no `--registry` option and performs no registry probe or download.
 
 #### 2. Signatures
 
@@ -887,7 +889,7 @@ The first commit (`346003d`) added a `tasksEmpty` fallback only in `init()`'s ma
 4. Source build needs Visual Studio 2017+ Build Tools, which most Windows users don't have installed.
 5. Install fails — **`trellis` itself can no longer be installed at all**.
 
-Time to detect: ~4 hours after publish. Fix: emergency revert in 0.6.0-beta.4 (removed `better-sqlite3`, marked the OpenCode 1.2+ SQLite reader as degraded with a soft-degrade fallback). The OpenCode SQLite section in `commands-mem.md` is now a stub describing the degraded state.
+Time to detect: ~4 hours after publish. Fix: emergency revert in 0.6.0-beta.4 removed `better-sqlite3` and safely degraded the historical OpenCode SQLite reader. This remains native-dependency history; Mem is now a core SDK compatibility domain with no active CLI command specification.
 
 The lesson: **a native dep that fails to install fails the entire CLI**, not just one feature. For a productivity tool, that tradeoff is unacceptable unless the perf benefit is dramatic and unreplaceable.
 
@@ -920,7 +922,7 @@ if (nativeReader) {
 }
 ```
 
-Cross-reference: future native-dep additions should mirror the soft-degrade pattern used by `commands/mem.ts:opencodeListSessions` (on the `feat/v0.6.0-beta` branch). When the native reader is unavailable, the function returns degraded but non-empty output rather than throwing.
+Future native-dependency proposals should preserve the same historical soft-degrade lesson: an unavailable optional reader must not prevent CLI installation or startup. Do not restore a Mem CLI wrapper to demonstrate this pattern.
 
 #### 3. Test on Windows + restricted network before shipping
 
@@ -981,7 +983,7 @@ If any answer is "no", the dep doesn't ship.
 4. Source build needs Visual Studio 2017+ Build Tools, which most Windows users don't have installed.
 5. Install fails — **`trellis` itself can no longer be installed at all**.
 
-Time to detect: ~4 hours after publish. Fix: emergency revert in 0.6.0-beta.4 (removed `better-sqlite3`, marked the OpenCode 1.2+ SQLite reader as degraded with a soft-degrade fallback). The OpenCode SQLite section in `commands-mem.md` is now a stub describing the degraded state.
+Time to detect: ~4 hours after publish. Fix: emergency revert in 0.6.0-beta.4 removed `better-sqlite3` and safely degraded the historical OpenCode SQLite reader. This remains native-dependency history; Mem is now a core SDK compatibility domain with no active CLI command specification.
 
 The lesson: **a native dep that fails to install fails the entire CLI**, not just one feature. For a productivity tool, that tradeoff is unacceptable unless the perf benefit is dramatic and unreplaceable.
 
@@ -1014,7 +1016,7 @@ if (nativeReader) {
 }
 ```
 
-Cross-reference: future native-dep additions should mirror the soft-degrade pattern used by `commands/mem.ts:opencodeListSessions` (on the `feat/v0.6.0-beta` branch). When the native reader is unavailable, the function returns degraded but non-empty output rather than throwing.
+Future native-dependency proposals should preserve the same historical soft-degrade lesson: an unavailable optional reader must not prevent CLI installation or startup. Do not restore a Mem CLI wrapper to demonstrate this pattern.
 
 #### 3. Test on Windows + restricted network before shipping
 

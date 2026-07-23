@@ -1,0 +1,17 @@
+{
+  "data": {
+    "createdAt": "2026-07-18T10:05:00.000Z",
+    "id": "cmp_55555555-5555-4555-8555-555555555555",
+    "protocolDigest": "sha256:golden-protocol-v1",
+    "questId": "qst_44444444-4444-4444-8444-444444444444",
+    "runIds": [
+      "run_66666666-6666-4666-8666-666666666666"
+    ],
+    "status": "draft",
+    "title": "Golden compatibility campaign",
+    "updatedAt": "2026-07-18T10:06:00.000Z"
+  },
+  "projectedThroughSeq": 13,
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-18T10:06:00.000Z"
+}

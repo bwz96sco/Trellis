@@ -282,7 +282,9 @@ async function probeIndex(url: string): Promise<{ items: Item[]; isNotFound: boo
 
 ### Mistake 4: Shortcut path inherits catch-all from downstream function
 
-When a CLI has a "skip probe" shortcut (e.g., `--template` skips the interactive picker), the downstream action function may still call a catch-all internally, silently swallowing the errors that the probe was designed to surface:
+> Historical generic-registry example only. Current Research init has no `--template` or `--registry` options and performs no registry probe/download.
+
+When a CLI has a skip-probe shortcut, the downstream action function may still call a catch-all internally, silently swallowing the errors that the probe was designed to surface:
 
 ```typescript
 // Setup: probeRegistryIndex correctly distinguishes 404 from timeout

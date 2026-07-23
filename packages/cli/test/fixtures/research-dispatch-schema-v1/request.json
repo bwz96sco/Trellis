@@ -1,0 +1,41 @@
+{
+  "acceptanceCriteria": [
+    "Report is deterministic",
+    "No absolute paths are stored"
+  ],
+  "allowedWritePaths": [
+    "results/golden-report.json"
+  ],
+  "campaignId": "cmp_55555555-5555-4555-8555-555555555555",
+  "checks": [
+    "node scripts/check-golden.mjs"
+  ],
+  "context": [
+    {
+      "text": "Use the frozen schema-v1 protocol."
+    },
+    {
+      "artifact": {
+        "id": "art_33333333-3333-4333-8333-333333333333",
+        "kind": "report",
+        "mediaType": "application/json",
+        "path": "results/golden-report.json",
+        "repositoryId": "rep_22222222-2222-4222-8222-222222222222",
+        "revision": "0123456789abcdef0123456789abcdef01234567",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  ],
+  "createdAt": "2026-07-18T10:07:00.000Z",
+  "expectedOutputs": [
+    "Golden report"
+  ],
+  "id": "dsp_77777777-7777-4777-8777-777777777777",
+  "objective": "Produce the golden compatibility report",
+  "ownerSkill": "trellis-research-runner",
+  "provider": "claude",
+  "questId": "qst_44444444-4444-4444-8444-444444444444",
+  "repositoryId": "rep_22222222-2222-4222-8222-222222222222",
+  "runId": "run_66666666-6666-4666-8666-666666666666",
+  "taskRef": "tasks/07-18-golden-research"
+}

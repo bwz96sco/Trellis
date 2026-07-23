@@ -28,26 +28,6 @@ vi.mock("node:child_process", () => ({
   }),
 }));
 
-const registryDownload = vi.hoisted(() => ({
-  files: new Map<string, string>(),
-}));
-
-vi.mock("giget", async () => {
-  const fs = await import("node:fs");
-  const path = await import("node:path");
-  return {
-    downloadTemplate: vi.fn(
-      async (_source: string, options: { dir: string }) => {
-        for (const [relativePath, content] of registryDownload.files) {
-          const targetPath = path.join(options.dir, relativePath);
-          fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-          fs.writeFileSync(targetPath, content, "utf-8");
-        }
-      },
-    ),
-  };
-});
-
 // === Imports ===
 
 import { init } from "../../src/commands/init.js";
@@ -60,20 +40,12 @@ import {
   loadWorkflowSelection,
   saveBundledWorkflowSelection,
 } from "../../src/utils/workflow-selection.js";
-import {
-  researchWorkflowMdTemplate,
-  workflowMdTemplate,
-} from "../../src/templates/trellis/index.js";
-import {
-  COPILOT_INSTRUCTIONS_BLOCK_END,
-  COPILOT_INSTRUCTIONS_BLOCK_START,
-  COPILOT_INSTRUCTIONS_PATH,
-  getCopilotInstructions,
-} from "../../src/templates/copilot/index.js";
+import { researchWorkflowMdTemplate } from "../../src/templates/trellis/index.js";
+import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
 import { replacePythonCommandLiterals } from "../../src/configurators/shared.js";
 
-// A managed template file that update always handles (Python script)
-const MANAGED_FILE = `${PATHS.SCRIPTS}/get_context.py`;
+// A managed Research payload file that update always handles for Claude installs.
+const MANAGED_FILE = ".claude/hooks/session-start.py";
 
 /** Remove a key from a hash object (avoids eslint no-dynamic-delete) */
 function removeHashEntry(
@@ -174,7 +146,6 @@ describe("update() integration", () => {
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-update-int-"));
     vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
-    registryDownload.files.clear();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const noop = () => {};
     vi.spyOn(console, "log").mockImplementation(noop);
@@ -195,10 +166,16 @@ describe("update() integration", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("#1 same version update is a true no-op (zero file changes, no backup)", async () => {
+  it("#1 same version update is a true no-op after ownership self-heal", async () => {
     await setupProject();
+    // The first update may release stale ownership recorded by older init
+    // behavior. Once healed, another same-version update must be byte-stable.
+    await update({});
+    const backupsBefore = fs
+      .readdirSync(path.join(tmpDir, DIR_NAMES.WORKFLOW))
+      .filter((entry) => entry.startsWith(".backup-"));
 
-    // Full snapshot before update
+    // Full snapshot before the idempotency check
     const snapshotBefore = new Map<string, string>();
     const walk = (dir: string) => {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -249,60 +226,11 @@ describe("update() integration", () => {
     }
     expect(changedFiles).toEqual([]);
 
-    // No backup directory created
-    const entries = fs.readdirSync(path.join(tmpDir, DIR_NAMES.WORKFLOW));
-    expect(entries.filter((e) => e.startsWith(".backup-")).length).toBe(0);
-  });
-
-  it("#1b current OpenCode templates are not classified as deprecated", async () => {
-    const startPath = ".opencode/commands/trellis/start.md";
-    await init({ yes: true, force: true, opencode: true });
-    expect(fs.existsSync(projectFile(startPath))).toBe(true);
-
-    await update({ dryRun: true });
-
-    const output = vi.mocked(console.log).mock.calls.flat().join("\n");
-    expect(output).not.toContain(`${startPath} (modified, skipped)`);
-  });
-
-  it("[issue-zcode-codex-upgrade] zcode private skills do not trigger legacy Codex backfill", async () => {
-    await init({ yes: true, force: true, zcode: true });
-
-    expect(fs.existsSync(projectFile(".zcode/commands/trellis/start.md"))).toBe(
-      false,
-    );
-    expect(
-      fs.existsSync(projectFile(".zcode/skills/trellis-start/SKILL.md")),
-    ).toBe(false);
-    expect(
-      fs.existsSync(projectFile(".zcode/skills/trellis-check/SKILL.md")),
-    ).toBe(true);
-    expect(
-      fs.existsSync(projectFile(".zcode/agents/trellis-research.md")),
-    ).toBe(true);
-    expect(
-      fs.existsSync(projectFile(".agents/skills/trellis-start/SKILL.md")),
-    ).toBe(false);
-    expect(fs.existsSync(projectFile(".agents/skills"))).toBe(false);
-    expect(
-      fs.existsSync(projectFile(".agents/skills/trellis-continue/SKILL.md")),
-    ).toBe(false);
-
-    await update({});
-
-    const logOutput = vi.mocked(console.log).mock.calls.flat().join("\n");
-    expect(logOutput).not.toContain("Legacy Codex detected");
-    expect(fs.existsSync(projectFile(".codex"))).toBe(false);
-    expect(
-      fs.existsSync(projectFile(".zcode/skills/trellis-start/SKILL.md")),
-    ).toBe(false);
-    expect(
-      fs.existsSync(projectFile(".zcode/skills/trellis-check/SKILL.md")),
-    ).toBe(true);
-    expect(
-      fs.existsSync(projectFile(".zcode/agents/trellis-research.md")),
-    ).toBe(true);
-    expect(fs.existsSync(projectFile(".agents/skills"))).toBe(false);
+    // The idempotency check creates no additional backup.
+    const backupsAfter = fs
+      .readdirSync(path.join(tmpDir, DIR_NAMES.WORKFLOW))
+      .filter((entry) => entry.startsWith(".backup-"));
+    expect(backupsAfter).toEqual(backupsBefore);
   });
 
   it("#2 dry run makes no file changes even when changes exist", async () => {
@@ -460,66 +388,6 @@ describe("update() integration", () => {
     expect(result.endsWith(templateContent.trimEnd() + "\n")).toBe(true);
   });
 
-  it("#4e appends Trellis Copilot guidance to existing repo instructions", async () => {
-    await init({ yes: true, force: true, copilot: true });
-
-    const userContent =
-      "# Repo Copilot Instructions\n\nReview app code first.\n";
-    writeProjectFile(COPILOT_INSTRUCTIONS_PATH, userContent);
-
-    const hashFile = hashFilePath();
-    const hashes = removeHashEntry(
-      readHashesV2(hashFile),
-      COPILOT_INSTRUCTIONS_PATH,
-    ) as Record<string, string>;
-    writeHashesV2(hashFile, hashes);
-
-    await update({});
-
-    const result = readProjectFile(COPILOT_INSTRUCTIONS_PATH);
-    expect(result).toContain("# Repo Copilot Instructions");
-    expect(result).toContain("Review app code first.");
-    expect(result).toContain(COPILOT_INSTRUCTIONS_BLOCK_START);
-    expect(result).toContain(COPILOT_INSTRUCTIONS_BLOCK_END);
-    expect(result).toContain("Trellis-generated runtime");
-    expect(result.indexOf("# Repo Copilot Instructions")).toBeLessThan(
-      result.indexOf(COPILOT_INSTRUCTIONS_BLOCK_START),
-    );
-    expect(readHashesV2(hashFile)[COPILOT_INSTRUCTIONS_PATH]).toBe(
-      computeHash(result),
-    );
-  });
-
-  it("#4f refreshes only the Trellis Copilot guidance block", async () => {
-    await init({ yes: true, force: true, copilot: true });
-
-    const oldBlock = getCopilotInstructions().replace(
-      "Group duplicate root-cause findings into one comment",
-      "Leave duplicate comments for every occurrence",
-    );
-    const existingContent = `# Repo Copilot Instructions\n\n${oldBlock}\n\n## Local Notes\n\nKeep this.\n`;
-    writeProjectFile(COPILOT_INSTRUCTIONS_PATH, existingContent);
-
-    const hashFile = hashFilePath();
-    const hashes = readHashesV2(hashFile);
-    hashes[COPILOT_INSTRUCTIONS_PATH] = computeHash(existingContent);
-    writeHashesV2(hashFile, hashes);
-
-    await update({});
-
-    const result = readProjectFile(COPILOT_INSTRUCTIONS_PATH);
-    expect(result).toContain("# Repo Copilot Instructions");
-    expect(result).toContain("## Local Notes");
-    expect(result).toContain("Keep this.");
-    expect(result).toContain(
-      "Group duplicate root-cause findings into one comment",
-    );
-    expect(result).not.toContain("Leave duplicate comments");
-    expect(readHashesV2(hashFile)[COPILOT_INSTRUCTIONS_PATH]).toBe(
-      computeHash(result),
-    );
-  });
-
   it("#5 force overwrites user-modified files", async () => {
     await setupProject();
 
@@ -669,14 +537,16 @@ describe("update() integration", () => {
     expect(fs.readFileSync(versionPath, "utf-8")).toBe(VERSION);
   });
 
-  it("#12b versioned upgrade scenario applies auto-updates, additive config sections, and modified-file skips", async () => {
+  it("#12b versioned upgrade updates Research payloads without appending generic config", async () => {
     await setupProject();
 
-    const expectedWorkflow = replacePythonCommandLiterals(workflowMdTemplate);
-    const expectedGetContext = readProjectFile(MANAGED_FILE);
-    const userModifiedScript = `${PATHS.SCRIPTS}/add_session.py`;
-    const userModifiedScriptContent = "# user customized add_session.py\n";
-    const oldConfigWithoutSessionAutoCommit =
+    const expectedWorkflow = replacePythonCommandLiterals(
+      researchWorkflowMdTemplate,
+    );
+    const expectedHook = readProjectFile(MANAGED_FILE);
+    const legacyScript = `${PATHS.SCRIPTS}/add_session.py`;
+    const legacyScriptContent = "# user customized add_session.py\n";
+    const localConfig =
       "max_journal_lines: 2000\n\n" +
       "# Local 0.5.10 config customization that must survive update.\n";
     const oldWorkflow =
@@ -693,57 +563,47 @@ describe("update() integration", () => {
       fromVersion: "0.5.10",
       pristineTemplates: {
         [PATHS.WORKFLOW_GUIDE_FILE]: oldWorkflow,
-        [MANAGED_FILE]: "# old get_context.py from installed template\n",
+        [MANAGED_FILE]: "# old Research session-start hook\n",
       },
       userModifiedTemplates: {
-        [`${DIR_NAMES.WORKFLOW}/config.yaml`]:
-          oldConfigWithoutSessionAutoCommit,
-        [userModifiedScript]: userModifiedScriptContent,
+        [`${DIR_NAMES.WORKFLOW}/config.yaml`]: localConfig,
+        [legacyScript]: legacyScriptContent,
       },
     });
 
     await update({ skipAll: true });
 
     expect(fs.readFileSync(versionFilePath(), "utf-8")).toBe(VERSION);
-
-    // Hash-tracked pristine templates from the older install are whole-file
-    // auto-updated to the current packaged template.
     expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toBe(expectedWorkflow);
-    expect(readProjectFile(MANAGED_FILE)).toBe(expectedGetContext);
-    expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).toContain(
-      "[codex-inline, Kilo, Antigravity, Devin]",
+    expect(readProjectFile(MANAGED_FILE)).toBe(expectedHook);
+    expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).not.toContain(
+      "legacy body",
     );
-    expect(readProjectFile(PATHS.WORKFLOW_GUIDE_FILE)).not.toContain("[Codex]");
 
-    // Version-specific additive config sections still apply to a user-modified
-    // config.yaml, while preserving the local content around the append.
     const updatedConfig = readProjectFile(`${DIR_NAMES.WORKFLOW}/config.yaml`);
-    expect(updatedConfig).toContain(
-      "Local 0.5.10 config customization that must survive update.",
-    );
-    expect(updatedConfig).toContain("Session Auto-Commit");
-    expect(updatedConfig).toContain("session_auto_commit: true");
+    expect(updatedConfig).toBe(localConfig);
+    expect(updatedConfig).not.toContain("Session Auto-Commit");
+    expect(updatedConfig).not.toContain("session_auto_commit");
 
-    // User-modified template files are skipped under skipAll and their hashes
-    // are not rewritten to bless the local modification as a template.
-    expect(readProjectFile(userModifiedScript)).toBe(userModifiedScriptContent);
+    // Unknown or modified historical bytes remain user-owned. Current desired
+    // state does not recreate or bless generic scripts.
+    expect(readProjectFile(legacyScript)).toBe(legacyScriptContent);
     const hashes = readHashesV2(hashFilePath());
     expect(hashes[PATHS.WORKFLOW_GUIDE_FILE]).toBe(
       computeHash(expectedWorkflow),
     );
-    expect(hashes[MANAGED_FILE]).toBe(computeHash(expectedGetContext));
-    expect(hashes[userModifiedScript]).not.toBe(
-      computeHash(userModifiedScriptContent),
-    );
+    expect(hashes[MANAGED_FILE]).toBe(computeHash(expectedHook));
+    expect(hashes[legacyScript]).not.toBe(computeHash(legacyScriptContent));
   });
 
   it("#13 user-edited spec/guides files are preserved after update with force", async () => {
     await setupProject();
 
-    // User customizes a spec guides file
+    // A legacy or user-created generic spec remains user-owned even though
+    // current Research init no longer creates blank generic spec scaffolding.
     const guidesIndex = path.join(tmpDir, PATHS.SPEC, "guides", "index.md");
-    expect(fs.existsSync(guidesIndex)).toBe(true);
     const customContent = "# My Custom Guides\n\nEdited by user.\n";
+    fs.mkdirSync(path.dirname(guidesIndex), { recursive: true });
     fs.writeFileSync(guidesIndex, customContent);
 
     await update({ force: true });
@@ -766,7 +626,7 @@ describe("update() integration", () => {
     expect(fs.existsSync(specDir)).toBe(false);
   });
 
-  it("#14b registry-backed pristine spec is refreshed by update", async () => {
+  it("#14b registry-backed pristine spec is not refreshed by update", async () => {
     await setupProject();
 
     const specFile = `${PATHS.SPEC}/index.md`;
@@ -779,7 +639,6 @@ describe("update() integration", () => {
     hashes[specFile] = computeHash("# remote spec v1\n");
     writeHashesV2(hashFilePath(), hashes);
 
-    registryDownload.files.set("index.md", "# remote spec v2\n");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((input: string | URL) => {
@@ -796,12 +655,9 @@ describe("update() integration", () => {
 
     await update({ force: true });
 
-    expect(readProjectFile(specFile)).toBe("# remote spec v2\n");
+    expect(readProjectFile(specFile)).toBe("# remote spec v1\n");
     expect(readHashesV2(hashFilePath())[specFile]).toBe(
-      computeHash("# remote spec v2\n"),
-    );
-    expect(readProjectFile(`${DIR_NAMES.WORKFLOW}/config.yaml`)).toContain(
-      "source: gitlab:local/registry/spec",
+      computeHash("# remote spec v1\n"),
     );
   });
 
@@ -818,7 +674,6 @@ describe("update() integration", () => {
     hashes[specFile] = computeHash("# remote spec v1\n");
     writeHashesV2(hashFilePath(), hashes);
 
-    registryDownload.files.set("index.md", "# remote spec v2\n");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((input: string | URL) => {
@@ -841,7 +696,7 @@ describe("update() integration", () => {
     );
   });
 
-  it("#14d registry-backed marketplace template spec is refreshed by update", async () => {
+  it("#14d registry marketplace spec is not refreshed by update", async () => {
     await setupProject();
 
     const specFile = `${PATHS.SPEC}/index.md`;
@@ -854,7 +709,6 @@ describe("update() integration", () => {
     hashes[specFile] = computeHash("# golang spec v1\n");
     writeHashesV2(hashFilePath(), hashes);
 
-    registryDownload.files.set("index.md", "# golang spec v2\n");
     const index = JSON.stringify({
       version: 1,
       templates: [
@@ -885,9 +739,9 @@ describe("update() integration", () => {
 
     await update({ force: true });
 
-    expect(readProjectFile(specFile)).toBe("# golang spec v2\n");
+    expect(readProjectFile(specFile)).toBe("# golang spec v1\n");
     expect(readHashesV2(hashFilePath())[specFile]).toBe(
-      computeHash("# golang spec v2\n"),
+      computeHash("# golang spec v1\n"),
     );
   });
 
@@ -917,35 +771,92 @@ describe("update() integration", () => {
     expect(fs.existsSync(targetPath)).toBe(true);
   });
 
-  it("backfills new research worker and skill templates with hashes", async () => {
+  it("adds and claims the bounded Codex worker for an older managed install", async () => {
+    await init({ yes: true, codex: true, force: true });
+    const workerPath = ".codex/agents/trellis-research-worker.toml";
+    const workerTemplate = getCodexResearchWorkerTemplate().content;
+    const expectedWorker = replacePythonCommandLiterals(workerTemplate);
+
+    fs.unlinkSync(projectFile(workerPath));
+    const hashes = removeHashEntry(
+      readHashesV2(hashFilePath()),
+      workerPath,
+    ) as Record<string, string>;
+    writeHashesV2(hashFilePath(), hashes);
+    fs.writeFileSync(versionFilePath(), "0.6.7", "utf-8");
+
+    await update({ force: true });
+
+    expect(readProjectFile(workerPath)).toBe(expectedWorker);
+    expect(readHashesV2(hashFilePath())[workerPath]).toBe(
+      computeHash(expectedWorker),
+    );
+    const hashesAfterInstall = fs.readFileSync(hashFilePath(), "utf-8");
+    const backupsAfterInstall = fs
+      .readdirSync(projectFile(DIR_NAMES.WORKFLOW))
+      .filter((entry) => entry.startsWith(".backup-"));
+
+    await update({});
+
+    expect(readProjectFile(workerPath)).toBe(expectedWorker);
+    expect(fs.readFileSync(hashFilePath(), "utf-8")).toBe(hashesAfterInstall);
+    expect(
+      fs
+        .readdirSync(projectFile(DIR_NAMES.WORKFLOW))
+        .filter((entry) => entry.startsWith(".backup-")),
+    ).toEqual(backupsAfterInstall);
+  });
+
+  it("preserves and does not claim an unowned conflicting Codex worker", async () => {
+    await init({ yes: true, codex: true, force: true });
+    const workerPath = ".codex/agents/trellis-research-worker.toml";
+    const conflict = "# user-owned Codex research worker\n";
+    writeProjectFile(workerPath, conflict);
+    const hashes = removeHashEntry(
+      readHashesV2(hashFilePath()),
+      workerPath,
+    ) as Record<string, string>;
+    writeHashesV2(hashFilePath(), hashes);
+    vi.mocked(console.log).mockClear();
+
+    await update({ skipAll: true });
+
+    expect(readProjectFile(workerPath)).toBe(conflict);
+    expect(readHashesV2(hashFilePath())[workerPath]).toBeUndefined();
+    expect(
+      vi
+        .mocked(console.log)
+        .mock.calls.flat()
+        .some((value) => String(value).includes(`? ${workerPath}`)),
+    ).toBe(true);
+  });
+
+  it("does not backfill generic agents from legacy inventory", async () => {
     await setupProject();
 
-    const researchTemplates = [
-      ".trellis/agents/research.md",
-      ".claude/skills/trellis-research-literature/SKILL.md",
-    ];
-    const expectedContents = Object.fromEntries(
-      researchTemplates.map((relativePath) => [
-        relativePath,
-        readProjectFile(relativePath),
-      ]),
-    );
-    let hashes = readHashesV2(hashFilePath());
+    const genericAgentPath = ".trellis/agents/research.md";
+    const researchSkillPath =
+      ".claude/skills/trellis-research-literature/SKILL.md";
+    const expectedResearchSkill = readProjectFile(researchSkillPath);
 
-    for (const relativePath of researchTemplates) {
-      hashes = removeHashEntry(hashes, relativePath) as Record<string, string>;
-      fs.unlinkSync(projectFile(relativePath));
-    }
+    writeProjectFile(".trellis/agents/existing.md", "# Legacy agent inventory\n");
+    let hashes = readHashesV2(hashFilePath());
+    hashes = removeHashEntry(hashes, researchSkillPath) as Record<string, string>;
+    fs.unlinkSync(projectFile(researchSkillPath));
     writeHashesV2(hashFilePath(), hashes);
 
     await update({ force: true });
 
+    expect(fs.existsSync(projectFile(genericAgentPath))).toBe(false);
+    expect(readProjectFile(".trellis/agents/existing.md")).toBe(
+      "# Legacy agent inventory\n",
+    );
+    expect(readProjectFile(researchSkillPath)).toBe(expectedResearchSkill);
     const updatedHashes = readHashesV2(hashFilePath());
-    for (const relativePath of researchTemplates) {
-      const content = readProjectFile(relativePath);
-      expect(content).toBe(expectedContents[relativePath]);
-      expect(updatedHashes[relativePath]).toBe(computeHash(content));
-    }
+    expect(updatedHashes[genericAgentPath]).toBeUndefined();
+    expect(updatedHashes[researchSkillPath]).toBe(
+      computeHash(expectedResearchSkill),
+    );
   });
 
   it("#16 config.yaml update.skip prevents file from being updated", async () => {
@@ -975,26 +886,22 @@ describe("update() integration", () => {
   it("#17 config.yaml update.skip with directory path skips all files under it", async () => {
     await setupProject();
 
-    // Add skip config for the scripts/common/ directory
     const configPath = path.join(tmpDir, DIR_NAMES.WORKFLOW, "config.yaml");
     const configContent = fs.readFileSync(configPath, "utf-8");
-    const skipDir = `${PATHS.SCRIPTS}/common/`;
+    const skipDir = ".claude/hooks/";
     fs.writeFileSync(
       configPath,
       configContent + `\nupdate:\n  skip:\n    - ${skipDir}\n`,
     );
 
-    // Modify a file under the skipped directory
-    const targetPath = path.join(tmpDir, PATHS.SCRIPTS, "common", "paths.py");
+    const targetPath = path.join(tmpDir, MANAGED_FILE);
     expect(fs.existsSync(targetPath)).toBe(true);
-    fs.writeFileSync(targetPath, "# user modified paths.py\n");
+    fs.writeFileSync(targetPath, "# user modified Research hook\n");
 
-    // Run update
     await update({ force: true });
 
-    // File should NOT be overwritten (its directory is in skip list)
     expect(fs.readFileSync(targetPath, "utf-8")).toBe(
-      "# user modified paths.py\n",
+      "# user modified Research hook\n",
     );
   });
 
@@ -1104,6 +1011,30 @@ describe("update() integration", () => {
     expect(fs.existsSync(deprecatedFile)).toBe(false);
   });
 
+  it("#21b current-host safe-delete removes released pristine bytes and hash ownership", async () => {
+    await init({ yes: true, force: true, claude: true });
+
+    const retiredPath = ".agents/skills/trellis-check/SKILL.md";
+    const fixturePath = path.resolve(
+      import.meta.dirname,
+      "../fixtures/legacy-0.6.7-multi-host/project",
+      retiredPath,
+    );
+    const releasedContent = fs.readFileSync(fixturePath, "utf-8");
+    expect(computeHash(releasedContent)).toBe(
+      "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282",
+    );
+    writeProjectFile(retiredPath, releasedContent);
+    const hashes = readHashesV2(hashFilePath());
+    hashes[retiredPath] = computeHash(releasedContent);
+    writeHashesV2(hashFilePath(), hashes);
+
+    await update({ force: true });
+
+    expect(fs.existsSync(projectFile(retiredPath))).toBe(false);
+    expect(readHashesV2(hashFilePath())).not.toHaveProperty(retiredPath);
+  });
+
   it("#22 preserves existing Claude statusLine config and hook file on update", async () => {
     await init({ yes: true, force: true, claude: true });
 
@@ -1131,6 +1062,9 @@ describe("update() integration", () => {
     await update({ force: true });
 
     expect(fs.existsSync(statusLinePath)).toBe(true);
+    expect(fs.readFileSync(statusLinePath, "utf-8")).toBe(
+      "# existing local statusline\n",
+    );
     const updatedSettings = JSON.parse(
       fs.readFileSync(settingsPath, "utf-8"),
     ) as Record<string, unknown>;
@@ -1252,9 +1186,10 @@ describe("update() integration", () => {
 
     // Gate passes when --migrate is present; update proceeds to completion
     expect(exitSpy).not.toHaveBeenCalled();
-    // Version must advance to current CLI after the migrate run
+    // Version advances without creating a generic migration Task.
     const versionPath = path.join(tmpDir, DIR_NAMES.WORKFLOW, ".version");
     expect(fs.readFileSync(versionPath, "utf-8")).toBe(VERSION);
+    expect(fs.existsSync(projectFile(PATHS.TASKS))).toBe(false);
   });
 
   // The [b] Backup-rename path in the confirm prompt promises "keeps a .backup
@@ -1372,7 +1307,45 @@ describe("update() integration", () => {
     ).toBe(false);
   });
 
-  it("#workflow-md-r4 updates workflow.md as one runtime template when hash-tracked", async () => {
+  it("backs up cleanup-only legacy roots before update mutation", async () => {
+    const legacyFiles = [
+      ".iflow/legacy.md",
+      ".windsurf/user-owned.md",
+      ".zcode/cli/agents/legacy.md",
+    ];
+    await setupProject();
+    for (const relativePath of legacyFiles) {
+      const fullPath = path.join(tmpDir, ...relativePath.split("/"));
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, `${relativePath}\n`);
+    }
+
+    fs.writeFileSync(
+      path.join(tmpDir, MANAGED_FILE),
+      "user customized content",
+    );
+    await update({ force: true });
+
+    const backupName = fs
+      .readdirSync(path.join(tmpDir, DIR_NAMES.WORKFLOW))
+      .find((entry) => entry.startsWith(".backup-"));
+    expect(backupName).toBeDefined();
+    for (const relativePath of legacyFiles) {
+      expect(
+        fs.readFileSync(
+          path.join(
+            tmpDir,
+            DIR_NAMES.WORKFLOW,
+            backupName as string,
+            ...relativePath.split("/"),
+          ),
+          "utf-8",
+        ),
+      ).toBe(`${relativePath}\n`);
+    }
+  });
+
+  it("#workflow-md-r4 updates managed workflow.md as one Research runtime template", async () => {
     await setupProject();
 
     const workflowPath = path.join(tmpDir, PATHS.WORKFLOW_GUIDE_FILE);
@@ -1403,16 +1376,9 @@ describe("update() integration", () => {
     await update({ force: true });
 
     const updated = fs.readFileSync(workflowPath, "utf-8");
-    expect(updated).toBe(replacePythonCommandLiterals(workflowMdTemplate));
-    expect(updated).toContain(
-      "[codex-sub-agent, Gemini, Qoder, Copilot, Reasonix, Trae, Grok]",
+    expect(updated).toBe(
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
     );
-    expect(updated).toContain(
-      "[/Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi, ZCode, Oh My Pi]",
-    );
-    expect(updated).toContain("[codex-inline, Kilo, Antigravity, Devin]");
-    expect(updated).not.toContain("[Codex]");
-    expect(updated).not.toContain("[Kilo, Antigravity, Windsurf]");
     expect(updated).not.toContain("legacy body");
 
     expect(readHashesV2(hashFile)[PATHS.WORKFLOW_GUIDE_FILE]).toBe(
@@ -1421,13 +1387,17 @@ describe("update() integration", () => {
   });
 
   it("selected bundled research update is idempotent", async () => {
-    await init({ yes: true, force: true, workflow: "research" });
+    await init({ yes: true, force: true });
+    await update({});
     const workflowBefore = readProjectFile(PATHS.WORKFLOW_GUIDE_FILE);
     const hashesBefore = fs.readFileSync(hashFilePath(), "utf-8");
     const selectionBefore = fs.readFileSync(
       projectFile(PATHS.WORKFLOW_SELECTION_FILE),
       "utf-8",
     );
+    const backupsBefore = fs
+      .readdirSync(projectFile(DIR_NAMES.WORKFLOW))
+      .filter((entry) => entry.startsWith(".backup-"));
 
     await update({});
     await update({});
@@ -1441,7 +1411,7 @@ describe("update() integration", () => {
       fs
         .readdirSync(projectFile(DIR_NAMES.WORKFLOW))
         .filter((entry) => entry.startsWith(".backup-")),
-    ).toEqual([]);
+    ).toEqual(backupsBefore);
   });
 
   it("updates a pristine selected bundled research workflow to research bytes", async () => {
@@ -1461,7 +1431,6 @@ describe("update() integration", () => {
     expect(updated).toBe(
       replacePythonCommandLiterals(researchWorkflowMdTemplate),
     );
-    expect(updated).not.toBe(replacePythonCommandLiterals(workflowMdTemplate));
     expect(readHashesV2(hashFilePath())[PATHS.WORKFLOW_GUIDE_FILE]).toBe(
       computeHash(updated),
     );
@@ -1534,9 +1503,10 @@ describe("update() integration", () => {
     expect(loadWorkflowSelection(tmpDir).kind).toBe("invalid");
   });
 
-  it("legacy missing metadata infers native only from safe managed evidence", async () => {
+  it("pre-switch missing metadata migrates hash-verified native state to Research", async () => {
     await setupProject();
     clearWorkflowSelection(tmpDir);
+    fs.writeFileSync(versionFilePath(), "0.6.0-beta.16", "utf-8");
     const workflowPath = projectFile(PATHS.WORKFLOW_GUIDE_FILE);
     const staleNative = "# Legacy pristine native workflow\n";
     fs.writeFileSync(workflowPath, staleNative, "utf-8");
@@ -1547,7 +1517,158 @@ describe("update() integration", () => {
     await update({ force: true });
 
     expect(fs.readFileSync(workflowPath, "utf-8")).toBe(
-      replacePythonCommandLiterals(workflowMdTemplate),
+      replacePythonCommandLiterals(researchWorkflowMdTemplate),
     );
+    expect(loadWorkflowSelection(tmpDir)).toEqual({
+      kind: "bundled",
+      id: "research",
+    });
+  });
+
+  it("does not recreate generic source-derived output", async () => {
+    await init({ yes: true, claude: true, codex: true, force: true });
+
+    await update({ force: true });
+
+    for (const relativePath of [
+      PATHS.SCRIPTS,
+      ".trellis/agents",
+      PATHS.TASKS,
+      PATHS.WORKSPACE,
+      PATHS.SPEC,
+      PATHS.DEVELOPER_FILE,
+      ".claude/skills/trellis-meta",
+      ".claude/commands",
+      ".agents/skills/trellis-check",
+      ".codex/hooks/session-start.py",
+    ]) {
+      expect(fs.existsSync(projectFile(relativePath)), relativePath).toBe(false);
+    }
+  });
+
+  it("keeps retained init and update bytes identical", async () => {
+    await init({ yes: true, claude: true, codex: true, force: true });
+    const retainedPaths = [
+      PATHS.WORKFLOW_GUIDE_FILE,
+      `${DIR_NAMES.WORKFLOW}/config.yaml`,
+      `${DIR_NAMES.WORKFLOW}/.gitignore`,
+      FILE_NAMES.AGENTS,
+      MANAGED_FILE,
+      ".claude/settings.json",
+      ".codex/agents/trellis-research-worker.toml",
+      ".codex/hooks/inject-workflow-state.py",
+      ".codex/hooks.json",
+      ".codex/config.toml",
+      ".agents/skills/trellis-research-writing/SKILL.md",
+    ];
+    const before = new Map(
+      retainedPaths.map((relativePath) => [
+        relativePath,
+        readProjectFile(relativePath),
+      ]),
+    );
+
+    await update({ force: true });
+
+    for (const [relativePath, content] of before) {
+      expect(readProjectFile(relativePath), relativePath).toBe(content);
+    }
+  });
+
+  it("preserves malformed AGENTS.md markers byte-for-byte", async () => {
+    await setupProject();
+    const malformed = "local instructions\n<!-- TRELLIS:START -->\n";
+    writeProjectFile(FILE_NAMES.AGENTS, malformed);
+
+    await update({ force: true });
+
+    expect(readProjectFile(FILE_NAMES.AGENTS)).toBe(malformed);
+  });
+
+  it("preserves canonical Research state byte-for-byte", async () => {
+    await setupProject();
+    const canonicalFiles = new Map([
+      [".trellis/research/quest.yaml", "quest: preserve exactly\n"],
+      [".trellis/research/ledger.jsonl", '{"sequence":1}\n'],
+      [".trellis/research/evidence/raw.bin", "opaque evidence bytes\n"],
+    ]);
+    for (const [relativePath, content] of canonicalFiles) {
+      writeProjectFile(relativePath, content);
+    }
+
+    await update({ force: true });
+
+    for (const [relativePath, content] of canonicalFiles) {
+      expect(readProjectFile(relativePath), relativePath).toBe(content);
+    }
+  });
+
+  it("preserves unrelated structured host configuration on update", async () => {
+    await init({ yes: true, claude: true, codex: true, force: true });
+    const claudeSettings = JSON.parse(
+      readProjectFile(".claude/settings.json"),
+    ) as Record<string, unknown>;
+    claudeSettings.permissions = { allow: ["Read"] };
+    writeProjectFile(
+      ".claude/settings.json",
+      `${JSON.stringify(claudeSettings, null, 2)}\n`,
+    );
+    const codexHooks = JSON.parse(
+      readProjectFile(".codex/hooks.json"),
+    ) as Record<string, unknown>;
+    codexHooks.custom = { enabled: true };
+    writeProjectFile(
+      ".codex/hooks.json",
+      `${JSON.stringify(codexHooks, null, 2)}\n`,
+    );
+    writeProjectFile(
+      ".codex/config.toml",
+      `${readProjectFile(".codex/config.toml")}\nmodel = "custom"\n`,
+    );
+
+    await update({ force: true });
+
+    expect(JSON.parse(readProjectFile(".claude/settings.json"))).toMatchObject({
+      permissions: { allow: ["Read"] },
+    });
+    expect(JSON.parse(readProjectFile(".codex/hooks.json"))).toMatchObject({
+      custom: { enabled: true },
+    });
+    expect(readProjectFile(".codex/config.toml")).toContain('model = "custom"');
+  });
+
+  it("preserves non-object structured host JSON byte-for-byte", async () => {
+    await init({ yes: true, claude: true, codex: true, force: true });
+    const unexpected = new Map([
+      [".claude/settings.json", "[1]\n"],
+      [".codex/hooks.json", '"custom hooks"\n'],
+    ]);
+    for (const [relativePath, content] of unexpected) {
+      writeProjectFile(relativePath, content);
+    }
+
+    await update({ force: true });
+
+    for (const [relativePath, content] of unexpected) {
+      expect(readProjectFile(relativePath), relativePath).toBe(content);
+    }
+  });
+
+  it("preserves malformed structured host configuration byte-for-byte", async () => {
+    await init({ yes: true, claude: true, codex: true, force: true });
+    const malformed = new Map([
+      [".claude/settings.json", "{ malformed claude json\n"],
+      [".codex/hooks.json", "{ malformed codex json\n"],
+      [".codex/config.toml", "not valid toml\n"],
+    ]);
+    for (const [relativePath, content] of malformed) {
+      writeProjectFile(relativePath, content);
+    }
+
+    await update({ force: true });
+
+    for (const [relativePath, content] of malformed) {
+      expect(readProjectFile(relativePath), relativePath).toBe(content);
+    }
   });
 });

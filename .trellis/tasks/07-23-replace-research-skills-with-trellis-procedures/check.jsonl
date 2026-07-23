@@ -1,0 +1,10 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check v1 compatibility, v2 canonical authority, deterministic replay, projection boundaries, and root-only mutation remain exact."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check final command signatures, automatic versus explicit activation, zero-write Context, and atomic result consumption."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check only Claude/Codex remain active and both consume identical Procedure-backed context."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check workers and hooks cannot discover Skills, widen authority, mutate canonical state, or spawn agents."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Check pristine-only Research Skill retirement preserves modified, unknown, external, malformed, and Research-state files."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Check packed payload requires Procedures and retirement evidence while forbidding active Research Skill surfaces."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Check malformed policy, Procedure, approval, digest, and compatibility errors fail closed without destructive writes."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Check surgical scope, inherited dirty-work preservation, and independent review gates."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check end-to-end, upgrade, uninstall, read-only tree snapshot, and packed-artifact proof use isolated deterministic fixtures."}
+{"file":".trellis/tasks/archive/2026-07/07-18-prepare-bridge-sdk-compatibility/prd.md","reason":"Check 0.7 generic core bridge remains intact and no semver-major removal leaks into this parent."}

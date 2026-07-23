@@ -1,0 +1,28 @@
+{
+  "data": {
+    "artifactRefs": [
+      {
+        "id": "art_33333333-3333-4333-8333-333333333333",
+        "kind": "report",
+        "mediaType": "application/json",
+        "path": "results/golden-report.json",
+        "repositoryId": "rep_22222222-2222-4222-8222-222222222222",
+        "revision": "0123456789abcdef0123456789abcdef01234567",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "createdAt": "2026-07-18T10:04:00.000Z",
+    "description": "Exercise every schema-v1 aggregate",
+    "id": "qst_44444444-4444-4444-8444-444444444444",
+    "repositoryIds": [
+      "rep_22222222-2222-4222-8222-222222222222"
+    ],
+    "stage": "audit",
+    "status": "active",
+    "title": "Freeze schema-v1 behavior",
+    "updatedAt": "2026-07-18T10:10:00.000Z"
+  },
+  "projectedThroughSeq": 13,
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-18T10:10:00.000Z"
+}

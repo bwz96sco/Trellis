@@ -86,6 +86,15 @@ export interface ResolveResearchRepositoryResult {
   observation: RepositoryObservation;
 }
 
+export interface ResearchRepositoryContextResolution {
+  repository: Repository;
+  source: "binding" | "locator";
+  path: string;
+  gitRoot: string | null;
+  revision: string | null;
+  remoteVerified: boolean;
+}
+
 function bindingsPath(root: string): string {
   return path.join(
     root,
@@ -368,6 +377,61 @@ export async function listResearchRepositories(
     repositories: Object.values(state.repositories).sort((a, b) =>
       a.id.localeCompare(b.id),
     ),
+  };
+}
+
+export async function resolveResearchRepositoryContext(
+  root: string,
+  repositoryId: RepositoryId,
+): Promise<ResearchRepositoryContextResolution> {
+  const state = await readResearchState(root);
+  const repository = state.repositories[repositoryId];
+  if (!repository) {
+    throw new Error(`Unknown research repository '${repositoryId}'`);
+  }
+  const bindings = readBindings(root);
+  const binding = bindings.bindings[repository.id];
+  const candidate =
+    binding ?? path.resolve(root, ...repository.locator.split("/"));
+  let repositoryPath: string;
+  try {
+    repositoryPath = fs.realpathSync(candidate);
+    if (!fs.statSync(repositoryPath).isDirectory()) {
+      throw new Error("not a directory");
+    }
+  } catch {
+    throw new Error(`Repository '${repository.id}' could not be resolved`);
+  }
+
+  const gitRootValue = gitValue(repositoryPath, [
+    "rev-parse",
+    "--show-toplevel",
+  ]);
+  const gitRoot = gitRootValue === null ? null : fs.realpathSync(gitRootValue);
+  const revision = gitValue(repositoryPath, ["rev-parse", "HEAD"]);
+  const remote = gitValue(repositoryPath, [
+    "config",
+    "--get",
+    "remote.origin.url",
+  ]);
+  if (
+    repository.expectedRemote !== undefined &&
+    remote !== repository.expectedRemote
+  ) {
+    throw new Error(
+      `Repository '${repository.id}' origin remote does not match`,
+    );
+  }
+
+  return {
+    repository,
+    source: binding === undefined ? "locator" : "binding",
+    path: repositoryPath,
+    gitRoot,
+    revision,
+    remoteVerified:
+      repository.expectedRemote === undefined ||
+      remote === repository.expectedRemote,
   };
 }
 

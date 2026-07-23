@@ -14,10 +14,10 @@
  * self-correct on the next routine command.
  *
  * Rules:
- *   - `.trellis/*` entries are ALWAYS kept. `trellis uninstall` removes
- *     `.trellis/` wholesale via `fs.rmSync(..., { recursive: true })`, so
- *     manifest accuracy there doesn't affect uninstall data-loss. `update`
- *     also relies on these entries to detect user-modified workflow files.
+ *   - Current managed `.trellis` files, configured registry spec files,
+ *     migration-referenced paths, and protected `.trellis/research` paths are
+ *     kept. Unknown `.trellis` entries are pruned rather than treated as proof
+ *     of Trellis ownership.
  *   - Root-level `AGENTS.md` is kept only when it still looks Trellis-managed
  *     (contains the managed block markers) or is missing on disk. This
  *     self-heals old poisoned manifests for user-owned AGENTS.md files that
@@ -26,24 +26,41 @@
  *     (rename, rename-dir, delete, safe-file-delete) are preserved. Pruning
  *     them would prevent legitimate pending migrations from finding their
  *     source/target.
- *   - Everything else: if the path is not in the union of
- *     `collectPlatformTemplates()` for currently-configured platforms, it is
- *     pruned. This matches "files trellis actually wrote during init/update".
+ *   - Current ownership is limited to the exact Research base paths and the
+ *     exact Research payload returned for currently configured platforms.
+ *   - Everything else is pruned. This matches "files trellis actually wrote
+ *     during current Research init/update" without making a managed directory
+ *     or inactive generic template inventory into ownership evidence.
  */
 
 import fs from "node:fs";
 import path from "node:path";
 
 import { collectPlatformTemplates } from "../configurators/index.js";
-import { FILE_NAMES } from "../constants/paths.js";
+import { DIR_NAMES, FILE_NAMES, PATHS } from "../constants/paths.js";
 import { getAllMigrations } from "../migrations/index.js";
+import { CURRENT_HOST_GENERIC_CLEANUP_PATHS } from "../legacy/current-host-generic-cleanup.js";
+import {
+  RETIRED_GENERATED_PATHS,
+  RETIRED_STRUCTURED_FILES,
+} from "../legacy/retired-host-cleanup.js";
+import { loadSpecRegistryConfig } from "./registry-config.js";
 import { saveHashes } from "./template-hash.js";
 import { toPosix } from "./posix.js";
+import {
+  isProtectedResearchPath,
+  isSafeManifestPath,
+} from "./protected-paths.js";
 import type { AITool } from "../types/ai-tools.js";
 import type { TemplateHashes } from "../types/migration.js";
 
 const TRELLIS_BLOCK_START = "<!-- TRELLIS:START -->";
 const TRELLIS_BLOCK_END = "<!-- TRELLIS:END -->";
+const RESEARCH_BASE_TEMPLATE_PATHS = [
+  `${DIR_NAMES.WORKFLOW}/config.yaml`,
+  `${DIR_NAMES.WORKFLOW}/.gitignore`,
+  PATHS.WORKFLOW_GUIDE_FILE,
+] as const;
 
 export interface PruneResult {
   /** Manifest keys removed (POSIX-style relative paths). */
@@ -53,20 +70,34 @@ export interface PruneResult {
 }
 
 /**
- * Compute the union of "what trellis writes" across:
- *   - every configured platform's collectTemplates() output
- *   - root-level AGENTS.md when it still carries Trellis managed-block markers
- *   - every migration manifest's from/to path (preserve so legitimate
- *     pending migrations can find their source/target)
+ * Compute the exact current Research ownership set plus historical
+ * compatibility evidence needed for safe cleanup and pending migrations.
+ * Root-level AGENTS.md remains marker-gated in `shouldKeepAgentsMd`.
  */
 function buildKnownKeys(configuredPlatforms: readonly AITool[]): Set<string> {
-  const known = new Set<string>();
+  const known = new Set<string>(RESEARCH_BASE_TEMPLATE_PATHS);
   for (const id of configuredPlatforms) {
     const templates = collectPlatformTemplates(id);
     if (!templates) continue;
     for (const key of templates.keys()) {
       known.add(toPosix(key));
     }
+  }
+  // Retired generated files remain cleanup candidates by exact manifest key.
+  // Root membership is deliberately not consulted here: an unknown descendant
+  // under a retired root remains unknown ownership and is pruned.
+  for (const retiredPath of RETIRED_GENERATED_PATHS) {
+    known.add(retiredPath);
+  }
+  // Compatibility-only structured paths (notably legacy .trae/settings.json)
+  // are exact ownership descriptors even when absent from current collectors.
+  for (const descriptor of RETIRED_STRUCTURED_FILES) {
+    known.add(descriptor.path);
+  }
+  // Current Claude/Codex generic outputs must remain exact cleanup candidates
+  // after their active collectors are narrowed to Research-only assets.
+  for (const cleanupPath of CURRENT_HOST_GENERIC_CLEANUP_PATHS) {
+    known.add(cleanupPath);
   }
   // Preserve any path referenced by a migration: legitimate pending
   // rename/delete operations need to resolve their `from` (and the target's
@@ -130,15 +161,31 @@ export function pruneOrphanManifestKeys(
 ): PruneResult {
   const persist = options.persist ?? true;
   const known = buildKnownKeys(configuredPlatforms);
+  const migrationDirPrefixes = getAllMigrations()
+    .filter((migration) => migration.type === "rename-dir")
+    .flatMap((migration) => [migration.from, migration.to])
+    .filter((migrationPath): migrationPath is string => Boolean(migrationPath))
+    .map((migrationPath) => `${toPosix(migrationPath).replace(/\/$/, "")}/`);
+  const hasSpecRegistry = loadSpecRegistryConfig(cwd) !== null;
   const pruned: string[] = [];
   const kept: TemplateHashes = {};
 
   for (const [rawKey, value] of Object.entries(hashes)) {
+    // Validate before normalization or filesystem access. Backslashes,
+    // traversal, absolute paths, and malformed segments are unknown ownership.
+    if (!isSafeManifestPath(rawKey)) {
+      pruned.push(rawKey);
+      continue;
+    }
     const key = toPosix(rawKey);
-    // Always preserve .trellis/ entries — they're for the workflow tree
-    // which uninstall removes wholesale and which update needs for
-    // modified-file detection.
-    if (key.startsWith(".trellis/") || key === ".trellis") {
+    // Canonical research state is protected even if an older init accidentally
+    // recorded it. Update keeps the key intact; uninstall later releases it
+    // after reporting the protected outcome.
+    if (isProtectedResearchPath(key)) {
+      kept[key] = value;
+      continue;
+    }
+    if (hasSpecRegistry && key.startsWith(`${PATHS.SPEC}/`)) {
       kept[key] = value;
       continue;
     }
@@ -150,7 +197,10 @@ export function pruneOrphanManifestKeys(
       }
       continue;
     }
-    if (known.has(key)) {
+    if (
+      known.has(key) ||
+      migrationDirPrefixes.some((prefix) => key.startsWith(prefix))
+    ) {
       kept[key] = value;
       continue;
     }

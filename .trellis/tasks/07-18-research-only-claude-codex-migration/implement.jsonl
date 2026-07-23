@@ -1,0 +1,6 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical ledger, projection, transition, and root-authority invariants for every migration child."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Public research CLI and Dispatch compatibility contracts."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Claude bounded worker behavior and cross-host parity requirements."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Managed-template migration, ownership, and compatibility behavior."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Protected data, atomic writes, path containment, and non-destructive cleanup."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Current host configurator and generated-template boundaries."}

@@ -1,0 +1,11 @@
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Define exact current host registry, flags, roots, detection, configurator, and active-versus-legacy boundaries."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Preserve current-template collection, manifest pruning, collision precedence, and remove only retired active update behavior."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Verify frozen retired cleanup remains independent of current host detection and protects Research/user content."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Keep migration paths and hashes canonical while active registry and packaged assets shrink."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Preserve exact-path ownership, current-wins collisions, protected Research paths, and no root-based deletion."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Apply project integration/regression test conventions while replacing active retired-host suites with compatibility gates."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/active-host-registry-and-cli.md","reason":"Use exhaustive registry, CLI, init, detection, and configurator source map."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/templates-python-and-packaging.md","reason":"Use physical template, generated Python, shared-hook, and package payload source map."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/compatibility-collisions-and-tests.md","reason":"Preserve C03 compatibility, current-versus-retired collision rules, and required regression classification."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/c04-plan-scope-and-acceptance.md","reason":"Follow approved C04 allowlist, forbidden scope, implementation order, verification, and rollback plan."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/gitnexus-impact-analysis.md","reason":"Honor HIGH getConfiguredPlatforms blast radius and cross-command verification requirements."}

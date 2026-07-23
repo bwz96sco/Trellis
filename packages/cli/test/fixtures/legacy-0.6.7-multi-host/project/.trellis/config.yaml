@@ -1,0 +1,4 @@
+version: 1
+workflow: research
+codex:
+  dispatch_mode: inline

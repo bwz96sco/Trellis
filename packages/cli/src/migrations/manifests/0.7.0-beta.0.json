@@ -1,0 +1,18 @@
+{
+  "version": "0.7.0-beta.0",
+  "description": "Freeze hash-backed cleanup authority for retiring current-host generic assets.",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "Adds safe cleanup evidence for proven pristine current-host generic assets while preserving modified files and active templates.",
+  "migrations": [
+    {
+      "type": "safe-file-delete",
+      "from": ".agents/skills/trellis-check/SKILL.md",
+      "description": "Retire the generated generic check skill after Research-only collection takes ownership of the shared skill root.",
+      "reason": "The accepted hash comes from the frozen v0.6.7 multi-host fixture; current template ownership suppresses deletion until the generic collector is retired.",
+      "allowed_hashes": [
+        "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282"
+      ]
+    }
+  ]
+}

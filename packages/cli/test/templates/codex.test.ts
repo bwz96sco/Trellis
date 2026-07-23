@@ -1,138 +1,98 @@
-import { describe, expect, it } from "vitest";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import {
-  getAllAgents,
-  getAllCodexSkills,
+  proposalSchema,
+  RESEARCH_STAGE_CAPABILITIES,
+  resultSchema,
+} from "@mindfoldhq/trellis-core/research";
+import { describe, expect, it } from "vitest";
+
+import {
   getConfigTemplate,
+  getHooksConfig,
+  getResearchWorkerTemplate,
 } from "../../src/templates/codex/index.js";
-import { resolveAllAsSkills } from "../../src/configurators/shared.js";
-import { AI_TOOLS } from "../../src/types/ai-tools.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, "../../../..");
+const OPTIONAL_RESEARCH_SKILLS = Object.values(RESEARCH_STAGE_CAPABILITIES)
+  .filter((definition) => definition.dispatchable)
+  .map((definition) => definition.optionalSkill);
 
-const EXPECTED_AGENT_NAMES = [
-  "trellis-check",
-  "trellis-implement",
-  "trellis-research",
-];
+function researchWorkerTemplate(): string {
+  const worker = getResearchWorkerTemplate();
+  expect(worker.name).toBe("trellis-research-worker");
+  return worker.content;
+}
 
-const EMPTY_EXCEPT_PASS_RE = /except[^\n]*:\n\s*pass\s*$/m;
-
-// Shared skills are now sourced from common/ via resolveAllAsSkills
-describe("codex shared skills (from common source)", () => {
-  it("resolves all common templates for codex context", () => {
-    const skills = resolveAllAsSkills(AI_TOOLS.codex.templateContext);
-    expect(skills.length).toBeGreaterThan(0);
-    for (const skill of skills) {
-      expect(skill.content).toContain("description:");
-      expect(skill.content).toContain(`name: ${skill.name}`);
-    }
-  });
-
-  it("does not include platform-specific syntax in resolved output", () => {
-    const skills = resolveAllAsSkills(AI_TOOLS.codex.templateContext);
-    for (const skill of skills) {
-      // Codex uses $ prefix, not /trellis:
-      expect(skill.content).not.toContain("/trellis:");
-      expect(skill.content).not.toContain(".claude/");
-      expect(skill.content).not.toContain(".cursor/");
-    }
-  });
-});
-
-describe("codex getAllAgents", () => {
-  it("returns the expected custom agent set", () => {
-    const agents = getAllAgents();
-    const names = agents.map((agent) => agent.name);
-    expect(names).toEqual(EXPECTED_AGENT_NAMES);
-  });
-
-  it("each agent has required fields (name, description, developer_instructions)", () => {
-    for (const agent of getAllAgents()) {
-      expect(agent.content.length).toBeGreaterThan(0);
-      expect(agent.content).toContain("name = ");
-      expect(agent.content).toContain("description = ");
-      expect(agent.content).toContain("developer_instructions = ");
-    }
-  });
-});
-
-describe("codex getAllCodexSkills (platform-specific)", () => {
-  it("returns empty after parallel removal", () => {
-    const skills = getAllCodexSkills();
-    expect(skills).toEqual([]);
-  });
-});
-
-describe("codex getConfigTemplate", () => {
-  it("returns project config.toml content", () => {
+describe("Codex Research templates", () => {
+  it("returns the Research project config without the incompatible feature block", () => {
     const config = getConfigTemplate();
     expect(config.targetPath).toBe("config.toml");
     expect(config.content).toContain("project_doc_fallback_filenames");
     expect(config.content).toContain("AGENTS.md");
-  });
-
-  // The structured [features.multi_agent_v2] table form is only accepted by
-  // Codex CLI 0.131+. On 0.130 and earlier — including the codex CLI bundled
-  // in the Codex desktop app — it aborts the whole config load with
-  // `data did not match any variant of untagged enum FeatureToml`. Trellis
-  // no longer writes the block; this test guards against reintroducing it.
-  it("does not write a [features.multi_agent_v2] block (Codex 0.130 compat)", () => {
-    const config = getConfigTemplate();
     expect(config.content).not.toMatch(/^\[features\.multi_agent_v2\]/m);
   });
-});
 
-// =============================================================================
-// Issue #234 — Codex sub-agent recursion guard
-// =============================================================================
-//
-// trellis-implement / trellis-check agent toml MUST contain a hard recursion
-// guard that tells the sub-agent it is already the dispatched agent and must
-// not spawn another trellis-implement / trellis-check sub-agent. Without this,
-// SessionStart's "dispatch trellis-implement" guidance leaks into sub-agent
-// sessions and causes infinite recursion (see PRD).
-describe("codex sub-agent recursion guard (issue #234)", () => {
-  for (const name of ["trellis-implement", "trellis-check"] as const) {
-    it(`${name}.toml developer_instructions forbids spawning trellis-implement / trellis-check`, () => {
-      const tomlPath = path.join(
-        repoRoot,
-        "packages/cli/src/templates/codex/agents",
-        `${name}.toml`,
-      );
-      const content = fs.readFileSync(tomlPath, "utf-8");
-      // Hard prohibition keyword
-      expect(content).toMatch(/MUST NOT spawn/i);
-      // Mentions both sibling agent kinds explicitly
-      expect(content).toContain("trellis-implement");
-      expect(content).toContain("trellis-check");
-      // Mentions the leakage source so the reader knows why
-      expect(content).toMatch(/SessionStart|dispatch.*main session|breadcrumb/i);
-    });
-  }
-});
-
-describe("codex session-start.py compact SessionStart context", () => {
-  const hookPath = path.join(
-    repoRoot,
-    "packages/cli/src/templates/codex/hooks/session-start.py",
-  );
-
-  it("uses compact task artifact guidance instead of sub-agent dispatch prose", () => {
-    const content = fs.readFileSync(hookPath, "utf-8");
-    expect(content).toContain("Trellis compact SessionStart context");
-    expect(content).toContain("Task context order for implementation/check");
-    expect(content).toContain("design.md if present");
-    expect(content).not.toContain("<sub-agent-notice>");
-    expect(content).not.toContain("guides (inlined");
-    expect(content).not.toContain("Project spec indexes are listed by path below");
+  it("returns valid Research hooks configuration", () => {
+    const hooks = JSON.parse(getHooksConfig()) as { hooks?: unknown };
+    expect(hooks.hooks).toBeDefined();
   });
 
-  it("documents fail-open exception suppression", () => {
-    const content = fs.readFileSync(hookPath, "utf-8");
-    expect(content).not.toMatch(EMPTY_EXCEPT_PASS_RE);
+  it("pins the one-line pointer, name-only discovery, and preflight-first order", () => {
+    const content = researchWorkerTemplate();
+    const orderedMarkers = [
+      "## 1. Validate the invocation envelope",
+      "## 2. Discover optional skill names only",
+      "## 3. Run the C07 preflight as the first process",
+      "## 4. Validate the preflight response",
+      "## 5. Load exactly the selected skill",
+      "## 6. Execute only bounded work",
+      "## 7. Return raw JSON",
+    ];
+    const indexes = orderedMarkers.map((marker) => content.indexOf(marker));
+    expect(indexes.every((index) => index >= 0)).toBe(true);
+    expect(indexes).toEqual([...indexes].sort((left, right) => left - right));
+    for (const skillName of OPTIONAL_RESEARCH_SKILLS) {
+      expect(content).toContain(`\`${skillName}\``);
+    }
+    expect(content).toContain("--host codex");
+    expect(content).toContain("--skill-name <canonical-name>");
+  });
+
+  it("fails closed and forbids nested agents and canonical mutation", () => {
+    const content = researchWorkerTemplate();
+    for (const prohibition of [
+      "Do not manually read or parse `request.json`",
+      "Do not use `jq`, pipes, redirects",
+      "Never call `spawn_agent`",
+      "trellis research dispatch record-result",
+      "trellis research dispatch apply",
+      "trellis research dispatch reject",
+      "git commit",
+      "git push",
+      "git merge",
+      "git rebase",
+    ]) {
+      expect(content).toContain(prohibition);
+    }
+    expect(content).not.toContain("Required: Load Trellis Context First");
+    expect(content).not.toContain("{TASK_DIR}");
+  });
+
+  it("provides a strict Result plus pending Proposal example", () => {
+    const match = researchWorkerTemplate().match(
+      /RESULT_PROPOSAL_EXAMPLE_START\n([\s\S]*?)\nRESULT_PROPOSAL_EXAMPLE_END/,
+    );
+    expect(match).not.toBeNull();
+    const materialized = (match?.[1] ?? "")
+      .replaceAll("<result-id>", "res_11111111-1111-4111-8111-111111111111")
+      .replaceAll("<proposal-id>", "prp_22222222-2222-4222-8222-222222222222")
+      .replaceAll("<dispatch-id>", "dsp_33333333-3333-4333-8333-333333333333")
+      .replaceAll("<run-id>", "run_44444444-4444-4444-8444-444444444444")
+      .replaceAll("<quest-id>", "qst_55555555-5555-4555-8555-555555555555")
+      .replaceAll("<timestamp>", "2026-07-20T12:00:00.000Z");
+    const envelope = JSON.parse(materialized) as Record<string, unknown>;
+    const result = resultSchema.parse(envelope.result);
+    const proposal = proposalSchema.parse(envelope.proposal);
+    expect(result.dispatchId).toBe(proposal.dispatchId);
+    expect(proposal.status).toBe("pending");
+    expect(proposal.operations).toEqual([]);
   });
 });

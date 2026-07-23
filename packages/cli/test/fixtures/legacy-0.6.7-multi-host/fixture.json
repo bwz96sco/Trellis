@@ -1,0 +1,53 @@
+{
+  "fixtureVersion": 1,
+  "installedTrellisVersion": "0.6.7",
+  "provenance": {
+    "sourceRef": "v0.6.7",
+    "releasedFileSources": {
+      ".agents/skills/trellis-check/SKILL.md": "v0.6.7:.agents/skills/trellis-check/SKILL.md"
+    }
+  },
+  "hosts": {
+    "claude-code": ".claude/settings.json",
+    "cursor": ".cursor/hooks.json",
+    "opencode": ".opencode/package.json",
+    "codex": ".codex/config.toml",
+    "kilo": ".kilocode/workflows/continue.md",
+    "kiro": ".kiro/agents/trellis.json",
+    "gemini": ".gemini/settings.json",
+    "antigravity": ".agent/workflows/continue.md",
+    "devin": ".devin/workflows/trellis-continue.md",
+    "qoder": ".qoder/settings.json",
+    "codebuddy": ".codebuddy/settings.json",
+    "copilot": ".github/copilot/hooks.json",
+    "droid": ".factory/settings.json",
+    "pi": ".pi/settings.json",
+    "reasonix": ".reasonix/skills/trellis-check/SKILL.md",
+    "zcode": ".zcode/config.json",
+    "trae": ".trae/settings.json",
+    "omp": ".omp/extensions/trellis/index.ts",
+    "grok": ".grok/commands/trellis-continue.md"
+  },
+  "ownership": {
+    "trackedModified": [
+      ".cursor/hooks.json"
+    ],
+    "trackedMixedConfiguration": [
+      ".claude/settings.json",
+      ".codex/config.toml",
+      "AGENTS.md"
+    ],
+    "sharedGenerated": [
+      ".agents/skills/trellis-check/SKILL.md",
+      ".github/hooks/trellis.json"
+    ],
+    "legacyGenerated": [
+      ".zcode/cli/agents/trellis-check.md"
+    ],
+    "untrackedUserOwned": [
+      ".cursor/rules/user-owned.mdc",
+      ".codex/sessions/keep.jsonl",
+      ".opencode/plugins/custom-user-plugin.ts"
+    ]
+  }
+}

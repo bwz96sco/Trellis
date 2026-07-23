@@ -1,138 +1,133 @@
-# Filesystem Safety — Atomic Writes & Destructive-Op Guards
+# Filesystem Safety Contract
 
-> Cross-cutting contract for any code that **writes, deletes, moves, or
-> overwrites** files in a user's repo. Trellis ships as a CLI that runs inside
-> real git repos, so a truncated write or a mistargeted delete is user data
-> loss, not a transient bug. These are the guardrails the 2026-07-10 audit's
-> two root causes distilled to.
+## 1. Scope / Trigger
 
-Applies to: `commands/update.ts`, `commands/uninstall.ts`, `utils/*`,
-`core/channel/**`, the shipped Python under `templates/trellis/scripts/`, and
-shared hook templates that update session runtime metadata or resolve explicit
-research Dispatch paths.
+Apply this contract to every CLI/core path that writes, deletes, moves, scrubs, or overwrites user-repository files, including init, update, uninstall, Research runtime state, Dispatch context, migration ownership, and compatibility cleanup.
 
----
+Removed commands and options add a parser boundary: Commander rejection must occur before any action callback or filesystem write.
 
-## 1. Atomic writes — never truncate a state file in place
+## 2. Signatures
 
-**Rule**: a file that holds durable state (attribution manifest, `task.json`,
-`config.yaml`, session pointer, channel events cursor) must be written
-**temp-in-same-dir + rename**, never `fs.writeFileSync(path, ...)` /
-`path.write_text(...)` directly. In-place writes truncate the target as their
-first step, so a crash / Ctrl-C / ENOSPC mid-write leaves a half-file. A
-truncated `.template-hashes.json` heals to `{}` (every managed file then looks
-user-modified); a truncated `task.json` reads back as `None` (the task vanishes
-from `task.py list`).
-
-### Signatures
+Atomic TypeScript write:
 
 ```ts
-// packages/cli/src/utils/atomic-write.ts
-export function writeFileAtomic(filePath: string, data: string | Uint8Array): void
-// writes `<dir>/.<basename>.<pid>.tmp` then fs.renameSync over filePath;
-// removes the tmp and rethrows on failure. Same-dir tmp keeps rename atomic.
+writeFileAtomic(filePath: string, data: string | Uint8Array): void;
 ```
 
-```python
-# templates/trellis/scripts/common/io.py
-def write_json(path: Path, data: dict) -> bool
-# tempfile.mkstemp(dir=path.parent) -> os.fdopen write -> os.replace(tmp, path);
-# unlinks tmp and re-raises on BaseException (Ctrl-C included).
-```
-
-### Wrong vs Correct
+Canonical current payload:
 
 ```ts
-// Wrong — truncates on entry; a crash here corrupts the manifest to {}
-fs.writeFileSync(hashesPath, JSON.stringify(payload, null, 2));
-
-// Correct
-writeFileAtomic(hashesPath, JSON.stringify(payload, null, 2));
+collectResearchPlatformPayload(platformId, cwd?, options?): Map<string, string>;
+writeResearchPlatformPayload(platformId, cwd, options?): Promise<void>;
 ```
 
-> **Note**: atomic write fixes the *crash window*. It does **not** fix
-> concurrent last-writer-wins (multiple processes RMW the same file). File
-> locking / seq reconciliation is a separate, still-open concern.
+Safety predicates include:
 
----
-
-## 2. Path & name safety — validate at the chokepoint, before `path.join`
-
-**Rule**: any user- or agent-supplied string that becomes a path segment must be
-validated **before** it flows into `path.join` / `shutil.move` / `rmSync`. A
-name like `../../x` resolves outside the intended tree and a later recursive
-delete escapes the store.
-
-| Concern | Guard | Location |
-|---|---|---|
-| channel / worker name | `assertSafeName(name, kind)` — `^[A-Za-z0-9._-]+$`, rejects `.`/`..` — called inside `channelDir` (the single chokepoint every path helper passes through) | `core` + `cli` `channel/store/paths.ts` |
-| `task.py archive <name>` target | `is_within_tasks_dir(task_dir_abs, repo_root)` — dir must be a direct child of `.trellis/tasks/` | `scripts/common/task_utils.py` |
-| explicit research Dispatch | exact first-line grammar + prefixed UUID + canonical containment under `.trellis/research/dispatches/<same-id>/request.json`; repository/artifact/write paths resolve against canonical roots | `shared-hooks/inject-subagent-context.py` |
-| research session watermark | preserve malformed/non-object files; clone valid objects; replace only `research_last_seen_seq` through same-directory temp + `os.replace` | `shared-hooks/session-start.py`, `shared-hooks/inject-workflow-state.py` |
-| rename-dir migration source | `dirHasManifestEntries(fromDir, hashes)` — only auto-move a dir Trellis provably created | `commands/update.ts` |
-
-> **Why the chokepoint, not the entrypoint**: validating inside `channelDir`
-> (not in each of create/rm/run) means one guard covers every current and future
-> caller. `spawn.ts` had long *asserted* this — a "CLI layer already validates
-> names" comment — while no such validation existed; adding the guard at the
-> `channelDir` chokepoint is what finally made that comment true.
-
-```ts
-// Correct: guard lives in the shared path builder
-export function channelDir(name: string, project = currentProjectKey()): string {
-  assertSafeName(name);
-  return path.join(projectDir(project), name);
-}
+```text
+isSafeManifestPath
+isProtectedResearchPath
+containsProtectedResearchPath
+dirHasManifestEntries
 ```
 
----
+Parse-failure invariant:
 
-## 3. Destructive-op ownership / backup gate
+```text
+unknown command/option
+  -> Commander error
+  -> no action callback
+  -> no filesystem write
+```
 
-Before deleting, moving, or overwriting anything that **could be user data**,
-one of these must hold. Pick by operation:
+## 3. Contracts
 
-| Operation | Required guard |
+### Atomic durable writes
+
+Durable state such as hashes, workflow selection, Research runtime state, tracked Dispatch files, and core compatibility stores uses same-directory temporary write plus atomic rename/replace. Failure removes the temporary file best-effort and preserves the original target.
+
+### Validate before resolution
+
+Any user/agent-controlled path or identifier is validated before `path.join`, canonicalization, read, move, or delete. Dispatch request paths require exact portable grammar, matching prefixed ID, canonical containment, regular-file checks, and symlink-escape rejection. Allowed write paths canonicalize the nearest existing ancestor.
+
+Channel/Task name and storage guards remain core SDK compatibility behavior; they do not imply active CLI commands.
+
+### Exact ownership before destructive operations
+
+- Manifest keys are exact file keys, not prefixes.
+- Opaque deletion requires current bytes to match recorded/released hash evidence as applicable.
+- Mixed files use path-specific scrubbers and are deleted only when a successful scrub leaves no user content.
+- `rename-dir` requires manifest-owned descendants.
+- Retired roots allow backup preservation and confirmed-empty `rmdir`, never recursive ownership inference.
+- Confirmation-time execution re-reads planned bytes; concurrent changes survive.
+
+### Protected and preserved data
+
+`.trellis/research/**` is excluded before traversal or path resolution and remains byte-identical across init, update, uninstall, backup, migration, and cleanup.
+
+Normal uninstall also preserves modified/malformed files, unknown descendants, Tasks, workspace/spec/developer state, user Channel/Mem data, custom workflow bytes, mixed user configuration, and non-empty managed roots.
+
+### Zero-write observation and parsing
+
+`trellis research dispatch context` is strictly read-only: no lock, runtime directory, observation cache, session file, manifest, ledger, projection, tracked Dispatch, target Repository, or Git mutation.
+
+Removed root commands, the removed Research Task subtree, and removed init options are unregistered. Tests must execute the built parser and compare complete filesystem snapshots.
+
+### Historical cleanup boundary
+
+The frozen 137-path current-host and 1,009-path retired-host inventories are exact compatibility evidence. Unknown siblings/descendants remain unowned. Safe deletion additionally requires released hash evidence; inventory membership alone is insufficient.
+
+## 4. Validation & Error Matrix
+
+| Condition | Required behavior |
 |---|---|
-| Delete a mixed-ownership file (e.g. `AGENTS.md`) | Strip only the managed block (`scrubManagedMarkdownBlock`); delete only if nothing user-authored remains. Never `unlinkSync` the whole file. |
-| Move a dir that may be user-owned (rename-dir) | Ownership check (`dirHasManifestEntries`); unowned + target-absent → **skip** (safe even under `--force`, since skip never executes). |
-| Overwrite a dir from a remote source | Download to a temp dir; `rm` + copy the old dir **only after** the download succeeds (`downloadWithStrategy` `overwrite`). Never delete-then-download. |
-| Rename onto a possibly-existing target | `fs.existsSync(newPath)` first; skip/renumber instead of clobbering (`renameTracesToJournal`). Especially when the dir is excluded from backup. |
-| `rm -rf` a tree with user data (`uninstall`) | `collectUncommittedTrellisData(cwd)` (git status over `spec/tasks/workspace`); scripted `--yes` fails closed unless `TRELLIS_ALLOW_DIRTY_UNINSTALL=1`. Disclosure must name what user data is deleted. |
+| Atomic replacement fails | Original target survives; temp is removed best-effort; error propagates. |
+| Manifest key is absolute/traversal/backslash/NUL/non-normalized | Reject before filesystem access. |
+| Path reaches `.trellis/research/**` | Preserve before join/read/traversal; no force override. |
+| Unknown descendant under managed/retired root | Unowned; preserve; do not read during ownership pruning. |
+| Opaque hash differs | Preserve and release ownership. |
+| Structured file is malformed | Preserve exact bytes; release ownership. |
+| Planned bytes change before execution | Preserve current bytes; do not apply stale plan. |
+| Dispatch context validation fails | Bounded no-write error; no partial context. |
+| Removed command/option is entered | Commander error; no callback/write. |
+| Cleanup root is non-empty | Keep it; never recursive-delete. |
 
-**Env override precedent**: a fail-closed guard on a `--yes`/`--force` path gets
-an explicit env bypass, mirroring `TRELLIS_ALLOW_HOMEDIR`
-(`TRELLIS_ALLOW_DIRTY_UNINSTALL=1`). Warn-and-continue is not enough on
-`--yes` — nobody reads scrollback in a script.
+## 5. Good / Base / Bad Cases
 
----
+- **Good**: uninstall scrubs one exact Trellis hook from mixed Claude settings, preserves user hooks, and atomically writes the result.
+- **Base**: an exact historical file is modified; cleanup skips it and leaves its parent root intact.
+- **Bad**: hashing every file below `.codex`, deleting an entire mixed `AGENTS.md`, using lexical containment through a symlink, or accepting `--registry` and rejecting it only after init begins.
 
-## 4. Dogfood twin sync
+## 6. Tests Required
 
-Shipped Python (`packages/cli/src/templates/trellis/scripts/**`) has a dogfood
-twin at repo `.trellis/scripts/**`. When you change a shipped script, sync the
-twin **iff** they were identical first (`diff` before `cp`); if the twin has
-drifted, apply the same edit surgically so unrelated local drift is preserved.
-`packages/cli/dist/**` and `.trellis/.backup-*/**` are generated/history —
-never hand-edit.
+- Atomic write success/failure and temporary-file cleanup.
+- Unsafe manifest/path rejection before filesystem API calls.
+- Commander rejection for every removed command/option through both aliases with byte-identical full-tree snapshots.
+- Strict zero-write Dispatch context success and every failure phase.
+- Research full-tree preservation across all mutating commands.
+- Opaque hash gates, structured mixed/malformed preservation, and confirmation-time revalidation.
+- Exact 137/1,009 inventory boundaries and unknown-descendant preservation.
+- Confirmed-empty-only cleanup for active, retired, and alias roots.
+- Current-template precedence over historical safe deletion.
 
----
+## 7. Wrong vs Correct
 
-## 5. Tests required
+```ts
+// Wrong: truncate durable state in place.
+fs.writeFileSync(hashPath, serialized);
 
-Every guard here leaves a runnable regression test whose assertion **fails
-without the guard**:
+// Correct: replace atomically from the same directory.
+writeFileAtomic(hashPath, serialized);
+```
 
-- Atomic write: write-succeeds + no tmp leftover + original survives a failed write (`test/utils/atomic-write.test.ts`; Python covered via `task-archive` integration).
-- Path traversal: `create '../../victim' --force` / `rm '../../victim'` throw and the external dir survives — reproduce in a sandbox (`test/channel/name-safety`, `test/commands/channel-name-safety`).
-- Ownership/backup gates: unowned source skipped (`update-internals` rename-dir gate), `archive src` refused with `src/` intact (`task-archive` integration), overwrite-fails-preserves-spec (`template-fetcher-overwrite`), uninstall refuses dirty `--yes` (`uninstall-dirty-guard`, real git).
+```ts
+// Wrong: root membership becomes ownership.
+if (key.startsWith(".windsurf/")) fs.rmSync(path.join(cwd, key));
 
----
+// Correct: require a safe exact key and the operation-specific evidence.
+if (isSafeManifestPath(key) && exactKnownKeys.has(key)) classifyOwnedKey(key);
+```
 
-## Related
-
-- [`trellis update` Command](./commands-update.md) — migration classification/apply
-- [`trellis uninstall` Command](./commands-uninstall.md) — plan/execute phases
-- [`trellis channel` Command](./commands-channel.md) — store paths, project buckets
-- [Script Conventions](./script-conventions.md) — Python `io.py` contract
-- [Migrations](./migrations.md) — rename/rename-dir/delete semantics
+```text
+Wrong: register a retired option and throw after banner/probes/prompts.
+Correct: omit it from Commander so parsing fails before the action and before any write.
+```

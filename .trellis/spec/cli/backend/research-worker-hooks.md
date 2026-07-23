@@ -1,206 +1,208 @@
-# Research Worker Skills and Claude Hook Contract
+# Research Worker Skills and Host Adapter Contract
 
-This specification defines the installed stage-owner skills, bounded research worker cards, compact research session orientation, Claude sequence watermark, and explicit Claude research Dispatch injection.
+This specification defines the current generated Research workers, stage skills, hook matrix, session orientation, sequence watermark, and C07/C09 preflight boundary for Claude Code and Codex.
 
 ## 1. Scope / Trigger
 
-### Installed skills and workers
+Current generation installs only the Research control plane. Generic Task agents, generic workflow skills, and generated `.trellis/scripts/**` are physically absent from active CLI source, clean `dist`, and the packed npm tarball. Historical cleanup evidence may recognize their released paths but cannot generate them.
 
-The common bundled-skill tree contains exactly one stage-owner skill for each active Quest stage:
+### Exact stage skills
 
-| Quest stage | Owner skill |
+Both hosts receive exactly these nine stage skills:
+
+| Quest capability | Skill |
 |---|---|
-| `setup` | `trellis-research-setup` |
-| `framing` | `trellis-research-quest` |
-| `literature` | `trellis-research-literature` |
-| `ideation` | `trellis-research-ideation` |
-| `experiment` | `trellis-research-experiment` |
-| `computation` | `trellis-research-computation` |
-| `theory` | `trellis-research-theory` |
-| `audit` | `trellis-research-audit` |
-| `writing` | `trellis-research-writing` |
+| setup | `trellis-research-setup` |
+| framing | `trellis-research-quest` |
+| literature | `trellis-research-literature` |
+| ideation | `trellis-research-ideation` |
+| experiment | `trellis-research-experiment` |
+| computation | `trellis-research-computation` |
+| theory | `trellis-research-theory` |
+| audit | `trellis-research-audit` |
+| writing | `trellis-research-writing` |
 
-`complete` has no active owner. Skills remain dormant unless the user expresses explicit research intent or a validated Dispatch names the skill.
+`complete` has no active stage skill. Skills remain dormant without explicit Research intent or a validated Dispatch.
 
-The platform-neutral worker is `.trellis/agents/research.md`. Claude additionally installs `trellis-research-worker.md`. The existing Claude `trellis-research.md` code/search agent is a separate role and must not be replaced or renamed.
-
-The `trellis-research-setup` owner may inspect explicitly declared legacy `research-quest.yaml`, `research-events.jsonl`, `notes/_quest`, and vault-local `_quest` sources. This is bounded observation for a pending Proposal, not automatic migration or a second authority.
-
-### SessionStart
-
-`session-start.py` appends `<research-state>` when either condition holds:
-
-1. `.trellis/.workflow.json` strictly selects `{"schemaVersion":1,"id":"research","source":"bundled"}`; or
-2. `.trellis/research/events.jsonl` exists.
-
-All existing SessionStart blocks remain present. Research orientation is read-only toward the ledger and tracked projections.
-
-### UserPromptSubmit
-
-`inject-workflow-state.py` uses the research sequence branch only when:
+### Exact workers
 
 ```text
-platform == claude
-AND bundled workflow selection == research
+.claude/agents/trellis-research-worker.md
+.codex/agents/trellis-research-worker.toml
 ```
 
-Every non-Claude, native, custom, and OpenCode path retains its existing workflow breadcrumb behavior. A malformed Claude workflow-selection file emits validation guidance but never selects a workflow silently.
+Current generation does not install generic `trellis-implement`, `trellis-check`, or old `trellis-research` agents. Those generic agent templates are deleted; compatibility tests use immutable inventory/hash evidence rather than active source copies.
 
-### Explicit Dispatch
+### Frozen hook matrix
 
-Automatic research-worker injection is Claude-only and requires:
+| Host | Generated file | Purpose |
+|---|---|---|
+| Claude | `.claude/hooks/session-start.py` | compact Research orientation |
+| Claude | `.claude/hooks/inject-workflow-state.py` | strict Research ledger-head watermark |
+| Claude | `.claude/hooks/inject-subagent-context.py` | C09 explicit worker/C07 preflight only |
+| Claude | `.claude/hooks/statusline.py` | optional bounded Research status |
+| Codex | `.codex/hooks/inject-workflow-state.py` | strict Research ledger-head watermark |
 
-```text
-subagent_type == trellis-research-worker
-AND first prompt line exactly matches:
-Research dispatch: .trellis/research/dispatches/<dsp-id>/request.json
-```
-
-The branch runs before normal `trellis-implement`, `trellis-check`, and `trellis-research` filtering. A prompt already containing `<!-- trellis-hook-injected -->` is a no-op.
+Codex does not generate `.codex/hooks/session-start.py` or a Claude prompt-mutation adapter. Its worker performs the C07 pull preflight itself.
 
 ## 2. Signatures
 
-The shipped Python templates expose these research-specific helpers. Names are internal, but behavior is test-pinned.
+Provider-neutral preflight:
 
-```python
-# session-start.py
-def _research_workflow_selection(trellis_dir: Path) -> tuple[str, str | None]
-def _research_ledger_head(trellis_dir: Path) -> tuple[int | None, str | None]
-def _read_research_projection(path: Path, head: int) -> tuple[dict | None, str | None]
-def _research_orientation(trellis_dir: Path) -> tuple[str | None, int | None]
-def _write_research_watermark(
-    trellis_dir: Path, context_key: str | None, head: int
-) -> bool
+```text
+trellis research dispatch context <request-file> \
+  --host claude|codex \
+  --root <root> \
+  [--skill-name <canonical-name> ...] \
+  --json
 ```
 
-```python
-# inject-workflow-state.py
-def _research_workflow_selection(root: Path) -> str
-def _research_ledger_head(root: Path) -> int | None
-def _read_session_state(root: Path, context_key: str) -> tuple[Path, dict | None]
-def _atomic_write_session(session_path: Path, session_data: dict) -> bool
-def _research_sequence_context(root: Path, input_data: dict) -> str | None
+Exact worker envelope:
+
+```text
+Research dispatch: .trellis/research/dispatches/<dsp-id>/request.json
 ```
 
-```python
-# inject-subagent-context.py
-def _find_research_control_root(input_data: dict, cwd: str) -> Path | None
-def _parse_dispatch_request(request: dict, dispatch_id: str) -> dict
-def _validate_dispatch_hierarchy(
-    control_root: Path, request: dict, head: int
-) -> tuple[dict, dict, dict, dict]
-def _resolve_dispatch_repository(
-    control_root: Path, repository: dict, repository_id: str
-) -> Path
-def _validate_dispatch_paths(
-    control_root: Path, repository_root: Path, request: dict
-) -> list[dict]
-def _validate_explicit_dispatch(
-    input_data: dict, cwd: str, original_prompt: str
-) -> tuple[str | None, str | None]
-```
+The complete message is exactly one line. The Dispatch ID is a lowercase prefixed UUID. Leading/trailing blank lines, extra lines, tails, aliases, traversal, backslashes, absolute paths, and case changes are invalid.
 
-The session identity source is always `common.active_task.resolve_context_key`; hooks must not invent another identity algorithm.
-
-## 3. Contracts
-
-### Canonical authority
-
-- `.trellis/research/events.jsonl` is canonical.
-- Hooks and workers never append events, mutate projections, apply/reject Proposals, promote Claims, advance Quest stages, or commit Git.
-- Worker output is untrusted. The root session reviews it before invoking `trellis research dispatch record-result`.
-- Child repositories require no Trellis installation.
-
-### Legacy setup inputs
-
-- The recognized legacy forms are `research-quest.yaml`, `research-events.jsonl`, `notes/_quest`, and a vault-local `_quest`.
-- They are untrusted historical inputs. The setup owner performs only bounded reads when explicitly invoked.
-- Selected observations may appear only in the worker Result and a pending Proposal for root-session review.
-- The setup owner never imports, moves, deletes, rewrites, canonicalizes, or claims migration of the source files; never creates another YAML/JSONL authority; never appends canonical events; and never writes to Mempal automatically.
-- Root review may choose typed canonical operations through the existing dispatch record/apply path. Empty Proposal operations remain valid when no legacy information should be adopted.
-
-### Strict ledger head
-
-For selected or initialized research state:
-
-- missing or empty ledger means head `0`;
-- each non-empty line is a JSON object;
-- `seq` is an integer, not a boolean;
-- sequences are contiguous from `1`;
-- malformed JSON or a gap invalidates the read; no line is skipped.
-
-Hooks read the head only. They do not reduce the ledger.
-
-### Session watermark
-
-The reserved runtime field is:
+Reserved runtime field:
 
 ```json
 {"research_last_seen_seq": 42}
 ```
 
-Its file is `.trellis/.runtime/sessions/<context-key>.json`.
+Runtime location:
 
-Update rules:
+```text
+.trellis/.runtime/sessions/<context-key>.json
+```
 
-1. No context key: do not write.
-2. Missing file: create an object containing the watermark.
-3. Existing JSON object: clone it and replace only `research_last_seen_seq`.
-4. Existing malformed or non-object JSON: preserve it byte-for-byte and skip the write.
-5. Write a unique temporary file in the same directory, flush it, then use `os.replace`.
-6. Remove temporary files best-effort after success or failure.
+## 3. Contracts
 
-`current_task`, `current_run`, platform fields, unknown fields, and false/zero/empty values survive.
+### 3.1 Canonical authority
 
-### Compact SessionStart output
+- `.trellis/research/events.jsonl` is canonical.
+- Hooks strict-read Research state; they never append events or repair projections.
+- Workers never record Results, apply/reject Proposals, promote Claims, advance lifecycle state, or mutate Git history.
+- Worker output is untrusted until the root session reviews it.
+- Generated hooks may write only bounded session watermark state under `.trellis/.runtime/**`.
+- Child repositories require no Trellis installation.
 
-A valid `<research-state>` contains only:
+### 3.2 No generic runtime dependency
 
-- ledger head;
-- selected active Quest ID and title, or `none`;
-- stage and mapped owner;
-- active Quest count and an ambiguity marker when count exceeds one;
-- pending Proposal count from strict compact `dispatches/*/proposal.json` records;
-- schema-V1 blocker fallback and status guidance;
-- repository-relative pointers to status, ledger, selected Quest projection, and Dispatch directory.
+Generated hooks and statusline must not depend on or mention active use of:
 
-When several Quests are active, select the greatest `(updatedAt, id)` pair deterministically and still report the total count. Never inline entity or artifact bodies.
+```text
+.trellis/scripts
+.trellis/tasks
+.trellis/spec
+.trellis/workspace
+.trellis/.developer
+Channel
+generic Trellis agents
+```
 
-### Claude sequence output
+They use local standalone parsing and atomic-write helpers. Canonical `.trellis/research/**` is always read-only to generated hooks.
+
+### 3.3 Strict ledger head
+
+For selected Research state:
+
+- missing or empty ledger means head `0`;
+- each non-empty line is a JSON object;
+- `seq` is an integer, not a boolean;
+- sequences are contiguous from `1`;
+- malformed JSON, a non-object line, or a gap invalidates the read;
+- no malformed line is skipped.
+
+Hooks read only the head. They do not reduce the ledger.
+
+### 3.4 SessionStart
+
+Claude SessionStart strict-reads:
+
+- exact bundled Research workflow selection;
+- strict ledger head;
+- compact active Quest projections;
+- compact pending Proposal records.
+
+It emits:
+
+- `<session-context>` Research orientation;
+- one-shot `<first-reply-notice>`;
+- compact `<research-state>` pointers/counts;
+- `<ready>` guidance.
+
+It does not emit generic Task phases, developer/workspace/spec context, generic sub-agent notices, or a `TRELLIS_CONTEXT_ID` shell export.
+
+When identity and ledger state are valid, SessionStart may atomically set only `research_last_seen_seq` in the session runtime object. Unknown fields and false/zero/empty values survive. Malformed/non-object session JSON remains byte-identical.
+
+### 3.5 Sequence watermark
+
+The same Research sequence hook is generated for Claude and Codex.
 
 | Condition | Output | Runtime write |
 |---|---|---|
-| head equals stored integer | empty stdout | none |
-| valid changed/missing head | one `<research-state-changed>` block with old/new head and `status --json` guidance | atomically set watermark |
-| missing identity | empty stdout | none |
-| malformed/non-object session JSON | empty stdout | none |
-| malformed selection or ledger | one compact validation pointer when identity exists | none |
+| Stored integer equals head | empty stdout | none |
+| Valid changed/missing head | one `<research-state-changed>` block | atomic watermark update |
+| Missing identity | empty stdout | none |
+| Malformed/non-object session JSON | empty stdout | none |
+| Malformed workflow selection or ledger | compact validation pointer when identity exists | none |
 
-### Dispatch request and repository
+The hook discovers the Research control root from nested working directories. It does not parse `[workflow-state:*]` blocks, load active Tasks, or emit a Codex dispatch-mode banner.
 
-The request is the strict core `Dispatch` JSON object. Unknown keys fail. Required IDs are fully prefixed UUIDs. Context entries contain exactly one of `text` or `artifact`. Portable paths reject NUL, backslashes, absolute/drive-relative paths, empty segments, and repository escape.
+Atomic writes use a unique same-directory temporary file, flush it, then call `os.replace`. Temporary files are removed best-effort.
 
-Validation requires:
+### 3.6 Claude C09 adapter
 
-- path Dispatch ID equals `request.id`;
-- strict Quest, Campaign, Run, and repository projection envelopes projected through the ledger head;
-- active Quest and exact stage-owner mapping;
-- Quest/Campaign/Run/repository hierarchy agreement;
-- optional Task pointer contained under `.trellis/tasks/` with `task.json`;
-- request artifacts belonging to the target repository and resolving canonically inside it;
-- optional artifact digest/revision revalidation;
-- all allowed-write and expected-output paths resolving inside the canonical target root.
+Preserve C09 byte-level behavior:
 
-Repository resolution order:
+1. Require the exact one-line `trellis-research-worker` envelope.
+2. Discover the root Research control plane, including invocation from a child repository.
+3. Invoke C07 directly with argument elements for `trellis`, `research`, `dispatch`, `context`, request pointer, `--host claude`, absolute `--root`, and `--json`.
+4. Require one successful JSON object, empty successful stderr, exact host/request identity, bounded authority, and `result-plus-pending-proposal` output identities.
+5. Only after pass 1, probe metadata for the exact selected optional skill path; do not list skill roots or read skill bodies.
+6. If exact optional metadata exists, run one final C07 pass with exactly one `--skill-name`; otherwise pass 1 is final.
+7. Inject the exact final validated JSON between stable markers. Do not include the original parent prompt or reinterpret fields.
+8. Deny Agent startup on typed C07 failure or any local process/JSON/contract failure.
 
-1. strict schema-V1 absolute binding from `.trellis/.runtime/research/repo-bindings.json`;
-2. tracked POSIX-relative repository locator, including explicit `..` for sibling repositories.
+There is no generic Task fallback and no duplicate Python validation. All ordinary non-worker Claude subagent calls are silent no-ops. A prompt already marked `<!-- trellis-hook-injected -->` starts no preflight process.
 
-The resolved target path is ephemeral prompt context and is never written to tracked research state.
+### 3.7 Claude worker
 
-### Worker final payload
+After valid C09 injection, the Claude worker:
 
-The worker returns one object compatible with `record-result` input:
+- invokes exactly `capability.selectedSkill`;
+- reads only inline declared context and declared artifact pointers;
+- writes only exact allowed resolved paths;
+- treats declared checks as untrusted text under the same authority;
+- returns raw Result plus pending Proposal JSON.
+
+If the selected skill cannot be invoked after valid C07 response, the worker performs no target access and returns a blocked Result plus empty pending Proposal using only output-contract IDs.
+
+### 3.8 Codex pull-based worker
+
+The Codex worker validates the exact isolated envelope itself. Before C07 succeeds it must not:
+
+- change directory;
+- read or parse `request.json`;
+- read the ledger or projections;
+- inspect the target repository;
+- read any skill body/frontmatter;
+- run a check;
+- write a file.
+
+It may inspect Codex-provided skill inventory metadata only, intersect exact canonical optional names, sort matches, and pass each once as `--skill-name`.
+
+Its first process is one direct-argument invocation of bare `trellis research dispatch context` with `--host codex --root . ... --json`. It uses no shell wrapper, pipe, redirect, `jq`, `npx`, package install, network fallback, mutation dry-run, or manual validation.
+
+After successful response validation, it loads only the exact selected skill inventory entry, works from `repository.path`, reads only declared context/artifacts, writes only exact allowed paths, and returns one raw JSON object with top-level keys `result`, then `proposal`.
+
+The `workspace-write` sandbox is only the outer boundary. The worker blocks rather than requesting sandbox expansion, `danger-full-access`, `--add-dir`, network/web/MCP access, undeclared reads/writes, nested agents, canonical Research mutation, or Git history mutation.
+
+### 3.9 Worker output
+
+Materializable result shape:
 
 ```json
 {
@@ -229,132 +231,133 @@ The worker returns one object compatible with `record-result` input:
 }
 ```
 
-Empty Proposal operations are valid. Optional Result fields and Proposal operations must remain within the current core schemas.
+Empty Proposal operations are valid. IDs are copied from the C07 output contract where required.
 
 ## 4. Validation / Error Matrix
 
 | Input/state | Required behavior |
 |---|---|
 | Missing/empty selected ledger | valid head `0` |
-| Legacy source is present without explicit setup intent | remain dormant; do not read, mutate, import, or write Mempal |
-| Explicit legacy inspection finds useful information | report bounded observations and a pending Proposal; preserve source bytes and root authority |
-| Ledger malformed JSON, non-object line, boolean/non-integer `seq`, or gap | compact validation guidance; no watermark overwrite |
-| Malformed workflow selection | SessionStart validation guidance; Claude per-turn validation guidance when identity exists |
-| Malformed Quest projection or proposal record | SessionStart validation guidance; no guessed Quest/count; no watermark write |
-| Valid head equals watermark | no UserPromptSubmit output |
-| Valid head changes | emit once, atomically update, next prompt is silent |
-| Missing identity | no runtime file and no per-turn output |
-| Malformed session JSON | preserve bytes and emit no per-turn state-change output |
-| Pointer not on first line or not exact grammar | no automatic research injection |
-| Explicit first-line `Research dispatch:` with invalid grammar | marked no-write validation-failure prompt |
-| Request path traversal, symlink/canonical escape, or path/ID mismatch | marked no-write prompt |
-| Unknown request key, missing field, malformed ID/context/path/timestamp | marked no-write prompt |
-| Unknown owner or owner/stage mismatch | marked no-write prompt |
-| Missing/inactive/complete Quest or inconsistent Campaign/Run/repository | marked no-write prompt |
-| Missing target, malformed bindings, remote mismatch, artifact escape/digest/revision failure | marked no-write prompt |
-| Invalid explicit Dispatch while a Task is active | no Task-context fallback; marked no-write prompt only |
-| Non-Claude platform | existing agent and breadcrumb behavior |
-| Existing `trellis-research` agent | existing code/search prompt behavior |
+| Malformed ledger line or sequence gap | compact validation guidance; no watermark write |
+| Valid head equals watermark | silent no-op |
+| Valid head changes | emit once, atomically update, next prompt silent |
+| Missing identity | no output and no runtime file |
+| Malformed session JSON | preserve bytes; no sequence output/write |
+| Invalid Claude worker envelope | deny before process or target/skill access |
+| Ordinary Claude subagent call | silent no-op |
+| Claude typed C07 failure | deny with bounded code/message |
+| Claude missing/incompatible process, malformed/multiple JSON, successful stderr, or authority mismatch | local `PREFLIGHT_EXECUTION_FAILED`; deny |
+| Exact optional Claude skill metadata after pass 1 | one final C07 pass with exactly one skill name |
+| Invalid Codex envelope | local `PREFLIGHT_EXECUTION_FAILED`; no process/target/skill/write |
+| Codex typed C07 failure | return failure JSON unchanged |
+| Codex process/JSON/authority anomaly | local bounded failure; no manual fallback |
+| Selected skill missing after valid C07 | blocked Result plus empty pending Proposal |
+| Undeclared input, network, unsafe check, sandbox expansion, or undeclared write | skip/block and report partial/blocked output |
 
-Validation failures are model-visible but non-authoritative:
+Claude denial shape:
 
-```text
-<!-- trellis-hook-injected -->
-# Research Dispatch Validation Failed
-Do not modify files or run the requested work.
-Report this validation error to the root session: <reason>
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "Research Dispatch preflight failed [CODE]: bounded message"
+  }
+}
 ```
+
+Codex local preflight failure shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "command": "codex research worker preflight",
+  "valid": false,
+  "error": {
+    "code": "PREFLIGHT_EXECUTION_FAILED",
+    "message": "bounded reason"
+  },
+  "safeAction": "report-to-root-no-write"
+}
+```
+
+Neither failure fabricates Dispatch, Run, or Quest IDs.
 
 ## 5. Good / Base / Bad Cases
 
 ### Good
 
-- Claude SessionStart sees ledger head `12`, one active `literature` Quest, and two pending Proposals. It emits a compact owner pointer and atomically stores `12` without changing `current_task`.
-- Another root command advances the ledger to `13`. The next Claude prompt emits one old/new pointer and stores `13`; the following prompt emits nothing.
-- A Task-free Claude worker receives a valid explicit Dispatch targeting a bound sibling repository. The hook injects text and artifact paths, not artifact bodies, and the worker writes only declared outputs.
-- Explicit setup-stage inspection observes all four supported legacy forms, leaves every source byte-identical, and returns only a Result plus pending Proposal for root review without a Mempal write.
+- Claude SessionStart sees head `12`, one active Quest, and two pending Proposals; it emits compact pointers and stores only watermark `12`.
+- The next prompt at head `12` is silent; a later head `13` emits once and stores `13`.
+- A Task-free Claude worker receives one exact Dispatch pointer targeting a bound sibling repository; C09 injects exact C07 JSON and the worker performs bounded work.
+- A Codex worker discovers one exact optional skill name, runs C07 first, loads only the selected skill, and returns raw Result plus pending Proposal JSON.
 
 ### Base
 
-- Research is selected but not initialized: head is `0`, current Quest is `none`, pending Proposal count is `0`.
-- A native workflow with no research ledger receives the existing SessionStart and `<workflow-state>` outputs unchanged.
-- A non-Claude `trellis-research` invocation retains the existing search-agent prompt.
+- Research is selected but uninitialized: head `0`, current Quest `none`, pending Proposal count `0`.
+- No optional skill metadata exists: Claude uses pass 1 and Codex omits `--skill-name`.
+- Ordinary Claude subagent calls emit nothing.
 
 ### Bad
 
 - Skipping a malformed ledger line and reporting a later sequence.
-- Replacing malformed session JSON with a fresh watermark object.
-- Reading every Quest/Proposal/artifact body into every per-turn prompt.
-- Resolving a child Git root first and losing the root research control plane.
-- Letting an invalid explicit Dispatch fall through to active Task context.
-- Writing absolute machine paths into `request.json`, events, projections, skills, or tracked worker output.
-- Renaming `research-events.jsonl` into the canonical ledger, rewriting `_quest`, creating a second YAML authority, or auto-ingesting legacy text into Mempal.
+- Replacing malformed session JSON with a fresh object.
+- Reading Task/spec/workspace/developer state from generated hooks.
+- Letting an invalid Dispatch fall through to generic Task context.
+- Codex reading request/skill/target data before C07 or using `npx`/manual parsing fallback.
+- Worker mutating canonical Research state, accepting its own Proposal, or committing.
 
 ## 6. Tests Required
 
-The focused executable suite is `packages/cli/test/templates/research-hooks.test.ts`. It must cover:
+Focused coverage must prove:
 
-- nine exact stage-owner names, frontmatter stage ownership, dormant trigger, authority wording, and Result plus Proposal output;
-- all four legacy setup source names plus untrusted-input, source-preservation, proposal-only, root-review, no-second-authority, and no-automatic-Mempal wording;
-- every platform collector tracking each bundled skill;
-- platform-neutral and Claude worker discovery while retaining `trellis-research`;
-- zero/one/multiple active Quest orientation and deterministic selection;
-- pending Proposal count, compact pointers, and absence of entity/artifact bodies;
-- malformed selection, ledger, Quest projection, and proposal record;
-- atomic watermark preservation, no identity, and malformed session preservation;
-- unchanged/changed/invalid Claude sequence behavior and native/non-Claude compatibility;
-- valid Task-free and Task-linked child-repository Dispatches;
-- marker idempotency, bounded injected fields, and exact Result plus Proposal contract;
-- traversal, ID mismatch, malformed request, owner-stage mismatch, inactive Quest, hierarchy mismatch, unknown/unresolved repository, malformed binding, and artifact escape;
-- invalid Dispatch isolation from Task context.
+- exact nine skill names under both host roots;
+- exact Claude/Codex current path allowlists and configure/collect byte parity;
+- every registered current hook is generated and every generated hook is registered;
+- Codex session-start and all generic agent/skill output are absent;
+- generated hooks contain no Task/spec/workspace/developer/script dependency;
+- strict zero/changed/malformed ledger behavior for Claude and Codex;
+- atomic watermark preservation and malformed runtime preservation;
+- compact SessionStart orientation and optional Research-only statusline;
+- exact C09 envelope, root discovery, direct C07 argv, bounded response validation, optional second pass, exact JSON injection, and deny-on-failure;
+- ordinary Claude non-worker calls are no-ops;
+- Codex first-process C07 pull preflight, typed failure pass-through, local failure, selected-skill ordering, bounded target authority, and raw Result/Proposal output;
+- source/build parity for retained hooks, workers, and stage skills.
 
-Existing template/configurator/init/update/regression suites must continue to cover byte-identical platform collection, hash tracking, and unchanged implement/check/research Task injection.
+Primary tests:
+
+- `test/configurators/platforms.test.ts`
+- `test/templates/research-hooks.test.ts`
+- `test/templates/shared-hooks.test.ts`
+- `test/templates/hook-timeouts.test.ts`
+- `test/regression.test.ts`
 
 ## 7. Wrong vs Correct
 
-### Legacy migration authority
-
-```text
-Wrong: setup renames research-events.jsonl, rewrites _quest, appends canonical events, and sends the content to Mempal.
-Correct: setup performs bounded reads, returns observations plus a pending Proposal, and leaves adoption to explicit root review/apply.
-```
-
-### Runtime metadata write
-
-```python
-# Wrong: truncates the session file and discards unknown fields.
-session_path.write_text(json.dumps({"research_last_seen_seq": head}))
-
-# Correct: clone the valid object, replace one field, write a same-dir temp,
-# flush, then os.replace(temp_path, session_path).
-updated = dict(session_data)
-updated["research_last_seen_seq"] = head
-```
-
-### Per-turn state
-
-```python
-# Wrong: emit full Quest and Proposal objects every prompt.
-additional_context = json.dumps(reduced_research_state)
-
-# Correct: compare strict ledger head to the session watermark.
-# Equal -> no output. Changed -> one compact pointer, then atomic update.
-```
-
 ### Dispatch routing
 
-```python
-# Wrong: use the nearest .git root, trust request.json, and load active Task files.
-repo_root = find_repo_root(cwd)
-request = json.loads(Path(pointer).read_text())
+```text
+Wrong: parse request.json in Python, read an active Task, or duplicate C07 validation.
+Correct: find the root control plane, call C07 directly, validate its response contract, and inject/consume exact validated JSON.
+```
 
-# Correct: resolve the research control plane first, validate canonical request
-# containment/schema/hierarchy/repository/artifacts, then inject only bounded fields.
+### Runtime watermark
+
+```text
+Wrong: overwrite the session file with only research_last_seen_seq.
+Correct: clone a valid object, replace one field, flush a same-directory temp file, then os.replace.
+```
+
+### Codex preflight
+
+```text
+Wrong: read request.json or SKILL.md, infer an owner, then run npx as a best-effort check.
+Correct: discover names only, run bare C07 as the first process, validate it, then load exactly the selected skill.
 ```
 
 ### Scientific authority
 
 ```text
-Wrong: worker appends events, accepts its Proposal, advances the Quest, and commits.
-Correct: worker returns Result + pending Proposal; root reviews and records explicitly.
+Wrong: worker records its Result, applies its Proposal, advances the Quest, or commits.
+Correct: worker returns Result plus pending Proposal; the root reviews and mutates authoritative state explicitly.
 ```

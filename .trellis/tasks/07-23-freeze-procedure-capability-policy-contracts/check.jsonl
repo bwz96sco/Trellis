@@ -1,0 +1,12 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check exact v1 preservation and unambiguous v2 activation/approval event, lifecycle, replay, batch, and authority requirements."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check all target CLI signatures, compatibility flags, TTY challenge, zero-write Context, and atomic consumption have executable matrices."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check final capability/Procedure model stays host-neutral and only Claude/Codex remain current adapters."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check normalized context retains every existing worker restriction and removes Skill authority only in successor tasks."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Check Research Skill retirement evidence is separate from frozen generic cleanup and preserves every non-pristine case."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check Procedure overrides, policy, digests, and sidecars define containment, regular-file, symlink, atomicity, and no-write failures."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Check validation conditions map to deterministic fail-closed errors before any mutation."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Check current packed Skill inventory is frozen and future Procedure/forbidden inventory is staged to C09 only."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Check C01 remains characterization/spec work with no premature runtime, payload, cleanup, or package changes."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check golden fixtures and characterization tests are immutable, deterministic, and owned by correct package."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check proposed command, hook, update/uninstall, tree snapshot, and packed tests have concrete assertion points."}
+{"file":".trellis/tasks/archive/2026-07/07-18-retire-generic-product-surfaces/design.md","reason":"Check frozen generic cleanup inventory, Research exclusions, and 0.7 compatibility boundaries remain unchanged."}

@@ -23,8 +23,13 @@
  *                                    version already exists on npm it is
  *                                    skipped (but version mismatches still
  *                                    fail loudly).
- *   verify-packed-cli                Pack the CLI and assert its dependency
- *                                    on @mindfoldhq/trellis-core resolves
+ *   verify-packed-core               Clean-build and pack the core SDK, audit
+ *                                    its frozen 0.7 exports and tar entries,
+ *                                    import every public entry point, compile
+ *                                    declarations, and block deep imports.
+ *   verify-packed-cli                Clean-build and pack the CLI, assert its
+ *                                    Research-only tarball inventory, and
+ *                                    verify @mindfoldhq/trellis-core resolves
  *                                    to the exact shared version (not
  *                                    "workspace:*" or a loose range).
  *   verify-npm [--package all|core|cli]
@@ -40,15 +45,25 @@
  * version/tag mismatch. Version equality is checked first; npm existence
  * decides per-package skip.
  */
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  auditPackedEntries,
+  buildPackedCliInventory,
+  parseTarListing,
+} from "./packed-cli-audit.js";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../..");
-const CORE_PKG = path.join(REPO_ROOT, "packages/core/package.json");
-const CLI_PKG = path.join(REPO_ROOT, "packages/cli/package.json");
+const CLI_DIR = path.join(REPO_ROOT, "packages/cli");
+const CORE_DIR = path.join(REPO_ROOT, "packages/core");
+const CORE_PKG = path.join(CORE_DIR, "package.json");
+const CORE_VERIFY_SCRIPT = path.join(CORE_DIR, "scripts/verify-packed-core.js");
+const CLI_PKG = path.join(CLI_DIR, "package.json");
+const MIGRATION_MANIFEST_DIR = path.join(CLI_DIR, "src/migrations/manifests");
 
 const RED = "\x1b[31m";
 const YELLOW = "\x1b[33m";
@@ -75,7 +90,9 @@ function tagVersionFromEnv() {
   // GITHUB_REF for `push: tags: v*` looks like `refs/tags/v0.6.0-beta.12`.
   // GITHUB_REF_NAME on `release.published` is the tag name.
   const ref = process.env.GITHUB_REF_NAME || process.env.GITHUB_REF || "";
-  const m = ref.match(/(?:refs\/tags\/)?v(\d+\.\d+\.\d+(?:-[A-Za-z0-9.+-]+)?)$/);
+  const m = ref.match(
+    /(?:refs\/tags\/)?v(\d+\.\d+\.\d+(?:-[A-Za-z0-9.+-]+)?)$/,
+  );
   return m ? m[1] : null;
 }
 
@@ -222,31 +239,68 @@ function publishPlan({ output }) {
   return plan;
 }
 
+function verifyPackedCore() {
+  checkVersions({ requireTag: false });
+  execFileSync(process.execPath, [CORE_VERIFY_SCRIPT], {
+    cwd: REPO_ROOT,
+    stdio: "inherit",
+  });
+}
+
 function verifyPackedCli() {
   const v = checkVersions({ requireTag: false });
+
+  console.log(
+    `${DIM}clean-building CLI before package verification...${RESET}`,
+  );
+  execFileSync("pnpm", ["run", "build"], {
+    cwd: CLI_DIR,
+    stdio: "inherit",
+  });
+
   const tmp = fs.mkdtempSync(path.join(REPO_ROOT, ".pack-verify-"));
-  let packed;
   try {
-    const out = execSync(`pnpm pack --pack-destination ${tmp}`, {
-      cwd: path.join(REPO_ROOT, "packages/cli"),
+    execFileSync("pnpm", ["pack", "--pack-destination", tmp], {
+      cwd: CLI_DIR,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    const tarballs = fs
+      .readdirSync(tmp)
+      .filter((entry) => entry.endsWith(".tgz"))
+      .sort();
+    if (tarballs.length !== 1) {
+      fail(
+        `pnpm pack produced ${tarballs.length} tarballs in ${tmp}; expected exactly one.`,
+      );
+    }
+    const packed = path.join(tmp, tarballs[0]);
+    const tarListing = execFileSync("tar", ["-tzf", packed], {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
     });
-    // pnpm prints the resulting tarball path on its last non-empty line.
-    const last = out.trim().split("\n").filter(Boolean).pop() || "";
-    packed = last.startsWith("/") ? last : path.join(tmp, last);
-    if (!fs.existsSync(packed)) {
-      // Fall back to scanning the tmp dir.
-      const tgz = fs.readdirSync(tmp).find((f) => f.endsWith(".tgz"));
-      if (!tgz) fail(`pnpm pack did not produce a tarball in ${tmp}`);
-      packed = path.join(tmp, tgz);
+    const entries = parseTarListing(tarListing);
+    const migrationManifestNames = fs
+      .readdirSync(MIGRATION_MANIFEST_DIR)
+      .filter((entry) => entry.endsWith(".json"))
+      .sort();
+    const inventory = buildPackedCliInventory(migrationManifestNames);
+
+    let audit;
+    try {
+      audit = auditPackedEntries(entries, inventory);
+    } catch (error) {
+      fail(error instanceof Error ? error.message : String(error));
     }
-    const extractDir = path.join(tmp, "extract");
-    fs.mkdirSync(extractDir);
-    execSync(`tar -xzf ${packed} -C ${extractDir} package/package.json`, {
-      stdio: ["pipe", "pipe", "pipe"],
-    });
-    const packedPkg = readJSON(path.join(extractDir, "package/package.json"));
+
+    const packedPackageJson = execFileSync(
+      "tar",
+      ["-xOf", packed, "package/package.json"],
+      {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      },
+    );
+    const packedPkg = JSON.parse(packedPackageJson);
     const dep = packedPkg.dependencies?.["@mindfoldhq/trellis-core"];
     if (!dep) {
       fail(`packed CLI is missing dependency on @mindfoldhq/trellis-core.`);
@@ -257,6 +311,11 @@ function verifyPackedCli() {
           `pnpm should rewrite workspace:* to the exact published version; got "${dep}" instead.`,
       );
     }
+    console.log(
+      `${GREEN}ok${RESET} packed CLI inventory: ${audit.entryCount} entries; ` +
+        `${audit.requiredEntryCount} required Research/compatibility entries present; ` +
+        `no forbidden generic entries.`,
+    );
     console.log(
       `${GREEN}ok${RESET} packed CLI pins @mindfoldhq/trellis-core to exact ${v.cliVersion}.`,
     );
@@ -303,6 +362,7 @@ async function main() {
         `  check-versions [--require-tag]\n` +
         `  npm-tag\n` +
         `  publish-plan [--json|--github]\n` +
+        `  verify-packed-core\n` +
         `  verify-packed-cli\n` +
         `  verify-npm [--package all|core|cli]\n`,
     );
@@ -324,6 +384,10 @@ async function main() {
         ? "github"
         : "text";
     publishPlan({ output });
+    return;
+  }
+  if (cmd === "verify-packed-core") {
+    verifyPackedCore();
     return;
   }
   if (cmd === "verify-packed-cli") {

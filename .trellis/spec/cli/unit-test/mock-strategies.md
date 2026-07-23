@@ -126,9 +126,9 @@ expect(inquirer.prompt).not.toHaveBeenCalled();
 
 `file-writer.ts` has module-level state for write mode. If one test sets `force` mode, subsequent tests inherit it unless reset. The `init()` function calls `setWriteMode()` internally, so integration tests that call `init()` are safe. But direct unit tests of `writeFile` must manage this state explicitly.
 
-### Template Placeholder Resolution
+### Research Payload Resolution
 
-`collectPlatformTemplates()` must return templates with `{{PYTHON_CMD}}` **already resolved** (matching what `configurePlatform()` writes to disk). The `resolvePlaceholders()` function in `configurators/shared.ts` handles this. If a new placeholder is added to templates, it must be resolved in both `configure()` and `collectTemplates()`.
+`collectResearchPlatformPayload()` returns the final rendered map, including resolved `{{PYTHON_CMD}}` bytes and project-aware structured merges. `writeResearchPlatformPayload()` must write that exact map. Do not mock either side independently: tests must compare configured and collected keys and bytes in both directions.
 
 ---
 

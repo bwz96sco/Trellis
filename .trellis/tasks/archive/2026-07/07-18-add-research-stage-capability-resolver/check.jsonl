@@ -1,0 +1,6 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify resolver is exhaustive, pure, deterministic, terminal-safe, and schema-v1 compatible."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Verify new symbols appear only through built `/research` subpath and package root remains unchanged."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Verify C06 does not prematurely alter Claude hook behavior or duplicate maps assigned to C09."}
+{"file":".trellis/tasks/07-18-add-research-stage-capability-resolver/research/core-stage-capability-map.md","reason":"Audit exact existing stage/Dispatch/schema/export boundaries and forbidden lifecycle integration."}
+{"file":".trellis/tasks/07-18-add-research-stage-capability-resolver/research/optional-skill-resolution-contract.md","reason":"Audit canonical-name-only discovery, exact fallback selection, host validation, and legacy owner non-authority."}
+{"file":".trellis/tasks/07-18-add-research-stage-capability-resolver/research/c06-tests-exports-and-boundaries.md","reason":"Check exhaustive tests, frozen compatibility, built exports, and no C07-C09 scope leakage."}

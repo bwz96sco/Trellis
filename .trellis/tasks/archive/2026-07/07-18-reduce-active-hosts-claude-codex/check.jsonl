@@ -1,0 +1,9 @@
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify current support is exactly Claude Code and Codex across registry, CLI, detection, roots, configurators, and packaging."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify retired active generation is gone while current-wins and cleanup compatibility remain."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Verify registry shrink does not weaken C02/C03 cleanup safety or frozen fixture behavior."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Verify historical paths/hashes remain canonical and no migration history is rewritten."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify exact ownership, user-content preservation, protected Research paths, and managed-root boundaries."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify test deletions do not remove compatibility or safety coverage."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/compatibility-collisions-and-tests.md","reason":"Audit shared `.agents/skills`, AGENTS.md, snapshot, update, uninstall, and retired-test transition cases."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/c04-plan-scope-and-acceptance.md","reason":"Check complete acceptance matrix, package audit, forbidden scope, and rollback discipline."}
+{"file":".trellis/tasks/07-18-reduce-active-hosts-claude-codex/research/gitnexus-impact-analysis.md","reason":"Require joint init/update/prune/uninstall review for HIGH-risk getConfiguredPlatforms impact."}

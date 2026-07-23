@@ -6,7 +6,74 @@
 
 ## Overview
 
-This directory contains guidelines for backend development. Fill in each file with your project's specific conventions.
+This directory documents the executable contracts for the Research-only CLI, its published package, and historical compatibility behavior. Active product surfaces and compatibility-only SDK/data surfaces must remain separate.
+
+---
+
+## Active Product Surface Contract
+
+### 1. Scope / Trigger
+
+Apply this contract whenever root command registration, `trellis research` registration, `init` options, generated payloads, package contents, or historical cleanup compatibility changes.
+
+### 2. Signatures
+
+```text
+trellis init|update|upgrade|uninstall|research
+
+trellis research
+  init|status|validate|rebuild|repo|quest|campaign|run|evidence|claim|dispatch
+
+trellis research dispatch
+  context|prepare|record-result|apply|reject
+```
+
+Retained `init` options are exactly `--claude`, `--codex`, `--with-statusline`, `--yes`, `--force`, and `--skip-existing`.
+
+### 3. Contracts
+
+- `trellis` and `tl` execute the same built Commander parser.
+- `channel`, `mem`, `workflow`, and `research task` have no active CLI registration.
+- `--user`, `--monorepo`, `--no-monorepo`, `--template`, `--registry`, `--overwrite`, and `--append` are unregistered.
+- Current generation is Research-only and uses exact Research asset APIs.
+- Historical cleanup data and 0.7 core compatibility exports do not create active CLI commands.
+- Source, clean `dist`, and the packed npm tarball must all omit generic command implementations and generic template payloads.
+
+### 4. Validation & Error Matrix
+
+| Input or artifact | Required result |
+|---|---|
+| Removed root command | Commander unknown-command failure before action callbacks or writes. |
+| Removed `research task` subtree | Commander unknown-command failure before Research mutation or writes. |
+| Removed `init` option | Commander unknown-option failure before `init()` or writes. |
+| Retained command/option | Parses through the one supported command tree. |
+| Generic source/dist/tar entry | Package audit fails and names the forbidden entry. |
+| Missing required Research/compatibility tar entry | Package audit fails and names the missing entry. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: both aliases expose the exact command sets above, init writes only the selected Research payload, and a clean packed artifact passes positive and negative inventory checks.
+- **Base**: historical manifests, workflow metadata, and core Channel/Mem/Task exports remain readable without any CLI registration.
+- **Bad**: a stale `dist` file, broad template collector, compatibility export, or cleanup descriptor makes a retired command or generic asset active again.
+
+### 6. Tests Required
+
+- Exact root, Research, and Dispatch command-set assertions.
+- Unknown command/option tests with byte-identical temporary filesystem snapshots.
+- Built `trellis`/`tl` parity.
+- Exact Research payload path and configure/collect byte parity.
+- Clean build plus packed tarball required/forbidden inventory audit.
+- Core root/subpath export compatibility through 0.7.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: keep a retired option registered and reject it inside init().
+Correct: omit the option from Commander so parsing fails before init() runs.
+
+Wrong: infer package contents from collector output or source inspection.
+Correct: clean-build, pack, list normalized tar entries, and audit required and forbidden paths.
+```
 
 ---
 
@@ -23,16 +90,13 @@ This directory contains guidelines for backend development. Fill in each file wi
 | [Filesystem Safety](./filesystem-safety.md) | Atomic writes (temp+rename / `os.replace`), path/name chokepoint validation, destructive-op ownership & backup gates, dogfood twin sync | Done |
 | [Release Process](./release-process.md) | CI-only publishing, package versioning, release tracks, manifest continuity, submodule ordering | Done |
 | [Trellis Core SDK](./trellis-core-sdk.md) | `@mindfoldhq/trellis-core` / CLI package boundary, public exports, build and versioning contracts | Done |
-| [Platform Integration](./platform-integration.md) | How to add support for new AI CLI platforms | Done |
-| [Workflow-State Contract](./workflow-state-contract.md) | Per-turn breadcrumb subsystem: marker syntax, status writers, lifecycle events, reachability | Done |
-| [Configurator Shared Helpers](./configurator-shared.md) | `configurators/shared.ts` public surface: placeholder substitution, write helpers, pull-based prelude, cross-configurator invariants | Done |
-| [`tl mem` Command](./commands-mem.md) | Cross-platform AI session memory: subcommands, schemas, indexing, cleaning pipeline, search relevance | Done |
+| [Platform Integration](./platform-integration.md) | Exact Claude Code/Codex registry, Research payload, hook/config matrix, and cleanup-only historical hosts | Done |
+| [Workflow-State Contract](./workflow-state-contract.md) | Strict Research selection, ledger-head orientation, sequence watermark, and historical native compatibility | Done |
+| [Configurator Shared Helpers](./configurator-shared.md) | Retained Python/placeholder renderers and canonical Research configure/collect byte parity | Done |
 | [`trellis upgrade` Command](./commands-upgrade.md) | Global CLI self-upgrade wrapper: channel inference, npm invocation, failure behavior | Done |
-| [`trellis update` Command](./commands-update.md) | Update pipeline: flags, plan composition, migration trigger semantics, apply phase, idempotency, boundaries with `migrations.md` | Done |
-| [`trellis workflow` Command](./commands-workflow.md) | Workflow marketplace templates, project-local workflow switching, hash ownership contract, and parser compatibility | Done |
-| [`trellis uninstall` Command](./commands-uninstall.md) | Uninstall orchestration: plan composition, structured-file dispatch, execute phases, `.trellis/` removal | Done |
-| [Uninstall Scrubbers](./uninstall-scrubbers.md) | Pure scrubber contract for structured config files (`settings.json`, `hooks.json`, `package.json`, `config.toml`) | Done |
-| [`trellis channel` Command](./commands-channel.md) | Multi-agent collaboration runtime: events.jsonl protocol, per-worker supervisor, provider adapters (claude / codex), project buckets, ephemeral / run lifecycle, ShutdownController state machine | Done |
+| [`trellis update` Command](./commands-update.md) | Research desired-state reconciliation, workflow digest compatibility, cleanup safety, and idempotency | Done |
+| [`trellis uninstall` Command](./commands-uninstall.md) | Exact-key ownership release, structured scrubbing, and Research/user-data preservation | Done |
+| [Uninstall Scrubbers](./uninstall-scrubbers.md) | Pure compatibility scrubbers for exact mixed-ownership config paths | Done |
 | [`trellis research` Command](./commands-research.md) | Deterministic research workspace inspection, validation, projection recovery, and Quest/Campaign/Run/Evidence/Claim lifecycle mutations | Done |
 | [Research Worker Skills and Claude Hooks](./research-worker-hooks.md) | Stage-owner skills, bounded worker cards, compact research session state, sequence watermark, and explicit Claude Dispatch validation | Done |
 ---
@@ -43,22 +107,20 @@ Before writing backend code, read the relevant guidelines based on your task:
 
 - Error handling → [error-handling.md](./error-handling.md)
 - Logging → [logging-guidelines.md](./logging-guidelines.md)
-- Adding a platform → [platform-integration.md](./platform-integration.md)
-- Modifying `init.ts` flow (new triggers, dispatch branches, bootstrap/joiner) → [platform-integration.md "Bootstrap & Joiner Task Auto-Generation"](./platform-integration.md) — two-point wiring + `.developer` signal
+- Editing the exact Claude Code/Codex registry or payload → [platform-integration.md](./platform-integration.md)
+- Modifying `init.ts`, current host selection, fresh/full layout, or host-addition behavior → [platform-integration.md](./platform-integration.md) + [directory-structure.md](./directory-structure.md)
 - Script work → [script-conventions.md](./script-conventions.md)
 - Migration system → [migrations.md](./migrations.md)
 - Writing/deleting/moving/overwriting files in a user repo (any `writeFileSync`, `rmSync`, `renameSync`, `shutil.move`, or user/agent-supplied path segment) → [filesystem-safety.md](./filesystem-safety.md)
 - Cutting a release / cross-branch submodule coordination / manifest continuity / npm publishing → [release-process.md](./release-process.md)
 - Editing `packages/core/**`, moving reusable CLI logic into core, or changing CLI imports from `@mindfoldhq/trellis-core` → [trellis-core-sdk.md](./trellis-core-sdk.md)
 - Adding any native (`.node` / C++ / `node-gyp`) dependency → [quality-guidelines.md "Native dependency policy"](./quality-guidelines.md)
-- Editing `[workflow-state:STATUS]` breadcrumb blocks / `task.json.status` writers / lifecycle hooks → [workflow-state-contract.md](./workflow-state-contract.md)
-- Editing `configurators/shared.ts` (placeholder substitution, write helpers, prelude injection) → [configurator-shared.md](./configurator-shared.md)
-- Editing `commands/mem.ts` (subcommands, platform indexers, search/cleaning pipeline) → [commands-mem.md](./commands-mem.md)
+- Editing Research workflow selection, ledger-head orientation, sequence watermarking, or historical native recognition → [workflow-state-contract.md](./workflow-state-contract.md)
+- Editing `configurators/shared.ts` or the exact Research payload resolver → [configurator-shared.md](./configurator-shared.md) + [platform-integration.md](./platform-integration.md)
 - Editing `commands/upgrade.ts` (global CLI self-upgrade behavior) → [commands-upgrade.md](./commands-upgrade.md)
-- Editing `commands/update.ts` (flags, plan, apply phases, idempotency) → [commands-update.md](./commands-update.md) — manifest mechanics still in [migrations.md](./migrations.md)
-- Editing `commands/workflow.ts`, `utils/workflow-resolver.ts`, workflow marketplace entries, or `init --workflow` behavior → [commands-workflow.md](./commands-workflow.md)
+- Editing `commands/update.ts` or historical workflow recognition → [commands-update.md](./commands-update.md) — manifest mechanics still live in [migrations.md](./migrations.md)
 - Editing `commands/uninstall.ts` or `utils/uninstall-scrubbers.ts` → [commands-uninstall.md](./commands-uninstall.md) + [uninstall-scrubbers.md](./uninstall-scrubbers.md)
-- Editing `commands/channel/**` (events.jsonl protocol, supervisors, adapters, project buckets, channel-lifecycle commands) → [commands-channel.md](./commands-channel.md)
+- Editing core Channel/Mem/Task compatibility APIs without adding active CLI commands → [trellis-core-sdk.md](./trellis-core-sdk.md)
 - Editing `commands/research/**` or root research command registration/output behavior → [commands-research.md](./commands-research.md) + [trellis-core-sdk.md](./trellis-core-sdk.md)
 - Editing research stage-owner skills, worker cards, SessionStart research orientation, Claude sequence watermarking, or explicit research Dispatch injection → [research-worker-hooks.md](./research-worker-hooks.md)
 

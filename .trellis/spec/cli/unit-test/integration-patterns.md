@@ -1,157 +1,181 @@
 # Integration Test Patterns
 
-> Patterns for function-level integration tests of CLI commands.
+## 1. Scope / Trigger
 
----
+Use real temporary filesystems for command orchestration, parser boundaries, generated payloads, update/uninstall safety, and packed-package inventory.
 
-## Approach: Function-Level Integration (Approach B)
+Function-level integration remains appropriate for command internals. When parsing, aliases, or package contents are the feature, tests must execute the built parser/bin or packed artifact rather than calling an action function directly.
 
-Instead of spawning CLI subprocesses, directly import and call `init()` / `update()` functions in real temp directories. This gives:
+## 2. Signatures
 
-- Fast execution (~400ms per test file)
-- Reproducible results (no network, no TTY)
-- Precise control of external dependencies via mocks
-- Full code path coverage from entry to file system output
+Function-level entry points:
 
-**Trade-off**: Does not test CLI argument parsing (commander layer).
+```ts
+await init(options);
+await update(options);
+await uninstall(options);
+```
 
----
+Built parser/bin entry points:
 
-## Standard Test Setup
+```text
+node packages/cli/dist/cli/index.js <argv>
+node packages/cli/bin/trellis.js <argv>
+```
 
-```typescript
-describe("command() integration", () => {
-  let tmpDir: string;
+Both published aliases must resolve through the same bin:
 
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-test-"));
-    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
-    vi.spyOn(console, "log").mockImplementation(noop);
-    vi.spyOn(console, "error").mockImplementation(noop);
-  });
+```text
+trellis
+tl
+```
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();  // Only needed if vi.stubGlobal was used
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  });
+Exact command sets under test:
+
+```text
+root: init update upgrade uninstall research
+research: init status validate rebuild repo quest campaign run evidence claim dispatch
+dispatch: context prepare record-result apply reject
+```
+
+## 3. Contracts
+
+### Function-level integration
+
+Direct imports are preferred for init/update/uninstall domain behavior because they provide fast, deterministic control over a real temporary filesystem. Mock only terminal prompts, banners, version checks, and process boundaries that cannot run deterministically.
+
+Do not mock `fs` or internal payload collectors when filesystem output is the behavior.
+
+### Parser/bin integration
+
+Use a built parser or subprocess when testing:
+
+- exact registered command sets;
+- removed command rejection;
+- removed init-option rejection;
+- Commander exit code/stderr behavior;
+- proof that no action callback ran;
+- `trellis`/`tl` parity.
+
+Removed commands/options must fail during Commander parsing:
+
+```text
+unknown command/option
+  -> Commander error
+  -> no command action callback
+  -> no filesystem write
+```
+
+Required removed inputs include:
+
+```text
+trellis channel
+trellis mem
+trellis workflow
+trellis research task
+trellis research task link
+trellis research task unlink
+--user --monorepo --no-monorepo --template --registry --overwrite --append
+```
+
+### Snapshot zero-write proof
+
+Before an expected parse failure, snapshot the complete temporary repository as relative paths plus raw bytes. After the subprocess exits, compare the complete snapshot. Assert no added, removed, or changed file, including `.trellis`, config, logs, and runtime files.
+
+A spy on `init()` alone is insufficient when the built bin could perform work before action dispatch.
+
+### Research payload integration
+
+For Claude-only, Codex-only, and dual-host init/update:
+
+- compare sorted paths to exact allowlists;
+- compare configured and collected maps in both directions;
+- assert byte identity for every path;
+- prove one bounded worker and exactly nine stage skills per host;
+- prove only the approved hook/config matrix;
+- cover optional Claude statusline separately;
+- assert generic paths are absent.
+
+### Preservation integration
+
+Use complete path-and-byte snapshots for `.trellis/research/**` across init, host addition, force/full init, update, dry-run, uninstall, and failure paths. Seed mixed valid and malformed config files and unknown descendants; assert preservation exactly.
+
+### Production core-import boundary
+
+Scan static imports, `export ... from`, and literal dynamic imports in production modules under `packages/cli/src/**/*.{ts,js}` and a clean `packages/cli/dist/**/*.{js,mjs,cjs}` build. Exclude tests, fixtures, templates, docs, and package metadata. Every specifier beginning with `@mindfoldhq/trellis-core` must equal exactly `@mindfoldhq/trellis-core/research`; diagnostics name the relative file and offending specifier.
+
+### Packed-artifact integration
+
+Keep core and CLI package audits independent.
+
+The core proof clean-builds and packs a real tarball, validates every tar path before extraction, derives required runtime/declaration targets from packed exports, rejects leakage, installs the tarball locally without network access, imports root and all five subpaths, compiles strict NodeNext declarations, proves root non-leakage and empty Testing, and blocks undeclared deep imports.
+
+The CLI proof clean-builds and packs a separate real tarball, asserts required Research/compatibility inventory, rejects forbidden generic entries/prefixes, and checks the exact packed core dependency. Collector output and dirty `dist` are not substitutes.
+
+## 4. Validation & Error Matrix
+
+| Scenario | Required assertion |
+|---|---|
+| Supported root/Research/Dispatch command | Parses through the one expected tree. |
+| Removed root or Research command | Non-zero Commander failure; no action/write. |
+| Removed init option | Unknown-option failure before banner/probe/prompt/action/write. |
+| Same removed input through `trellis` and `tl` | Equivalent exit class, diagnostics, and zero-write snapshot. |
+| Fresh Claude/Codex generation | Exact path allowlist and bytes. |
+| Configure/collect mismatch | Test failure naming path/byte divergence. |
+| Existing Research state | Complete path/byte identity after command. |
+| Malformed structured user file | Byte-identical preservation. |
+| Historical cleanup exact key | Classify only through exact evidence. |
+| Unknown descendant | Preserve and do not claim ownership. |
+| Source or clean `dist` imports bare/generic/deep/suffixed core path | Import-boundary test reports file and specifier. |
+| Exact `/research` production import | Accepted; no compatibility API enters the product surface. |
+| Packed core export/target/README/tar safety drifts | Core audit fails before extraction or publication. |
+| Packed core public import/type fixture fails or deep import resolves | Packed consumer proof fails. |
+| Dirty CLI `dist` contains stale generic file | Clean build removes it; packed tar remains clean. |
+| Clean CLI build still emits forbidden path | Packed-CLI audit failure. |
+
+## 5. Good / Base / Bad Cases
+
+- **Good**: a subprocess passes `--registry` to both aliases, receives Commander unknown-option errors, and the full temporary tree remains byte-identical.
+- **Base**: direct `init({ yes: true, codex: true })` writes the exact Research base plus Codex payload; a second update is a true no-op.
+- **Bad**: calling `init({ registry: ... } as unknown as InitOptions)` to simulate parser behavior, checking only that `.trellis` exists, or auditing package contents from the source collector.
+
+## 6. Tests Required
+
+- Exact root, Research, and Dispatch command-set snapshots.
+- Every removed command and init option through the built parser.
+- Both `trellis` and `tl` aliases.
+- Full byte snapshots proving zero action/write on parse errors.
+- Claude-only, Codex-only, dual-host, host-addition, force, skip-existing, and statusline flows.
+- Configure/collect path and byte parity.
+- Historical native digest, 137-path current-host, and 1,009-path retired-host compatibility boundaries.
+- Update/uninstall Research preservation and mixed-file preservation.
+- Production source plus clean-`dist` core import-boundary proof with adversarial specifiers.
+- Core-owned exact export/root/subpath/Testing/deep-import compatibility coverage.
+- Real clean-built packed-core runtime/declaration consumer proof.
+- Clean CLI `dist` plus real packed-CLI positive/negative inventory.
+- Exact packed CLI dependency on the matching core version.
+
+## 7. Wrong vs Correct
+
+```ts
+// Wrong: bypass Commander while claiming to test an unknown option.
+await init({ registry: "gh:org/repo" } as unknown as InitOptions);
+
+// Correct: execute the built parser with the literal argv.
+const result = spawnSync(process.execPath, [builtCli, "init", "--registry", "gh:org/repo"], {
+  cwd: tmpDir,
+  encoding: "utf8",
 });
+expect(result.status).not.toBe(0);
+expect(snapshotTree(tmpDir)).toEqual(before);
 ```
 
----
-
-## Common Patterns
-
-### Pattern: Setup Project (for update tests)
-
-Update tests need an initialized project as precondition:
-
-```typescript
-async function setupProject(): Promise<void> {
-  await init({ yes: true, force: true });
-}
-
-it("test case", async () => {
-  await setupProject();
-  // ... modify state ...
-  await update({ force: true });
-  // ... assert results ...
-});
+```text
+Wrong: function-level tests are always enough because they reach filesystem logic.
+Correct: use function-level tests for domain orchestration and built-bin tests for Commander registration, aliases, and parse-time rejection.
 ```
 
-### Pattern: Full Snapshot Comparison
-
-For verifying an operation is a true no-op:
-
-```typescript
-const snapshotBefore = new Map<string, string>();
-const walk = (dir: string) => {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) walk(full);
-    else snapshotBefore.set(path.relative(tmpDir, full), fs.readFileSync(full, "utf-8"));
-  }
-};
-walk(tmpDir);
-
-await operation();
-
-// Compare: no added, no removed, no changed files
+```text
+Wrong: list `dist` after an incremental build.
+Correct: run the clean build, pack a tarball, normalize entries, and audit required/forbidden inventory.
 ```
-
-### Pattern: Simulate Template Version Change
-
-To test auto-update detection (template changed, user did not modify):
-
-```typescript
-// 1. Write "old content" to a template file
-const oldContent = "# Old version\n";
-fs.writeFileSync(targetFull, oldContent);
-
-// 2. Update hash file to match old content (so update thinks user didn't modify it)
-const hashes = JSON.parse(fs.readFileSync(hashFile, "utf-8"));
-hashes[targetRelative] = computeHash(oldContent);
-fs.writeFileSync(hashFile, JSON.stringify(hashes, null, 2));
-
-// 3. Run update — should auto-update to current template
-await update({ force: true });
-expect(fs.readFileSync(targetFull, "utf-8")).toBe(currentTemplateContent);
-```
-
-### Pattern: Downgrade Protection
-
-```typescript
-// Set project version to future
-fs.writeFileSync(versionPath, "99.99.99");
-
-await update({});
-
-// Version should NOT be changed — update refused to downgrade
-expect(fs.readFileSync(versionPath, "utf-8")).toBe("99.99.99");
-```
-
----
-
-## Test Matrix Design
-
-Integration test scenarios should be organized as a numbered matrix in the PRD:
-
-| # | Scenario | Options | Verification |
-|---|----------|---------|--------------|
-| 1 | No-op (same version) | `{}` | Zero file changes, no backup |
-| 2 | Dry run | `{ dryRun: true }` | No file modifications |
-| 3 | Deleted file recreation | `{ force: true }` | File restored |
-| ... | | | |
-
-Each test is numbered (`#1`, `#2`, ...) matching the matrix for traceability.
-
----
-
-## Discovered Bugs (via integration tests)
-
-Integration tests are effective at finding **cross-module inconsistencies**:
-
-1. **Template placeholder roundtrip**: `init` resolves `{{PYTHON_CMD}}` → `python3`, but `update` compared against raw `{{PYTHON_CMD}}`. Every update detected false changes.
-
-2. **Template list mismatch**: `update` listed files not created by `init`, causing phantom "new file" detections on same-version update.
-
-3. **Project-type-conditional templates ignored**: `createSpecTemplates()` accepted `projectType` but ignored it (`_projectType`), always creating both backend + frontend specs. `collectTemplateFiles()` unconditionally included all spec files regardless of which dirs existed. Pure backend projects got empty frontend spec dirs on init, and update always tracked frontend files even when the dir was removed.
-
-All three bugs were invisible to unit tests (which test modules in isolation) but immediately surfaced when testing the full init→update flow.
-
----
-
-## DO / DON'T
-
-### DO
-
-- Use real file system operations (no mocking fs)
-- Test the full flow: entry function → file system output
-- Verify both positive outcomes (file created) and negative outcomes (file not changed)
-- Clean up temp directories after every test
-
-### DON'T
-
-- Don't mock internal modules to simulate template changes — use filesystem manipulation instead
-- Don't share temp directories between tests
-- Don't depend on specific template content in assertions (use `computeHash` or read from init output)

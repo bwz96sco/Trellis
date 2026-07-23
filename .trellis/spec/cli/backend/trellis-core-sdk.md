@@ -1,186 +1,152 @@
-# Trellis Core SDK
+# Trellis Core SDK Compatibility Contract
 
-> Package boundary and coding rules for `@mindfoldhq/trellis-core` and the CLI.
+## 1. Scope / Trigger
 
----
+This specification defines the package boundary between the Research-only CLI and the version-locked reusable core SDK.
 
-## Overview
+Removing active generic CLI commands does not remove the 0.7 core compatibility API. Channel, Mem, and Task remain programmatic SDK domains only; they do not authorize `trellis channel`, `trellis mem`, `trellis workflow`, or `trellis research task` registration.
 
-Trellis is split into two version-locked packages:
+## 2. Signatures
 
-| Package | Responsibility |
+The package export keys are frozen in this exact order throughout 0.7:
+
+```text
+./package.json
+.
+./channel
+./mem
+./research
+./task
+./testing
+```
+
+Every conditional entry has exact `types`, `import`, and `default` targets. The public classification is:
+
+| Entry point | 0.7 status | Runtime contract |
+|---|---|---|
+| `@mindfoldhq/trellis-core` | Compatibility-only | Existing Channel and Task root exports only. |
+| `@mindfoldhq/trellis-core/channel` | Compatibility-only | Existing Channel values, types, signatures, identities, and behavior. |
+| `@mindfoldhq/trellis-core/mem` | Compatibility-only | Existing Mem values, types, behavior, and historical host readers. |
+| `@mindfoldhq/trellis-core/research` | Active | Canonical Research SDK and sole production CLI core dependency. |
+| `@mindfoldhq/trellis-core/task` | Compatibility-only | Existing Task values, types, signatures, identities, and behavior. |
+| `@mindfoldhq/trellis-core/testing` | Reserved | Importable empty runtime and declaration namespace. |
+| `@mindfoldhq/trellis-core/package.json` | Metadata | Package metadata only. |
+
+Package roles:
+
+| Package | Active responsibility |
 |---|---|
-| `@mindfoldhq/trellis-core` | Reusable domain logic, storage primitives, reducers, task APIs, channel APIs, and typed contracts. |
-| `@mindfoldhq/trellis` | CLI argument parsing, terminal rendering, command wiring, process exit behavior, template installation, migrations, and release scripts. |
+| `@mindfoldhq/trellis-core` | Reusable domain APIs and version-locked compatibility exports. |
+| `@mindfoldhq/trellis` | Commander parsing, Research command orchestration, current payload installation, migrations, update/uninstall, and release proof. |
 
-The CLI should be a thin shell around core where a capability needs to be shared with other integrations. The core package must stay independent of terminal UX and CLI process control.
+## 3. Contracts
 
----
+### Export stability
 
-## Package boundary
+- Root and five domain subpath exports remain available throughout 0.7 in the exact order and with the exact targets above.
+- The root barrel remains Channel plus Task only; it does not leak Research, Mem, or Testing.
+- Testing remains reserved, importable, and empty.
+- Do not add wildcard exports, public deep-import paths, wrappers, or altered runtime identities.
+- Removing an active CLI surface must not delete or rename these compatibility exports.
+- Generic API removal belongs to a separately approved semver-major change after a real 0.7 compatibility window.
 
-Core owns:
+### CLI import boundary
 
-- channel storage and event append/read helpers
-- channel and thread state reducers
-- task record helpers that are useful outside the CLI
-- structured types shared by CLI, tests, and future SDK consumers
-- pure validation and normalization logic that should not depend on Commander or Chalk
-- the `mem` retrieval domain under `packages/core/src/mem/`: persisted-session readers (Claude Code / Codex / OpenCode), search and relevance scoring, dialogue-context extraction, brainstorm-phase slicing, and project aggregation
+Production modules under `packages/cli/src/**/*.{ts,js}` and clean-built `packages/cli/dist/**/*.{js,mjs,cjs}` may use only the exact specifier `@mindfoldhq/trellis-core/research`. Reject the bare root, compatibility subpaths, Testing, source/deep paths, built internals, suffixes, query strings, and fragments. Tests, fixtures, templates, docs, and package metadata are outside this production scan.
 
-CLI owns:
+### Product-surface separation
 
-- command definitions and option parsing (including `tl mem` argv parsing)
-- help text and terminal output (including `tl mem` row formatting and `--json` shaping)
-- prompts, confirmations, exit codes, and `process.exit`
-- the OpenCode-unavailable stderr notice for `tl mem` (a presentation concern, not a core one)
-- template copying, dogfooding paths, migration manifest application, and update UX
-- release scripts and CI-specific package orchestration
+- Channel, Mem, and Task core APIs are compatibility/programmatic surfaces.
+- They have no active root Commander commands or Research subtree.
+- Historical schema-v1 `taskRef` remains data compatibility metadata only.
+- Current CLI Research code imports Research behavior through `@mindfoldhq/trellis-core/research`.
+- Compatibility exports and historical data never widen active command registration, init options, platform registries, or package template payload.
 
-When logic starts in the CLI but is needed by another package or embedding app, move the reusable part into core and leave only CLI rendering and option translation in the CLI package.
+### Core behavior
 
----
+Core APIs:
 
-## Import rules
+- return structured values;
+- throw typed domain errors where callers need classification;
+- own reusable validation, storage, locking, idempotency, reducers, and schemas;
+- do not print terminal output, call `process.exit`, parse argv, or depend on Commander, Chalk, or Inquirer.
 
-CLI code must import core through public exports:
+The CLI owns argument parsing, help/output, prompts, exit behavior, current template installation, migration orchestration, and package auditing.
 
-```ts
-import { createChannelStore } from "@mindfoldhq/trellis-core/channel";
-```
+### Compatibility communication
 
-Do not deep-import core internals:
+Status is documentation-only through the 0.7 line. Do not add runtime warnings, npm package-wide deprecation, compatibility wrappers, mass per-symbol `@deprecated` annotations, or identity-changing adapters. Research is active but is not presented as a drop-in replacement for Channel, Mem, or Task. The packed core README must carry the exact entry-point status table and later-major handoff.
 
-```ts
-// forbidden
-import { parseEvent } from "../../core/src/channel/internal/parse-event";
-```
+### Research security compatibility
 
-Core public exports must be declared explicitly in `packages/core/package.json`. Do not expose wildcard internal paths. Export entries should provide `types`, `import`, and `default` targets.
+The C07 provider-neutral Dispatch context, C09 Claude adapter envelope, schema-v1 tracked Dispatch files, stage capability resolver, and fail-closed worker contracts remain on the Research subpath. Channel/Mem/Task compatibility exports must not become alternate Research mutation or Dispatch-routing authority.
 
-### Subpath exports
+### Build and version lock
 
-Core exposes domains as explicit subpaths, not from one root barrel:
-
-```ts
-import { createChannelStore } from "@mindfoldhq/trellis-core/channel";
-import { searchMemSessions } from "@mindfoldhq/trellis-core/mem";
-```
-
-`mem` is published as the `@mindfoldhq/trellis-core/mem` subpath only. It is intentionally **not** re-exported from the `@mindfoldhq/trellis-core` root barrel — that keeps the root API small and stops `DialogueTurn` / `SearchHit` / `MemFilter` from leaking into the root surface. The `mem` public API is `listMemSessions`, `searchMemSessions`, `readMemContext`, `extractMemDialogue`, `listMemProjects`, plus their input/output types and `MemSessionNotFoundError`. Anything under `packages/core/src/mem/internal/` (JSONL/path helpers) is private and must not be deep-imported by the CLI.
-
-The `mem` domain follows the same core API rules as the rest of core: no `zod`, no `console.*`, no `process.exit`. Structured search/context/extract results carry a `warnings` array; list/projects preserve their historical array return types and expose warnings through an optional `onWarning` callback. The CLI decides how to surface warnings and what exit code to use.
-
----
-
-## Core API design
-
-Core APIs return structured values and throw typed, domain-specific errors when callers need to handle failures.
-
-Core APIs must not:
-
-- call `process.exit`
-- print terminal output
-- depend on Chalk, Commander, Inquirer, or CLI-only helpers
-- read CLI argv directly
-- assume the current working directory unless the API contract says so
-
-Prefer small composable functions over one function that parses options, mutates storage, and formats output. The CLI can compose the pieces for user-facing commands.
-
----
-
-## Storage and state
-
-State transitions should have one owner.
-
-For channel and thread work:
-
-- event file format belongs to core
-- event append and sequence allocation belong to core
-- durable idempotency for keyed mutation replays belongs to core; keyed
-  writes must check the persisted channel event log inside the append lock and
-  return the original same-kind event instead of duplicating JSONL rows
-- reducers that compute channel/thread summaries belong to core
-- CLI commands call core APIs and render results
-
-Do not duplicate `lastSeq`, event classification, linked context parsing, or thread status rules across command files. Add a core helper instead, then use it from the CLI.
-
----
-
-## Channel runtime substrate
-
-Core owns the reusable channel runtime substrate so CLI, external daemons,
-and future SDK consumers share one implementation instead of each
-re-parsing `events.jsonl`, pid files, and worker state.
-
-Core owns:
-
-- worker lifecycle event schema (`undeliverable`, `interrupt_requested`,
-  `turn_started`, `turn_finished`, `interrupted`) and `spawned.inboxPolicy`
-- `reduceWorkerRegistry` — the SOT worker-state projection (pure; durable
-  events only, never pid files or inbox cursors)
-- `listWorkers` / `watchWorkers` — worker read/watch APIs
-- `probeWorkerRuntime` / `reconcileWorkerLiveness` — host-local pid-file
-  observation, kept separate from the durable projection;
-  `reconcileWorkerLiveness` defaults to no durable writes
-- `readChannelEvents` cursor pagination (`beforeSeq` / `afterSeq` / `limit`);
-  the read-all default is preserved when no option is set
-- `watchChannels` + `channelCursorKey` — cross-channel fan-in with
-  per-channel cursors and dynamic channel discovery (project / global scope)
-- `matchesInboxPolicy` + delivery modes (`classifyDelivery`,
-  `DeliveryMode`) — delivery classification
-- the provider-injected runtime contract (`WorkerRuntime`,
-  `WorkerStartInput`, `WorkerInterruptResult`, …) plus `spawnWorker`,
-  `requestInterrupt`, and `interruptWorker`
-
-CLI owns: Commander argv, terminal rendering, exit codes, provider adapter
-implementations (`WorkerAdapter`), the supervisor process launch / signal /
-pid-file details, and `process.exit`. Core must not import CLI provider
-adapters or shell-specific process behavior — the `WorkerRuntime` is
-injected. Do not move `packages/cli/src/commands/channel/supervisor.ts`
-wholesale into core.
-
----
-
-## Build and typecheck contract
-
-Fresh checkouts do not have `packages/core/dist`. The root `typecheck` script must build core before checking the CLI so TypeScript can resolve core declarations.
-
-Required order:
+Fresh checkouts build core before CLI typecheck:
 
 ```bash
 pnpm --filter @mindfoldhq/trellis-core build
 pnpm --filter @mindfoldhq/trellis typecheck
 ```
 
-The release and CI flows must keep this order. A CLI typecheck that only works after a developer has previously built core locally is invalid.
+Core and CLI publish with the exact same version. Source uses `workspace:*`; the packed CLI must depend on the exact released core version. CI runs `verify-packed-core` before `verify-packed-cli`, the publish plan, and either publish step, then publishes core first.
 
----
+`verify-packed-core` clean-builds and packs a real core tarball, validates canonical tar paths before extraction, checks exact identity/version/export order/targets, derives required runtime and declaration files from the packed export map, requires the README, rejects source/test/config leakage, imports root plus all five subpaths from an isolated packed consumer, compiles a strict NodeNext TypeScript fixture, proves root non-leakage and empty Testing, and rejects undeclared deep imports.
 
-## Versioning contract
+## 4. Validation & Error Matrix
 
-Core and CLI always publish together with the exact same version.
+| Condition | Required behavior |
+|---|---|
+| Import root or one of the five approved subpaths | Resolve declarations and ESM implementation. |
+| Import Testing | Resolve an empty runtime/declaration namespace. |
+| Deep import a core internal path | Fail with package-path-not-exported behavior. |
+| Packed export key/order/condition/target drifts | Packed-core audit fails and names the contract drift. |
+| Packed target or README is missing | Packed-core audit fails before consumer proof. |
+| Tar path is unsafe/noncanonical/duplicate or source/test/config leaks | Reject before extraction. |
+| Production CLI imports anything except exact `/research` | Source/clean-build import-boundary test fails with file and specifier. |
+| Active CLI registers Channel/Mem/Workflow/Research Task | Contract failure even though related core APIs remain. |
+| Core API prints, exits, parses argv, or warns at import time | Contract failure; move presentation to CLI/docs. |
+| CLI/core versions differ | Release preflight failure. |
+| Packed CLI dependency is a range or `workspace:*` | Packed-artifact failure. |
+| C07/C09/schema-v1 compatibility changes incidentally | Security/compatibility regression. |
 
-During development:
+## 5. Good / Base / Bad Cases
 
-- CLI depends on core with `workspace:*`.
-- Core and CLI can be tested independently.
+- **Good**: an embedding app imports `@mindfoldhq/trellis-core/channel`, while `trellis channel` fails at Commander parsing and writes nothing.
+- **Base**: the Research CLI imports only `/research`; unused compatibility domains remain published without entering the CLI bundle's active command tree.
+- **Bad**: deleting `/mem` because the Mem CLI command was removed, or restoring `trellis mem` because `/mem` still exists.
 
-During release:
+## 6. Tests Required
 
-- `bump-versions.js` updates both package versions together.
-- `verify-packed-cli` confirms pnpm rewrote `workspace:*` to the exact release version in the packed CLI artifact.
-- CI publishes core first, then CLI.
-- CI verifies both packages are visible on public npm.
+- Core-owned exact package export-key/order/condition/target snapshot and built-target existence.
+- Core-owned root composition/identity, explicit subpath imports, empty Testing, representative values/types, and negative deep-import tests.
+- Packed-core unit tests for path normalization, duplicates, contract drift, target derivation, missing inventory, and leakage.
+- Real clean-built packed-core consumer proof for runtime imports and strict NodeNext declarations.
+- CLI-owned source and clean-`dist` static import scan accepting only exact `/research`, with adversarial suffix/query/fragment/deep cases.
+- Exact root/Research/Dispatch Commander command-set tests proving compatibility APIs create no commands.
+- C07/C09/schema-v1 regression suites unchanged.
+- Release preflight proving equal versions, packed-core compatibility, and exact packed CLI dependency.
 
-Release/versioning details live in `release-process.md`.
+## 7. Wrong vs Correct
 
----
+```ts
+// Wrong: compatibility API implies active command registration.
+program.addCommand(createMemCommand());
 
-## Tests
+// Correct: SDK remains importable without a CLI command.
+import { searchMemSessions } from "@mindfoldhq/trellis-core/mem";
+```
 
-Core behavior should be tested in `packages/core` when the behavior can run without CLI rendering. CLI tests should cover option parsing, terminal output, command orchestration, and integration with template/migration flows.
+```ts
+// Wrong: CLI deep-imports implementation details.
+import { reduceLedger } from "../../core/src/research/internal/reducer.js";
 
-If a CLI test duplicates a pure core test, move the pure assertion to core and keep only the CLI-specific behavior in the CLI test.
+// Correct: CLI uses the public Research subpath.
+import { reduceResearchLedger } from "@mindfoldhq/trellis-core/research";
+```
 
-`mem` is the worked example of this rule: the pure retrieval/search/phase/adapter tests live in `packages/core/test/mem/**`, while `packages/cli/test/commands/mem-*.test.ts` keeps only CLI-wrapper coverage — argv parsing, `--json` output shape, exit behavior, and the OpenCode warning.
+```text
+Wrong: remove a core subpath because its old command disappeared.
+Correct: freeze the 0.7 SDK exports while independently narrowing the active CLI product.
+```

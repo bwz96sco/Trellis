@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Define active-platform versus cleanup-only legacy inventory boundary and current-wins collisions."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Define exact retired path ownership, alias roots, manifest pruning, and canonical migration hash boundaries."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Integrate retired structured descriptors and confirmed-empty legacy root cleanup into C02 ownership flow."}
+{"file":".trellis/spec/cli/backend/uninstall-scrubbers.md","reason":"Specify Trae legacy and ZCode mixed-config scrub contracts with malformed preservation."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Separate active template collection from cleanup-only backup and root cleanup behavior."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Preserve exact-path ownership, current-wins, no root scanning, and protected research guarantees."}

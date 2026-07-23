@@ -51,6 +51,8 @@ delete process.env.OPENCODE_RUN_ID;
 | Change Type | Test Type | Example |
 |-------------|-----------|---------|
 | New pure/utility function | Unit test | Added `compareVersions()` → test boundary values |
+| Public package export/proof change | Core-owned compatibility + packed audit tests | Freeze export order/targets, imports, declarations, and deep-import blocking |
+| CLI core dependency-boundary change | CLI-owned source + clean-build scanner test | Accept only exact `@mindfoldhq/trellis-core/research` |
 | New platform | Unit (auto-covered by `registry-invariants.test.ts`) | Added opencode → invariants verify consistency |
 | Bug fix | Regression test | Fixed Windows encoding → add to `regression.test.ts` |
 | Changed init/update behavior | Integration test | Changed downgrade logic → add/update scenario in `update.integration.test.ts` |
@@ -67,8 +69,10 @@ delete process.env.OPENCODE_RUN_ID;
 
 | Change Type | What to Update |
 |-------------|----------------|
-| New command/skill added to a platform | Add to `EXPECTED_COMMAND_NAMES` / `EXPECTED_SKILL_NAMES` in that platform's test file |
-| New command added to ANY platform | Add to ALL platform test files (claude, cursor, iflow, codex) — see platform-integration spec for required command list |
+| Current Research payload path changes | Update exact Claude/Codex allowlists and configure/collect byte-parity tests |
+| Research hook registration changes | Update both generated-file and structured-registration assertions |
+| Core export compatibility changes | Update core-owned export/packed tests; do not duplicate generic SDK ownership in CLI tests |
+| Production CLI core imports change | Update the CLI source/clean-`dist` boundary scanner and adversarial specifier cases |
 
 ### Decision flow
 
@@ -80,6 +84,10 @@ Does this change have logic branches?
    ├─ Fixing a historical bug? → Regression test (verify fix exists in source)
    └─ Changes init/update end-to-end behavior? → Integration test
 ```
+
+### Core/CLI package-test ownership
+
+Core owns its public export map, root composition and identities, explicit subpath imports, Testing emptiness, deep-import blocking, packed target derivation, and packed runtime/declaration consumer proof. CLI owns production import restrictions, Commander/product separation, equal-version checks, and the packed CLI's exact core dependency. Do not keep duplicate generic SDK assertions in CLI tests once equivalent core coverage exists.
 
 ---
 
@@ -174,6 +182,60 @@ const removed = [...before.keys()].filter((k) => !after.has(k));
 expect(added).toEqual([]);
 expect(removed).toEqual([]);
 ```
+
+---
+
+## Research-Only Generation Assertions
+
+Current init/update tests must use exact positive and negative contracts.
+
+### Exact payload checks
+
+- Compare sorted generated paths against the Claude-only, Codex-only, and dual-host allowlists.
+- Compare configurator output with collector output in both directions: no write-only path, no collect-only path, and byte-identical content.
+- Treat optional Claude statusline as a separate opt-in case.
+- Assert every registered current hook exists and every generated current hook is registered.
+
+### Parser and zero-write checks
+
+The built Commander tree must expose exactly:
+
+```text
+root: init update upgrade uninstall research
+research: init status validate rebuild repo quest campaign run evidence claim dispatch
+dispatch: context prepare record-result apply reject
+```
+
+For each removed root/Research command and removed init option:
+
+1. snapshot the whole temp project as relative paths plus bytes;
+2. invoke the built parser/bin with the literal argv through both `trellis` and `tl`;
+3. assert Commander reports an unknown command or option;
+4. assert no command action callback ran;
+5. assert the complete filesystem snapshot is byte-identical.
+
+Removed init options are `--user`, `--monorepo`, `--no-monorepo`, `--template`, `--registry`, `--overwrite`, and `--append`. Removed command surfaces are `channel`, `mem`, `workflow`, and the `research task` subtree. Do not call `init()` with cast legacy fields to simulate parser behavior; that bypasses the contract under test.
+
+### Protected-state snapshots
+
+Snapshot `.trellis/research/**` before and after init, host-addition re-init, full/force init, update, and uninstall compatibility flows. Compare path sets and bytes exactly. A test that only checks the directory still exists is insufficient.
+
+### Historical cleanup separation
+
+Tests must distinguish:
+
+```text
+source exists for compatibility
+active generator emits source
+frozen inventory recognizes historical path
+released hash authorizes safe deletion
+```
+
+Do not derive frozen historical expectations from active collectors. Active collectors intentionally narrow while the 137-path current-host cleanup inventory remains unchanged.
+
+### Mixed-file preservation
+
+For `AGENTS.md`, Claude settings, Codex hooks, and Codex config, seed unrelated user content and assert it survives. Malformed JSON/TOML and malformed marker pairs must remain byte-identical. Assertions should target active structured keys rather than rejecting harmless prose comments that mention a managed filename.
 
 ---
 

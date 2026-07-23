@@ -1,0 +1,8 @@
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Verify preflight-first authority, failure isolation, selected-skill-only behavior, bounded work, and root-only mutation/review."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify exact Codex agent inventory, installation path, and separation from legacy generic researcher."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Verify automatic template byte parity and absence of generic Task prelude on the Research worker."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify exact C07 consumption and no command/core behavior drift."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Audit assertion quality, ownership conflicts, idempotence, package payload, and opt-in smoke isolation."}
+{"file":".trellis/tasks/07-18-add-bounded-codex-research-worker/research/codex-template-installation.md","reason":"Cross-check install/update/hash/package behavior and no-production-symbol scope."}
+{"file":".trellis/tasks/07-18-add-bounded-codex-research-worker/research/bounded-codex-worker-contract.md","reason":"Adversarially verify pointer, preflight, skill, sandbox, read/write/check, failure, and output boundaries."}
+{"file":".trellis/tasks/07-18-add-bounded-codex-research-worker/research/c08-tests-package-impact.md","reason":"Cross-check full deterministic matrix, optional real smoke, package audit, and C09/C10 exclusions."}

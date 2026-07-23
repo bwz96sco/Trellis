@@ -1,0 +1,30 @@
+{
+  "id": "retire-generic-product-surfaces",
+  "name": "retire-generic-product-surfaces",
+  "title": "Retire generic product surfaces",
+  "description": "Remove active Channel, Mem, workflow switching, Task links, and generic templates after parity gates.",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-07-18",
+  "completedAt": "2026-07-23",
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-20-freeze-current-host-generic-cleanup",
+    "07-20-make-generated-installation-research-only",
+    "07-20-remove-active-generic-cli-payload"
+  ],
+  "parent": "07-18-research-only-claude-codex-migration",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

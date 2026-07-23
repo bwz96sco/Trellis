@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import chalk from "chalk";
 import inquirer from "inquirer";
@@ -11,7 +10,6 @@ import {
   getMigrationsForVersion,
   getAllMigrations,
   getMigrationMetadata,
-  getConfigSectionsAddedBetween,
 } from "../migrations/index.js";
 import type {
   ConfigSectionAdded,
@@ -33,24 +31,12 @@ import {
 import { compareVersions } from "../utils/compare-versions.js";
 import { toPosix } from "../utils/posix.js";
 import { setupProxy } from "../utils/proxy.js";
-import { emptyTaskJson } from "../utils/task-json.js";
-
 // Import templates for comparison
 import {
-  getAllScripts,
-  getAllAgents,
-  // Configuration
   configYamlTemplate,
   gitignoreTemplate,
 } from "../templates/trellis/index.js";
 import { agentsMdContent } from "../templates/markdown/index.js";
-import {
-  COPILOT_INSTRUCTIONS_BLOCK_END,
-  COPILOT_INSTRUCTIONS_BLOCK_START,
-  COPILOT_INSTRUCTIONS_PATH,
-  getCopilotInstructions,
-} from "../templates/copilot/index.js";
-
 import {
   ALL_MANAGED_DIRS,
   getConfiguredPlatforms,
@@ -58,23 +44,23 @@ import {
   isManagedPath,
   isManagedRootDir,
 } from "../configurators/index.js";
+import { RESEARCH_PAYLOAD_PATHS } from "../configurators/research-payload.js";
 import { replacePythonCommandLiterals } from "../configurators/shared.js";
 import { pruneOrphanManifestKeys } from "../utils/manifest-prune.js";
 import {
-  fetchRegistrySpecTemplates,
-  collectDirectoryFiles,
-  removeDirectory,
-  parseRegistrySource,
-  probeRegistryIndex,
-  downloadTemplateById,
-  type RegistrySource,
-} from "../utils/template-fetcher.js";
-import { loadSpecRegistryConfig } from "../utils/registry-config.js";
-import { loadWorkflowSelection } from "../utils/workflow-selection.js";
+  containsProtectedResearchPath,
+  isProtectedResearchPath,
+} from "../utils/protected-paths.js";
 import {
-  NATIVE_WORKFLOW_ID,
+  loadWorkflowSelection,
+  saveBundledWorkflowSelection,
+} from "../utils/workflow-selection.js";
+import {
+  RESEARCH_WORKFLOW_ID,
   resolveBundledWorkflowTemplate,
 } from "../utils/workflow-resolver.js";
+import { isReleasedNativeWorkflow } from "../legacy/native-workflow-digests.js";
+import { writeFileAtomic } from "../utils/atomic-write.js";
 
 export interface UpdateOptions {
   dryRun?: boolean;
@@ -120,6 +106,7 @@ const PROTECTED_PATHS = [
   `${DIR_NAMES.WORKFLOW}/${DIR_NAMES.WORKSPACE}`, // workspace/
   `${DIR_NAMES.WORKFLOW}/${DIR_NAMES.TASKS}`, // tasks/
   `${DIR_NAMES.WORKFLOW}/${DIR_NAMES.SPEC}`, // spec/
+  `${DIR_NAMES.WORKFLOW}/research`, // canonical research state
   `${DIR_NAMES.WORKFLOW}/.developer`,
   `${DIR_NAMES.WORKFLOW}/.current-task`,
 ];
@@ -220,6 +207,14 @@ function buildManagedBlockTemplate(
   }
 
   const existingContent = fs.readFileSync(fullPath, "utf-8");
+  const hasStart = existingContent.includes(startMarker);
+  const hasEnd = existingContent.includes(endMarker);
+  if (hasStart !== hasEnd) {
+    console.warn(
+      `Warning: preserving ${relativePath} because its Trellis managed block is malformed.`,
+    );
+    return existingContent;
+  }
   return mergeManagedBlockContent(
     existingContent,
     templateContent,
@@ -235,16 +230,6 @@ function buildAgentsMdTemplate(cwd: string): string {
     agentsMdContent,
     TRELLIS_BLOCK_START,
     TRELLIS_BLOCK_END,
-  );
-}
-
-function buildCopilotInstructionsTemplate(cwd: string): string {
-  return buildManagedBlockTemplate(
-    cwd,
-    COPILOT_INSTRUCTIONS_PATH,
-    getCopilotInstructions(),
-    COPILOT_INSTRUCTIONS_BLOCK_START,
-    COPILOT_INSTRUCTIONS_BLOCK_END,
   );
 }
 
@@ -264,39 +249,11 @@ function isKnownUntrackedTemplate(
   return LEGACY_UNTRACKED_AGENTS_MD_BLOCK_HASHES.has(computeHash(managedBlock));
 }
 
-function isSafeUntrackedCopilotInstructionsMerge(
-  relativePath: string,
-  existingContent: string,
-  newContent: string,
-): boolean {
-  if (relativePath !== COPILOT_INSTRUCTIONS_PATH) {
-    return false;
-  }
-
-  if (
-    getManagedBlock(
-      existingContent,
-      COPILOT_INSTRUCTIONS_BLOCK_START,
-      COPILOT_INSTRUCTIONS_BLOCK_END,
-    )
-  ) {
-    return false;
-  }
-
-  return (
-    mergeManagedBlockContent(
-      existingContent,
-      getCopilotInstructions(),
-      COPILOT_INSTRUCTIONS_BLOCK_START,
-      COPILOT_INSTRUCTIONS_BLOCK_END,
-    ) === newContent
-  );
-}
-
 /**
  * Check if a path is blocked by PROTECTED_PATHS
  */
 function isProtectedPath(filePath: string): boolean {
+  if (isProtectedResearchPath(filePath)) return true;
   return PROTECTED_PATHS.some(
     (pp) =>
       filePath === pp || filePath.startsWith(pp.endsWith("/") ? pp : pp + "/"),
@@ -323,7 +280,8 @@ interface SafeFileDeleteClassified {
  * - Path is not protected or in update.skip
  * - Path is not owned by the current template set
  */
-function collectSafeFileDeletes(
+/** @internal Exported for testing only */
+export function collectSafeFileDeletes(
   migrations: MigrationItem[],
   cwd: string,
   skipPaths: string[],
@@ -345,17 +303,17 @@ function collectSafeFileDeletes(
   const results: SafeFileDeleteClassified[] = [];
 
   for (const item of safeDeletes) {
+    // Protection is checked before path resolution or filesystem access.
+    if (isProtectedPath(item.from)) {
+      results.push({ item, action: "skip-protected" });
+      continue;
+    }
+
     const fullPath = path.join(cwd, item.from);
 
     // Check: file exists?
     if (!fs.existsSync(fullPath)) {
       results.push({ item, action: "skip-missing" });
-      continue;
-    }
-
-    // Check: protected path? (user data dirs — always protected, never bypassed)
-    if (isProtectedPath(item.from)) {
-      results.push({ item, action: "skip-protected" });
       continue;
     }
 
@@ -451,6 +409,7 @@ function executeSafeFileDeletes(
   let deleted = 0;
 
   for (const c of toDelete) {
+    if (isProtectedResearchPath(c.item.from)) continue;
     const fullPath = path.join(cwd, c.item.from);
     try {
       fs.unlinkSync(fullPath);
@@ -687,7 +646,7 @@ function needsCodexUpgrade(cwd: string): boolean {
     if (platformId === "codex") {
       continue;
     }
-    const platformFiles = collectPlatformTemplates(platformId);
+    const platformFiles = collectPlatformTemplates(platformId, cwd);
     if (platformFiles && legacyMarkers.some((key) => platformFiles.has(key))) {
       return false;
     }
@@ -734,158 +693,142 @@ function preserveExistingClaudeStatusLine(
   }
 }
 
-function preserveExistingRegistryConfig(cwd: string, template: string): string {
-  const registry = loadSpecRegistryConfig(cwd);
-  if (!registry) return template;
-  return (
-    template.trimEnd() +
-    "\n\n" +
-    "#-------------------------------------------------------------------------------\n" +
-    "# Registry\n" +
-    "#-------------------------------------------------------------------------------\n\n" +
-    "# Source used to install .trellis/spec. trellis update refreshes this\n" +
-    "# hash-tracked spec template while preserving local edits through the\n" +
-    "# normal update conflict flow.\n" +
-    "registry:\n" +
-    "  spec:\n" +
-    `    source: ${registry.source}\n` +
-    (registry.template ? `    template: ${registry.template}\n` : "")
-  );
+export type WorkflowMigrationClass =
+  | "current-research"
+  | "pristine-research"
+  | "pristine-native"
+  | "modified-managed"
+  | "custom-user-owned"
+  | "invalid-metadata"
+  | "missing-or-unsafe";
+
+export interface WorkflowMigrationEvidence {
+  selection: "research" | "native" | "missing" | "invalid";
+  currentBytes: string | null;
+  storedHash?: string;
+  installedVersion?: string;
+  pathKind: "regular" | "missing" | "unsafe";
+  researchBytes: string;
 }
 
-async function collectRegistrySpecTemplates(
-  cwd: string,
-): Promise<Map<string, string>> {
-  const config = loadSpecRegistryConfig(cwd);
-  if (!config) return new Map();
-
-  let registry: RegistrySource;
-  try {
-    registry = parseRegistrySource(config.source);
-  } catch (error) {
-    console.log(
-      chalk.yellow(
-        `Warning: invalid registry.spec.source in .trellis/config.yaml: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      ),
-    );
-    return new Map();
-  }
-
-  const probe = await probeRegistryIndex(
-    `${registry.rawBaseUrl}/index.json`,
-    registry,
-  );
-  if (probe.templates.length > 0) {
-    if (!config.template) {
-      console.log(
-        chalk.gray(
-          "Registry spec update skipped: marketplace registries require registry.spec.template.",
-        ),
-      );
-      return new Map();
-    }
-    const template = probe.templates.find(
-      (candidate) => candidate.id === config.template,
-    );
-    if (!template) {
-      console.log(
-        chalk.yellow(
-          `Warning: registry spec update skipped: template "${config.template}" was not found in registry index.`,
-        ),
-      );
-      return new Map();
-    }
-    const tempRoot = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), "trellis-registry-template-"),
-    );
-    try {
-      const result = await downloadTemplateById(
-        tempRoot,
-        config.template,
-        "overwrite",
-        template,
-        registry,
-        undefined,
-        probe.backend,
-      );
-      if (!result.success) {
-        console.log(
-          chalk.yellow(
-            `Warning: registry spec update skipped: ${result.message}`,
-          ),
-        );
-        return new Map();
-      }
-      return collectDirectoryFiles(path.join(tempRoot, PATHS.SPEC), PATHS.SPEC);
-    } finally {
-      await removeDirectory(tempRoot);
-    }
-  }
-  if (!probe.isNotFound) {
-    console.log(
-      chalk.yellow(
-        `Warning: registry spec update skipped: ${
-          probe.error?.message ?? "could not reach registry"
-        }`,
-      ),
-    );
-    return new Map();
-  }
-
-  const result = await fetchRegistrySpecTemplates(registry, probe.backend);
-  if (!result.success) {
-    console.log(
-      chalk.yellow(
-        `Warning: registry spec update skipped: ${result.message ?? "download failed"}`,
-      ),
-    );
-    return new Map();
-  }
-  return result.files;
+interface WorkflowMigrationPlan extends WorkflowMigrationEvidence {
+  classification: WorkflowMigrationClass;
+  includeResearchTemplate: boolean;
+  needsMetadataRepair: boolean;
 }
 
-function collectSelectedWorkflowTemplate(
+const WORKFLOW_SWITCHING_VERSION = "0.6.0-beta.17";
+
+export function classifyWorkflowMigration(
+  evidence: WorkflowMigrationEvidence,
+): WorkflowMigrationClass {
+  if (evidence.selection === "invalid") {
+    return "invalid-metadata";
+  }
+  if (evidence.pathKind !== "regular" || evidence.currentBytes === null) {
+    return "missing-or-unsafe";
+  }
+
+  if (evidence.currentBytes === evidence.researchBytes) {
+    return "current-research";
+  }
+  if (isReleasedNativeWorkflow(evidence.currentBytes)) {
+    return evidence.selection === "research"
+      ? "pristine-research"
+      : "pristine-native";
+  }
+
+  const hashMatches =
+    evidence.storedHash !== undefined &&
+    evidence.storedHash === computeHash(evidence.currentBytes);
+  if (evidence.selection === "research") {
+    return hashMatches ? "pristine-research" : "modified-managed";
+  }
+  if (evidence.selection === "native") {
+    return hashMatches ? "pristine-native" : "modified-managed";
+  }
+  if (
+    hashMatches &&
+    evidence.installedVersion !== undefined &&
+    evidence.installedVersion !== "unknown" &&
+    compareVersions(evidence.installedVersion, WORKFLOW_SWITCHING_VERSION) < 0
+  ) {
+    return "pristine-native";
+  }
+
+  return "custom-user-owned";
+}
+
+function collectWorkflowMigrationPlan(
   cwd: string,
   hashes: TemplateHashes,
-): string | undefined {
-  const selection = loadWorkflowSelection(cwd);
-  if (selection.kind === "bundled") {
-    return resolveBundledWorkflowTemplate(selection.id).content;
+  installedVersion: string,
+): WorkflowMigrationPlan {
+  const loadedSelection = loadWorkflowSelection(cwd);
+  const selection =
+    loadedSelection.kind === "bundled"
+      ? loadedSelection.id
+      : loadedSelection.kind;
+  const workflowPath = path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+  let pathKind: WorkflowMigrationEvidence["pathKind"] = "missing";
+  let currentBytes: string | null = null;
+
+  try {
+    const stat = fs.lstatSync(workflowPath);
+    if (stat.isFile() && !stat.isSymbolicLink()) {
+      pathKind = "regular";
+      currentBytes = fs.readFileSync(workflowPath, "utf-8");
+    } else {
+      pathKind = "unsafe";
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      pathKind = "unsafe";
+    }
   }
-  if (selection.kind === "invalid") {
+
+  const evidence: WorkflowMigrationEvidence = {
+    selection,
+    currentBytes,
+    storedHash: hashes[PATHS.WORKFLOW_GUIDE_FILE],
+    installedVersion,
+    pathKind,
+    researchBytes: replacePythonCommandLiterals(
+      resolveBundledWorkflowTemplate(RESEARCH_WORKFLOW_ID).content,
+    ),
+  };
+  const classification = classifyWorkflowMigration(evidence);
+
+  if (loadedSelection.kind === "invalid") {
     console.log(
       chalk.yellow(
-        `Warning: ${PATHS.WORKFLOW_SELECTION_FILE} is invalid (${selection.reason}); preserving ${PATHS.WORKFLOW_GUIDE_FILE} as user-owned.`,
+        `Warning: ${PATHS.WORKFLOW_SELECTION_FILE} is invalid (${loadedSelection.reason}); preserving ${PATHS.WORKFLOW_GUIDE_FILE} as user-owned.`,
       ),
     );
-    return undefined;
   }
 
-  const workflowPath = path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE);
-  if (!fs.existsSync(workflowPath)) {
-    return undefined;
-  }
+  const includeResearchTemplate =
+    classification === "current-research" ||
+    classification === "pristine-research" ||
+    classification === "pristine-native" ||
+    classification === "modified-managed";
+  const needsMetadataRepair =
+    classification === "current-research" &&
+    (selection !== "research" ||
+      evidence.storedHash !== computeHash(evidence.researchBytes));
 
-  const current = fs.readFileSync(workflowPath, "utf-8");
-  const native = replacePythonCommandLiterals(
-    resolveBundledWorkflowTemplate(NATIVE_WORKFLOW_ID).content,
-  );
-  const storedHash = hashes[PATHS.WORKFLOW_GUIDE_FILE];
-  if (
-    current === native ||
-    (storedHash !== undefined && storedHash === computeHash(current))
-  ) {
-    return resolveBundledWorkflowTemplate(NATIVE_WORKFLOW_ID).content;
-  }
-
-  return undefined;
+  return {
+    ...evidence,
+    classification,
+    includeResearchTemplate,
+    needsMetadataRepair,
+  };
 }
 
 async function collectTemplateFiles(
   cwd: string,
   hashes: TemplateHashes,
+  workflowPlan: WorkflowMigrationPlan,
   extraPlatforms?: Set<AITool>,
   /**
    * Bypass `update.skip` when collecting templates. Enable this for breaking
@@ -905,57 +848,42 @@ async function collectTemplateFiles(
     }
   }
 
-  // Python scripts (single source of truth: getAllScripts())
-  for (const [scriptPath, content] of getAllScripts()) {
-    files.set(`${PATHS.SCRIPTS}/${scriptPath}`, content);
-  }
-
-  // Channel runtime agent definitions (single source of truth: getAllAgents()).
-  // Backfilled by `trellis update` if missing so users who installed before the
-  // bundled agents existed pick them up. Edited files take the standard
-  // modified-file prompt path.
-  for (const [agentFile, content] of getAllAgents()) {
-    files.set(`${PATHS.AGENTS}/${agentFile}`, content);
-  }
-
-  // Configuration
-  files.set(
-    `${DIR_NAMES.WORKFLOW}/config.yaml`,
-    preserveExistingRegistryConfig(cwd, configYamlTemplate),
-  );
+  // Research bridge configuration only. Historical scripts, agents, specs,
+  // and registry state remain inert compatibility data, not desired output.
+  files.set(`${DIR_NAMES.WORKFLOW}/config.yaml`, configYamlTemplate);
   files.set(`${DIR_NAMES.WORKFLOW}/.gitignore`, gitignoreTemplate);
-  // workflow.md remains a whole-file runtime template, but only when bundled
-  // ownership is valid or safely inferred from a legacy native installation.
-  // Invalid or user-owned workflows are omitted so unrelated updates proceed
-  // without restoring native bytes or fetching marketplace content.
-  const selectedWorkflow = collectSelectedWorkflowTemplate(cwd, hashes);
-  if (selectedWorkflow !== undefined) {
-    files.set(PATHS.WORKFLOW_GUIDE_FILE, selectedWorkflow);
+  // workflow.md remains a whole-file runtime template. State-driven ownership
+  // classification decides whether Research is managed, migratable, conflicted,
+  // or user-owned; marketplace content is never fetched by update.
+  if (workflowPlan.includeResearchTemplate) {
+    files.set(PATHS.WORKFLOW_GUIDE_FILE, workflowPlan.researchBytes);
   }
   // workspace/index.md stays excluded — it's runtime-appended by add_session.py
   // (journal index) and has no script-parsed structure.
   files.set(FILE_NAMES.AGENTS, buildAgentsMdTemplate(cwd));
 
-  // Platform-specific templates (only for configured platforms)
+  // Platform-specific templates (only for configured platforms). The optional
+  // Claude statusline remains active only with exact manifest ownership; a
+  // colliding untracked file is user-owned and must not become a template.
   for (const platformId of platforms) {
-    const platformFiles = collectPlatformTemplates(platformId);
-    if (platformFiles) {
-      for (const [filePath, content] of platformFiles) {
-        files.set(filePath, content);
-      }
-      if (platformId === "copilot") {
-        files.set(
-          COPILOT_INSTRUCTIONS_PATH,
-          buildCopilotInstructionsTemplate(cwd),
-        );
-      }
+    const platformFiles = collectPlatformTemplates(platformId, cwd, {
+      withStatusline:
+        platformId === "claude-code" &&
+        hashes[RESEARCH_PAYLOAD_PATHS.claude.statusline] !== undefined,
+    });
+    for (const [filePath, content] of platformFiles) {
+      files.set(filePath, content);
     }
   }
 
   preserveExistingClaudeStatusLine(cwd, files);
 
-  for (const [filePath, content] of await collectRegistrySpecTemplates(cwd)) {
-    files.set(filePath, content);
+  // Canonical research state is never a template target, including registry
+  // content that happens to declare a path under the research store.
+  for (const [filePath] of files) {
+    if (isProtectedResearchPath(filePath)) {
+      files.delete(filePath);
+    }
   }
 
   // Apply update.skip from config.yaml (unless bypassed for breaking release)
@@ -1040,13 +968,7 @@ function analyzeChanges(
         if (
           (storedHash && storedHash === currentHash) ||
           (!storedHash &&
-            isKnownUntrackedTemplate(relativePath, existingContent)) ||
-          (!storedHash &&
-            isSafeUntrackedCopilotInstructionsMerge(
-              relativePath,
-              existingContent,
-              newContent,
-            ))
+            isKnownUntrackedTemplate(relativePath, existingContent))
         ) {
           // Either the tracked hash matches, or this is a known pristine template
           // from before the path was hash-tracked. Safe to auto-update.
@@ -1070,7 +992,7 @@ function collectMissingManagedFileHashes(
   hashes: TemplateHashes,
 ): Map<string, string> {
   const files = new Map<string, string>();
-  const managedFiles = new Set([FILE_NAMES.AGENTS, COPILOT_INSTRUCTIONS_PATH]);
+  const managedFiles = new Set<string>([FILE_NAMES.AGENTS]);
 
   for (const file of changes.unchangedFiles) {
     if (managedFiles.has(file.relativePath) && !hashes[file.relativePath]) {
@@ -1278,6 +1200,9 @@ export function shouldExcludeFromBackup(relativePath: string): boolean {
   // project copies) and explode the scan. Same normalization pattern
   // used by `isManagedPath` in configurators/index.ts.
   const normalized = relativePath.replace(/\\/g, "/");
+  if (isProtectedResearchPath(normalized)) {
+    return true;
+  }
   for (const pattern of BACKUP_EXCLUDE_PATTERNS) {
     if (normalized.includes(pattern)) {
       return true;
@@ -1523,13 +1448,24 @@ export function classifyMigrations(
     // safe-file-delete handled separately (not via --migrate)
     if (item.type === "safe-file-delete") continue;
 
-    // Enforce PROTECTED_PATHS — never migrate FROM protected paths (prevents moving/deleting user data)
+    // Canonical research state is never a migration source or destination.
+    // Check both sides before path.join or filesystem access.
+    if (
+      containsProtectedResearchPath(item.from) ||
+      (item.to !== undefined && containsProtectedResearchPath(item.to))
+    ) {
+      result.skip.push(item);
+      continue;
+    }
+
+    // Enforce generic protected paths — never migrate FROM user data.
     if (isProtectedPath(item.from)) {
       result.skip.push(item);
       continue;
     }
-    // For non-rename types, also block writing TO protected paths
-    // rename/rename-dir are allowed to target protected paths (e.g., 0.2.0 renames into .trellis/workspace)
+    // Historical rename/rename-dir migrations may target generic protected
+    // paths such as workspace, but the research-specific rule above overrides
+    // that exception.
     if (
       item.to &&
       isProtectedPath(item.to) &&
@@ -1764,6 +1700,11 @@ async function promptMigrationAction(
  */
 /** @internal Exported for testing only */
 export function cleanupEmptyDirs(cwd: string, dirPath: string): void {
+  // Canonical research directories are preserved even when currently empty.
+  if (isProtectedResearchPath(dirPath)) {
+    return;
+  }
+
   const fullPath = path.join(cwd, dirPath);
 
   // Safety: don't delete outside of managed directories
@@ -1844,6 +1785,13 @@ async function executeMigrations(
 
   // 1. Execute auto migrations (unmodified files and directories)
   for (const item of sortedAuto) {
+    if (
+      containsProtectedResearchPath(item.from) ||
+      (item.to !== undefined && containsProtectedResearchPath(item.to))
+    ) {
+      result.skipped++;
+      continue;
+    }
     if (item.type === "rename" && item.to) {
       const oldPath = path.join(cwd, item.from);
       const newPath = path.join(cwd, item.to);
@@ -1920,6 +1868,13 @@ async function executeMigrations(
   // 2. Handle confirm items (modified files)
   // Note: All files are already backed up by createMigrationBackup before execution
   for (const item of classified.confirm) {
+    if (
+      containsProtectedResearchPath(item.from) ||
+      (item.to !== undefined && containsProtectedResearchPath(item.to))
+    ) {
+      result.skipped++;
+      continue;
+    }
     let action: MigrationAction;
 
     if (options.force) {
@@ -2163,18 +2118,18 @@ export async function update(options: UpdateOptions): Promise<void> {
     );
   }
 
-  // Self-heal poisoned manifests: prune entries that no current platform
-  // configurator owns. This silently removes user-owned paths that early
-  // buggy versions of `trellis init` over-hashed (e.g. .codex/sessions/*).
-  // Include codex in known-platforms when codexUpgradeNeeded so legacy Codex
-  // markers under .agents/skills/ survive into the upgrade flow.
+  // Self-heal poisoned manifests in memory during planning. Persistence is
+  // deferred until after dry-run and confirmation gates so previews and
+  // cancellation are byte-for-byte non-mutating.
+  let manifestPruned = false;
+  const manifestPrunePlatforms = new Set<AITool>(getConfiguredPlatforms(cwd));
+  if (codexUpgradeNeeded) manifestPrunePlatforms.add("codex");
   {
-    const configuredPlatforms = new Set<AITool>(getConfiguredPlatforms(cwd));
-    if (codexUpgradeNeeded) configuredPlatforms.add("codex");
     const prune = pruneOrphanManifestKeys(
       cwd,
-      [...configuredPlatforms],
+      [...manifestPrunePlatforms],
       hashes,
+      { persist: false },
     );
     if (prune.pruned.length > 0) {
       console.log(
@@ -2183,6 +2138,7 @@ export async function update(options: UpdateOptions): Promise<void> {
         ),
       );
       hashes = prune.hashes;
+      manifestPruned = true;
     }
   }
 
@@ -2203,10 +2159,19 @@ export async function update(options: UpdateOptions): Promise<void> {
       return md.breaking && md.recommendMigrate;
     })();
 
+  // Classify workflow ownership once during planning. The captured bytes are
+  // re-checked immediately before any active workflow mutation.
+  const workflowPlan = collectWorkflowMigrationPlan(
+    cwd,
+    hashes,
+    projectVersion,
+  );
+
   // Collect templates (used for both migration classification and change analysis)
   const templates = await collectTemplateFiles(
     cwd,
     hashes,
+    workflowPlan,
     codexUpgradeNeeded ? new Set<AITool>(["codex"]) : undefined,
     breakingBypass,
   );
@@ -2238,6 +2203,12 @@ export async function update(options: UpdateOptions): Promise<void> {
     // Only check rename and rename-dir migrations
     if (item.type !== "rename" && item.type !== "rename-dir") return false;
     if (!item.from || !item.to) return false;
+    if (
+      containsProtectedResearchPath(item.from) ||
+      containsProtectedResearchPath(item.to)
+    ) {
+      return false;
+    }
 
     const oldPath = path.join(cwd, item.from);
     const newPath = path.join(cwd, item.to);
@@ -2391,9 +2362,28 @@ export async function update(options: UpdateOptions): Promise<void> {
     changes.autoUpdateFiles.length === 0 &&
     changes.changedFiles.length === 0 &&
     !hasPendingMigrations &&
-    !hasSafeDeletes
+    !hasSafeDeletes &&
+    !workflowPlan.needsMetadataRepair
   ) {
-    if (!options.dryRun && missingManagedFileHashes.size > 0) {
+    if (options.dryRun) {
+      console.log(chalk.gray("[Dry run] No changes made."));
+      return;
+    }
+
+    const needsNoopMutation =
+      manifestPruned || missingManagedFileHashes.size > 0 || !isSameVersion;
+    if (needsNoopMutation) {
+      const backupDir = createFullBackup(cwd);
+      if (backupDir) {
+        console.log(
+          chalk.gray(`\nBackup created: ${path.relative(cwd, backupDir)}/`),
+        );
+      }
+    }
+    if (manifestPruned) {
+      saveHashes(cwd, hashes);
+    }
+    if (missingManagedFileHashes.size > 0) {
       updateHashes(cwd, missingManagedFileHashes);
     }
 
@@ -2506,7 +2496,8 @@ export async function update(options: UpdateOptions): Promise<void> {
     }
   }
 
-  // Create complete backup of all managed platform/workflow directories
+  // Create the complete backup before any durable update mutation, including
+  // ownership-manifest pruning. A backup failure must leave project state as-is.
   const backupDir = createFullBackup(cwd);
 
   if (backupDir) {
@@ -2556,17 +2547,39 @@ export async function update(options: UpdateOptions): Promise<void> {
     }
   }
 
+  // Persist ownership pruning after migrations and safe deletes so the apply
+  // order matches the update contract. Recompute from the latest on-disk hash
+  // state because migration/delete helpers may have renamed or removed entries
+  // since planning; saving the earlier snapshot here would resurrect stale keys
+  // or discard those helper updates.
+  if (manifestPruned) {
+    const finalPrune = pruneOrphanManifestKeys(
+      cwd,
+      [...manifestPrunePlatforms],
+      loadHashes(cwd),
+      { persist: false },
+    );
+    saveHashes(cwd, finalPrune.hashes);
+  }
+
   // Track results
   let added = 0;
   let autoUpdated = 0;
   let updated = 0;
   let skipped = 0;
   let createdNew = 0;
+  let workflowAction: ConflictAction | "repair" | null =
+    workflowPlan.needsMetadataRepair ? "repair" : null;
+  let workflowOwnershipReady = false;
 
   // Add new files
   if (changes.newFiles.length > 0) {
     console.log(chalk.blue("\nAdding new files..."));
     for (const file of changes.newFiles) {
+      if (file.relativePath === PATHS.WORKFLOW_GUIDE_FILE) {
+        workflowAction = "overwrite";
+        continue;
+      }
       const dir = path.dirname(file.path);
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(file.path, file.newContent);
@@ -2588,6 +2601,10 @@ export async function update(options: UpdateOptions): Promise<void> {
   if (changes.autoUpdateFiles.length > 0) {
     console.log(chalk.blue("\nAuto-updating template files..."));
     for (const file of changes.autoUpdateFiles) {
+      if (file.relativePath === PATHS.WORKFLOW_GUIDE_FILE) {
+        workflowAction = "overwrite";
+        continue;
+      }
       fs.writeFileSync(file.path, file.newContent);
 
       // Make scripts executable
@@ -2612,6 +2629,11 @@ export async function update(options: UpdateOptions): Promise<void> {
     for (const file of changes.changedFiles) {
       const action = await promptConflictResolution(file, options, applyToAll);
 
+      if (file.relativePath === PATHS.WORKFLOW_GUIDE_FILE) {
+        workflowAction = action;
+        continue;
+      }
+
       if (action === "overwrite") {
         fs.writeFileSync(file.path, file.newContent);
         if (
@@ -2634,39 +2656,93 @@ export async function update(options: UpdateOptions): Promise<void> {
     }
   }
 
-  // Append additive config.yaml sections introduced between versions.
-  // Sentinel-gated, so users keep their customizations and re-running update
-  // on already-migrated files is a no-op. Skipped on unknown / downgrade.
-  let configSectionsAppended = 0;
-  if (cliVsProject > 0 && projectVersion !== "unknown") {
-    const sectionEntries = getConfigSectionsAddedBetween(
-      projectVersion,
-      cliVersion,
-    );
-    if (sectionEntries.length > 0) {
-      const { appended } = applyConfigSectionsAdded(
-        sectionEntries,
-        cwd,
-        templates,
+  // Apply the active workflow last so unrelated write failures cannot leave a
+  // half-transferred workflow ownership state. The planning snapshot is checked
+  // immediately before an atomic replacement.
+  if (workflowAction === "overwrite") {
+    let currentBytes: string | null = null;
+    try {
+      currentBytes = fs.readFileSync(
+        path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE),
+        "utf-8",
       );
-      configSectionsAppended = appended;
+    } catch {
+      // Missing/unreadable after planning is a concurrent change; preserve it.
     }
+
+    if (currentBytes !== workflowPlan.currentBytes) {
+      console.log(
+        chalk.yellow(
+          `  ○ Skipped: ${PATHS.WORKFLOW_GUIDE_FILE} changed after planning`,
+        ),
+      );
+      skipped++;
+    } else {
+      writeFileAtomic(
+        path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE),
+        workflowPlan.researchBytes,
+      );
+      const verified = fs.readFileSync(
+        path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE),
+        "utf-8",
+      );
+      if (verified !== workflowPlan.researchBytes) {
+        throw new Error(
+          `Failed to verify ${PATHS.WORKFLOW_GUIDE_FILE} after Research workflow update.`,
+        );
+      }
+      workflowOwnershipReady = true;
+      updated++;
+      console.log(
+        chalk.cyan(`  ↑ ${PATHS.WORKFLOW_GUIDE_FILE} → bundled Research`),
+      );
+    }
+  } else if (workflowAction === "create-new") {
+    writeFileAtomic(
+      path.join(cwd, `${PATHS.WORKFLOW_GUIDE_FILE}.new`),
+      workflowPlan.researchBytes,
+    );
+    createdNew++;
+    console.log(chalk.blue(`  ✓ Created: ${PATHS.WORKFLOW_GUIDE_FILE}.new`));
+  } else if (workflowAction === "skip") {
+    skipped++;
+    console.log(chalk.gray(`  ○ Skipped: ${PATHS.WORKFLOW_GUIDE_FILE}`));
+  } else if (workflowAction === "repair") {
+    const activeBytes = fs.readFileSync(
+      path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE),
+      "utf-8",
+    );
+    workflowOwnershipReady = activeBytes === workflowPlan.researchBytes;
   }
 
-  // Update version file
-  updateVersionFile(cwd);
+  // A skipped hash-only legacy inference must keep its pre-switch version
+  // evidence; otherwise advancing .version would make the next retry ambiguous.
+  const preserveLegacyInferenceVersion =
+    workflowPlan.selection === "missing" &&
+    workflowPlan.classification === "pristine-native" &&
+    workflowPlan.currentBytes !== null &&
+    !isReleasedNativeWorkflow(workflowPlan.currentBytes) &&
+    !workflowOwnershipReady;
+  if (!preserveLegacyInferenceVersion) {
+    updateVersionFile(cwd);
+  }
 
   // Update template hashes for new, auto-updated, and overwritten files
   const filesToHash = new Map<string, string>(missingManagedFileHashes);
   for (const file of changes.newFiles) {
-    filesToHash.set(file.relativePath, file.newContent);
+    if (file.relativePath !== PATHS.WORKFLOW_GUIDE_FILE) {
+      filesToHash.set(file.relativePath, file.newContent);
+    }
   }
   // Auto-updated files always get new hash
   for (const file of changes.autoUpdateFiles) {
-    filesToHash.set(file.relativePath, file.newContent);
+    if (file.relativePath !== PATHS.WORKFLOW_GUIDE_FILE) {
+      filesToHash.set(file.relativePath, file.newContent);
+    }
   }
   // Only hash overwritten files (not skipped or .new copies)
   for (const file of changes.changedFiles) {
+    if (file.relativePath === PATHS.WORKFLOW_GUIDE_FILE) continue;
     const fullPath = path.join(cwd, file.relativePath);
     if (fs.existsSync(fullPath)) {
       const content = fs.readFileSync(fullPath, "utf-8");
@@ -2677,6 +2753,38 @@ export async function update(options: UpdateOptions): Promise<void> {
   }
   if (filesToHash.size > 0) {
     updateHashes(cwd, filesToHash);
+  }
+
+  if (workflowOwnershipReady) {
+    const activePath = path.join(cwd, PATHS.WORKFLOW_GUIDE_FILE);
+    const activeBeforeHash = fs.readFileSync(activePath, "utf-8");
+    if (activeBeforeHash === workflowPlan.researchBytes) {
+      updateHashes(
+        cwd,
+        new Map([[PATHS.WORKFLOW_GUIDE_FILE, workflowPlan.researchBytes]]),
+      );
+      const restorePriorWorkflowHash = (): void => {
+        const currentHashes = loadHashes(cwd);
+        if (workflowPlan.storedHash === undefined) {
+          const { [PATHS.WORKFLOW_GUIDE_FILE]: _, ...rest } = currentHashes;
+          saveHashes(cwd, rest);
+        } else {
+          currentHashes[PATHS.WORKFLOW_GUIDE_FILE] = workflowPlan.storedHash;
+          saveHashes(cwd, currentHashes);
+        }
+      };
+      const activeBeforeSelection = fs.readFileSync(activePath, "utf-8");
+      if (activeBeforeSelection === workflowPlan.researchBytes) {
+        try {
+          saveBundledWorkflowSelection(cwd, RESEARCH_WORKFLOW_ID);
+        } catch (error) {
+          restorePriorWorkflowHash();
+          throw error;
+        }
+      } else {
+        restorePriorWorkflowHash();
+      }
+    }
   }
 
   // Print summary
@@ -2699,9 +2807,6 @@ export async function update(options: UpdateOptions): Promise<void> {
   if (safeDeleted > 0) {
     console.log(`  Cleaned up: ${safeDeleted} deprecated file(s)`);
   }
-  if (configSectionsAppended > 0) {
-    console.log(`  Config sections added: ${configSectionsAppended}`);
-  }
   if (backupDir) {
     console.log(`  Backup: ${path.relative(cwd, backupDir)}/`);
   }
@@ -2719,113 +2824,6 @@ export async function update(options: UpdateOptions): Promise<void> {
         "\nTip: Review .new files and merge changes manually if needed.",
       ),
     );
-  }
-
-  // Create migration task if there are breaking changes with migration guides
-  if (cliVsProject > 0 && projectVersion !== "unknown") {
-    const metadata = getMigrationMetadata(projectVersion, cliVersion);
-
-    if (metadata.breaking && metadata.migrationGuides.length > 0) {
-      // Create task directory
-      const today = new Date();
-      const monthDay = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-      const taskSlug = `migrate-to-${cliVersion}`;
-      const taskDirName = `${monthDay}-${taskSlug}`;
-      const tasksDir = path.join(cwd, DIR_NAMES.WORKFLOW, DIR_NAMES.TASKS);
-      const taskDir = path.join(tasksDir, taskDirName);
-
-      // Check if task already exists
-      if (!fs.existsSync(taskDir)) {
-        fs.mkdirSync(taskDir, { recursive: true });
-
-        // Get current developer for assignee.
-        // `.developer` is a key=value file (written by init_developer.py):
-        //   name=<developer-name>
-        //   initialized_at=<iso8601>
-        // Reading it raw and .trim()-ing embeds the entire file contents
-        // (including the `name=` prefix and the `initialized_at` line) into
-        // the assignee field, producing bogus assignees like
-        // "name=suyuan\ninitialized_at=2026-04-07T23:41:21.978312" that
-        // later break session-start task rendering.
-        const developerFile = path.join(cwd, DIR_NAMES.WORKFLOW, ".developer");
-        let currentDeveloper = "unknown";
-        if (fs.existsSync(developerFile)) {
-          const raw = fs.readFileSync(developerFile, "utf-8");
-          const nameMatch = raw.match(/^\s*name\s*=\s*(.+?)\s*$/m);
-          if (nameMatch) {
-            currentDeveloper = nameMatch[1];
-          }
-        }
-
-        // Build task.json — canonical 24-field shape via shared factory.
-        const taskTitle = `Migrate to v${cliVersion}`;
-        const todayStr = today.toISOString().split("T")[0];
-        const taskJson = emptyTaskJson({
-          id: taskSlug,
-          name: taskSlug,
-          title: taskTitle,
-          description: `Breaking change migration from v${projectVersion} to v${cliVersion}`,
-          status: "planning",
-          scope: "migration",
-          priority: "P1",
-          creator: "trellis-update",
-          assignee: currentDeveloper,
-          createdAt: todayStr,
-        });
-
-        // Write task.json
-        const taskJsonPath = path.join(taskDir, "task.json");
-        fs.writeFileSync(taskJsonPath, JSON.stringify(taskJson, null, 2));
-
-        // Build PRD content
-        let prdContent = `# Migration Task: Upgrade to v${cliVersion}\n\n`;
-        prdContent += `**Created**: ${todayStr}\n`;
-        prdContent += `**From Version**: ${projectVersion}\n`;
-        prdContent += `**To Version**: ${cliVersion}\n`;
-        prdContent += `**Assignee**: ${currentDeveloper}\n\n`;
-        prdContent += `## Status\n\n- [ ] Review migration guide\n- [ ] Update custom files\n- [ ] Run \`trellis update --migrate\`\n- [ ] Test workflows\n\n`;
-
-        for (const {
-          version,
-          guide,
-          aiInstructions,
-        } of metadata.migrationGuides) {
-          prdContent += `---\n\n## v${version} Migration Guide\n\n`;
-          prdContent += guide;
-          prdContent += "\n\n";
-
-          if (aiInstructions) {
-            prdContent += `### AI Assistant Instructions\n\n`;
-            prdContent += `When helping with this migration:\n\n`;
-            prdContent += aiInstructions;
-            prdContent += "\n\n";
-          }
-        }
-
-        // Write PRD
-        const prdPath = path.join(taskDir, "prd.md");
-        fs.writeFileSync(prdPath, prdContent);
-
-        console.log("");
-        console.log(chalk.bgCyan.black.bold(" 📋 MIGRATION TASK CREATED "));
-        console.log(
-          chalk.cyan(
-            `A task has been created to help you complete the migration:`,
-          ),
-        );
-        console.log(
-          chalk.white(
-            `   ${DIR_NAMES.WORKFLOW}/${DIR_NAMES.TASKS}/${taskDirName}/`,
-          ),
-        );
-        console.log("");
-        console.log(
-          chalk.gray(
-            "Use AI to help: Ask Claude/Cursor to read the task and fix your custom files.",
-          ),
-        );
-      }
-    }
   }
 
   // Display breaking change warnings at the very end (so they don't scroll off screen)

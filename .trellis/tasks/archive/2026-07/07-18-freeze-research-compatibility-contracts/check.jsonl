@@ -1,0 +1,3 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check fixture assertions preserve canonical research behavior exactly."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check legacy Dispatch fields remain readable without changing authority."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check fixtures avoid machine-local paths and future cleanup ambiguity."}

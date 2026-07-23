@@ -3,11 +3,13 @@
  * (.trellis/tasks/05-13-uninstall-overdelete-manifest-leak).
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import { collectPlatformTemplates } from "../../src/configurators/index.js";
+import { CURRENT_HOST_GENERIC_CLEANUP_PATHS } from "../../src/legacy/current-host-generic-cleanup.js";
 import { pruneOrphanManifestKeys } from "../../src/utils/manifest-prune.js";
 import {
   isCwdHomedir,
@@ -28,18 +30,82 @@ describe("pruneOrphanManifestKeys", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("preserves every .trellis/* entry regardless of platform-collect output", () => {
+  it("preserves exact Research base files, historical cleanup keys, and protected research entries", () => {
     const hashes = {
-      ".trellis/workflow.md": "h1",
-      ".trellis/scripts/task.py": "h2",
-      ".trellis/config.yaml": "h3",
+      ".trellis/workflow.md": "workflow",
+      ".trellis/config.yaml": "config",
+      ".trellis/.gitignore": "gitignore",
+      ".trellis/scripts/task.py": "historical-cleanup",
+      ".trellis/research/events.jsonl": "protected",
     };
     saveHashes(tmpDir, hashes);
 
-    const { pruned, hashes: kept } = pruneOrphanManifestKeys(tmpDir, [], hashes);
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      [],
+      hashes,
+    );
 
     expect(pruned).toEqual([]);
     expect(kept).toEqual(hashes);
+  });
+
+  it("preserves hash-tracked spec files when a spec registry is configured", () => {
+    fs.writeFileSync(
+      path.join(tmpDir, ".trellis", "config.yaml"),
+      "registry:\n  spec:\n    source: gitlab:local/registry/spec\n",
+    );
+    const hashes = {
+      ".trellis/spec/index.md": "registry-owned",
+      ".trellis/poisoned-user-file.txt": "poisoned",
+    };
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      [],
+      hashes,
+      { persist: false },
+    );
+
+    expect(pruned).toEqual([".trellis/poisoned-user-file.txt"]);
+    expect(kept).toEqual({ ".trellis/spec/index.md": "registry-owned" });
+  });
+
+  it("prunes unknown .trellis keys instead of trusting the whole tree", () => {
+    const hashes = {
+      ".trellis/workflow.md": "managed",
+      ".trellis/poisoned-user-file.txt": "poisoned",
+    };
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      [],
+      hashes,
+      { persist: false },
+    );
+
+    expect(pruned).toEqual([".trellis/poisoned-user-file.txt"]);
+    expect(kept).toEqual({ ".trellis/workflow.md": "managed" });
+  });
+
+  it("prunes invalid manifest keys without resolving them on disk", () => {
+    const hashes = {
+      "../victim.txt": "traversal",
+      "/tmp/absolute.txt": "absolute",
+      "C:drive-relative.txt": "drive-relative",
+      "bad\\windows.txt": "backslash",
+      "bad\0nul.txt": "nul",
+    };
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      [],
+      hashes,
+      { persist: false },
+    );
+
+    expect(pruned).toEqual(Object.keys(hashes));
+    expect(kept).toEqual({});
   });
 
   it("prunes platform-dir entries no current configurator owns", () => {
@@ -62,9 +128,9 @@ describe("pruneOrphanManifestKeys", () => {
     );
   });
 
-  it("keeps entries that any configured platform's collectTemplates owns", () => {
-    // Claude configurator owns .claude/settings.json — should survive prune
-    // even though it's in the manifest pre-prune.
+  it("keeps entries that any configured platform's Research payload owns", () => {
+    // Claude Research configuration survives while an unknown runtime sibling is
+    // released from manifest ownership.
     const hashes = {
       ".claude/settings.json": "claude-hash",
       ".claude/sessions/user.jsonl": "user-hash",
@@ -80,6 +146,156 @@ describe("pruneOrphanManifestKeys", () => {
     expect(pruned).toEqual([".claude/sessions/user.jsonl"]);
     expect(kept).toHaveProperty(".claude/settings.json");
     expect(kept).not.toHaveProperty(".claude/sessions/user.jsonl");
+  });
+
+  it.each(["claude-code", "codex"] as const)(
+    "keeps every exact %s Research payload key without generic collectors",
+    (platform) => {
+      const payloadPaths = [...collectPlatformTemplates(platform).keys()];
+      const currentOnlyPaths = payloadPaths.filter(
+        (item) => !CURRENT_HOST_GENERIC_CLEANUP_PATHS.has(item),
+      );
+      const hashes = Object.fromEntries(
+        payloadPaths.map((item) => [item, `${platform}-hash`]),
+      );
+
+      const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+        tmpDir,
+        [platform],
+        hashes,
+        { persist: false },
+      );
+
+      expect(currentOnlyPaths.length).toBeGreaterThan(0);
+      expect(pruned).toEqual([]);
+      expect(Object.keys(kept).sort()).toEqual(payloadPaths.sort());
+    },
+  );
+
+  it("recognizes all 137 unique frozen current-host cleanup keys without active platforms", () => {
+    const cleanupPaths = [...CURRENT_HOST_GENERIC_CLEANUP_PATHS];
+    const hashes = Object.fromEntries(
+      cleanupPaths.map((item) => [item, "historical-hash"]),
+    );
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      [],
+      hashes,
+      { persist: false },
+    );
+
+    expect(cleanupPaths).toHaveLength(137);
+    expect(new Set(cleanupPaths).size).toBe(137);
+    expect(pruned).toEqual([]);
+    expect(Object.keys(kept).sort()).toEqual(cleanupPaths.sort());
+  });
+
+  it("keeps exact retired keys after registry shrink but prunes unknown descendants", () => {
+    const retiredPath = ".cursor/commands/trellis-continue.md";
+    const unknownPath = ".cursor/user-owned/custom.md";
+    const hashes = {
+      [retiredPath]: "retired-hash",
+      [unknownPath]: "user-hash",
+    };
+    const existsSpy = vi.spyOn(fs, "existsSync").mockImplementation((value) => {
+      if (String(value).endsWith(".cursor/user-owned/custom.md")) {
+        throw new Error("unknown retired-root descendant reached filesystem");
+      }
+      return false;
+    });
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      ["claude-code", "codex"],
+      hashes,
+      { persist: false },
+    );
+    existsSpy.mockRestore();
+
+    expect(existsSpy).not.toHaveBeenCalledWith(
+      path.join(tmpDir, ".cursor", "user-owned", "custom.md"),
+    );
+    expect(pruned).toEqual([unknownPath]);
+    expect(kept).toEqual({ [retiredPath]: "retired-hash" });
+  });
+
+  it("keeps frozen current-host paths while pruning unknown siblings without touching disk", () => {
+    const exactCleanupPath = ".claude/agents/trellis-check.md";
+    const unknownSibling = ".claude/agents/user-owned.md";
+    const unknownDescendant = ".claude/agents/trellis-check.md/notes.md";
+    const hashes = {
+      [exactCleanupPath]: "frozen",
+      [unknownSibling]: "user-owned",
+      [unknownDescendant]: "not-exactly-owned",
+    };
+    for (const [relativePath, content] of [
+      [unknownSibling, "user sibling\n"],
+      [unknownDescendant, "user descendant\n"],
+    ] as const) {
+      const fullPath = path.join(tmpDir, ...relativePath.split("/"));
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, content);
+    }
+    saveHashes(tmpDir, hashes);
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      [],
+      hashes,
+    );
+
+    expect(pruned).toEqual([unknownSibling, unknownDescendant]);
+    expect(kept).toEqual({ [exactCleanupPath]: "frozen" });
+    expect(loadHashes(tmpDir)).toEqual({ [exactCleanupPath]: "frozen" });
+    expect(
+      fs.readFileSync(path.join(tmpDir, ...unknownSibling.split("/")), "utf-8"),
+    ).toBe("user sibling\n");
+    expect(
+      fs.readFileSync(
+        path.join(tmpDir, ...unknownDescendant.split("/")),
+        "utf-8",
+      ),
+    ).toBe("user descendant\n");
+  });
+
+  it("keeps validated manifest keys beneath canonical rename-dir migrations", () => {
+    const hashes = {
+      ".windsurf/workflows/trellis-continue.md": "windsurf-hash",
+      ".zcode/cli/agents/trellis-check.md": "zcode-hash",
+      ".windsurf/user-owned.md": "unknown-hash",
+    };
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      ["claude-code", "codex"],
+      hashes,
+      { persist: false },
+    );
+
+    expect(pruned).toEqual([".windsurf/user-owned.md"]);
+    expect(kept).toEqual({
+      ".windsurf/workflows/trellis-continue.md": "windsurf-hash",
+      ".zcode/cli/agents/trellis-check.md": "zcode-hash",
+    });
+  });
+
+  it("keeps current Codex Research skill ownership outside cleanup inventory", () => {
+    const researchSkillPath =
+      ".agents/skills/trellis-research-writing/SKILL.md";
+    const hashes = { [researchSkillPath]: "research-hash" };
+
+    expect(CURRENT_HOST_GENERIC_CLEANUP_PATHS.has(researchSkillPath)).toBe(false);
+
+    const { pruned, hashes: kept } = pruneOrphanManifestKeys(
+      tmpDir,
+      ["codex"],
+      hashes,
+      { persist: false },
+    );
+
+    expect(pruned).toEqual([]);
+    expect(kept).toEqual(hashes);
   });
 
   it("keeps root-level AGENTS.md when it has Trellis managed-block markers", () => {

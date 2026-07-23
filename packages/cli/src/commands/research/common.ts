@@ -32,7 +32,10 @@ import {
 import chalk from "chalk";
 import { InvalidArgumentError } from "commander";
 
-import { ResearchDispatchFileError } from "./errors.js";
+import {
+  ResearchDispatchContextError,
+  ResearchDispatchFileError,
+} from "./errors.js";
 
 export interface ResearchRootOptions {
   root?: string;
@@ -300,6 +303,24 @@ export function renderResearchResult(
 
 export function renderResearchError(error: unknown, json: boolean): void {
   const message = error instanceof Error ? error.message : String(error);
+  if (error instanceof ResearchDispatchContextError) {
+    const failure = {
+      schemaVersion: 1,
+      command: "research dispatch context",
+      valid: false,
+      error: { code: error.code, message },
+      safeAction: "report-to-root-no-write",
+    } as const;
+    if (json) {
+      console.error(JSON.stringify(failure));
+    } else {
+      console.error(
+        chalk.red("Error:"),
+        `${error.code}: ${message}. No files were changed.`,
+      );
+    }
+    return;
+  }
   if (error instanceof ResearchDispatchFileError) {
     const recovery = {
       error: message,

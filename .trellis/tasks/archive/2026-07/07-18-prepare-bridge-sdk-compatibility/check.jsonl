@@ -1,0 +1,10 @@
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Check exact export classification, non-leakage, compatibility behavior, and CLI import boundary."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Check packed-core and packed-CLI proof both precede publication and preserve version lock."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Check release-audit failures remain bounded, explicit, and non-destructive."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Check scope discipline, package safety, and verification requirements."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check deterministic assertions and package-test ownership."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check real tarball/subprocess tests use isolated temp state and verify cleanup."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Check pure audit helpers are unit-tested without weakening real packed integration proof."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check no Research schema, ledger, projection, lock, or mutation authority changes."}
+{"file":".trellis/tasks/archive/2026-07/07-18-retire-generic-product-surfaces/prd.md","reason":"Check C11 does not restore retired CLI/generation surfaces or cross C16 removal boundary."}
+{"file":".trellis/tasks/archive/2026-07/07-18-prepare-bridge-sdk-compatibility/research/gitnexus-impact-map.md","reason":"Check all edited existing symbols remain inside reviewed blast radius."}

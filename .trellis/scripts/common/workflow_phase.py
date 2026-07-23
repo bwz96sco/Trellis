@@ -8,9 +8,9 @@ platform-specific blocks.
 
 Platform marker syntax in workflow.md:
 
-    [Claude Code, Cursor, ...]
-    agent-capable content
-    [/Claude Code, Cursor, ...]
+    [Claude Code, Codex, ...]
+    platform-specific content
+    [/Claude Code, Codex, ...]
 
 Provides:
     get_phase_index   - Extract the Phase Index section (no --step)
@@ -36,6 +36,7 @@ _STEP_HEADING_RE = re.compile(r"^####\s+(\d+\.\d+)\b.*$")
 
 # Phase Index starts here; Phase 1/2/3 step bodies follow; ends at Breadcrumbs.
 _PHASE_INDEX_HEADING = "## Phase Index"
+_CURRENT_PLATFORM_NAMES = {"claude", "claude-code", "codex"}
 
 
 def _read_workflow() -> str:
@@ -132,7 +133,7 @@ def get_step(step_id: str) -> str:
 
 
 def _platform_matches(platform: str, block_names: list[str]) -> bool:
-    """Case-insensitive fuzzy match: accept 'cursor', 'Cursor', 'claude-code', 'Claude Code'."""
+    """Case-insensitive fuzzy match for current platform marker spellings."""
     needle = platform.lower().replace("-", "").replace("_", "").replace(" ", "")
     for name in block_names:
         hay = name.lower().replace("-", "").replace("_", "").replace(" ", "")
@@ -142,21 +143,22 @@ def _platform_matches(platform: str, block_names: list[str]) -> bool:
 
 
 def resolve_effective_platform(platform: str, config: dict) -> str:
-    """Map ``codex`` to a dispatch-mode-namespaced virtual platform name.
+    """Validate a current platform and namespace Codex by dispatch mode.
 
     When ``--platform codex`` is passed, return ``"codex-inline"`` (default)
     or ``"codex-sub-agent"`` based on ``.trellis/config.yaml`` ``codex.dispatch_mode``.
     ``filter_platform`` then surfaces blocks whose marker lists include the
-    namespaced name (e.g. ``[codex-sub-agent, ...]`` or ``[codex-inline, Kilo,
-    Antigravity, Devin]``).
+    namespaced name (for example ``[codex-sub-agent]`` or ``[codex-inline]``).
 
     Default is ``inline`` because Codex sub-agents run with ``fork_turns="none"``
     isolation and can't inherit the parent session's task context — inline
     keeps the main agent in charge so context isn't lost. Invalid / missing
     values also fall back to inline.
-
-    Other platforms are returned unchanged.
     """
+    if platform not in _CURRENT_PLATFORM_NAMES:
+        supported = ", ".join(sorted(_CURRENT_PLATFORM_NAMES))
+        raise ValueError(f"Unsupported platform: {platform} (choose from {supported})")
+
     if platform == "codex":
         mode = "inline"
         codex_cfg = config.get("codex") if isinstance(config, dict) else None

@@ -1,318 +1,151 @@
-# Workflow-State Breadcrumb Contract
+# Research Workflow-State Contract
 
-> Runtime contract for the per-turn `<workflow-state>` breadcrumb that
-> `inject-workflow-state.py` / `inject-workflow-state.js` inject into
-> every UserPromptSubmit.
+## 1. Scope / Trigger
 
----
+This specification covers active Research workflow selection, strict Research ledger-head reading, Claude SessionStart orientation, and the Claude/Codex per-turn sequence watermark.
 
-## Overview
+The packaged CLI no longer generates or activates the generic Task breadcrumb runtime. Historical native workflow selection and schema-v1 Dispatch metadata remain readable only for compatibility; they do not activate generic scripts, Tasks, pull preludes, retired hosts, or marketplace/custom workflow switching.
 
-The breadcrumb is the **only** per-turn channel that fires while a Trellis task
-is active. It is intended for the main AI session, while sub-agent context
-normally arrives through `inject-subagent-context` on class-1 platforms or a
-pull-based prelude on class-2 platforms. Host behavior can still surface the
-breadcrumb inside sub-agent turns, though, and hooks do not currently expose a
-stable main-vs-sub-agent identity signal. Therefore: **every `[required · once]`
-step that the workflow-walkthrough mandates for a given phase must also be
-mentioned in that phase's breadcrumb tag block, and breadcrumb text must be
-safe when read by a sub-agent.** If required gates are absent, the AI in the
-main session will silently skip them. Prior bugs around planning gates and
-Phase 3.4 commit reminders hit exactly this failure mode.
+## 2. Signatures
 
-This document is the source of truth for the native Task-breadcrumb mechanics. The user-facing
-breadcrumb body lives in `.trellis/workflow.md`; this spec covers everything
-**around** it (parsers, writers, lifecycle, reachability). Claude sessions that
-strictly select the bundled `research` workflow use the additive ledger-head
-sequence branch instead of a Task breadcrumb; see
-[Research Worker Skills and Claude Hooks](./research-worker-hooks.md). All
-non-Claude, native, custom, and OpenCode paths keep the contract below.
+Workflow selection state:
 
----
-
-## Marker syntax
-
-Each breadcrumb body lives in a managed block of `.trellis/workflow.md`:
-
-```
-[workflow-state:STATUS]
-<one or more lines of body text>
-[/workflow-state:STATUS]
+```json
+{
+  "schemaVersion": 1,
+  "id": "research",
+  "source": "bundled"
+}
 ```
 
-- STATUS character set: `[A-Za-z0-9_-]+` (letters, digits, underscores,
-  hyphens). Examples: `planning`, `in_progress`, `in-review`, `blocked-by-team`.
-- The body is read verbatim and inlined into the `<workflow-state>` block.
-- Both the opening and closing tags must end with the same STATUS string.
+Readable bundled IDs:
 
-The regex used by both the Python hook (`packages/cli/src/templates/shared-hooks/inject-workflow-state.py`)
-and the OpenCode plugin (`packages/cli/src/templates/opencode/plugins/inject-workflow-state.js`)
-is:
-
-```
-[workflow-state:([A-Za-z0-9_-]+)]\s*\n(.*?)\n\s*[/workflow-state:\1]
+```text
+research   active and resolvable
+native     historical metadata only
 ```
 
-### Invariant: parser regex ↔ strip regex must use the same `\1` backreference
+Reserved session runtime field:
 
-There are two regex consumers of the marker syntax:
+```json
+{"research_last_seen_seq": 42}
+```
 
-1. **Parser** — extracts tag content for breadcrumb emission. Lives in `inject-workflow-state.py` (`_TAG_RE`) and `inject-workflow-state.js`.
-2. **Stripper** — removes tag blocks from the workflow.md range injected at SessionStart (so AI doesn't read each block twice — once in the workflow overview, once in the per-turn breadcrumb). Lives in `session-start.py` (shared / codex / copilot copies), `workflow_phase.py`, and any future SessionStart-equivalent script.
+Runtime path:
 
-Both regexes MUST use the `\1` backreference variant — `[workflow-state:([A-Za-z0-9_-]+)]...[/workflow-state:\1]` — so they only match well-formed pairs (same STATUS on open and close). A non-backreference variant like `[workflow-state:[A-Za-z0-9_-]+]...[/workflow-state:[A-Za-z0-9_-]+]` permits `STATUS_A...STATUS_B` mismatches, which can swallow surrounding content if a user typo'd the closing tag.
+```text
+.trellis/.runtime/sessions/<context-key>.json
+```
 
-**Symptom of drift**: parser would refuse to emit content for a typo'd block (because parser uses `\1`), but stripper would silently consume it from the SessionStart payload (because stripper used the loose form). End result: the AI never sees that content via either channel — silent loss.
+Per-turn output when the canonical ledger head changes:
 
-**Test invariant**: `test/regression.test.ts` `[strip-breadcrumb] _strip_breadcrumb_tag_blocks only strips matched STATUS pairs` covers the three boundary cases (matched, mismatched, nested orphan) for the strip side. The parser already enforces same-status pairing structurally via `\1`.
+```text
+<research-state-changed>...</research-state-changed>
+```
 
----
+## 3. Contracts
 
-## Runtime contract
+### Strict selection
 
-1. On every UserPromptSubmit (or platform equivalent — see hook reachability
-   matrix below), the hook receives stdin JSON containing `cwd`.
-2. It walks up from `cwd` to find `.trellis/`. If none, exit 0.
-3. It calls `common.active_task.resolve_active_task()` to look up the
-   per-session `current_task` pointer. If absent → status is the pseudo
-   `no_task`. If the pointer is stale (task dir deleted) → status is
-   `stale_<source_type>`. Other session fields, including `current_run`, are
-   independent runtime state and do not select the workflow breadcrumb.
-4. Otherwise it reads `task.json.status` from the resolved task directory.
-5. It opens `.trellis/workflow.md` and parses every `[workflow-state:STATUS]`
-   block.
-6. Codex may map `planning` / `in_progress` to `planning-inline` /
-   `in_progress-inline` based on `codex.dispatch_mode`; all other platforms
-   use the plain status.
-7. It looks up the current status in the parsed map. If found → emits the
-   block body in `<workflow-state>...</workflow-state>`. If not found →
-   emits the generic line `Refer to workflow.md for current step.`
-8. The output JSON has shape:
+- Selection parsing accepts only the exact schema-v1 object and exact bundled IDs.
+- `research` is the only bundled workflow whose bytes may be resolved for active init/update.
+- `native` remains readable historical metadata but has no active template resolver.
+- Custom/marketplace sources, unknown IDs, unknown keys, wrong versions, and malformed JSON are invalid.
+- Invalid selection blocks inference and preserves existing workflow bytes.
+- Selection writes are atomic.
 
-   ```json
-   {"hookSpecificOutput": {
-     "hookEventName": "<platform-event-name>",
-     "additionalContext": "<workflow-state>...</workflow-state>"
-   }}
-   ```
+### Canonical sequence authority
 
-   The platform host injects `additionalContext` as system-level preamble
-   for that turn.
+- `.trellis/research/events.jsonl` is canonical.
+- Missing or empty ledger means head `0`.
+- Every non-empty line must be a JSON object with an integer, non-boolean `seq`.
+- Sequence values must be contiguous from `1`; malformed JSON, non-object rows, duplicates, and gaps invalidate the read.
+- Hooks read the head only. They never append events, repair projections, or skip malformed rows.
 
-   `hookEventName` MUST echo the host's per-turn event name or the host's
-   schema validator will reject the payload. The shared hook detects the
-   platform via `_detect_platform()` and emits the matching value:
+### SessionStart
 
-   | Detected platform | `hookEventName` value |
-   |---|---|
-   | gemini | `BeforeAgent` |
-   | all others (claude, cursor, codex, qoder, codebuddy, droid, copilot, kiro) | `UserPromptSubmit` |
+Claude SessionStart may emit compact Research orientation for exact selected Research state:
 
-   When adding a new hook-capable platform whose per-turn event name is not
-   `UserPromptSubmit`, extend `_detect_platform()` and the `hook_event_name`
-   selector in `inject-workflow-state.py` (and the OpenCode `.js` plugin if
-   the new platform shares its `chat.message`-style envelope). Do NOT
-   hardcode `UserPromptSubmit` at any new emission site.
+- strict ledger head;
+- compact active Quest pointers;
+- compact pending Proposal pointers;
+- one-shot first-reply guidance.
 
----
+It does not emit generic Task phase breadcrumbs, developer/workspace/spec context, generic sub-agent routing, or active native/custom workflow behavior.
 
-## Source of truth
+When identity and state are valid, SessionStart may atomically update only `research_last_seen_seq`. Unknown fields and false/zero/empty values survive. Malformed/non-object session JSON remains byte-identical.
 
-`workflow.md` is **the only editable source** for breadcrumb body text. The
-hook scripts (`.py` and `.js`) contain only the parser, no fallback text.
+### Per-turn watermark
 
-**Why no fallback dicts**: prior to v0.5.0-beta.20, both hook scripts shipped
-a `_FALLBACK_BREADCRUMBS` / `FALLBACK_BREADCRUMBS` dict mirroring the
-workflow.md content. The mirror inevitably drifted (different word polish in
-each file), and the architecture invited copy-paste skew. Removing the
-fallback collapses three sources to one. When `workflow.md` is missing or a
-tag is absent, the hook degrades to the generic line — visible to the user as
-an obvious bug they can fix, rather than being silently masked.
+The same Research sequence hook is generated for Claude and Codex.
 
-To customize breadcrumb wording, edit the `[workflow-state:STATUS]` block in
-`.trellis/workflow.md`. No script change required.
+- Equal stored watermark and ledger head: silent no-op and no write.
+- Changed or missing stored watermark with valid state: emit one bounded change block and atomically update the watermark.
+- Missing identity: silent no-op and no runtime file.
+- Malformed selection, ledger, or session state: fail closed; preserve malformed bytes; do not advance the watermark.
+- Root discovery may walk from a nested child repository to the Research control plane.
 
-### Update boundary
+### Historical native workflow evidence
 
-The `[workflow-state:STATUS]` blocks are not the only runtime-sensitive
-content in `workflow.md`. Phase headings, step headings, and platform marker
-blocks such as `[codex-inline, Kilo, Antigravity, Devin]` are parsed by
-`workflow_phase.py` / `get_context.py` when step-specific instructions are
-loaded.
+Historical native workflow bytes are recognized only by the 28 exact immutable SHA-256 rows with release and source-path provenance. There is no active native template dependency and no fuzzy content recognition. Successful managed migration always writes exact bundled Research bytes, verifies them, and then transfers hash/selection ownership.
 
-For that reason, `trellis update` must update `workflow.md` as one managed
-template file whenever the installed file still matches its tracked template
-hash. It must not partially merge only `[workflow-state:*]` blocks. User edits
-are protected by the normal hash-based modified-file flow, not by preserving
-arbitrary prose outside tag blocks during automatic updates.
+### Removed breadcrumb runtime
 
-Regression invariant: an older hash-tracked workflow containing stale Codex
-markers (`[Codex]` plus `[Kilo, Antigravity, Windsurf]`) must be replaced by
-the current packaged template so `--platform codex` can resolve to
-`codex-inline` or `codex-sub-agent` and still load Phase 2.1 detail.
+`[workflow-state:STATUS]` blocks, active Task status writers, generic task scripts, retired host adapters, and pull-based generic preludes are not current packaged runtime contracts. Historical files may remain as preserved user data or migration evidence, but update/uninstall must not recreate or reinterpret them as active product state.
 
----
+## 4. Validation & Error Matrix
 
-## Status writer table
+| Condition | Required behavior |
+|---|---|
+| Exact Research selection and empty ledger | Valid head `0`. |
+| Exact Research selection and changed contiguous head | Emit once; atomically store new sequence. |
+| Stored sequence equals head | Empty output; no write. |
+| Missing context identity | Empty output; no runtime file. |
+| Malformed/non-object session JSON | Preserve bytes; no sequence output/write. |
+| Malformed selection or ledger gap | Emit bounded validation guidance when supported; never advance state. |
+| Historical exact native digest | Eligible for compatibility classification only. |
+| Unknown or edited native-like bytes | User-owned/ambiguous; preserve. |
+| Custom/marketplace selection | Invalid for active resolution; preserve bytes and perform no network lookup. |
+| Generic Task breadcrumb marker exists in user content | Preserve as user/history data; do not activate a generated Task runtime. |
 
-The table below enumerates every code path that writes `task.json.status` —
-i.e., every path that can change which breadcrumb fires next turn. **Adding
-a new writer requires updating this spec.**
+## 5. Good / Base / Bad Cases
 
-| # | Writer | File:Line | Value | Trigger |
-|---|--------|-----------|-------|---------|
-| 1 | `cmd_create` | `packages/cli/src/templates/trellis/scripts/common/task_store.py:206` | `"planning"` | `task.py create "<title>"` (also visibly auto-sets the session active-task pointer when session identity is available; `--no-start` skips pointer movement for backlog batching — see R7 in 04-30-workflow-state-commit-gap PRD) |
-| 2 | `cmd_start` | `packages/cli/src/templates/trellis/scripts/task.py:114-115, 128-129` | `"in_progress"` (gated on prior `"planning"`; both branches in `cmd_start`) | `task.py start <dir>` |
-| 3 | `cmd_archive` | `packages/cli/src/templates/trellis/scripts/common/task_store.py:337` | `"completed"` (unconditional flip + archive `mv`) | `task.py archive <dir>` |
-| 4 | `emptyTaskJson` factory | `packages/cli/src/utils/task-json.ts:54` | `"planning"` (default) | TS callers (init, update) |
-| 5 | `getBootstrapTaskJson` | `packages/cli/src/commands/init.ts:535` | `"in_progress"` (override) | `trellis init` (creator path) |
-| 6 | `getJoinerTaskJson` | `packages/cli/src/commands/init.ts:587` | `"in_progress"` (override) | `trellis init` (joiner path) |
-| 7 | migration-task via `emptyTaskJson` | `packages/cli/src/commands/update.ts:2483-2494` | `"planning"` (override on factory) | `trellis update --migrate` for breaking-change manifest |
+- **Good**: Claude SessionStart reads Research head `12`, stores only `research_last_seen_seq: 12`, and the next prompt is silent until head `13`.
+- **Base**: Research is selected but uninitialized; both hosts treat head `0` as valid and perform no unnecessary write.
+- **Bad**: selecting `native` and loading a generic bundled template, skipping a malformed ledger row, overwriting malformed session JSON, or generating Task breadcrumb scripts because historical metadata exists.
 
-**No other writer exists.** No hook script writes `task.json.status` — verified
-by `grep -rn '"status"' .trellis/scripts/`. Linear-sync hook (`linear_sync.py`)
-writes `meta.linear_issue` only.
+## 6. Tests Required
 
----
+- Strict selection parser matrix for exact `research`, historical `native`, malformed, unknown, and custom/marketplace values.
+- Atomic selection write behavior.
+- Native digest table integrity pinned to 28 rows, exact hash matching, and negative edited-byte cases.
+- Strict zero/contiguous/gap/malformed ledger-head behavior.
+- Claude/Codex changed/equal/missing-identity watermark behavior.
+- Unknown-field and false/zero/empty-value preservation in valid session objects.
+- Malformed session byte preservation.
+- Nested child-repository root discovery.
+- Negative package assertions for generic Task breadcrumb scripts, retired host adapters, and active native workflow templates.
 
-## Lifecycle events ≠ status transitions
+## 7. Wrong vs Correct
 
-Lifecycle events fire on task-management commands, NOT on status changes.
-Subscribers must understand the difference:
+```text
+Wrong: `id: native` means resolve and install the old generic workflow.
+Correct: `native` is readable metadata only; recognize historical bytes by immutable digest evidence and migrate only when ownership is proven.
+```
 
-| Event | Emitted at | Status when fired |
-|-------|------------|-------------------|
-| `after_create` | end of `cmd_create` | `"planning"` (just written) |
-| `after_start` | end of `cmd_start` | `"in_progress"` if status was `"planning"`; otherwise unchanged. Re-running `start` does NOT re-fire status flip. |
-| `after_finish` | end of `cmd_finish` | **unchanged** — `cmd_finish` only clears the per-session active-task pointer. Status stays whatever it was (typically `"in_progress"`). |
-| `after_archive` | end of `cmd_archive` | `"completed"` (just written, then dir moved to `archive/YYYY-MM/`) |
+```python
+# Wrong: tolerate corruption and advance to a later row.
+for line in ledger:
+    try:
+        head = json.loads(line)["seq"]
+    except Exception:
+        continue
 
-**Common mistake**: subscribing to `after_finish` to mark a task "done" in an
-external system (Linear, Jira). `after_finish` means "AI session closed its
-pointer to this task" — the task may resume in a different session. The
-correct event for "task is done" is `after_archive`.
+# Correct: fail closed on the first malformed or non-contiguous row.
+head = read_strict_research_head(ledger)
+```
 
-Pointer cleanup is field-specific: finish removes only the current session's
-`current_task`, and archive removes matching `current_task` values across
-sessions. `current_run`, platform/session metadata, and unknown runtime state
-must survive; the session file is removed only when no meaningful state remains.
-
----
-
-## Reachability matrix
-
-Which breadcrumbs actually fire in normal flow:
-
-| Status | Reachability | Notes |
-|--------|--------------|-------|
-| `no_task` | ✅ reachable | Pseudo-status; emitted when `resolve_active_task()` returns no pointer. |
-| `planning` | ✅ reachable | After `cmd_create` (which now auto-sets the session pointer when available) and before `cmd_start`. `planning-inline` is the Codex inline-mode breadcrumb body for the same task status. |
-| `in_progress` | ✅ reachable | After `cmd_start`, until `cmd_archive`. `in_progress-inline` is the Codex inline-mode breadcrumb body for the same task status. |
-| `completed` | ❌ DEAD in normal flow | `cmd_archive` writes `status="completed"` and immediately moves the task dir to `archive/`. The session-pointer cleanup in `clear_task_from_sessions` runs before the move, so the resolver loses the pointer in the same call. The block body in workflow.md is preserved for a future status-transition redesign (e.g. an explicit `in_progress → completed` command) but no current code path produces it. |
-| `stale_<source_type>` | ✅ reachable (rare) | Synthesized when the session pointer references a deleted task directory. Emits the generic body via `build_breadcrumb` because no `stale_*` tag is shipped. |
-
-**Test invariant** (`test/regression.test.ts`): workflow-state blocks must
-preserve the runtime gates that cannot be recovered from model memory:
-`no_task` triages and asks for task-creation consent; planning distinguishes
-lightweight PRD-only tasks from complex tasks requiring `prd.md`, `design.md`,
-and `implement.md`; in-progress keeps the commit step reachable before
-`/trellis:finish-work`. See:
-
-- `test that workflow.md [workflow-state:in_progress] mentions commit (Phase 3.4)`
-- `test that workflow.md [workflow-state:planning] mentions planning artifact gate`
-- `test that workflow.md [workflow-state:no_task] asks for task-creation consent`
-
----
-
-## Custom statuses
-
-Forks can define custom statuses. To do so:
-
-1. Add a `[workflow-state:my-status]...[/workflow-state:my-status]` block to
-   `.trellis/workflow.md` (STATUS charset: `[A-Za-z0-9_-]+`).
-2. Add a lifecycle hook (`task.json.hooks.after_*`) that writes
-   `task.json.status = "my-status"` at the appropriate event. Without a
-   writer, the tag is never read because no task ever carries that status.
-3. (Optional) Add the status to `.trellis/spec/cli/backend/workflow-state-contract.md`'s
-   writer table when shipping the customization to other repos.
-
----
-
-## Hook reachability matrix
-
-The breadcrumb is **intended** for the main AI session. Sub-agents have their
-own context loading paths, but host platforms may still run per-turn breadcrumb
-hooks for child turns or inherit main-session per-turn context. Trellis must not
-rely on categorical breadcrumb invisibility inside sub-agents.
-
-| Channel | Main session | Hook-inject sub-agent | Pull-prelude sub-agent | Extension-backed sub-agent |
-|---------|:------------:|:---------------------:|:----------------------:|:--------------------------:|
-| `<workflow-state>` per-turn breadcrumb | ✅ | ⚠️ possible host-dependent exposure | ⚠️ possible host-dependent exposure | ⚠️ possible host-dependent exposure |
-| `inject-subagent-context` (`implement.jsonl`/`check.jsonl` + task artifact injection) | ❌ | ✅ | ❌ | ❌ |
-| Pull-based prelude (`shared.ts:buildPullBasedPrelude`) | N/A | N/A | ✅ | fallback |
-
-Hook-inject platforms: claude, cursor, codebuddy, droid, kiro (`agentSpawn`), opencode (JS plugin).
-Pull-prelude platforms: codex, gemini, qoder, copilot.
-Extension-backed platforms: pi.
-Hookless: kilo, antigravity, devin.
-
-**Implication**: sub-agent-required guidance must still be propagated through
-`inject-subagent-context` for hook-inject platforms, `buildPullBasedPrelude` for
-pull-prelude platforms, or the Pi extension's prompt builder for
-extension-backed platforms. All paths must use the same task artifact order:
-jsonl entries -> `prd.md` -> `design.md if present` -> `implement.md if
-present`. Breadcrumb text must additionally be safe if a sub-agent sees it:
-main-session dispatch guidance must self-exempt `trellis-implement` /
-`trellis-check` readers so they implement or check directly instead of spawning
-nested Trellis sub-agents.
-
----
-
-## DO
-
-- Edit `.trellis/workflow.md` `[workflow-state:STATUS]` blocks for breadcrumb
-  body changes; never touch the parser scripts.
-- Keep `trellis update` whole-file behavior for hash-tracked `workflow.md`.
-  Breadcrumb tag updates alone are insufficient because platform routing
-  markers outside those tags are runtime input too.
-- Add a writer-table row to this spec when introducing a new status writer.
-- Run the regression tests after editing breadcrumb bodies.
-- When adding a `[required · once]` step to the workflow walkthrough, add a
-  matching enforcement line to that phase's breadcrumb tag block in the
-  same commit.
-
-## DON'T
-
-- Don't add fallback breadcrumb dicts back to `inject-workflow-state.py` or
-  `.js`. Drift is structurally guaranteed.
-- Don't implement special partial merging for `workflow.md` unless every
-  runtime parser that consumes headings, platform blocks, and breadcrumb tags
-  has an explicit compatibility strategy and upgrade test coverage.
-- Don't introduce a `task.json.status` writer without updating this spec.
-- Don't subscribe to `after_finish` to detect task completion — it doesn't
-  mean what you think. Use `after_archive`.
-- Don't silently re-route a writer to a different status without auditing
-  every breadcrumb consumer (`session-start.py`, `inject-workflow-state.py`,
-  `task.py list`, etc.).
-- Don't rely on sub-agents not seeing the breadcrumb. If guidance is sub-agent
-  relevant, propagate it via the appropriate channel above and keep the
-  breadcrumb wording self-exempting.
-
----
-
-## Mandatory triggers (must update this spec when changing)
-
-- Marker syntax (regex / charset)
-- Hook script structural change (parser, output envelope, what reads
-  `task.json.status`)
-- `workflow.md` update semantics in `trellis update`
-- New `task.json.status` writer (any path that mutates the field)
-- Breadcrumb body that changes the contract (e.g. removing a `[required ·
-  once]` enforcement line — flag in PR description)
-- New lifecycle event added to `run_task_hooks`
-- Reachability changes (e.g. wiring a new status transition that makes
-  `completed` reachable)
-
-Cross-reference: `cli/backend/quality-guidelines.md` "Routing Fixes: Audit
-ALL Entry Paths" — that audit pattern is what this contract enforces for
-the breadcrumb subsystem.
+```text
+Wrong: replace malformed session JSON with a new watermark object.
+Correct: preserve malformed bytes and emit no state-changing output.
+```

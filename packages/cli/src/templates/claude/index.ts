@@ -1,16 +1,6 @@
-/**
- * Claude Code templates
- *
- * Directory structure:
- *   claude/
- *   ├── agents/         # Sub-agent definitions
- *   ├── hooks/          # Claude-only opt-in hooks (statusline.py)
- *   └── settings.json   # Settings configuration
- *
- * Default hooks come from shared-hooks/ (unified with other platforms).
- */
+/** Exact Claude Code templates for the active Research payload. */
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -19,14 +9,6 @@ const __dirname = dirname(__filename);
 
 function readTemplate(relativePath: string): string {
   return readFileSync(join(__dirname, relativePath), "utf-8");
-}
-
-function listFiles(dir: string): string[] {
-  try {
-    return readdirSync(join(__dirname, dir));
-  } catch {
-    return [];
-  }
 }
 
 export const settingsTemplate = readTemplate("settings.json");
@@ -41,19 +23,17 @@ export interface SettingsTemplate {
   content: string;
 }
 
-export function getAllAgents(): AgentTemplate[] {
-  const agents: AgentTemplate[] = [];
-  const files = listFiles("agents");
-
-  for (const file of files) {
-    if (file.endsWith(".md")) {
-      const name = file.replace(".md", "");
-      const content = readTemplate(`agents/${file}`);
-      agents.push({ name, content });
-    }
+/** Load the only Claude agent in the active Research payload. */
+export function getResearchWorkerTemplate(): AgentTemplate {
+  const name = "trellis-research-worker";
+  try {
+    return { name, content: readTemplate(`agents/${name}.md`) };
+  } catch (cause) {
+    throw new Error(
+      `Missing required Claude Research worker template: agents/${name}.md`,
+      { cause },
+    );
   }
-
-  return agents;
 }
 
 export function getSettingsTemplate(): SettingsTemplate {
@@ -63,13 +43,7 @@ export function getSettingsTemplate(): SettingsTemplate {
   };
 }
 
-/**
- * Opt-in statusLine hook, installed only via `trellis init --with-statusline`.
- *
- * Lives under claude/hooks/ (not shared-hooks/) because `statusLine` is a
- * Claude-only event, and is intentionally NOT part of `collectTemplates` —
- * `trellis update` must never force-install it on opted-out projects.
- */
+/** Load the optional Claude-only Research status line hook. */
 export function getStatuslineHook(): string {
   return readTemplate("hooks/statusline.py");
 }

@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify retired metadata cannot configure, detect, install, or advertise a host."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Verify migration manifests remain canonical and exact retired keys survive pruning safely."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Verify retired cleanup reuses C02 plan/confirm/revalidate/persist guarantees."}
+{"file":".trellis/spec/cli/backend/uninstall-scrubbers.md","reason":"Verify Trae/ZCode mixed files preserve unrelated and malformed user content."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify current templates win while legacy roots receive backup and empty cleanup only."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify no retired root scan confers ownership and research remains protected."}

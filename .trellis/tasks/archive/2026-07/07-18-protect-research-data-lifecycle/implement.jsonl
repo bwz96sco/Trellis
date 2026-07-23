@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Current uninstall plan/execute contract and recursive .trellis deletion behavior being replaced."}
+{"file":".trellis/spec/cli/backend/uninstall-scrubbers.md","reason":"Structured mixed-file scrubber signatures, malformed-input behavior, and caller boundary."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Update backup, safe-file-delete, migration, manifest, and idempotency pipeline."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Protected-path and safe-file-delete classification contracts."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Atomic ownership writes, destructive-operation gates, and empty-directory safety."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical .trellis/research authority and prohibition on lifecycle deletion/rewrite."}

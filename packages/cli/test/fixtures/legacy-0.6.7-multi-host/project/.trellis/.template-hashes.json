@@ -1,0 +1,30 @@
+{
+  "__version": 2,
+  "hashes": {
+    ".agent/workflows/continue.md": "37e0e4321c8843a71e5782029d0436c8ced69218dd19c782de5ac90263c644de",
+    ".agents/skills/trellis-check/SKILL.md": "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282",
+    ".claude/settings.json": "4996db000f1c3ae67de56c7c5c20ca6d497d92778076356050e039aa39e024af",
+    ".codebuddy/settings.json": "5292ac170d460a60452592747d605b10c2919ad74dda39a1b575b8c6b1e874f6",
+    ".codex/config.toml": "258d12f031e7fce8c0b5f33b2bbea795a452cc163a56c3c567cc767c4ed6828b",
+    ".cursor/hooks.json": "9fca5421a7e10d498bc66ce2161b8fb0a09f75693c144272deb5aa8f4963b04b",
+    ".devin/workflows/trellis-continue.md": "9517e5f391aa0baa1871f0a27fd55b77198c14316b6aad59f799be6e9fb37ca1",
+    ".factory/settings.json": "5292ac170d460a60452592747d605b10c2919ad74dda39a1b575b8c6b1e874f6",
+    ".gemini/settings.json": "6b0656a0523c8620af2ea2e5e9869e4742cd84a8780c69bd65b7a10201c6df2d",
+    ".github/copilot/hooks.json": "7f0ba34c1ffef11c07a58a37fcff1d2de32c08ec8f3128fa2cff6dd1cf96d81e",
+    ".github/hooks/trellis.json": "7f0ba34c1ffef11c07a58a37fcff1d2de32c08ec8f3128fa2cff6dd1cf96d81e",
+    ".grok/commands/trellis-continue.md": "46d3e8ac73d2dc0b64eb8aad4063d7b138d79c71e2e4c76b37648e4665de5a0d",
+    ".kilocode/workflows/continue.md": "46d3e8ac73d2dc0b64eb8aad4063d7b138d79c71e2e4c76b37648e4665de5a0d",
+    ".kiro/agents/trellis.json": "59cf63aac003158a4c2f604454c47c7a918d2092278a9ac4e2922bddaec8ade7",
+    ".omp/extensions/trellis/index.ts": "202a30fc5261682c5fd80ca77093da160c06dea11b2c099480084c8463c1413b",
+    ".opencode/package.json": "e2a11d0652dde2151cb82a16cd571de11b973791012b7c4f3f7f822a147b2328",
+    ".pi/settings.json": "bb8f73d253406c0601b82d01d7dec34be5617389ac8fb461beae652f30cf7583",
+    ".qoder/settings.json": "5292ac170d460a60452592747d605b10c2919ad74dda39a1b575b8c6b1e874f6",
+    ".reasonix/skills/trellis-check/SKILL.md": "227138144f26448ea679277356d6802cc2eda6c4ccf4c425b9fd7fb19bed227a",
+    ".trae/settings.json": "5292ac170d460a60452592747d605b10c2919ad74dda39a1b575b8c6b1e874f6",
+    ".trellis/config.yaml": "61387c5578df9656b96cd8dc007dbf803b1226f7feaeb62c3aff8d3886074195",
+    ".trellis/workflow.md": "3f792e597cdf40d686ee592683fccfcc9b1d036ab40a524d54850b52f640e9fa",
+    ".zcode/cli/agents/trellis-check.md": "61295c741db0dfbe5ad2af400cdd6eb12b8c76e328380b650231c2df1f82c58c",
+    ".zcode/config.json": "46a5603f7e8146f7c4ab1247320c00b2e884b7bf058b4ee95546c72f2f39c9a8",
+    "AGENTS.md": "f32c484d5bc43790135167ca7a372263bfdfe7b73fe76a8b6c5fa710db880420"
+  }
+}

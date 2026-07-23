@@ -1,0 +1,8 @@
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Implement root/worker authority, Codex pull preflight, selected-skill-only routing, bounded work, and strict Result plus Proposal output."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Preserve exact Claude/Codex host inventory and add distinct Codex Research worker installation without generic Task routing."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Preserve automatic TOML collection and ensure dedicated Research worker does not receive generic Task prelude."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Consume exact C07 command/output/error authority without changing canonical state or claiming C09 parity."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Apply deterministic template, init/update ownership, package payload, and opt-in integration test conventions."}
+{"file":".trellis/tasks/07-18-add-bounded-codex-research-worker/research/codex-template-installation.md","reason":"Use exact template/install/update/hash/package flow and no-production-code boundary."}
+{"file":".trellis/tasks/07-18-add-bounded-codex-research-worker/research/bounded-codex-worker-contract.md","reason":"Use exact pointer, preflight, skill, sandbox, work, failure, and Result plus Proposal contract."}
+{"file":".trellis/tasks/07-18-add-bounded-codex-research-worker/research/c08-tests-package-impact.md","reason":"Use deterministic test map, optional real smoke, package gate, specs, and GitNexus boundaries."}

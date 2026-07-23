@@ -1,7 +1,7 @@
 {
   "name": "@mindfoldhq/trellis-core",
   "version": "0.6.7",
-  "description": "Trellis core SDK — channel and task domain primitives consumed by the Trellis CLI and downstream Node services",
+  "description": "Research-first Trellis core SDK with active Research APIs and version-locked Channel, Mem, and Task compatibility surfaces",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -58,8 +58,12 @@
   },
   "keywords": [
     "trellis",
-    "channel",
+    "research",
     "sdk",
+    "compatibility",
+    "channel",
+    "mem",
+    "task",
     "agent",
     "events"
   ],

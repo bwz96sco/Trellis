@@ -1,0 +1,5 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify no child changes canonical ledger or projection authority."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify final CLI and compatibility behavior."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Verify Claude/Codex bounded execution parity."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify upgrade and retirement cleanup remain safe and idempotent."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify research data and modified user files are preserved."}

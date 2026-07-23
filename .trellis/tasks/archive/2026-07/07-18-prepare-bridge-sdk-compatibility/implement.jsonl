@@ -1,0 +1,10 @@
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Defines frozen 0.7 public entry points, CLI/core separation, security compatibility, and test ownership."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Defines clean packed-artifact proof, version lock, package inventory, and CI publication order."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Provides test ownership, deterministic fixture, and assertion conventions for CLI compatibility checks."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Provides subprocess, clean-build, filesystem isolation, and integration-test patterns."}
+{"file":".trellis/spec/core/backend/index.md","reason":"Indexes core package boundaries and retained domain responsibilities."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Guards canonical Research ledger, schema, projections, locking, and mutation authority from incidental SDK work."}
+{"file":".trellis/tasks/archive/2026-07/07-18-freeze-research-compatibility-contracts/design.md","reason":"Captures frozen Research, Dispatch, Task metadata, and core export compatibility decisions."}
+{"file":".trellis/tasks/archive/2026-07/07-18-retire-generic-product-surfaces/prd.md","reason":"Provides final C10 product/core boundary and release prerequisites."}
+{"file":".trellis/tasks/archive/2026-07/07-18-retire-generic-product-surfaces/design.md","reason":"Provides staged retirement ownership and retained 0.7 generic SDK boundary."}
+{"file":".trellis/tasks/archive/2026-07/07-18-prepare-bridge-sdk-compatibility/research/gitnexus-impact-map.md","reason":"Records symbol blast radius and manual package/workflow boundary review before edits."}

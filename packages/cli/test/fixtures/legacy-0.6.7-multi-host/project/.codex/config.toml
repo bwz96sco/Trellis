@@ -1,0 +1,5 @@
+model = "gpt-5"
+
+[agents.trellis-check]
+description = "Trellis check agent"
+config_file = "agents/trellis-check.toml"

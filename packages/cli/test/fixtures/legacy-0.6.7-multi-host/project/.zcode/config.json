@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "command": "python3 .zcode/hooks/inject-workflow-state.py"
+      }
+    ]
+  }
+}

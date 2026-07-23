@@ -2,9 +2,10 @@
 
 This spec applies to `packages/core/src/research/**` and the public
 `@mindfoldhq/trellis-core/research` subpath. It covers domain state, ledger
-storage, projections, lifecycle validation, and portable repository/artifact
-references. CLI commands, workflow selection, hooks, and dispatch orchestration
-are separate contracts.
+storage, projections, lifecycle validation, portable repository/artifact
+references, and the cross-command protection boundary for canonical tracked
+research. CLI command details, workflow selection, hooks, and dispatch
+orchestration remain separate contracts.
 
 ## 1. Scope / Trigger
 
@@ -15,6 +16,7 @@ Use this spec when changing any of these contracts:
 - Research event parsing, reduction, transition validation, or batch commit.
 - `.trellis/research/events.jsonl` or tracked projection layout.
 - `.trellis/.runtime/research` lock, sequence, or projection cache behavior.
+- Quest-stage capability, execution-host validation, and skill fallback resolution.
 - `@mindfoldhq/trellis-core/research` exports.
 
 Authority rules:
@@ -144,7 +146,95 @@ wsp_ rep_ art_ qst_ cmp_ run_ evd_ clm_ evt_ dsp_ res_ prp_ dec_
 exports to the small package root barrel unless a separate compatibility change
 requires it.
 
+Stage capability APIs are pure and public only through the Research subpath:
+
+```ts
+type ResearchExecutionHost = "claude" | "codex";
+
+function parseResearchExecutionHost(value: string): ResearchExecutionHost;
+function normalizeDiscoveredResearchSkillNames(
+  names: readonly string[],
+): ReadonlySet<string>;
+function resolveResearchStageCapability(
+  input: {
+    stage: QuestStage;
+    host: ResearchExecutionHost;
+    discoveredSkillNames: readonly string[];
+  },
+): ResearchStageCapabilityResolution;
+```
+
+`RESEARCH_EXECUTION_HOSTS` is exactly `["claude", "codex"]` and
+`RESEARCH_STAGE_CAPABILITIES` is an exhaustive
+`Readonly<Record<QuestStage, ResearchStageCapabilityDefinition>>`.
+
 ## 3. Contracts
+
+### Quest-stage capability resolution
+
+Quest stage is the sole capability-routing authority. The core descriptor has
+all ten `QuestStage` keys and uses these exact active-stage triples:
+
+| Quest stage | Logical capability | Optional host skill | Bundled fallback |
+| --- | --- | --- | --- |
+| `setup` | `research.setup` | `research-project-setup` | `trellis-research-setup` |
+| `framing` | `research.framing` | `research-quest` | `trellis-research-quest` |
+| `literature` | `research.literature` | `research-literature` | `trellis-research-literature` |
+| `ideation` | `research.ideation` | `research-ideation` | `trellis-research-ideation` |
+| `experiment` | `research.experiment` | `research-experiment` | `trellis-research-experiment` |
+| `computation` | `research.computation` | `research-computation` | `trellis-research-computation` |
+| `theory` | `research.theory` | `research-theory` | `trellis-research-theory` |
+| `audit` | `research.audit` | `research-review-case` | `trellis-research-audit` |
+| `writing` | `research.writing` | `research-writing` | `trellis-research-writing` |
+
+`complete` is an explicit descriptor with `dispatchable: false` and null
+capability, optional skill, and fallback skill. Its resolution also has null
+selected skill and source. Supplied skill names never make it dispatchable.
+
+Host parsing accepts only exact lowercase `claude` and `codex`. Discovery
+normalization trims JavaScript whitespace, drops empty entries, and deduplicates
+exact strings without mutating the caller's array. Matching remains
+case-sensitive and exact: invocation adornments, filesystem paths, namespaces,
+aliases, and skill bodies are not interpreted.
+
+For an active stage, the exact optional skill wins with source `host`; otherwise
+the bundled fallback wins with source `bundled`. Discovery order and duplicates
+cannot affect the result. The resolver performs no filesystem, process, host,
+state, ledger, projection, or mutation access.
+
+Historical `Dispatch.ownerSkill`, `provider`, and `taskRef` remain readable
+schema-v1 compatibility metadata. They are not rewritten, persisted as computed
+capability fields, or used to infer stage. The descriptor and resolution remain
+outside Dispatch events and projections.
+
+### Canonical research lifecycle protection
+
+`.trellis/research` and every descendant are canonical tracked user data, not
+replaceable CLI template output. Repository lifecycle commands must preserve the
+complete tree byte-for-byte unless an explicit research-domain mutation writes a
+new canonical event/projection under the contracts below.
+
+Required CLI boundaries:
+
+- `trellis uninstall` never recursively removes `.trellis`, never reads or
+  deletes a protected research path from manifest ownership, and releases stale
+  research manifest keys. A missing or valid-empty manifest with research as the
+  only `.trellis` content is a friendly no-op; a malformed manifest fails closed.
+- `trellis update` excludes research from template collection, safe-file-delete,
+  backups, hash initialization, orphan cleanup, and empty-directory cleanup.
+- Migration classification and execution reject a protected source or
+  destination and any recursive source/destination ancestor, such as `.trellis`,
+  that would move, replace, or carry canonical research. `--force` cannot bypass
+  this rule.
+- Path checks normalize dot segments and use segment-safe containment before any
+  filesystem operation. A sibling such as `.trellis/research-old` is not
+  protected, while `.trellis/tmp/../research/events.jsonl` is protected.
+- No lifecycle flag or environment override may act as an implicit research
+  purge mechanism.
+
+The complete schema-v1 research fixture, including the ledger, projections,
+repositories, quests, campaigns, runs, evidence, and claims, must survive an
+uninstall byte-for-byte.
 
 ### Event ledger
 
@@ -309,6 +399,10 @@ regression coverage.
 | Event has unknown field, kind, payload field, or schema version | Reject event and ledger |
 | Sequence starts above 1, skips, repeats, or is out of order | Reject with expected and received sequence |
 | Duplicate `eventId` | Reject ledger |
+| Host is blank, case-varied, an installer ID, retired, or arbitrary | Throw `research execution host must be one of: claude, codex` |
+| Discovered skill name has whitespace around an exact optional name | Trim and select the optional host skill |
+| Discovered name is case-varied, adorned, namespaced, path-like, or unrelated | Do not reinterpret it; select the bundled fallback |
+| Stage is `complete`, regardless of discovered names | Return explicit non-dispatchable null resolution |
 | Empty mutation batch | Throw `Research event batch must contain at least one mutation` |
 | Existing `idempotencyKey` | Return prior matching events with `replayed: true`; append nothing |
 | Batch contains valid mutation followed by invalid mutation | Reject whole batch; append nothing |
@@ -323,6 +417,10 @@ regression coverage.
 | Runtime `seq` differs from ledger head | Repair runtime value from ledger head |
 | Projection update fails after append | Throw `ResearchProjectionError(headSeq)`; ledger remains committed |
 | Projection cache is missing/invalid/stale | Status reports stale; rebuild restores projections |
+| Uninstall sees research-only state with a missing or valid-empty manifest | Return a friendly no-op; preserve every research byte |
+| Uninstall sees a malformed ownership manifest | Fail closed; perform no lifecycle writes |
+| Update/safe-delete/hash/backup/cleanup targets `.trellis/research/**` | Skip before filesystem mutation; do not rewrite, delete, hash, or back up the path |
+| Migration source/destination is research or recursively contains research | Classify and execute as protected skip; `--force` cannot bypass |
 | Two writers overlap | Lock serializes commits; ledger remains contiguous |
 
 ## 5. Good / Base / Bad Cases
@@ -364,6 +462,17 @@ await commitResearchBatch({
 Assertions: both events append with contiguous sequences, both projections use
 same ledger head, retry with same idempotency key returns prior events.
 
+Exact optional skill discovery selects the host capability without persistence:
+
+```ts
+resolveResearchStageCapability({
+  stage: "audit",
+  host: "claude",
+  discoveredSkillNames: ["unrelated", " research-review-case "],
+});
+// selectedSkill: "research-review-case", source: "host"
+```
+
 ### Base
 
 Missing ledger or runtime cache:
@@ -374,6 +483,17 @@ const state = await readResearchState(root);   // emptyResearchState()
 ```
 
 No projection or runtime file is required to reconstruct canonical state.
+
+An absent or non-exact optional name selects the bundled stage fallback:
+
+```ts
+resolveResearchStageCapability({
+  stage: "writing",
+  host: "codex",
+  discoveredSkillNames: ["Research-Writing", "/research-writing"],
+});
+// selectedSkill: "trellis-research-writing", source: "bundled"
+```
 
 ### Bad
 
@@ -399,10 +519,31 @@ await commitResearchBatch({
 Required result: reject before append. Do not normalize platform-specific input
 into tracked state.
 
+Do not route from historical Dispatch metadata or dispatch a terminal stage:
+
+```ts
+resolveResearchStageCapability({
+  stage: "complete",
+  host: "claude",
+  discoveredSkillNames: [historicalDispatch.ownerSkill],
+});
+```
+
+Required result: an explicit non-dispatchable resolution with null capability and
+skill fields. `ownerSkill` does not override the current Quest stage.
+
 ## 6. Tests Required
 
 Core research tests live under `packages/core/test/research/`.
 
+- `stage-capabilities.test.ts`
+  - exact exhaustive descriptor for all ten stages and exactly nine active stages.
+  - exact logical capability, optional skill, and bundled fallback triples.
+  - `audit` keeps the asymmetric `research-review-case` optional mapping.
+  - host parser accepts only `claude` and `codex`.
+  - trim/drop-empty/exact-dedupe normalization preserves caller input.
+  - exact optional selection, deterministic bundled fallback, and explicit
+    `complete` rejection.
 - `schema.test.ts`
   - All ID prefixes and entity shapes.
   - Unknown keys rejected.
@@ -436,6 +577,12 @@ Core research tests live under `packages/core/test/research/`.
   - hold first critical section, start second, assert second cannot enter.
   - maximum observed critical-section concurrency equals one.
   - lock releases after callback failure.
+- CLI lifecycle integration (`packages/cli/test/commands/`)
+  - uninstall preserves the complete schema-v1 research fixture byte-for-byte.
+  - research-only missing/valid-empty ownership is a friendly repeated no-op;
+    malformed ownership fails closed.
+  - update migration, safe-delete, backup, hash initialization, and cleanup paths
+    cannot modify research, including dot-segment aliases and recursive ancestors.
 
 Required verification:
 
@@ -450,8 +597,14 @@ pnpm typecheck
 Also verify built consumer import:
 
 ```ts
-import { readResearchState } from "@mindfoldhq/trellis-core/research";
+import {
+  readResearchState,
+  resolveResearchStageCapability,
+} from "@mindfoldhq/trellis-core/research";
 ```
+
+The resolver must not appear on the `@mindfoldhq/trellis-core` root barrel, and
+adding it must not change package export keys.
 
 ## 7. Wrong vs Correct
 
@@ -515,3 +668,25 @@ import { withResearchLock } from "./internal/lock.js";
 ```
 
 Reconsider sharing only after explicit impact analysis and regression proof.
+
+### Wrong: route from historical Dispatch metadata
+
+```ts
+const selectedSkill = dispatch.ownerSkill;
+```
+
+This makes arbitrary schema-v1 compatibility metadata authoritative and can
+route a Quest through a stale or generic owner.
+
+### Correct: resolve from current Quest stage
+
+```ts
+const resolution = resolveResearchStageCapability({
+  stage: quest.stage,
+  host,
+  discoveredSkillNames,
+});
+```
+
+The stage selects the logical capability. Exact optional discovery or the
+bundled fallback selects execution; no result is written into tracked state.

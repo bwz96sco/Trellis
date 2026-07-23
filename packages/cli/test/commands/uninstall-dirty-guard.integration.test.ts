@@ -1,12 +1,11 @@
 /**
- * Integration tests for the uninstall uncommitted-data guard (audit 🔴-7).
+ * Integration tests for legacy uncommitted-data diagnostics and uninstall.
  *
- * `trellis uninstall` deletes the whole .trellis/ tree — including
- * user-authored specs, task PRDs, and journals — with no backup. When those
- * hold uncommitted work, a scripted `--yes` run must fail closed rather than
- * silently destroy them.
+ * `trellis uninstall` no longer recursively removes `.trellis`, so user-authored
+ * specs, task PRDs, journals, and other unowned data survive regardless of git
+ * status or the legacy dirty-uninstall override.
  *
- * Uses real git + real python (no child_process mock) because the guard
+ * Uses real git + real python (no child_process mock) because the diagnostic
  * shells out to `git status` and init shells out to `python3 --version`.
  */
 
@@ -76,9 +75,9 @@ describe.skipIf(!canRun)("uninstall uncommitted-data guard", () => {
     delete process.env.TRELLIS_ALLOW_DIRTY_UNINSTALL;
   });
 
-  it("detects a newly added spec file once the tree is committed", () => {
-    // Commit the init'd tree first so git reports the new file individually
-    // (an entirely-untracked .trellis collapses to the dir name instead).
+  it("detects newly added spec data once the managed tree is committed", () => {
+    // Current Research init does not create generic spec scaffolding, so git may
+    // report the newly untracked spec directory rather than its nested file.
     git(tmpDir, "add", "-A");
     git(tmpDir, "commit", "-q", "-m", "trellis");
 
@@ -87,7 +86,7 @@ describe.skipIf(!canRun)("uninstall uncommitted-data guard", () => {
     fs.writeFileSync(specFile, "my custom spec");
 
     const dirty = collectUncommittedTrellisData(tmpDir);
-    expect(dirty.some((p) => p.includes("spec/my-rules.md"))).toBe(true);
+    expect(dirty.some((p) => p.includes(".trellis/spec"))).toBe(true);
   });
 
   it("reports nothing once the .trellis tree is committed", () => {
@@ -96,25 +95,18 @@ describe.skipIf(!canRun)("uninstall uncommitted-data guard", () => {
     expect(collectUncommittedTrellisData(tmpDir)).toEqual([]);
   });
 
-  it("refuses --yes uninstall while user data is uncommitted, leaving .trellis intact", async () => {
+  it("preserves uncommitted user data without requiring an override", async () => {
     const specFile = path.join(tmpDir, ".trellis", "spec", "my-rules.md");
     fs.mkdirSync(path.dirname(specFile), { recursive: true });
     fs.writeFileSync(specFile, "unsaved work");
 
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(((code?: number) => {
-        throw new Error(`process.exit(${code ?? 0})`);
-      }) as never);
+    await uninstall({ yes: true });
 
-    await expect(uninstall({ yes: true })).rejects.toThrow("process.exit(1)");
-    expect(exitSpy).toHaveBeenCalledWith(1);
-    // Nothing was deleted — the spec and the tree survive.
-    expect(fs.existsSync(specFile)).toBe(true);
+    expect(fs.readFileSync(specFile, "utf-8")).toBe("unsaved work");
     expect(fs.existsSync(path.join(tmpDir, ".trellis"))).toBe(true);
   });
 
-  it("TRELLIS_ALLOW_DIRTY_UNINSTALL=1 overrides the guard", async () => {
+  it("legacy dirty-uninstall override does not enable recursive deletion", async () => {
     const specFile = path.join(tmpDir, ".trellis", "spec", "my-rules.md");
     fs.mkdirSync(path.dirname(specFile), { recursive: true });
     fs.writeFileSync(specFile, "unsaved work");
@@ -122,16 +114,18 @@ describe.skipIf(!canRun)("uninstall uncommitted-data guard", () => {
 
     await uninstall({ yes: true });
 
-    // Override honored — the tree is removed.
-    expect(fs.existsSync(path.join(tmpDir, ".trellis"))).toBe(false);
+    expect(fs.readFileSync(specFile, "utf-8")).toBe("unsaved work");
   });
 
-  it("committed user data does not block --yes uninstall", async () => {
+  it("committed user data also survives --yes uninstall", async () => {
+    const specFile = path.join(tmpDir, ".trellis", "spec", "committed.md");
+    fs.mkdirSync(path.dirname(specFile), { recursive: true });
+    fs.writeFileSync(specFile, "committed user data");
     git(tmpDir, "add", "-A");
     git(tmpDir, "commit", "-q", "-m", "trellis");
 
     await uninstall({ yes: true });
 
-    expect(fs.existsSync(path.join(tmpDir, ".trellis"))).toBe(false);
+    expect(fs.readFileSync(specFile, "utf-8")).toBe("committed user data");
   });
 });

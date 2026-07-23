@@ -1,0 +1,14 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Primary schema-v1 ledger, aggregate, reducer, projection, rebuild, lock, and mutation authority contract to freeze before v2 design."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Current Dispatch command and lifecycle contract plus target activation/approval signatures requiring seven-section depth."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Current Claude/Codex support and generated payload boundary to preserve while freezing Procedure execution."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Current Skill-based worker/hook behavior and immutable worker authority boundary to characterize."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Ownership, hash evidence, update/uninstall preservation, and historical migration rules for separate Research Skill retirement design."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Containment, symlink, regular-file, atomic-write, and no-destructive-write rules for future Procedure/policy materialization."}
+{"file":".trellis/spec/cli/backend/error-handling.md","reason":"Fail-closed command, schema, policy, Procedure, and approval validation conventions."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Current packed Research Skill inventory and clean package audit boundaries to freeze before successor removal."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Golden fixture, deterministic assertion, failure-first, and package ownership conventions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Filesystem snapshot, subprocess, update/uninstall, hook, and packed artifact test patterns."}
+{"file":".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/prd.md","reason":"Parent requirements, frozen boundaries, ordered children, and integration acceptance criteria."}
+{"file":".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/design.md","reason":"Parent canonical control flow, capability, Procedure, approval, worker, cleanup, and rollout design."}
+{"file":".trellis/tasks/archive/2026-07/07-18-freeze-research-compatibility-contracts/design.md","reason":"Existing frozen schema-v1, Dispatch metadata, root authority, and compatibility evidence that C01 must extend without mutation."}
+{"file":".trellis/tasks/archive/2026-07/07-18-prepare-bridge-sdk-compatibility/prd.md","reason":"Frozen 0.7 core export and package bridge boundary excluded from this migration."}

@@ -1,0 +1,8 @@
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Review implementation against complete seven-section adapter/worker contract."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify hook delegates to C07 without altering command authority."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify only current Claude/Codex host behavior changes."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify parity fixtures are production-built and assertions are deterministic."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify no ledger, projection, compatibility, or root-mutation regression."}
+{"file":".trellis/tasks/07-18-converge-claude-codex-dispatch-validation/research/claude-hook-validation-drift.md","reason":"Check every duplicate authority path was removed."}
+{"file":".trellis/tasks/07-18-converge-claude-codex-dispatch-validation/research/shared-dispatch-parity-fixtures.md","reason":"Check complete hard-gate matrix and zero-write proof."}
+{"file":".trellis/tasks/07-18-converge-claude-codex-dispatch-validation/research/c09-convergence-impact-and-options.md","reason":"Check selected compatibility hardening and skill-discovery boundaries."}

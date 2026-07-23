@@ -72,6 +72,24 @@ export { researchPaths } from "./paths.js";
 export type { ResearchPaths } from "./paths.js";
 
 export {
+  RESEARCH_EXECUTION_HOSTS,
+  RESEARCH_STAGE_CAPABILITIES,
+  normalizeDiscoveredResearchSkillNames,
+  parseResearchExecutionHost,
+  resolveResearchStageCapability,
+} from "./stage-capabilities.js";
+export type {
+  DispatchableQuestStage,
+  ResearchExecutionHost,
+  ResearchCapability,
+  OptionalResearchSkill,
+  BundledResearchSkill,
+  ResearchStageCapabilityDefinition,
+  ResolveResearchStageCapabilityInput,
+  ResearchStageCapabilityResolution,
+} from "./stage-capabilities.js";
+
+export {
   workspaceSchema,
   repositorySchema,
   artifactRefSchema,

@@ -1,0 +1,10 @@
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Minimal Research layout, lazy canonical state, and active-versus-source boundary."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Claude/Codex exact generated payload, structured config, hooks, and configure/collect parity."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Shared Research selector, byte parity, neutral skill rendering, and cleanup-inventory separation."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Research-only desired state, safe-delete precedence, no registry refresh, and no migration Task."}
+{"file":".trellis/spec/cli/backend/commands-workflow.md","reason":"Bundled Research ownership, host-addition preservation, and active workflow compatibility."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Final Claude/Codex hook matrix, no-script Research orientation, sequence watermark, and C09 preflight."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Structured user-content preservation and canonical Research protection across narrowed generation."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Exact payload, two-way parity, temp-project snapshots, and zero-write compatibility tests."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/generated-asset-retirement-map.md","reason":"Parent generation target and ownership-before-retirement ordering."}
+{"file":".trellis/tasks/07-20-make-generated-installation-research-only/research/generation-boundary-and-hook-matrix.md","reason":"Child B exact payload, hook decision, symbol boundary, risks, and test separation."}

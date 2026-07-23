@@ -1,0 +1,8 @@
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Executable Claude/Codex worker trigger, preflight, authority, failure, and output contracts."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Canonical C07 command signature, provider-neutral context, warning, and error contract."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Current Claude and Codex adapter/install boundaries."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Test fixture and template assertion conventions."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical ledger, Dispatch compatibility, lifecycle, and root-only mutation authority."}
+{"file":".trellis/tasks/07-18-converge-claude-codex-dispatch-validation/research/claude-hook-validation-drift.md","reason":"Exact duplicate-validator drift and LOW GitNexus impact report."}
+{"file":".trellis/tasks/07-18-converge-claude-codex-dispatch-validation/research/shared-dispatch-parity-fixtures.md","reason":"Required canonical fixture architecture and parity matrix."}
+{"file":".trellis/tasks/07-18-converge-claude-codex-dispatch-validation/research/c09-convergence-impact-and-options.md","reason":"Selected exact-envelope, denial, two-pass C07, and dynamic Skill design."}

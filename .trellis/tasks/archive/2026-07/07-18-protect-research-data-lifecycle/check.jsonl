@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Verify grouped ownership plan and research-preserving execution match documented behavior."}
+{"file":".trellis/spec/cli/backend/uninstall-scrubbers.md","reason":"Verify mixed/malformed files preserve user content and never throw."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify dry-run, backup, manifest, and idempotency guarantees."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Verify research paths cannot be migration source, destination, or safe-delete target."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify no recursive canonical-data deletion and all writes are atomic."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify canonical research ledger/projections remain byte-identical."}

@@ -1,0 +1,7 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Define exhaustive stage capability, host validation, name normalization, pure resolution, compatibility, and no-persistence contracts."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Define public `/research` subpath export and root non-leak/package-key compatibility."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Preserve current duplicate hook maps until C09 while documenting core authority boundary."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Apply table-driven, compatibility-fixture, and built-package export test conventions."}
+{"file":".trellis/tasks/07-18-add-research-stage-capability-resolver/research/core-stage-capability-map.md","reason":"Use exact stage/schema/Dispatch/map/export source map and GitNexus impact findings."}
+{"file":".trellis/tasks/07-18-add-research-stage-capability-resolver/research/optional-skill-resolution-contract.md","reason":"Use exact capability/skill table, host vocabulary, normalization, selection, and child boundaries."}
+{"file":".trellis/tasks/07-18-add-research-stage-capability-resolver/research/c06-tests-exports-and-boundaries.md","reason":"Use focused tests, compatibility fixtures, export checks, forbidden scope, and verification commands."}

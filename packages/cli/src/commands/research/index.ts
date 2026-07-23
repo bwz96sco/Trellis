@@ -30,6 +30,10 @@ import {
   type ReviewResearchProposalOptions,
 } from "./dispatch-command.js";
 import {
+  getResearchDispatchContext,
+  type GetResearchDispatchContextOptions,
+} from "./dispatch-context.js";
+import {
   addResearchRepository,
   bindResearchRepository,
   listResearchRepositories,
@@ -38,12 +42,6 @@ import {
   type BindResearchRepositoryOptions,
   type ResolveResearchRepositoryOptions,
 } from "./repository.js";
-import {
-  linkResearchTask,
-  unlinkResearchTask,
-  type LinkResearchTaskOptions,
-  type UnlinkResearchTaskOptions,
-} from "./task.js";
 import {
   parseCampaignIdArgument,
   parseCampaignStatusArgument,
@@ -141,12 +139,9 @@ interface RepositoryBindCliOptions extends ResearchOutputOptions {
   path: string;
 }
 
-interface TaskLinkCliOptions extends ResearchOutputOptions {
-  quest?: QuestId;
-  campaign?: CampaignId;
-  run?: RunId;
-  dispatch?: DispatchId;
-  repository?: RepositoryId;
+interface DispatchContextCliOptions extends ResearchOutputOptions {
+  host?: string;
+  skillName: string[];
 }
 
 interface DispatchPrepareCliOptions extends ResearchMutationOptions {
@@ -266,6 +261,18 @@ function renderExtendedResearchResult(result: unknown, json: boolean): void {
     return;
   }
   const value = result as Record<string, unknown>;
+  if (value.command === "research dispatch context" && value.valid === true) {
+    const dispatch = value.dispatch as { id: string };
+    const capability = value.capability as {
+      stage: string;
+      selectedSkill: string;
+    };
+    const repository = value.repository as { id: string };
+    console.log(
+      `research dispatch context: ${dispatch.id} host=${String(value.host)} stage=${capability.stage} skill=${capability.selectedSkill} head=${String(value.ledgerHead)} repository=${repository.id}`,
+    );
+    return;
+  }
   if ("events" in value || "counts" in value || "valid" in value) {
     renderResearchResult(result as ResearchCommandResult, false);
     return;
@@ -297,15 +304,6 @@ function renderExtendedResearchResult(result: unknown, json: boolean): void {
   }
   if (value.command === "research repo bind") {
     console.log(`${String(value.repositoryId)} bound=${String(value.path)}`);
-    return;
-  }
-  if (
-    value.command === "research task link" ||
-    value.command === "research task unlink"
-  ) {
-    console.log(
-      `${String(value.command)}: ${String(value.task)} changed=${String(value.changed)}`,
-    );
     return;
   }
   console.log(JSON.stringify(result));
@@ -437,60 +435,6 @@ export function registerResearchCommand(program: Command): void {
       );
     },
   );
-
-  const task = research
-    .command("task")
-    .description("Manage optional Task links to canonical research state");
-
-  addOutputOptions(
-    task
-      .command("link")
-      .description("Link an active Task to canonical research entities")
-      .argument("<task>", "direct child directory name under .trellis/tasks")
-      .option("--quest <quest-id>", "quest ID", parseQuestIdArgument)
-      .option(
-        "--campaign <campaign-id>",
-        "campaign ID",
-        parseCampaignIdArgument,
-      )
-      .option("--run <run-id>", "run ID", parseRunIdArgument)
-      .option(
-        "--dispatch <dispatch-id>",
-        "dispatch ID",
-        parseDispatchIdArgument,
-      )
-      .option(
-        "--repository <repository-id>",
-        "repository ID",
-        parseRepositoryIdArgument,
-      ),
-  ).action(async (taskName: string, options: TaskLinkCliOptions) => {
-    await runAction(options.json, () =>
-      linkResearchTask({
-        ...options,
-        task: taskName,
-        questId: options.quest,
-        campaignId: options.campaign,
-        runId: options.run,
-        dispatchId: options.dispatch,
-        repositoryId: options.repository,
-      } as LinkResearchTaskOptions),
-    );
-  });
-
-  addOutputOptions(
-    task
-      .command("unlink")
-      .description("Remove only the Task's research metadata link")
-      .argument("<task>", "direct child directory name under .trellis/tasks"),
-  ).action(async (taskName: string, options: ResearchOutputOptions) => {
-    await runAction(options.json, () =>
-      unlinkResearchTask({
-        ...options,
-        task: taskName,
-      } as UnlinkResearchTaskOptions),
-    );
-  });
 
   const quest = research.command("quest").description("Manage research quests");
 
@@ -780,6 +724,32 @@ export function registerResearchCommand(program: Command): void {
   const dispatch = research
     .command("dispatch")
     .description("Prepare and review bounded research dispatches");
+
+  addOutputOptions(
+    dispatch
+      .command("context")
+      .description("Validate and emit bounded read-only Dispatch context")
+      .argument(
+        "<request-file>",
+        "canonical .trellis/research/dispatches/<dsp-id>/request.json path",
+      )
+      .option("--host <host>", "execution host: claude or codex (required)")
+      .option(
+        "--skill-name <name>",
+        "discovered canonical skill name (repeatable)",
+        collectString,
+        [] as string[],
+      ),
+  ).action(async (requestFile: string, options: DispatchContextCliOptions) => {
+    await runAction(options.json, () =>
+      getResearchDispatchContext({
+        ...options,
+        requestFile,
+        host: options.host ?? "",
+        discoveredSkillNames: options.skillName,
+      } as GetResearchDispatchContextOptions),
+    );
+  });
 
   addMutationOptions(
     dispatch

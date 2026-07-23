@@ -1,0 +1,8 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify ledger authority, C06 stage resolution, schema-v1 compatibility, and absence of persisted context fields."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify exact command/output/error contracts and all validation phases."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Verify worker/root authority, no artifact bodies, no premature Claude hook changes, and C08-C09 boundary."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Audit strict zero-write behavior, request/repository containment, and symlink-parent handling."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Audit focused/full coverage, deterministic fixtures, and exact assertion quality."}
+{"file":".trellis/tasks/07-18-add-readonly-dispatch-context/research/dispatch-validation-and-readonly-boundary.md","reason":"Cross-check hierarchy, metadata compatibility, mutation exclusions, and impact findings."}
+{"file":".trellis/tasks/07-18-add-readonly-dispatch-context/research/repository-artifact-bounded-context.md","reason":"Cross-check Repository/artifact/path semantics, expectedOutputs text compatibility, and output bounds."}
+{"file":".trellis/tasks/07-18-add-readonly-dispatch-context/research/c07-cli-output-tests-and-impact.md","reason":"Cross-check exact JSON envelopes, exit behavior, discovery boundary, test matrix, and changed-symbol scope."}

@@ -1,0 +1,18 @@
+{
+  "appliedEventIds": [
+    "evt_00000000-0000-4000-8000-000000000010"
+  ],
+  "decision": {
+    "createdAt": "2026-07-18T10:11:00.000Z",
+    "id": "dec_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "outcome": "accept",
+    "proposalId": "prp_99999999-9999-4999-8999-999999999999",
+    "rationale": "The golden output satisfies the fixed checks",
+    "reviewer": "root-reviewer",
+    "selectedOperationIndexes": [
+      0
+    ]
+  },
+  "rejectedOperationIndexes": [],
+  "schemaVersion": 1
+}

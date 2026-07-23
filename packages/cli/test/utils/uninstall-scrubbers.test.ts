@@ -14,6 +14,7 @@ import {
   scrubPiSettings,
   scrubCodexConfigToml,
   scrubManagedMarkdownBlock,
+  scrubZcodeConfigJson,
 } from "../../src/utils/uninstall-scrubbers.js";
 
 const CLAUDE_DELETE_PATHS = [
@@ -131,14 +132,46 @@ describe("scrubHooksJson — nested schema", () => {
       },
     };
 
-    const { content, fullyEmpty } = scrubHooksJson(
+    const { content, fullyEmpty, outcome } = scrubHooksJson(
       JSON.stringify(input, null, 2),
       CLAUDE_DELETE_PATHS,
       "nested",
     );
+    expect(outcome).toBe("scrubbed");
     expect(fullyEmpty).toBe(true);
     // Content should still be valid JSON (an empty object).
     expect(JSON.parse(content)).toEqual({});
+  });
+
+  it("reports malformed and preserves bytes for invalid JSON", () => {
+    const input = '{"hooks":';
+    const result = scrubHooksJson(input, CLAUDE_DELETE_PATHS, "nested");
+
+    expect(result).toEqual({
+      content: input,
+      fullyEmpty: false,
+      outcome: "malformed",
+    });
+  });
+
+  it("reports unchanged and preserves bytes when no Trellis hook exists", () => {
+    const input = '{"model":"custom"}\n';
+    const result = scrubHooksJson(input, CLAUDE_DELETE_PATHS, "nested");
+
+    expect(result.outcome).toBe("unchanged");
+    expect(result.content).toBe(input);
+    expect(result.fullyEmpty).toBe(false);
+  });
+
+  it("reports malformed and preserves bytes for an invalid nested hook entry", () => {
+    const input = '{"hooks":{"SessionStart":[{"hooks":[42]}]}}\n';
+    const result = scrubHooksJson(input, CLAUDE_DELETE_PATHS, "nested");
+
+    expect(result).toEqual({
+      content: input,
+      fullyEmpty: false,
+      outcome: "malformed",
+    });
   });
 
   it("does NOT strip hook entries that merely mention a deleted path inside a string argument", () => {
@@ -172,7 +205,20 @@ describe("scrubHooksJson — nested schema", () => {
     expect(fullyEmpty).toBe(false);
   });
 
-  it("collapses empty matcher blocks (whole block dropped when its hooks list goes to 0)", () => {
+  it("preserves an originally empty matcher block as unchanged", () => {
+    const input =
+      '{"hooks":{"SessionStart":[{"matcher":"startup","hooks":[]}]}}\n';
+
+    const result = scrubHooksJson(input, CLAUDE_DELETE_PATHS, "nested");
+
+    expect(result).toEqual({
+      content: input,
+      fullyEmpty: false,
+      outcome: "unchanged",
+    });
+  });
+
+  it("collapses matcher blocks whose Trellis hooks are removed", () => {
     const input = {
       hooks: {
         SessionStart: [
@@ -256,7 +302,7 @@ describe("scrubHooksJson — flat schema", () => {
     expect(fullyEmpty).toBe(false);
   });
 
-  it("matches Copilot bash/powershell command fields", () => {
+  it("matches any Copilot bash/powershell command field", () => {
     const copilotPaths = [
       ".github/copilot/hooks/session-start.py",
       ".github/copilot/hooks/inject-workflow-state.py",
@@ -273,7 +319,7 @@ describe("scrubHooksJson — flat schema", () => {
         userPromptSubmitted: [
           {
             type: "command",
-            bash: "python3 .github/copilot/hooks/inject-workflow-state.py",
+            bash: "python3 .github/copilot/hooks/user-owned.py",
             powershell:
               "python3 .github/copilot/hooks/inject-workflow-state.py",
             timeoutSec: 5,
@@ -304,6 +350,186 @@ describe("scrubHooksJson — flat schema", () => {
       "flat",
     );
     expect(fullyEmpty).toBe(true);
+  });
+});
+
+describe("scrubHooksJson — retired Trae direct-event compatibility", () => {
+  const ownedPaths = [
+    ".trellis/hooks/session-start.py",
+    ".trellis/hooks/inject-workflow-state.py",
+  ];
+
+  it("scrubs exact Trellis hooks from mixed legacy settings", () => {
+    const input = JSON.stringify({
+      theme: "dark",
+      hooks: {
+        SessionStart: [
+          { command: "python3 .trellis/hooks/session-start.py" },
+          { command: "node tools/user-session-start.mjs" },
+        ],
+      },
+    });
+    const result = scrubHooksJson(input, ownedPaths, "flat");
+
+    expect(result.outcome).toBe("scrubbed");
+    expect(JSON.parse(result.content)).toEqual({
+      theme: "dark",
+      hooks: {
+        SessionStart: [{ command: "node tools/user-session-start.mjs" }],
+      },
+    });
+  });
+
+  it("preserves malformed legacy settings byte-for-byte", () => {
+    const input = '{"hooks":{"SessionStart":[42]}}\n';
+    expect(scrubHooksJson(input, ownedPaths, "flat")).toEqual({
+      content: input,
+      fullyEmpty: false,
+      outcome: "malformed",
+    });
+  });
+
+  it("preserves unchanged user-only legacy settings byte-for-byte", () => {
+    const input =
+      '{"hooks":{"SessionStart":[{"command":"node user.js"}]},"theme":"dark"}\n';
+    const result = scrubHooksJson(input, ownedPaths, "flat");
+
+    expect(result.outcome).toBe("unchanged");
+    expect(result.content).toBe(input);
+  });
+
+  it("is idempotent after scrubbing legacy settings", () => {
+    const input = JSON.stringify({
+      hooks: {
+        UserPromptSubmit: [
+          { command: "python3 .trellis/hooks/inject-workflow-state.py" },
+        ],
+      },
+      userField: true,
+    });
+    const first = scrubHooksJson(input, ownedPaths, "flat");
+    const second = scrubHooksJson(first.content, ownedPaths, "flat");
+
+    expect(first.outcome).toBe("scrubbed");
+    expect(second).toEqual({
+      content: first.content,
+      fullyEmpty: false,
+      outcome: "unchanged",
+    });
+  });
+});
+
+describe("scrubZcodeConfigJson", () => {
+  const ownedPaths = [
+    ".zcode/hooks/session-start.py",
+    ".zcode/hooks/inject-workflow-state.py",
+  ];
+
+  it("scrubs current matcher-block events and preserves user fields/events", () => {
+    const input = {
+      model: "user-model",
+      hooks: {
+        enabled: true,
+        events: {
+          SessionStart: [
+            {
+              matcher: "startup|clear|compact",
+              hooks: [
+                {
+                  type: "command",
+                  command:
+                    'python3 "${ZCODE_PROJECT_DIR}/.zcode/hooks/session-start.py"',
+                },
+                { type: "command", command: "python3 tools/user-hook.py" },
+              ],
+            },
+          ],
+          CustomEvent: [
+            {
+              hooks: [{ type: "command", command: "python3 tools/custom.py" }],
+            },
+          ],
+        },
+      },
+    };
+
+    const result = scrubZcodeConfigJson(
+      JSON.stringify(input, null, 2),
+      ownedPaths,
+    );
+    const parsed = JSON.parse(result.content);
+
+    expect(result.outcome).toBe("scrubbed");
+    expect(result.fullyEmpty).toBe(false);
+    expect(parsed.model).toBe("user-model");
+    expect(parsed.hooks.enabled).toBe(true);
+    expect(parsed.hooks.events.SessionStart[0].hooks).toEqual([
+      { type: "command", command: "python3 tools/user-hook.py" },
+    ]);
+    expect(parsed.hooks.events.CustomEvent).toEqual(
+      input.hooks.events.CustomEvent,
+    );
+  });
+
+  it("scrubs the frozen direct-event schema", () => {
+    const input = {
+      hooks: {
+        UserPromptSubmit: [
+          {
+            command: "python3 .zcode/hooks/inject-workflow-state.py",
+          },
+        ],
+      },
+    };
+
+    const result = scrubZcodeConfigJson(
+      JSON.stringify(input, null, 2),
+      ownedPaths,
+    );
+
+    expect(result.outcome).toBe("scrubbed");
+    expect(result.fullyEmpty).toBe(true);
+    expect(JSON.parse(result.content)).toEqual({});
+  });
+
+  it("preserves malformed recognized containers byte-for-byte", () => {
+    const input = '{"hooks":{"events":{"SessionStart":[{"hooks":[42]}]}}}\n';
+    const result = scrubZcodeConfigJson(input, ownedPaths);
+
+    expect(result).toEqual({
+      content: input,
+      fullyEmpty: false,
+      outcome: "malformed",
+    });
+  });
+
+  it("preserves user-only content byte-for-byte", () => {
+    const input =
+      '{"hooks":{"enabled":true,"events":{"Custom":[{"hooks":[{"command":"node user.js"}]}]}},"theme":"dark"}\n';
+    const result = scrubZcodeConfigJson(input, ownedPaths);
+
+    expect(result.outcome).toBe("unchanged");
+    expect(result.content).toBe(input);
+  });
+
+  it("is idempotent after a successful scrub", () => {
+    const input = JSON.stringify({
+      hooks: {
+        UserPromptSubmit: [
+          { command: "python3 .zcode/hooks/inject-workflow-state.py" },
+        ],
+      },
+      userField: true,
+    });
+    const first = scrubZcodeConfigJson(input, ownedPaths);
+    const second = scrubZcodeConfigJson(first.content, ownedPaths);
+
+    expect(first.outcome).toBe("scrubbed");
+    expect(second).toEqual({
+      content: first.content,
+      fullyEmpty: false,
+      outcome: "unchanged",
+    });
   });
 });
 
@@ -381,7 +607,7 @@ Also keep this.
 
   it("leaves malformed marker pairs untouched", () => {
     const input = `${TEST_BLOCK_START}\nmanaged\n`;
-    const { content, fullyEmpty } = scrubManagedMarkdownBlock(
+    const { content, fullyEmpty, outcome } = scrubManagedMarkdownBlock(
       input,
       TEST_BLOCK_START,
       TEST_BLOCK_END,
@@ -389,6 +615,22 @@ Also keep this.
 
     expect(content).toBe(input);
     expect(fullyEmpty).toBe(false);
+    expect(outcome).toBe("malformed");
+  });
+
+  it("reports unchanged when the managed block is absent", () => {
+    const input = "# User-owned markdown\n";
+    const result = scrubManagedMarkdownBlock(
+      input,
+      TEST_BLOCK_START,
+      TEST_BLOCK_END,
+    );
+
+    expect(result).toEqual({
+      content: input,
+      fullyEmpty: false,
+      outcome: "unchanged",
+    });
   });
 });
 

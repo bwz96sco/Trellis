@@ -1,0 +1,9 @@
+{"file":".trellis/spec/cli/backend/commands-workflow.md","reason":"Verify init has no workflow-selection surface while compatibility workflow command remains intact."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Audit ownership evidence, migration ordering, conflicts, metadata transfer, and retry/idempotency."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Verify fresh output matches minimal Research bridge allowlist without deciding C10 package deletion."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify all Claude/Codex init modes share Research behavior and removed flags fail before writes."}
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Verify workflow bytes, selection, hashes, SessionStart, and per-turn routing cannot disagree."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify modified/custom/invalid/concurrent states and `.trellis/research` remain protected."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify fresh init does not invent Research workspace identity or mutate canonical state."}
+{"file":".trellis/tasks/07-18-make-research-sole-workflow/research/pristine-native-workflow-migration.md","reason":"Check every classifier row, apply outcome, idempotency case, and rollback boundary."}
+{"file":".trellis/tasks/07-18-make-research-sole-workflow/research/c05-tests-specs-and-boundaries.md","reason":"Check focused coverage, package gates, and no C10 scope leakage."}

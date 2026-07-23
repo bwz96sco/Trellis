@@ -70,6 +70,30 @@ describe("cleanupEmptyDirs", () => {
     expect(fs.existsSync(path.join(tmpDir, ".trellis"))).toBe(true);
   });
 
+  it("does not remove protected research directories", () => {
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "research", "empty"), {
+      recursive: true,
+    });
+
+    cleanupEmptyDirs(tmpDir, ".trellis/research/empty");
+
+    expect(
+      fs.existsSync(path.join(tmpDir, ".trellis", "research", "empty")),
+    ).toBe(true);
+  });
+
+  it("does not confuse research-old with protected research", () => {
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "research-old", "empty"), {
+      recursive: true,
+    });
+
+    cleanupEmptyDirs(tmpDir, ".trellis/research-old/empty");
+
+    expect(
+      fs.existsSync(path.join(tmpDir, ".trellis", "research-old", "empty")),
+    ).toBe(false);
+  });
+
   it("recursively cleans parent directories but stops at root", () => {
     // Create .trellis/scripts/multi_agent/ (all empty)
     fs.mkdirSync(path.join(tmpDir, ".trellis", "scripts", "multi_agent"), {
@@ -79,13 +103,9 @@ describe("cleanupEmptyDirs", () => {
 
     // multi_agent and scripts should be removed (both empty)
     expect(
-      fs.existsSync(
-        path.join(tmpDir, ".trellis", "scripts", "multi_agent"),
-      ),
+      fs.existsSync(path.join(tmpDir, ".trellis", "scripts", "multi_agent")),
     ).toBe(false);
-    expect(
-      fs.existsSync(path.join(tmpDir, ".trellis", "scripts")),
-    ).toBe(false);
+    expect(fs.existsSync(path.join(tmpDir, ".trellis", "scripts"))).toBe(false);
     // .trellis root must survive
     expect(fs.existsSync(path.join(tmpDir, ".trellis"))).toBe(true);
   });
@@ -93,6 +113,22 @@ describe("cleanupEmptyDirs", () => {
   it("handles non-existent directory gracefully", () => {
     // Should not throw
     expect(() => cleanupEmptyDirs(tmpDir, ".claude/nonexistent")).not.toThrow();
+  });
+
+  it.each([
+    ".iflow/legacy",
+    ".windsurf/workflows/legacy",
+    ".zcode/cli/agents/legacy",
+  ])("cleans empty migration parents under legacy root %s", (relativePath) => {
+    fs.mkdirSync(path.join(tmpDir, ...relativePath.split("/")), {
+      recursive: true,
+    });
+
+    cleanupEmptyDirs(tmpDir, relativePath);
+
+    expect(fs.existsSync(path.join(tmpDir, ...relativePath.split("/")))).toBe(
+      false,
+    );
   });
 });
 
@@ -240,6 +276,8 @@ describe("shouldExcludeFromBackup", () => {
     ".trellis/spec/cli/backend/index.md",
     ".trellis/backlog/idea.md",
     ".trellis/agent-traces/trace.jsonl",
+    ".trellis/research/events.jsonl",
+    ".trellis/research/quests/qst-1/quest.json",
   ])("excludes user data %s", (p) => {
     expect(shouldExcludeFromBackup(p)).toBe(true);
   });
@@ -255,6 +293,7 @@ describe("shouldExcludeFromBackup", () => {
     ".claude/skills/trellis-check/SKILL.md",
     ".trellis/workflow.md",
     ".trellis/scripts/get_context.py",
+    ".trellis/research-old/generated.txt",
     ".agents/skills/trellis-check/SKILL.md",
   ])("includes managed file %s", (p) => {
     expect(shouldExcludeFromBackup(p)).toBe(false);
@@ -348,6 +387,7 @@ describe("renameTracesToJournal", () => {
 
 import {
   classifyMigrations,
+  collectSafeFileDeletes,
   dirHasManifestEntries,
 } from "../../src/commands/update.js";
 import type { MigrationItem } from "../../src/types/migration.js";
@@ -375,9 +415,70 @@ describe("dirHasManifestEntries", () => {
 
   it("does not match a sibling dir that shares a prefix string", () => {
     // ".devin" must not match ".devinX/..."
-    expect(
-      dirHasManifestEntries(".devin", { ".devinX/a.md": "h" }),
-    ).toBe(false);
+    expect(dirHasManifestEntries(".devin", { ".devinX/a.md": "h" })).toBe(
+      false,
+    );
+  });
+});
+
+describe("collectSafeFileDeletes research protection", () => {
+  it("lets current template ownership override historical safe-delete entries", () => {
+    const item: MigrationItem = {
+      type: "safe-file-delete",
+      from: ".agents/skills/trellis-check/SKILL.md",
+      allowed_hashes: ["unused"],
+    };
+
+    const result = collectSafeFileDeletes(
+      [item],
+      "/path/that/does/not/exist",
+      [],
+      new Set([item.from]),
+    );
+
+    expect(result).toEqual([]);
+  });
+
+  it("classifies protected research before filesystem access", () => {
+    const item: MigrationItem = {
+      type: "safe-file-delete",
+      from: ".trellis/research/events.jsonl",
+      allowed_hashes: ["unused"],
+    };
+
+    const result = collectSafeFileDeletes(
+      [item],
+      "/path/that/does/not/exist",
+      [],
+      new Set(),
+    );
+
+    expect(result).toEqual([{ item, action: "skip-protected" }]);
+  });
+
+  it("does not segment-prefix match research-old", () => {
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "trellis-safe-delete-"),
+    );
+    try {
+      const relativePath = ".trellis/research-old/generated.txt";
+      const fullPath = path.join(tmpDir, relativePath);
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, "generated\n");
+      const item: MigrationItem = {
+        type: "safe-file-delete",
+        from: relativePath,
+        allowed_hashes: [
+          "a4d26868017c0ccffe2efe50944ef4211834660b0655ec3fe38f7c2d9c0d8cc1",
+        ],
+      };
+
+      const result = collectSafeFileDeletes([item], tmpDir, [], new Set());
+
+      expect(result[0].action).not.toBe("skip-protected");
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -417,5 +518,84 @@ describe("classifyMigrations rename-dir ownership gate", () => {
     expect(result.skip).toHaveLength(0);
     expect(result.auto).toHaveLength(1);
     expect(result.auto[0].to).toBe(".devin/workflows");
+  });
+
+  it("skips every migration whose source is protected research", () => {
+    const source = path.join(tmpDir, ".trellis", "research", "events.jsonl");
+    fs.mkdirSync(path.dirname(source), { recursive: true });
+    fs.writeFileSync(source, "ledger\n");
+
+    const result = classifyMigrations(
+      [{ type: "delete", from: ".trellis/research/events.jsonl" }],
+      tmpDir,
+      { ".trellis/research/events.jsonl": "hash" },
+      new Map(),
+    );
+
+    expect(result.skip).toHaveLength(1);
+    expect(result.auto).toHaveLength(0);
+    expect(result.confirm).toHaveLength(0);
+  });
+
+  it("skips rename migrations targeting protected research", () => {
+    const source = path.join(tmpDir, ".windsurf", "workflows", "user.md");
+    expect(fs.existsSync(source)).toBe(true);
+
+    const result = classifyMigrations(
+      [
+        {
+          type: "rename",
+          from: ".windsurf/workflows/user.md",
+          to: ".trellis/research/imported.md",
+        },
+      ],
+      tmpDir,
+      { ".windsurf/workflows/user.md": "hash" },
+      new Map(),
+    );
+
+    expect(result.skip).toHaveLength(1);
+    expect(result.auto).toHaveLength(0);
+    expect(result.confirm).toHaveLength(0);
+  });
+
+  it("resolves dot segments before checking a research destination", () => {
+    const result = classifyMigrations(
+      [
+        {
+          type: "rename",
+          from: ".windsurf/workflows/user.md",
+          to: ".trellis/tmp/../research/imported.md",
+        },
+      ],
+      tmpDir,
+      { ".windsurf/workflows/user.md": "hash" },
+      new Map(),
+    );
+
+    expect(result.skip).toHaveLength(1);
+    expect(result.auto).toHaveLength(0);
+  });
+
+  it("skips recursive migrations that would move a research ancestor", () => {
+    fs.mkdirSync(path.join(tmpDir, ".trellis", "research"), {
+      recursive: true,
+    });
+
+    const result = classifyMigrations(
+      [
+        {
+          type: "rename-dir",
+          from: ".trellis",
+          to: ".trellis-old",
+        },
+      ],
+      tmpDir,
+      { ".trellis/workflow.md": "hash" },
+      new Map(),
+    );
+
+    expect(result.skip).toHaveLength(1);
+    expect(result.auto).toHaveLength(0);
   });
 });

@@ -1,0 +1,18 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check exact retained Research and Dispatch command sets with no Task subtree."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Check generic source/templates are absent while minimal Research files remain."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check exact host payload and configure/collect parity after broad API removal."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Check workflow classification, cleanup order, idempotency, and protected state."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Check historical user content and Research state survive normal uninstall."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Check frozen cleanup inventory and migration hashes remain sole delete authority."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check removed parser inputs fail before writes and unknown paths remain unowned."}
+{"file":".trellis/spec/cli/backend/uninstall-scrubbers.md","reason":"Check structured config narrowing preserves unrelated user content."}
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Check strict historical native/research metadata parsing after active switching removal."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check C07/C09 exact envelope, authority, warnings, and provider parity remain fail-closed."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Check clean dist and packed tarball required/forbidden inventory."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Check every 0.7 root/subpath export still resolves unchanged."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check focused/full matrix uses deterministic exact assertions and no stale dist."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check both bin aliases and parser failures against byte-identical fixtures."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check schema-v1, deterministic projections, and canonical Research state remain unchanged."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/c10-contract-boundaries-and-decomposition.md","reason":"Check Child C stays within C10 and does not absorb core/docs/marketplace work."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/generated-asset-retirement-map.md","reason":"Check every retained/retired asset matches approved ownership classification."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/generic-cli-surface-map.md","reason":"Check command, source, utility, test, and spec deletions are complete without overreach."}

@@ -45,7 +45,6 @@ import {
   recordResearchDispatchResult,
 } from "../../src/commands/research/dispatch-command.js";
 import { addResearchRepository } from "../../src/commands/research/repository.js";
-import { linkResearchTask } from "../../src/commands/research/task.js";
 import { update } from "../../src/commands/update.js";
 import { PATHS } from "../../src/constants/paths.js";
 import { VERSION } from "../../src/constants/version.js";
@@ -134,27 +133,6 @@ function isGitIgnored(root: string, relativePath: string): boolean {
     spawnSync("git", ["-C", root, "check-ignore", "-q", relativePath])
       .status === 0
   );
-}
-
-function runTaskScript(
-  root: string,
-  contextId: string,
-  ...args: string[]
-): string {
-  const script = path.join(root, ".trellis", "scripts", "task.py");
-  return execFileSync(
-    "uv",
-    ["run", "--no-project", "python", script, ...args],
-    {
-      cwd: root,
-      encoding: "utf-8",
-      env: {
-        ...process.env,
-        TRELLIS_CONTEXT_ID: contextId,
-        UV_CACHE_DIR: path.join(root, ".trellis", ".runtime", "uv-cache"),
-      },
-    },
-  ).trim();
 }
 
 function writeResultProposal(
@@ -266,8 +244,6 @@ describe("research workflow end-to-end closure", () => {
     await init({
       yes: true,
       force: true,
-      user: "research-workflow-test",
-      workflow: "research",
     });
     expect(loadWorkflowSelection(root)).toEqual({
       kind: "bundled",
@@ -427,22 +403,7 @@ describe("research workflow end-to-end closure", () => {
       status: "succeeded",
     });
 
-    const taskRef = runTaskScript(
-      root,
-      "research-e2e",
-      "create",
-      "Linked research engineering task",
-      "--slug",
-      "linked-research-engineering",
-      "--assignee",
-      "research-workflow-test",
-      "--no-start",
-    );
-    const taskName = path.basename(taskRef);
-    const taskFile = path.join(root, taskRef, "task.json");
-    expect(JSON.parse(fs.readFileSync(taskFile, "utf-8")).status).toBe(
-      "planning",
-    );
+    const taskRef = ".trellis/tasks/linked-research-engineering";
 
     const taskLinkedDispatch = await prepareResearchDispatch({
       root,
@@ -459,75 +420,12 @@ describe("research workflow end-to-end closure", () => {
       taskRef,
       idempotencyKey: "e2e:prepare:task-linked",
     });
-    const ledgerBeforeLink = fs.readFileSync(
-      researchPaths(root).eventsFile,
-      "utf-8",
-    );
-    const linked = await linkResearchTask({
-      root,
-      task: taskName,
-      questId,
-      campaignId,
-      runId: taskLinkedRunId,
-      dispatchId: taskLinkedDispatch.dispatch.id,
-      repositoryId: codeRepository.id,
-    });
-    expect(linked.research).toMatchObject({
-      questId,
-      campaignId,
-      runId: taskLinkedRunId,
-      dispatchId: taskLinkedDispatch.dispatch.id,
-      repositoryId: codeRepository.id,
-    });
-    expect(fs.readFileSync(researchPaths(root).eventsFile, "utf-8")).toBe(
-      ledgerBeforeLink,
-    );
-    expect(JSON.parse(fs.readFileSync(taskFile, "utf-8")).status).toBe(
-      "planning",
-    );
-
-    runTaskScript(root, "research-e2e", "start", taskName);
-    vi.stubEnv("TRELLIS_CONTEXT_ID", "research-e2e");
+    expect(taskLinkedDispatch.dispatch.taskRef).toBe(taskRef);
     await setResearchRunStatus({
       root,
       runId: taskLinkedRunId,
       status: "running",
     });
-    const sessionFile = path.join(
-      root,
-      ".trellis",
-      ".runtime",
-      "sessions",
-      "research-e2e.json",
-    );
-    expect(JSON.parse(fs.readFileSync(sessionFile, "utf-8"))).toMatchObject({
-      current_task: taskRef,
-      current_run: taskLinkedRunId,
-    });
-    runTaskScript(root, "research-e2e", "finish");
-    expect(JSON.parse(fs.readFileSync(sessionFile, "utf-8"))).toMatchObject({
-      current_run: taskLinkedRunId,
-    });
-    expect(
-      JSON.parse(fs.readFileSync(sessionFile, "utf-8")),
-    ).not.toHaveProperty("current_task");
-    runTaskScript(root, "research-e2e", "archive", taskName, "--no-commit");
-    expect(JSON.parse(fs.readFileSync(sessionFile, "utf-8"))).toMatchObject({
-      current_run: taskLinkedRunId,
-    });
-    expect(
-      JSON.parse(fs.readFileSync(sessionFile, "utf-8")),
-    ).not.toHaveProperty("current_task");
-    expect(fs.existsSync(path.join(root, taskRef))).toBe(false);
-    const archivedTaskFiles = [
-      ...snapshotFiles(path.join(root, ".trellis", "tasks", "archive")),
-    ].filter(([relativePath]) =>
-      relativePath.endsWith(`${taskName}/task.json`),
-    );
-    expect(archivedTaskFiles).toHaveLength(1);
-    expect(JSON.parse(archivedTaskFiles[0]?.[1] ?? "{}").status).toBe(
-      "completed",
-    );
 
     const taskLinkedInput = path.join(sandbox, "task-linked-result.json");
     const taskLinkedProposalId = writeResultProposal(taskLinkedInput, {
@@ -707,14 +605,12 @@ describe("research workflow end-to-end closure", () => {
     expect(fs.readFileSync(researchPaths(root).eventsFile, "utf-8")).toBe(
       malformedLedger,
     );
-  });
+  }, 30_000);
 
   it("updates a selected bundled research workflow without changing research state", async () => {
     await init({
       yes: true,
       force: true,
-      user: "research-workflow-test",
-      workflow: "research",
     });
     await initializeResearch({ root, name: "Bundled update lab" });
     await createResearchQuest({ root, title: "Durable update quest" });
@@ -750,8 +646,6 @@ describe("research workflow end-to-end closure", () => {
     await init({
       yes: true,
       force: true,
-      user: "research-workflow-test",
-      workflow: "research",
     });
     await initializeResearch({ root, name: "Custom workflow lab" });
     await createResearchQuest({ root, title: "Custom workflow quest" });

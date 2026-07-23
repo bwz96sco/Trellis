@@ -2,19 +2,19 @@
  * Scrubbers for structured config files during `trellis uninstall`.
  *
  * Each scrubber takes the file content (and any context it needs) and returns
- * `{ content, fullyEmpty }`:
- * - `content` is the post-scrub text to write back if the file should remain.
- * - `fullyEmpty` is true when, after stripping every trellis-managed value,
- *   nothing meaningful is left. The caller deletes the file in that case.
+ * `{ content, fullyEmpty, outcome }`:
+ * - `content` is changed only when Trellis-owned values were scrubbed.
+ * - `fullyEmpty` tells the caller whether a successful scrub left no user data.
+ * - `outcome` distinguishes an actual scrub from unchanged or malformed input.
  *
- * Manifest path matching (for hooks.json scrubbers) uses substring containment
- * on the resolved `command` string. The leading `python3 ` / `python ` prefix
- * does not matter — we just look for the manifest-relative file path.
+ * Hook commands match only when their final path token equals a managed path
+ * (or is its absolute-path form), avoiding broad substring-based deletion.
  */
 
 export interface ScrubResult {
   content: string;
   fullyEmpty: boolean;
+  outcome: "scrubbed" | "unchanged" | "malformed";
 }
 
 /**
@@ -51,19 +51,18 @@ function commandMatchesDeletedPath(
 }
 
 /**
- * Read the `command` (or fallback `bash` / `powershell`) string out of an
- * arbitrary hook entry. Copilot's flat schema uses `bash` + `powershell`
- * instead of `command` for some events.
+ * Match any supported command field on a hook entry. Copilot may emit both
+ * `bash` and `powershell`; either one identifying a Trellis path is sufficient.
  */
-function getEntryCommand(entry: unknown): string | null {
-  if (entry === null || typeof entry !== "object") {
-    return null;
-  }
-  const obj = entry as Record<string, unknown>;
-  if (typeof obj.command === "string") return obj.command;
-  if (typeof obj.bash === "string") return obj.bash;
-  if (typeof obj.powershell === "string") return obj.powershell;
-  return null;
+function entryMatchesDeletedPath(
+  entry: Record<string, unknown>,
+  deletedPaths: readonly string[],
+): boolean {
+  return [entry.command, entry.bash, entry.powershell].some(
+    (value) =>
+      typeof value === "string" &&
+      commandMatchesDeletedPath(value, deletedPaths),
+  );
 }
 
 /**
@@ -86,70 +85,96 @@ export function scrubHooksJson(
   try {
     parsed = JSON.parse(content);
   } catch {
-    // Malformed JSON — leave it untouched, caller will skip.
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
 
   if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
 
   const root = parsed as Record<string, unknown>;
   const hooks = root.hooks;
 
   if (hooks === undefined) {
-    // No hooks block — nothing to scrub. Treat as fully empty only if the
-    // entire file has no other keys.
-    const fullyEmpty = Object.keys(root).length === 0;
-    return { content: JSON.stringify(root, null, 2) + "\n", fullyEmpty };
+    return {
+      content,
+      fullyEmpty: Object.keys(root).length === 0,
+      outcome: "unchanged",
+    };
   }
 
   if (hooks === null || typeof hooks !== "object" || Array.isArray(hooks)) {
-    // hooks is some unexpected shape — leave it alone.
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
 
   const hooksObj = hooks as Record<string, unknown>;
+  let changed = false;
 
   for (const eventName of Object.keys(hooksObj)) {
     const eventArr = hooksObj[eventName];
-    if (!Array.isArray(eventArr)) continue;
+    if (!Array.isArray(eventArr)) {
+      return { content, fullyEmpty: false, outcome: "malformed" };
+    }
 
     const filteredEvent: unknown[] = [];
 
     for (const entry of eventArr) {
       if (mode === "flat") {
-        const cmd = getEntryCommand(entry);
-        if (cmd !== null && commandMatchesDeletedPath(cmd, deletedPaths)) {
-          continue; // drop trellis entry
+        if (
+          entry === null ||
+          typeof entry !== "object" ||
+          Array.isArray(entry)
+        ) {
+          return { content, fullyEmpty: false, outcome: "malformed" };
+        }
+        if (
+          entryMatchesDeletedPath(
+            entry as Record<string, unknown>,
+            deletedPaths,
+          )
+        ) {
+          changed = true;
+          continue;
         }
         filteredEvent.push(entry);
       } else {
-        // nested: entry is { matcher?, hooks: [...] }
-        if (entry === null || typeof entry !== "object") {
-          filteredEvent.push(entry);
-          continue;
+        if (
+          entry === null ||
+          typeof entry !== "object" ||
+          Array.isArray(entry)
+        ) {
+          return { content, fullyEmpty: false, outcome: "malformed" };
         }
         const matcherBlock = entry as Record<string, unknown>;
         const inner = matcherBlock.hooks;
         if (!Array.isArray(inner)) {
-          filteredEvent.push(entry);
-          continue;
+          return { content, fullyEmpty: false, outcome: "malformed" };
         }
 
-        const filteredInner = inner.filter((sub) => {
-          const cmd = getEntryCommand(sub);
-          return !(
-            cmd !== null && commandMatchesDeletedPath(cmd, deletedPaths)
-          );
-        });
+        const filteredInner: unknown[] = [];
+        for (const sub of inner) {
+          if (sub === null || typeof sub !== "object" || Array.isArray(sub)) {
+            return { content, fullyEmpty: false, outcome: "malformed" };
+          }
+          if (
+            entryMatchesDeletedPath(
+              sub as Record<string, unknown>,
+              deletedPaths,
+            )
+          ) {
+            changed = true;
+          } else {
+            filteredInner.push(sub);
+          }
+        }
 
         if (filteredInner.length === 0) {
-          // Whole matcher block is now empty → drop the block.
+          if (inner.length === 0) {
+            filteredEvent.push(entry);
+          }
           continue;
         }
 
-        // Reconstruct the block with the filtered inner list.
         const rebuilt: Record<string, unknown> = { ...matcherBlock };
         rebuilt.hooks = filteredInner;
         filteredEvent.push(rebuilt);
@@ -157,7 +182,6 @@ export function scrubHooksJson(
     }
 
     if (filteredEvent.length === 0) {
-      // Drop the whole event array.
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete hooksObj[eventName];
     } else {
@@ -165,7 +189,10 @@ export function scrubHooksJson(
     }
   }
 
-  // If hooks is empty → drop the key.
+  if (!changed) {
+    return { content, fullyEmpty: false, outcome: "unchanged" };
+  }
+
   if (Object.keys(hooksObj).length === 0) {
     delete root.hooks;
   } else {
@@ -176,6 +203,172 @@ export function scrubHooksJson(
   return {
     content: JSON.stringify(root, null, 2) + "\n",
     fullyEmpty,
+    outcome: "scrubbed",
+  };
+}
+
+/**
+ * Scrub `.zcode/config.json` without recursively searching arbitrary JSON.
+ * Supports the current `hooks.events` matcher-block schema and the frozen
+ * direct-event compatibility schema.
+ */
+export function scrubZcodeConfigJson(
+  content: string,
+  ownedHookPaths: readonly string[],
+): ScrubResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    return { content, fullyEmpty: false, outcome: "malformed" };
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return { content, fullyEmpty: false, outcome: "malformed" };
+  }
+
+  const root = parsed as Record<string, unknown>;
+  const hooks = root.hooks;
+  if (hooks === undefined) {
+    return {
+      content,
+      fullyEmpty: Object.keys(root).length === 0,
+      outcome: "unchanged",
+    };
+  }
+  if (hooks === null || typeof hooks !== "object" || Array.isArray(hooks)) {
+    return { content, fullyEmpty: false, outcome: "malformed" };
+  }
+
+  const hooksObj = hooks as Record<string, unknown>;
+  let changed = false;
+  const events = hooksObj.events;
+
+  // Current ZCode schema: hooks.events.<event>[] contains matcher blocks whose
+  // `hooks` arrays contain command registrations.
+  if (events !== undefined) {
+    if (
+      events === null ||
+      typeof events !== "object" ||
+      Array.isArray(events)
+    ) {
+      return { content, fullyEmpty: false, outcome: "malformed" };
+    }
+    const eventsObj = events as Record<string, unknown>;
+    for (const eventName of Object.keys(eventsObj)) {
+      const eventValue = eventsObj[eventName];
+      if (!Array.isArray(eventValue)) {
+        return { content, fullyEmpty: false, outcome: "malformed" };
+      }
+
+      const filteredEvent: unknown[] = [];
+      for (const registration of eventValue) {
+        if (
+          registration === null ||
+          typeof registration !== "object" ||
+          Array.isArray(registration)
+        ) {
+          return { content, fullyEmpty: false, outcome: "malformed" };
+        }
+        const matcherBlock = registration as Record<string, unknown>;
+        if (!Array.isArray(matcherBlock.hooks)) {
+          return { content, fullyEmpty: false, outcome: "malformed" };
+        }
+
+        const filteredHooks: unknown[] = [];
+        for (const hook of matcherBlock.hooks) {
+          if (
+            hook === null ||
+            typeof hook !== "object" ||
+            Array.isArray(hook)
+          ) {
+            return { content, fullyEmpty: false, outcome: "malformed" };
+          }
+          if (
+            entryMatchesDeletedPath(
+              hook as Record<string, unknown>,
+              ownedHookPaths,
+            )
+          ) {
+            changed = true;
+          } else {
+            filteredHooks.push(hook);
+          }
+        }
+
+        if (filteredHooks.length === 0) {
+          if (matcherBlock.hooks.length === 0) {
+            filteredEvent.push(registration);
+          }
+          continue;
+        }
+        filteredEvent.push({ ...matcherBlock, hooks: filteredHooks });
+      }
+
+      if (filteredEvent.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete eventsObj[eventName];
+      } else {
+        eventsObj[eventName] = filteredEvent;
+      }
+    }
+
+    if (changed && Object.keys(eventsObj).length === 0) {
+      delete hooksObj.events;
+    } else {
+      hooksObj.events = eventsObj;
+    }
+  }
+
+  // Frozen 0.6.7 compatibility schema: hooks.<event>[] contains direct command
+  // registrations. Only array-valued keys are recognized as legacy events;
+  // scalar hook settings remain user content.
+  for (const eventName of Object.keys(hooksObj)) {
+    if (eventName === "events" || eventName === "enabled") continue;
+    const eventValue = hooksObj[eventName];
+    if (!Array.isArray(eventValue)) continue;
+
+    const filteredEvent: unknown[] = [];
+    for (const registration of eventValue) {
+      if (
+        registration === null ||
+        typeof registration !== "object" ||
+        Array.isArray(registration)
+      ) {
+        return { content, fullyEmpty: false, outcome: "malformed" };
+      }
+      if (
+        entryMatchesDeletedPath(
+          registration as Record<string, unknown>,
+          ownedHookPaths,
+        )
+      ) {
+        changed = true;
+      } else {
+        filteredEvent.push(registration);
+      }
+    }
+
+    if (filteredEvent.length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete hooksObj[eventName];
+    } else {
+      hooksObj[eventName] = filteredEvent;
+    }
+  }
+
+  if (!changed) {
+    return { content, fullyEmpty: false, outcome: "unchanged" };
+  }
+
+  if (Object.keys(hooksObj).length === 0) {
+    delete root.hooks;
+  } else {
+    root.hooks = hooksObj;
+  }
+  return {
+    content: JSON.stringify(root, null, 2) + "\n",
+    fullyEmpty: Object.keys(root).length === 0,
+    outcome: "scrubbed",
   };
 }
 
@@ -190,31 +383,42 @@ export function scrubOpencodePackageJson(content: string): ScrubResult {
   try {
     parsed = JSON.parse(content);
   } catch {
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
   if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
 
   const root = parsed as Record<string, unknown>;
   const deps = root.dependencies;
+  if (deps === undefined) {
+    return {
+      content,
+      fullyEmpty: Object.keys(root).length === 0,
+      outcome: "unchanged",
+    };
+  }
+  if (deps === null || typeof deps !== "object" || Array.isArray(deps)) {
+    return { content, fullyEmpty: false, outcome: "malformed" };
+  }
 
-  if (deps !== null && typeof deps === "object" && !Array.isArray(deps)) {
-    const depsObj = deps as Record<string, unknown>;
-    if ("@opencode-ai/plugin" in depsObj) {
-      delete depsObj["@opencode-ai/plugin"];
-    }
-    if (Object.keys(depsObj).length === 0) {
-      delete root.dependencies;
-    } else {
-      root.dependencies = depsObj;
-    }
+  const depsObj = deps as Record<string, unknown>;
+  if (!("@opencode-ai/plugin" in depsObj)) {
+    return { content, fullyEmpty: false, outcome: "unchanged" };
+  }
+
+  delete depsObj["@opencode-ai/plugin"];
+  if (Object.keys(depsObj).length === 0) {
+    delete root.dependencies;
+  } else {
+    root.dependencies = depsObj;
   }
 
   const fullyEmpty = Object.keys(root).length === 0;
   return {
     content: JSON.stringify(root, null, 2) + "\n",
     fullyEmpty,
+    outcome: "scrubbed",
   };
 }
 
@@ -245,16 +449,18 @@ export function scrubPiSettings(content: string): ScrubResult {
   try {
     parsed = JSON.parse(content);
   } catch {
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
   if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
 
   const root = parsed as Record<string, unknown>;
+  let changed = false;
 
   if ("enableSkillCommands" in root) {
     delete root.enableSkillCommands;
+    changed = true;
   }
 
   const arrayCleanups: [string, string][] = [
@@ -264,8 +470,13 @@ export function scrubPiSettings(content: string): ScrubResult {
   ];
   for (const [key, target] of arrayCleanups) {
     const arr = root[key];
-    if (!Array.isArray(arr)) continue;
+    if (arr === undefined) continue;
+    if (!Array.isArray(arr)) {
+      return { content, fullyEmpty: false, outcome: "malformed" };
+    }
     const filtered = arr.filter((v) => !isTrellisPiEntry(v, target));
+    if (filtered.length === arr.length) continue;
+    changed = true;
     if (filtered.length === 0) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete root[key];
@@ -275,7 +486,10 @@ export function scrubPiSettings(content: string): ScrubResult {
   }
 
   const packagesValue = root.packages;
-  if (Array.isArray(packagesValue)) {
+  if (packagesValue !== undefined) {
+    if (!Array.isArray(packagesValue)) {
+      return { content, fullyEmpty: false, outcome: "malformed" };
+    }
     const filtered = packagesValue.filter((entry) => {
       if (
         entry !== null &&
@@ -285,20 +499,31 @@ export function scrubPiSettings(content: string): ScrubResult {
         const obj = entry as Record<string, unknown>;
         return obj.source !== PI_SUBAGENTS_PACKAGE;
       }
-      // String entries — keep unless they exactly match the package name
       return entry !== PI_SUBAGENTS_PACKAGE;
     });
-    if (filtered.length === 0) {
-      delete root.packages;
-    } else {
-      root.packages = filtered;
+    if (filtered.length !== packagesValue.length) {
+      changed = true;
+      if (filtered.length === 0) {
+        delete root.packages;
+      } else {
+        root.packages = filtered;
+      }
     }
+  }
+
+  if (!changed) {
+    return {
+      content,
+      fullyEmpty: Object.keys(root).length === 0,
+      outcome: "unchanged",
+    };
   }
 
   const fullyEmpty = Object.keys(root).length === 0;
   return {
     content: JSON.stringify(root, null, 2) + "\n",
     fullyEmpty,
+    outcome: "scrubbed",
   };
 }
 
@@ -353,9 +578,11 @@ export function scrubCodexConfigToml(content: string): ScrubResult {
 
   const out: string[] = [];
   let prevWasBlank = true; // start-of-file counts as blank for collapsing
+  let changed = false;
 
   for (const rawLine of content.split(/\r?\n/)) {
     if (isTrellisAssignment(rawLine) || isTrellisCommentLine(rawLine)) {
+      changed = true;
       continue; // drop
     }
     const isBlank = rawLine.trim().length === 0;
@@ -371,9 +598,17 @@ export function scrubCodexConfigToml(content: string): ScrubResult {
     out.pop();
   }
 
+  if (!changed) {
+    return {
+      content,
+      fullyEmpty: content.trim().length === 0,
+      outcome: "unchanged",
+    };
+  }
+
   const result = out.length > 0 ? out.join("\n") + "\n" : "";
   const fullyEmpty = result.trim().length === 0;
-  return { content: result, fullyEmpty };
+  return { content: result, fullyEmpty, outcome: "scrubbed" };
 }
 
 export function scrubManagedMarkdownBlock(
@@ -383,12 +618,16 @@ export function scrubManagedMarkdownBlock(
 ): ScrubResult {
   const start = content.indexOf(startMarker);
   if (start === -1) {
-    return { content, fullyEmpty: false };
+    return {
+      content,
+      fullyEmpty: content.trim().length === 0,
+      outcome: "unchanged",
+    };
   }
 
   const end = content.indexOf(endMarker, start);
   if (end === -1) {
-    return { content, fullyEmpty: false };
+    return { content, fullyEmpty: false, outcome: "malformed" };
   }
 
   const blockEnd = end + endMarker.length;
@@ -400,5 +639,6 @@ export function scrubManagedMarkdownBlock(
   return {
     content: normalized,
     fullyEmpty: normalized.trim().length === 0,
+    outcome: "scrubbed",
   };
 }

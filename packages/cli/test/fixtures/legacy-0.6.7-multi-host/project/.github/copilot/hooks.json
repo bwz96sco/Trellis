@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "userPromptSubmitted": [
+      {
+        "bash": "python3 .trellis/hooks/inject-workflow-state.py"
+      }
+    ]
+  }
+}

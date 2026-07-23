@@ -106,7 +106,6 @@ describe("research command helpers", () => {
       "validate",
       "rebuild",
       "repo",
-      "task",
       "quest",
       "campaign",
       "run",
@@ -120,12 +119,22 @@ describe("research command helpers", () => {
       "list",
       "resolve",
     ]);
-    expect(childNames(commandAt(research, "task"))).toEqual(["link", "unlink"]);
     expect(childNames(commandAt(research, "dispatch"))).toEqual([
+      "context",
       "prepare",
       "record-result",
       "apply",
       "reject",
+    ]);
+    const context = commandAt(research, "dispatch", "context");
+    expect(context.registeredArguments.map((argument) => argument.name())).toEqual([
+      "request-file",
+    ]);
+    expect(context.options.map((option) => option.long)).toEqual([
+      "--host",
+      "--skill-name",
+      "--root",
+      "--json",
     ]);
     expect(childNames(commandAt(research, "quest"))).toEqual([
       "create",

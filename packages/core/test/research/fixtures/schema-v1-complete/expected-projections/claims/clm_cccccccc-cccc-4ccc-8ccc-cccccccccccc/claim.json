@@ -1,0 +1,16 @@
+{
+  "data": {
+    "createdAt": "2026-07-18T10:13:00.000Z",
+    "evidenceIds": [
+      "evd_bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+    ],
+    "id": "clm_cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    "questId": "qst_44444444-4444-4444-8444-444444444444",
+    "statement": "Schema-v1 compatibility is frozen by explicit golden data",
+    "status": "candidate",
+    "updatedAt": "2026-07-18T10:13:00.000Z"
+  },
+  "projectedThroughSeq": 13,
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-18T10:13:00.000Z"
+}

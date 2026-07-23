@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "python3 .trellis/hooks/session-start.py"
+      }
+    ]
+  },
+  "userHook": "node tools/custom-cursor-hook.mjs"
+}

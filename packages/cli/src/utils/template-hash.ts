@@ -21,6 +21,7 @@ import { DIR_NAMES, FILE_NAMES } from "../constants/paths.js";
 import type { TemplateHashes } from "../types/migration.js";
 import { writeFileAtomic } from "./atomic-write.js";
 import { toPosix } from "./posix.js";
+import { isProtectedResearchPath } from "./protected-paths.js";
 
 /** File name for storing template hashes */
 const HASHES_FILE = ".template-hashes.json";
@@ -52,13 +53,26 @@ function getHashesPath(cwd: string): string {
   return path.join(cwd, DIR_NAMES.WORKFLOW, HASHES_FILE);
 }
 
+function setHashEntry(
+  hashes: TemplateHashes,
+  key: string,
+  value: string,
+): void {
+  Object.defineProperty(hashes, key, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  });
+}
+
 /**
  * Normalize all keys of a hashes record to POSIX form.
  */
 function normalizeHashKeys(hashes: TemplateHashes): TemplateHashes {
   const out: TemplateHashes = {};
   for (const [key, value] of Object.entries(hashes)) {
-    out[toPosix(key)] = value;
+    setHashEntry(out, toPosix(key), value);
   }
   return out;
 }
@@ -100,6 +114,62 @@ export function loadHashes(cwd: string): TemplateHashes {
     return {};
   } catch {
     return {};
+  }
+}
+
+export type TemplateHashesReadResult =
+  | { status: "missing" }
+  | { status: "invalid"; reason: string }
+  | { status: "valid"; hashes: TemplateHashes };
+
+/**
+ * Status-bearing manifest reader for destructive operations.
+ *
+ * Unlike `loadHashes`, this distinguishes missing and malformed manifests and
+ * preserves raw keys so uninstall can classify invalid ownership paths as
+ * unknown rather than normalizing them into filesystem paths.
+ */
+export function readTemplateHashesStatus(
+  cwd: string,
+): TemplateHashesReadResult {
+  const hashesPath = getHashesPath(cwd);
+  if (!fs.existsSync(hashesPath)) {
+    return { status: "missing" };
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(hashesPath, "utf-8")) as unknown;
+    if (
+      parsed === null ||
+      typeof parsed !== "object" ||
+      Array.isArray(parsed) ||
+      !("__version" in parsed) ||
+      (parsed as { __version: unknown }).__version !== HASHES_SCHEMA_VERSION ||
+      !("hashes" in parsed) ||
+      (parsed as { hashes: unknown }).hashes === null ||
+      typeof (parsed as { hashes: unknown }).hashes !== "object" ||
+      Array.isArray((parsed as { hashes: unknown }).hashes)
+    ) {
+      return { status: "invalid", reason: "unsupported manifest schema" };
+    }
+
+    const rawHashes = (parsed as StoredHashesV2).hashes;
+    const hashes: TemplateHashes = {};
+    for (const [key, value] of Object.entries(rawHashes)) {
+      if (typeof value !== "string") {
+        return {
+          status: "invalid",
+          reason: "manifest hash values must be strings",
+        };
+      }
+      // Keep unsafe keys verbatim. Define the property explicitly so poisoned
+      // names such as `__proto__` remain enumerable ownership entries instead
+      // of mutating the temporary record's prototype.
+      setHashEntry(hashes, key, value);
+    }
+    return { status: "valid", hashes };
+  } catch {
+    return { status: "invalid", reason: "manifest is not valid JSON" };
   }
 }
 
@@ -279,6 +349,9 @@ const EXCLUDE_FROM_HASH = [
  */
 function shouldExcludeFromHash(relativePath: string): boolean {
   const normalizedPath = toPosix(relativePath);
+  if (isProtectedResearchPath(normalizedPath)) {
+    return true;
+  }
   for (const pattern of EXCLUDE_FROM_HASH) {
     if (normalizedPath.includes(pattern)) {
       return true;
@@ -349,10 +422,9 @@ export interface InitializeHashesOptions {
  * where a blind directory walk of `.codex/` / `.claude/` swept up
  * user-owned runtime data (chat history, session JSONLs).
  *
- * `.trellis/` is still walked recursively (with `EXCLUDE_FROM_HASH`) because
- * uninstall removes `.trellis/` wholesale via `rm -rf` regardless of manifest
- * content — accuracy there doesn't affect data-loss, only `trellis update`
- * 3-way-merge fidelity (preserved by the existing walk).
+ * `.trellis/` is still walked recursively (with `EXCLUDE_FROM_HASH`) to track
+ * current workflow templates for update/uninstall ownership decisions. Protected
+ * research and other user-data paths are excluded before recursion.
  *
  * @returns Number of files hashed in the final manifest.
  */
@@ -366,6 +438,9 @@ export function initializeHashes(
   // Platform + root files: hash only paths actually written this run.
   if (trackedPaths) {
     for (const relativePath of trackedPaths) {
+      if (isProtectedResearchPath(relativePath)) {
+        continue;
+      }
       // `.trellis/` paths are handled by the walk below — don't double-track.
       if (relativePath.startsWith(".trellis/") || relativePath === ".trellis") {
         continue;
@@ -381,10 +456,8 @@ export function initializeHashes(
     }
   }
 
-  // .trellis/ workflow tree: still walked recursively. Accuracy here is for
-  // `trellis update`'s 3-way merge of workflow.md / config.yaml / scripts;
-  // uninstall removes .trellis/ wholesale so it does not matter for the
-  // data-loss bug this contract addresses.
+  // Walk current `.trellis/` workflow templates while exclusion checks keep
+  // protected research and other user-authored state out of ownership.
   const files = collectFiles(cwd, ".trellis");
   for (const relativePath of files) {
     const fullPath = path.join(cwd, relativePath);

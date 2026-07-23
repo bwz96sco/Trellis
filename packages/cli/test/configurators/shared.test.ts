@@ -2,13 +2,9 @@ import { describe, expect, it, afterEach } from "vitest";
 import {
   getPythonCommandForPlatform,
   replacePythonCommandLiterals,
-  resolveAllAsSkillsNeutral,
   resolvePlaceholders,
   resolvePlaceholdersNeutral,
-  resolveSkillsNeutral,
-  wrapWithOmpFrontmatter,
 } from "../../src/configurators/shared.js";
-import { AI_TOOLS } from "../../src/types/ai-tools.js";
 import type { TemplateContext } from "../../src/types/ai-tools.js";
 
 // ---------------------------------------------------------------------------
@@ -33,13 +29,13 @@ const codexCtx: TemplateContext = {
   cliFlag: "codex",
 };
 
-const cursorCtx: TemplateContext = {
-  cmdRefPrefix: "/trellis-",
+const inlineCtx: TemplateContext = {
+  cmdRefPrefix: "/",
   executorAI: "Bash scripts or file reads",
-  userActionLabel: "Slash commands",
+  userActionLabel: "Commands",
   agentCapable: false,
   hasHooks: false,
-  cliFlag: "cursor",
+  cliFlag: "codex",
 };
 
 // ---------------------------------------------------------------------------
@@ -191,12 +187,12 @@ describe("resolvePlaceholders", () => {
       expect(result).toBe("Run $check after coding");
     });
 
-    it("resolves with /trellis- prefix (Cursor)", () => {
+    it("resolves a custom command prefix", () => {
       const result = resolvePlaceholders(
         "Use {{CMD_REF:finish-work}} when done",
-        cursorCtx,
+        inlineCtx,
       );
-      expect(result).toBe("Use /trellis-finish-work when done");
+      expect(result).toBe("Use /finish-work when done");
     });
 
     it("handles multiple CMD_REF in one template", () => {
@@ -274,7 +270,7 @@ describe("resolvePlaceholders", () => {
       });
 
       it("removes block when agentCapable=false", () => {
-        const result = resolvePlaceholders(template, cursorCtx);
+        const result = resolvePlaceholders(template, inlineCtx);
         expect(result).not.toContain("Call Implement Agent");
         expect(result).toContain("Before");
         expect(result).toContain("After");
@@ -294,7 +290,7 @@ describe("resolvePlaceholders", () => {
       });
 
       it("includes block when agentCapable=false", () => {
-        const result = resolvePlaceholders(template, cursorCtx);
+        const result = resolvePlaceholders(template, inlineCtx);
         expect(result).toContain("Implement the changes directly");
       });
     });
@@ -354,8 +350,8 @@ describe("resolvePlaceholders", () => {
         expect(result).not.toContain("No agents");
       });
 
-      it("Cursor (no agent, no hooks): inline only", () => {
-        const result = resolvePlaceholders(template, cursorCtx);
+      it("non-agent context uses inline instructions", () => {
+        const result = resolvePlaceholders(template, inlineCtx);
         expect(result).not.toContain("Agents available");
         expect(result).not.toContain("Hook injection");
         expect(result).toContain("No agents, do it inline");
@@ -371,7 +367,7 @@ describe("resolvePlaceholders", () => {
     it("collapses 3+ consecutive blank lines to 2", () => {
       const template =
         "A\n\n{{#AGENT_CAPABLE}}\nRemoved\n{{/AGENT_CAPABLE}}\n\nB";
-      const result = resolvePlaceholders(template, cursorCtx);
+      const result = resolvePlaceholders(template, inlineCtx);
       expect(result).not.toMatch(/\n{3,}/);
       expect(result).toContain("A");
       expect(result).toContain("B");
@@ -391,7 +387,6 @@ describe("resolvePlaceholders", () => {
       const input = "--platform {{CLI_FLAG}}";
       expect(resolvePlaceholders(input, claudeCtx)).toBe("--platform claude");
       expect(resolvePlaceholders(input, codexCtx)).toBe("--platform codex");
-      expect(resolvePlaceholders(input, cursorCtx)).toBe("--platform cursor");
     });
 
     it("substitutes multiple occurrences in one string", () => {
@@ -433,7 +428,6 @@ describe("resolvePlaceholders", () => {
 
 // ---------------------------------------------------------------------------
 // resolvePlaceholdersNeutral — neutral CMD_REF for shared `.agents/skills/`
-// (issue #224 fix: avoid Codex+Gemini last-writer-wins on identical files)
 // ---------------------------------------------------------------------------
 
 describe("resolvePlaceholdersNeutral", () => {
@@ -451,9 +445,7 @@ describe("resolvePlaceholdersNeutral", () => {
       "Run {{CMD_REF:check}} then {{CMD_REF:finish-work}} after coding.";
     const claudeOut = resolvePlaceholdersNeutral(input, claudeCtx);
     const codexOut = resolvePlaceholdersNeutral(input, codexCtx);
-    const cursorOut = resolvePlaceholdersNeutral(input, cursorCtx);
     expect(claudeOut).toBe(codexOut);
-    expect(codexOut).toBe(cursorOut);
   });
 
   it("still resolves {{PYTHON_CMD}}", () => {
@@ -497,7 +489,7 @@ describe("resolvePlaceholdersNeutral", () => {
     expect(resolvePlaceholdersNeutral(template, claudeCtx)).toContain(
       "Spawn agent",
     );
-    expect(resolvePlaceholdersNeutral(template, cursorCtx)).toContain(
+    expect(resolvePlaceholdersNeutral(template, inlineCtx)).toContain(
       "Inline edit",
     );
   });
@@ -509,110 +501,5 @@ describe("resolvePlaceholdersNeutral", () => {
 
   it("handles empty content", () => {
     expect(resolvePlaceholdersNeutral("", claudeCtx)).toBe("");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// resolveSkillsNeutral / resolveAllAsSkillsNeutral — cross-platform parity
-// for `.agents/skills/` writes
-// ---------------------------------------------------------------------------
-
-describe("resolveSkillsNeutral / resolveAllAsSkillsNeutral", () => {
-  it("resolveSkillsNeutral produces byte-identical output for Codex and Gemini", () => {
-    const codexSkills = resolveSkillsNeutral(AI_TOOLS.codex.templateContext);
-    const geminiSkills = resolveSkillsNeutral(AI_TOOLS.gemini.templateContext);
-    expect(codexSkills.length).toBe(geminiSkills.length);
-    for (let i = 0; i < codexSkills.length; i++) {
-      expect(codexSkills[i].name).toBe(geminiSkills[i].name);
-      expect(codexSkills[i].content).toBe(geminiSkills[i].content);
-    }
-  });
-
-  it("resolveSkillsNeutral renders CMD_REF without platform-specific prefix", () => {
-    // The neutral output must not contain platform-prefixed tokens for any
-    // command that CMD_REF references in the shared skills (Codex `$name`,
-    // Claude `/trellis:name`, Cursor `/trellis-name`).
-    const neutral = resolveSkillsNeutral(AI_TOOLS.codex.templateContext);
-    const cmdRefNames = [
-      "start",
-      "brainstorm",
-      "check",
-      "break-loop",
-      "update-spec",
-      "finish-work",
-    ];
-    for (const skill of neutral) {
-      for (const name of cmdRefNames) {
-        expect(
-          skill.content,
-          `${skill.name} leaks Codex prefix for ${name}`,
-        ).not.toContain(`$${name}`);
-        expect(
-          skill.content,
-          `${skill.name} leaks Claude prefix for ${name}`,
-        ).not.toContain(`/trellis:${name}`);
-        expect(
-          skill.content,
-          `${skill.name} leaks Cursor prefix for ${name}`,
-        ).not.toContain(`/trellis-${name}`);
-      }
-    }
-  });
-
-  it("resolveAllAsSkillsNeutral keeps shared common skills byte-identical to resolveSkillsNeutral", () => {
-    const all = resolveAllAsSkillsNeutral(AI_TOOLS.codex.templateContext);
-    const commonSkills = resolveSkillsNeutral(AI_TOOLS.codex.templateContext);
-    const sharedNames = new Set(commonSkills.map((s) => s.name));
-    const allShared = all.filter((s) => sharedNames.has(s.name));
-    expect(allShared.length).toBe(commonSkills.length);
-    for (const skill of commonSkills) {
-      const match = allShared.find((s) => s.name === skill.name);
-      expect(match?.content).toBe(skill.content);
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// wrapWithOmpFrontmatter — OMP command YAML frontmatter
-// ---------------------------------------------------------------------------
-
-describe("wrapWithOmpFrontmatter", () => {
-  it("wraps continue command with description-only frontmatter", () => {
-    const content =
-      "# Continue Current Task\n\nResume work on the current task.";
-    const result = wrapWithOmpFrontmatter("continue", content);
-    expect(result).toMatch(/^---\ndescription: .+\n---\n\n/);
-    expect(result).not.toContain("# Continue Current Task");
-    expect(result).toContain("Resume work on the current task.");
-    expect(result).not.toContain("argument-hint");
-  });
-
-  it("wraps finish-work command with description + argument-hint", () => {
-    const content = "# Finish Work\n\nWrap up the current session.";
-    const result = wrapWithOmpFrontmatter("finish-work", content);
-    expect(result).toMatch(
-      /^---\ndescription: .+\nargument-hint: "\[task-name\]"\n---\n\n/,
-    );
-    expect(result).not.toContain("# Finish Work");
-    expect(result).toContain("Wrap up the current session.");
-  });
-
-  it("strips trellis- prefix before looking up description", () => {
-    const content = "# Continue Current Task\n\nBody text.";
-    const result = wrapWithOmpFrontmatter("trellis-continue", content);
-    expect(result).toMatch(/^---\ndescription: /);
-    expect(result).toContain("Body text.");
-  });
-
-  it("throws on unknown command name", () => {
-    expect(() => wrapWithOmpFrontmatter("nonexistent", "body")).toThrow(
-      /Missing command description/,
-    );
-  });
-
-  it("preserves body content after H1 removal", () => {
-    const content = "# Title\n\nLine 1\n\nLine 2\n\n## Section\n\nMore text.";
-    const result = wrapWithOmpFrontmatter("continue", content);
-    expect(result).toContain("Line 1\n\nLine 2\n\n## Section\n\nMore text.");
   });
 });

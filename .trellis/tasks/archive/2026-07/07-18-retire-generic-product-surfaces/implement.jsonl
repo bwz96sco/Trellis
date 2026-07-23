@@ -1,0 +1,12 @@
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Research-only generated tree and protected data boundaries."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Claude/Codex retained assets and mixed host config contracts."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Shared command, skill, hook, and ownership generation rules."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Safe retirement cleanup, workflow classification, and update generation."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Hash-gated deletion, mixed scrub, and Research protection."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Exact retired generic path/hash migration contract."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Canonical Research command tree and schema-v1 compatibility."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"0.7 generic core compatibility bridge that C10 must preserve."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical Research authority and historical metadata compatibility."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/generic-cli-surface-map.md","reason":"Active command/source removal map and retained SDK/data boundary."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/generated-asset-retirement-map.md","reason":"Generated asset, mixed-file, cleanup, and package inventory."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/c10-contract-boundaries-and-decomposition.md","reason":"Selected product choices, child decomposition, gates, and risks."}

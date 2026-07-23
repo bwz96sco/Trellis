@@ -225,10 +225,57 @@ describe("init + uninstall: manifest accuracy + homedir guard", () => {
     await update({});
 
     // The orphan entry is silently pruned; user file is untouched.
-    expect(loadHashes(tmpDir)).not.toHaveProperty(
-      ".codex/sessions/user.jsonl",
-    );
+    expect(loadHashes(tmpDir)).not.toHaveProperty(".codex/sessions/user.jsonl");
     expect(fs.existsSync(userFile)).toBe(true);
+  });
+
+  it("#R3.1b update --dry-run does not persist orphan pruning", async () => {
+    await init({ yes: true, claude: true, force: true });
+    const hashes = loadHashes(tmpDir);
+    hashes[".codex/sessions/user.jsonl"] = "fake-hash";
+    saveHashes(tmpDir, hashes);
+    const manifestPath = path.join(tmpDir, ".trellis", ".template-hashes.json");
+    const before = fs.readFileSync(manifestPath);
+
+    await update({ dryRun: true });
+
+    expect(fs.readFileSync(manifestPath)).toEqual(before);
+  });
+
+  it("#R3.1c cancelled update does not persist orphan pruning", async () => {
+    await init({ yes: true, claude: true, force: true });
+    const hashes = loadHashes(tmpDir);
+    hashes[".codex/sessions/user.jsonl"] = "fake-hash";
+    saveHashes(tmpDir, hashes);
+    fs.writeFileSync(
+      path.join(tmpDir, ".claude", "hooks", "session-start.py"),
+      "user-modified hook\n",
+    );
+    const manifestPath = path.join(tmpDir, ".trellis", ".template-hashes.json");
+    const before = fs.readFileSync(manifestPath);
+    vi.mocked(inquirer.prompt).mockResolvedValueOnce({ proceed: false });
+
+    await update({});
+
+    expect(fs.readFileSync(manifestPath)).toEqual(before);
+  });
+
+  it("#R3.1d backup failure does not persist no-op orphan pruning", async () => {
+    await init({ yes: true, claude: true, force: true });
+    const hashes = loadHashes(tmpDir);
+    hashes[".codex/sessions/user.jsonl"] = "fake-hash";
+    saveHashes(tmpDir, hashes);
+    const manifestPath = path.join(tmpDir, ".trellis", ".template-hashes.json");
+    const before = fs.readFileSync(manifestPath);
+    vi.spyOn(fs, "copyFileSync").mockImplementation(() => {
+      throw new Error("simulated backup failure");
+    });
+
+    await expect(update({ force: true })).rejects.toThrow(
+      "simulated backup failure",
+    );
+
+    expect(fs.readFileSync(manifestPath)).toEqual(before);
   });
 
   it("#R3.2 uninstall self-heals + preserves user file even without prior update", async () => {
@@ -282,9 +329,8 @@ describe("init + uninstall: manifest accuracy + homedir guard", () => {
     await init({ yes: true, claude: true, force: true });
 
     // We can't easily fabricate a real migration entry in this test, but we
-    // CAN assert the prune behavior preserves .trellis/ entries which is the
-    // most common "not-in-collectTemplates-but-important" case. (Migration
-    // paths share the same preservation logic in pruneOrphanManifestKeys.)
+    // can assert that a current managed workflow path survives pruning.
+    // Migration paths are added to the same known-key set.
     const hashes = loadHashes(tmpDir);
     hashes[".trellis/workflow.md"] = "ok";
     saveHashes(tmpDir, hashes);
@@ -326,11 +372,11 @@ describe("init + uninstall: manifest accuracy + homedir guard", () => {
     try {
       vi.spyOn(process, "cwd").mockReturnValue(fakeHome);
 
-      const exitSpy = vi
-        .spyOn(process, "exit")
-        .mockImplementation(((code?: number) => {
-          throw new Error(`process.exit(${code ?? 0})`);
-        }) as never);
+      const exitSpy = vi.spyOn(process, "exit").mockImplementation(((
+        code?: number,
+      ) => {
+        throw new Error(`process.exit(${code ?? 0})`);
+      }) as never);
 
       await withFakeHome(fakeHome, async () => {
         await expect(init({ yes: true, force: true })).rejects.toThrow(
@@ -350,16 +396,14 @@ describe("init + uninstall: manifest accuracy + homedir guard", () => {
     // Set up a valid trellis project, then pretend its cwd is the homedir.
     await init({ yes: true, claude: true, force: true });
 
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(((code?: number) => {
-        throw new Error(`process.exit(${code ?? 0})`);
-      }) as never);
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(((
+      code?: number,
+    ) => {
+      throw new Error(`process.exit(${code ?? 0})`);
+    }) as never);
 
     await withFakeHome(tmpDir, async () => {
-      await expect(uninstall({ yes: true })).rejects.toThrow(
-        "process.exit(1)",
-      );
+      await expect(uninstall({ yes: true })).rejects.toThrow("process.exit(1)");
     });
     expect(exitSpy).toHaveBeenCalledWith(1);
 

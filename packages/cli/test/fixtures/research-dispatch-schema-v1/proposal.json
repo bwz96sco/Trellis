@@ -1,0 +1,16 @@
+{
+  "createdAt": "2026-07-18T10:09:00.000Z",
+  "dispatchId": "dsp_77777777-7777-4777-8777-777777777777",
+  "id": "prp_99999999-9999-4999-8999-999999999999",
+  "operations": [
+    {
+      "kind": "quest.stage",
+      "questId": "qst_44444444-4444-4444-8444-444444444444",
+      "stage": "audit"
+    }
+  ],
+  "questId": "qst_44444444-4444-4444-8444-444444444444",
+  "status": "pending",
+  "title": "Advance the golden quest to audit",
+  "updatedAt": "2026-07-18T10:09:00.000Z"
+}

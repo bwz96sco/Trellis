@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "BeforeAgent": [
+      {
+        "command": "python3 .trellis/hooks/inject-workflow-state.py"
+      }
+    ]
+  }
+}

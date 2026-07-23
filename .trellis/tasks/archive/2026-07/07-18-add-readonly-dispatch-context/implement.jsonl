@@ -1,0 +1,8 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Preserve canonical ledger authority, schema-v1 Dispatch compatibility, stage capability routing, portable paths, and no core persistence changes."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Implement exact CLI signature, root/output conventions, hierarchy validation, structured errors, and zero-write preflight behavior."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Preserve root-only authority and current Claude behavior while adding provider-neutral context for later C08-C09 convergence."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Apply containment, symlink, atomicity, and strict no-write safety rules."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Use integration fixtures, deterministic JSON assertions, failure matrices, and filesystem snapshot conventions."}
+{"file":".trellis/tasks/07-18-add-readonly-dispatch-context/research/dispatch-validation-and-readonly-boundary.md","reason":"Use exact pointer/schema/hierarchy/compatibility/side-effect map and GitNexus findings."}
+{"file":".trellis/tasks/07-18-add-readonly-dispatch-context/research/repository-artifact-bounded-context.md","reason":"Use Repository binding/locator, artifact/digest/revision, containment, output, and zero-write findings."}
+{"file":".trellis/tasks/07-18-add-readonly-dispatch-context/research/c07-cli-output-tests-and-impact.md","reason":"Use frozen CLI signature, name-only discovery, success/error JSON, test matrix, and impact boundaries."}

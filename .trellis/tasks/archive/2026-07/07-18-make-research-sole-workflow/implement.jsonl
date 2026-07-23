@@ -1,0 +1,13 @@
+{"file":".trellis/spec/cli/backend/commands-workflow.md","reason":"Define Research-only init signatures while retaining workflow-command and native/marketplace compatibility until C10."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Define pristine-native classification, post-success metadata transfer, conflict outcomes, idempotency, and Research protection."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Define exact fresh Research bridge layout versus retained package source inventory."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Define Claude/Codex init modes using one Research workflow and parser-level removed-option behavior."}
+{"file":".trellis/spec/cli/backend/workflow-state-contract.md","reason":"Keep runtime Research selection consistent with active workflow bytes and metadata repair."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Preserve custom/modified workflows, confirmation-time changes, backup gates, and protected Research paths."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Keep workflow conversion separate from historical file migration ownership unless explicitly required."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Preserve explicit Research workspace initialization and canonical ledger authority."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify fresh workflow installation does not create or mutate canonical Research state."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Apply integration/regression conventions for init, update, ownership, and package behavior."}
+{"file":".trellis/tasks/07-18-make-research-sole-workflow/research/init-layout-and-workflow-map.md","reason":"Use current init generation map, exact fresh layout decision, re-init boundary, and GitNexus impact."}
+{"file":".trellis/tasks/07-18-make-research-sole-workflow/research/pristine-native-workflow-migration.md","reason":"Use strict migration classifier, apply ordering, conflict outcomes, idempotency, and rollback contract."}
+{"file":".trellis/tasks/07-18-make-research-sole-workflow/research/c05-tests-specs-and-boundaries.md","reason":"Use exact test/spec/package scope and preserve C05/C10 boundary."}

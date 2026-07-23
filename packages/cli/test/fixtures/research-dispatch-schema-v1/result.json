@@ -1,0 +1,29 @@
+{
+  "artifactRefs": [
+    {
+      "id": "art_33333333-3333-4333-8333-333333333333",
+      "kind": "report",
+      "mediaType": "application/json",
+      "path": "results/golden-report.json",
+      "repositoryId": "rep_22222222-2222-4222-8222-222222222222",
+      "revision": "0123456789abcdef0123456789abcdef01234567",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "blockers": [],
+  "checks": [
+    "golden report exists"
+  ],
+  "commands": [
+    "node scripts/build-golden.mjs"
+  ],
+  "createdAt": "2026-07-18T10:08:00.000Z",
+  "dirtySummary": "",
+  "dispatchId": "dsp_77777777-7777-4777-8777-777777777777",
+  "id": "res_88888888-8888-4888-8888-888888888888",
+  "revision": "0123456789abcdef0123456789abcdef01234567",
+  "runId": "run_66666666-6666-4666-8666-666666666666",
+  "sessionRef": "sessions/golden-worker",
+  "status": "completed",
+  "summary": "Golden report completed"
+}

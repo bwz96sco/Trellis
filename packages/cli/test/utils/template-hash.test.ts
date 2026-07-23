@@ -14,6 +14,7 @@ import {
   matchesOriginalTemplate,
   getModificationStatus,
   initializeHashes,
+  readTemplateHashesStatus,
 } from "../../src/utils/template-hash.js";
 
 // =============================================================================
@@ -107,6 +108,55 @@ describe("loadHashes / saveHashes", () => {
 
     const hashes = loadHashes(tmpDir);
     expect(hashes).toEqual({});
+  });
+
+  it("status reader distinguishes missing, invalid, and valid-empty manifests", () => {
+    expect(readTemplateHashesStatus(tmpDir)).toEqual({ status: "missing" });
+
+    const hashesPath = path.join(tmpDir, ".trellis", ".template-hashes.json");
+    fs.writeFileSync(hashesPath, "not valid json");
+    expect(readTemplateHashesStatus(tmpDir)).toMatchObject({
+      status: "invalid",
+    });
+
+    saveHashes(tmpDir, {});
+    expect(readTemplateHashesStatus(tmpDir)).toEqual({
+      status: "valid",
+      hashes: {},
+    });
+  });
+
+  it("status reader rejects unsupported schemas and non-string hash values", () => {
+    const hashesPath = path.join(tmpDir, ".trellis", ".template-hashes.json");
+    fs.writeFileSync(hashesPath, JSON.stringify({ __version: 1, hashes: {} }));
+    expect(readTemplateHashesStatus(tmpDir)).toMatchObject({
+      status: "invalid",
+    });
+
+    fs.writeFileSync(
+      hashesPath,
+      JSON.stringify({ __version: 2, hashes: { "file.txt": 123 } }),
+    );
+    expect(readTemplateHashesStatus(tmpDir)).toMatchObject({
+      status: "invalid",
+    });
+  });
+
+  it("status reader preserves unsafe raw keys for no-access pruning", () => {
+    const hashesPath = path.join(tmpDir, ".trellis", ".template-hashes.json");
+    fs.writeFileSync(
+      hashesPath,
+      '{"__version":2,"hashes":{"../victim.txt":"hash","bad\\\\path.txt":"hash2","__proto__":"hash3"}}',
+    );
+
+    const result = readTemplateHashesStatus(tmpDir);
+    expect(result.status).toBe("valid");
+    if (result.status === "valid") {
+      expect(result.hashes["../victim.txt"]).toBe("hash");
+      expect(result.hashes["bad\\path.txt"]).toBe("hash2");
+      expect(result.hashes["__proto__"]).toBe("hash3");
+      expect(Object.keys(result.hashes)).toContain("__proto__");
+    }
   });
 
   it("saveHashes overwrites existing data", () => {
@@ -468,6 +518,42 @@ describe("initializeHashes", () => {
 
     expect(initializeHashes(tmpDir)).toBe(0);
     expect(loadHashes(tmpDir)).not.toHaveProperty(".trellis/.workflow.json");
+  });
+
+  it("excludes protected research paths from both the .trellis walk and tracked paths", () => {
+    const ledgerPath = path.join(
+      tmpDir,
+      ".trellis",
+      "research",
+      "events.jsonl",
+    );
+    fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
+    fs.writeFileSync(ledgerPath, '{"seq":1}\n');
+
+    initializeHashes(tmpDir, {
+      trackedPaths: new Set([".trellis/research/events.jsonl"]),
+    });
+
+    expect(loadHashes(tmpDir)).not.toHaveProperty(
+      ".trellis/research/events.jsonl",
+    );
+  });
+
+  it("does not confuse .trellis/research-old with protected research", () => {
+    const generatedPath = path.join(
+      tmpDir,
+      ".trellis",
+      "research-old",
+      "generated.txt",
+    );
+    fs.mkdirSync(path.dirname(generatedPath), { recursive: true });
+    fs.writeFileSync(generatedPath, "generated\n");
+
+    initializeHashes(tmpDir);
+
+    expect(loadHashes(tmpDir)).toHaveProperty(
+      ".trellis/research-old/generated.txt",
+    );
   });
 
   it("excludes workspace and tasks directories", () => {

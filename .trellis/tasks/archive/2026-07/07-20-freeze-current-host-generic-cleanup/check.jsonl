@@ -1,0 +1,9 @@
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Verify exact proven hashes, no published-manifest rewrite, and no broad paths."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Verify frozen keys survive pruning and active templates suppress deletion."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Verify modified/malformed/user content and Research state survive."}
+{"file":".trellis/spec/cli/backend/configurator-shared.md","reason":"Verify collector freeze accounts for every current generated output."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Verify no cleanup target crosses protected or user-data boundaries."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify deterministic fixtures and full safety matrix."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/generated-asset-retirement-map.md","reason":"Check parent ownership-before-deletion ordering."}
+{"file":".trellis/tasks/07-18-retire-generic-product-surfaces/research/c10-contract-boundaries-and-decomposition.md","reason":"Check Child A does not absorb Child B/C changes."}
+{"file":".trellis/tasks/07-20-freeze-current-host-generic-cleanup/research/current-host-cleanup-inventory-and-impact.md","reason":"Check exact counts, exclusions, GitNexus scope, and acceptance evidence."}

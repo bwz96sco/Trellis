@@ -1,32 +1,11 @@
-# Developer identity (local only)
-.developer
-
-# Current task pointer (each dev works on different task)
-.current-task
-
-# Session/window scoped runtime state
+# Research session watermarks
 .runtime/
 
-# Ralph Loop state file
-.ralph-state.json
-
-# Agent runtime files
-.agents/
-.agent-log
-.session-id
-
-# Task directory runtime files
-.plan-log
-
-# Atomic update temp files
+# Atomic and conflict-safe update files
 *.tmp
-
-# Update backup directories
+*.new
 .backup-*
 
-# Conflict resolution temp files
-*.new
-
-# Python cache
+# Python hook caches
 **/__pycache__/
 **/*.pyc

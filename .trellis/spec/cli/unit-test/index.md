@@ -16,7 +16,7 @@ This project uses **Vitest** with TypeScript ESM. Tests live in a centralized `t
 |-------|-------------|--------|
 | [Conventions](./conventions.md) | File naming, structure, assertion patterns, test isolation (env-leak guard), when to write tests | Done |
 | [Mock Strategies](./mock-strategies.md) | What to mock, how, and the minimal mocking principle | Done |
-| [Integration Patterns](./integration-patterns.md) | Function-level integration tests for commands | Done |
+| [Integration Patterns](./integration-patterns.md) | Function-level command tests, built-parser/bin rejection tests, filesystem snapshots, production import boundaries, and independent packed-core/CLI audits | Done |
 
 ---
 
@@ -30,7 +30,11 @@ pnpm test
 pnpm test:watch
 
 # Run a specific test file
-pnpm test test/commands/init.integration.test.ts
+pnpm test test/commands/init-research-only.integration.test.ts
+
+# Verify independent clean packed artifacts
+node packages/cli/scripts/release-preflight.js verify-packed-core
+node packages/cli/scripts/release-preflight.js verify-packed-cli
 
 # Run with coverage report (terminal + HTML)
 pnpm test:coverage
