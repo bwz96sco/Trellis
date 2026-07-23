@@ -6,6 +6,10 @@
 
 CLI code must never read or write `.trellis/research/events.jsonl` directly and must import research behavior only through the public `@mindfoldhq/trellis-core/research` subpath.
 
+### Frozen successor scope (not implemented in C01)
+
+C05-C06 additionally trigger this spec for capability-bound prepare, activation planning, automatic authorization, interactive approval, revocation, approval-gated zero-write Context, and atomic approval consumption.
+
 ## 2. Signatures
 
 ```text
@@ -25,6 +29,10 @@ CLI integration behavior, not canonical research state. The exact active
 Research groups are `init`, `status`, `validate`, `rebuild`, `repo`, `quest`,
 `campaign`, `run`, `evidence`, `claim`, and `dispatch`; the exact Dispatch
 children are `context`, `prepare`, `record-result`, `apply`, and `reject`.
+
+### Frozen successor signatures (not implemented in C01)
+
+The successor Dispatch children are `prepare`, `plan-activation`, `authorize`, `approve`, `revoke`, `context`, `record-result`, `apply`, and `reject`. `prepare` requires `--capability`; Context accepts a Dispatch ID and host; `record-result` requires `--approval <apr-id> --input <path|->`; `revoke` accepts `[--reason <text>]`; interactive `approve` accepts no automation flag.
 
 ## 3. Contracts
 
@@ -248,6 +256,15 @@ gates, Campaign relaunch, richer scientific entity fields, convenience lifecycle
 aliases, or direct Mempal references. These are accepted future high-impact
 changes, not hidden command behavior.
 
+### Frozen successor contracts (not implemented in C01)
+
+- New prepare atomically records unchanged v1 Dispatch plus immutable v2 activation; `plan-activation` bridges an untouched existing v1 Dispatch exactly once.
+- `authorize` grants only bounded automatic work inside registry/policy limits. `approve` is TTY-only, displays exact authority, prompts for label/rationale, and requires `APPROVE <dispatch-id> <host> <first-12-request-digest-hex>`; no `--yes`.
+- Context remains zero-write and requires matching unexpired host approval plus Procedure, policy, request, scope, and materialization bindings.
+- Result recording requires explicit matching approval ID, then commits v1 Result, v1 Proposal, and v2 approval consumption in one batch. This disambiguates simultaneous valid host-bound grants without changing worker Result/Proposal JSON.
+
+Exact schemas, ordering, error codes, and recovery rules are frozen in the active C01 task research artifacts.
+
 ## 4. Validation & Error Matrix
 
 | Condition | Required behavior |
@@ -279,6 +296,8 @@ changes, not hidden command behavior.
 | Apply/reject repeats after Decision commit | Return the canonical Decision and applied event IDs; append nothing |
 | Ledger commits but a tracked dispatch file write fails | Report `committed: true`, head, target, and same-key recovery instruction |
 | Dry-run succeeds or fails | Leave ledger, projections, observations, manifests, and tracked dispatch files unchanged |
+
+Successor matrix additions: unknown/stage-mismatched capability, duplicate/late activation, automatic-policy violation, non-TTY/forbidden automation, challenge mismatch, duplicate grant, wrong host, absent/expired/revoked/consumed approval, every digest/scope drift, stale materialization, and non-atomic consumption all fail before unauthorized writes.
 
 ## 5. Good / Base / Bad Cases
 
@@ -326,6 +345,12 @@ Codex worker reads the target first, routes from `ownerSkill`, retries through
 `npx`, requests `--add-dir`, or wraps its final JSON in prose; each behavior
 violates the adapter contract even if the scientific work itself appears correct.
 
+### Frozen successor cases
+
+- **Good**: bounded automatic authorization or explicit TTY approval leads to zero-write Context and one atomic consumed result batch.
+- **Base**: an untouched v1 Dispatch gains one compatibility activation without changing its request metadata.
+- **Bad**: route from `ownerSkill`, accept `approve --yes`, repair sidecars in Context, or consume approval separately.
+
 ## 6. Tests Required
 
 ```bash
@@ -336,12 +361,10 @@ pnpm --filter @mindfoldhq/trellis exec vitest run \
   test/commands/research-dispatch.integration.test.ts \
   test/commands/research-dispatch-context.integration.test.ts \
   test/commands/research-workflow.integration.test.ts \
-  test/scripts/active-task-pointers.integration.test.ts \
   test/templates/codex.test.ts \
   test/templates/research-hooks.test.ts \
   test/commands/init-research-only.integration.test.ts \
-  test/commands/update.integration.test.ts \
-  test/regression.test.ts
+  test/commands/update.integration.test.ts
 pnpm --filter @mindfoldhq/trellis lint
 pnpm --filter @mindfoldhq/trellis typecheck
 pnpm --filter @mindfoldhq/trellis build
@@ -360,6 +383,8 @@ two-pass direct metadata discovery, denial anomalies, exact injected JSON,
 selected-skill behavior, and full-tree zero-write.
 
 The consolidated workflow suite must additionally prove Research initialization, root plus three independent Git repositories, Quest repository association, Dispatch review, durable lifecycle projections, byte-stable rebuild, malformed-ledger fail-closed behavior, historical native digest recognition without active native/custom resolution, legacy source byte preservation, ignored runtime state, and absence of POSIX/Windows/UNC/fixture-local absolute paths in tracked research records. Parser tests must prove the exact Research and Dispatch child sets and byte-identical zero-write rejection of `research task`, `task link`, and `task unlink`. The suite exercises request/result/proposal/decision contracts but does not pretend to execute a real Claude worker.
+
+Frozen successor tests additionally require exact parser command sets, prepare/bridge atomicity, automatic eligibility matrix, TTY and challenge subprocesses, approval lifecycle/host/expiry/drift failures, full-tree zero-write Context, three-event consumption, and post-commit same-key recovery.
 
 ## 7. Wrong vs Correct
 
@@ -446,6 +471,13 @@ await commitResearchBatch({
 
 Core still performs the digest read before append, but the absolute root exists
 only in the current call and is never serialized.
+
+### Frozen successor: approval consumption
+
+```text
+Wrong: automate interactive approval or record Result/Proposal before consuming authority.
+Correct: require exact TTY challenge for explicit approval and append Result, Proposal, then consumption atomically.
+```
 
 ### Wrong: retry a committed Decision with a new key after `decision.json` fails
 

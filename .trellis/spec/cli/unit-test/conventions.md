@@ -4,7 +4,13 @@
 
 ---
 
-## Test Infrastructure
+## 1. Scope / Trigger
+
+Apply these conventions to all unit, characterization, golden, and compatibility tests. C02-C09 successor work must retain unchanged v1 fixtures while adding separate deterministic vectors for Procedures, policy, activation, approval, normalized workers, and Research Skill retirement.
+
+## 2. Signatures
+
+### Test Infrastructure
 
 | Item | Value |
 |------|-------|
@@ -22,7 +28,9 @@
 
 ---
 
-## Test Isolation
+## 3. Contracts
+
+### Test Isolation
 
 ### Strip host-shell session env vars at process start
 
@@ -44,7 +52,7 @@ delete process.env.OPENCODE_RUN_ID;
 
 ---
 
-## When to Write Tests
+### When to Write Tests
 
 ### Must write
 
@@ -91,7 +99,7 @@ Core owns its public export map, root composition and identities, explicit subpa
 
 ---
 
-## File Naming
+### File Naming
 
 ```
 test/
@@ -111,7 +119,7 @@ test/
 
 ---
 
-## Test Structure
+### Test Structure
 
 ### Standard Pattern
 
@@ -147,7 +155,7 @@ describe("module", () => {
 
 ---
 
-## Assertion Patterns
+### Assertion Patterns
 
 ### Prefer Exact Matchers
 
@@ -185,7 +193,7 @@ expect(removed).toEqual([]);
 
 ---
 
-## Research-Only Generation Assertions
+### Research-Only Generation Assertions
 
 Current init/update tests must use exact positive and negative contracts.
 
@@ -239,7 +247,7 @@ For `AGENTS.md`, Claude settings, Codex hooks, and Codex config, seed unrelated 
 
 ---
 
-## ESLint Compatibility
+### ESLint Compatibility
 
 Tests must pass the same ESLint rules as `src/`. Common workarounds:
 
@@ -256,7 +264,21 @@ vi.spyOn(console, "log").mockImplementation(noop);
 
 ---
 
-## Test Anti-Patterns
+## 4. Validation & Error Matrix
+
+| Condition | Required test behavior |
+|---|---|
+| Existing schema-v1 fixture | Keep bytes immutable; add successor fixtures separately. |
+| Arbitrary historical Dispatch metadata | Use deliberately non-current values and assert exact round trip without routing assumptions. |
+| Procedure/policy digest vector | Assert exact framed bytes, prefix, lowercase hash, optional omission, array order, and newline behavior. |
+| Activation/approval transition | Assert exact event version, payload keys, refs/order, reducer state, and late-failure atomicity. |
+| Expiry boundary | Inject one captured clock; equality with `expiresAt` is expired. |
+| Context authorization failure | Compare complete filesystem snapshots and assert no lock/runtime/target/Git write. |
+| Host parity | Compare provider-neutral normalized objects after changing only `host`. |
+| Historical Skill retirement | Use immutable released-byte provenance; preservation input must otherwise qualify for deletion. |
+| Packed inventory | Clean-build and audit a real tarball, not source/collector/dirty `dist`. |
+
+### Test Anti-Patterns
 
 Tests should verify **meaningful behavior**, not restate what TypeScript or the runtime already guarantees. The following anti-patterns were identified during a full test audit and should be avoided.
 
@@ -461,7 +483,29 @@ If production code starts using `tasks/.length === 0` as the discriminator betwe
 
 ---
 
-## DO / DON'T
+## 5. Good / Base / Bad Cases
+
+- **Good**: unchanged v1 golden fixtures remain the compatibility oracle while separate fixed vectors cover strict v2 events, Procedure/policy/request/scope digests, approval lifecycle, host parity, and released-byte retirement.
+- **Base**: current Skill resolver/payload/packed behavior remains characterized until its owning successor intentionally changes the expected inventory.
+- **Bad**: refresh a v1 fixture into v2, hardcode current implementation output as a digest oracle, mock away TTY/filesystem/package behavior, or use non-deletable bytes in a preservation test.
+
+## 6. Tests Required
+
+C02-C09 must add focused ownership-appropriate tests for exact schema versions, capability inventory, Procedure/policy strictness, deterministic digest vectors, activation/approval ordering and transitions, zero-write Context, atomic consumption, normalized Claude/Codex input, separate retirement evidence, and real packed inventory. Every production-symbol edit requires prior GitNexus upstream impact; HIGH/CRITICAL edits require a warning and the affected-flow suites.
+
+## 7. Wrong vs Correct
+
+```text
+Wrong: regenerate existing golden bytes when successor behavior lands.
+Correct: retain compatibility fixtures and add a separate successor fixture with explicit version/authority expectations.
+```
+
+```text
+Wrong: assert a modified historical Skill survives when its bytes never matched deletion evidence.
+Correct: start with released matching bytes, then mutate exactly the condition whose preservation gate is under test.
+```
+
+### DO / DON'T
 
 ### DO
 

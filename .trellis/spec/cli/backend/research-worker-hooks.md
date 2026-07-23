@@ -45,6 +45,10 @@ Current generation does not install generic `trellis-implement`, `trellis-check`
 
 Codex does not generate `.codex/hooks/session-start.py` or a Claude prompt-mutation adapter. Its worker performs the C07 pull preflight itself.
 
+### Frozen successor scope (not implemented in C01)
+
+C06-C09 additionally trigger this spec when approval-gated Context replaces Skill routing and both host workers consume one normalized embedded-Procedure input without Skill discovery or invocation.
+
 ## 2. Signatures
 
 Provider-neutral preflight:
@@ -76,6 +80,10 @@ Runtime location:
 ```text
 .trellis/.runtime/sessions/<context-key>.json
 ```
+
+### Frozen successor signatures (not implemented in C01)
+
+Both host adapters consume `NormalizedResearchWorkerInputV1`: Dispatch, activation, approval, immutable capability, embedded Procedure, resolved declared scope, immutable authority flags, and Result-plus-pending-Proposal output IDs. The only host-varying field is `host`.
 
 ## 3. Contracts
 
@@ -233,7 +241,14 @@ Materializable result shape:
 
 Empty Proposal operations are valid. IDs are copied from the C07 output contract where required.
 
-## 4. Validation / Error Matrix
+### Frozen successor contracts (not implemented in C01)
+
+- Context, not a host adapter, validates canonical activation/approval and embeds exact Procedure instructions.
+- Workers never discover/load Skills or Procedure files, read policy/ledger/sidecars as fallback, grant/consume approval, launch Procedures/Dispatches/capabilities, use nested agents, or widen sandbox/network authority.
+- Immutable worker authority remains declared-context reads, allowed-write-path writes, proposal-only output, and no canonical Research/Git mutation.
+- Root-side result recording consumes approval atomically; workers return only strict Result plus pending Proposal.
+
+## 4. Validation & Error Matrix
 
 | Input/state | Required behavior |
 |---|---|
@@ -283,6 +298,8 @@ Codex local preflight failure shape:
 
 Neither failure fabricates Dispatch, Run, or Quest IDs.
 
+Successor matrix additions: missing/expired/revoked/wrong-host/drifted approval denies before worker start; normalized-input mismatch denies; any Skill/Procedure discovery, nested delegation, sandbox expansion, approval mutation, or worker-side result recording is forbidden.
+
 ## 5. Good / Base / Bad Cases
 
 ### Good
@@ -307,6 +324,12 @@ Neither failure fabricates Dispatch, Run, or Quest IDs.
 - Codex reading request/skill/target data before C07 or using `npx`/manual parsing fallback.
 - Worker mutating canonical Research state, accepting its own Proposal, or committing.
 
+### Frozen successor cases
+
+- **Good**: each host validates one equivalent embedded-Procedure object, performs declared work, and returns strict Result plus pending Proposal.
+- **Base**: blocked declared work returns bounded output without reading Skills or broadening authority.
+- **Bad**: worker discovers a Skill/Procedure, grants/consumes approval, records output, delegates, or commits.
+
 ## 6. Tests Required
 
 Focused coverage must prove:
@@ -330,7 +353,8 @@ Primary tests:
 - `test/templates/research-hooks.test.ts`
 - `test/templates/shared-hooks.test.ts`
 - `test/templates/hook-timeouts.test.ts`
-- `test/regression.test.ts`
+
+Frozen successor tests additionally require shared normalized input fixtures for all capabilities and hosts, approval denial before worker start, no Skill/Procedure reads, exact immutable authority flags, blocked-output behavior, and proof that only root-side recording consumes approval.
 
 ## 7. Wrong vs Correct
 
@@ -360,4 +384,11 @@ Correct: discover names only, run bare C07 as the first process, validate it, th
 ```text
 Wrong: worker records its Result, applies its Proposal, advances the Quest, or commits.
 Correct: worker returns Result plus pending Proposal; the root reviews and mutates authoritative state explicitly.
+```
+
+### Frozen successor: embedded Procedure authority
+
+```text
+Wrong: worker reads a Skill/Procedure file, grants approval, or launches another capability.
+Correct: Context supplies one approved embedded Procedure and immutable proposal-only authority.
 ```

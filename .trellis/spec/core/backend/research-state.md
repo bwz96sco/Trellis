@@ -53,6 +53,10 @@ Disposable runtime layout:
   projection-cache.json
 ```
 
+### Frozen successor scope (not implemented in C01)
+
+C02-C06 additionally trigger this spec when adding mixed schema-v1/schema-v2 activation and approval events, immutable capability selection, approval consumption, or related reduced state. Existing v1 entities and projection schemas remain compatibility authority.
+
 ## 2. Signatures
 
 Public imports must use the package subpath:
@@ -167,6 +171,10 @@ function resolveResearchStageCapability(
 `RESEARCH_EXECUTION_HOSTS` is exactly `["claude", "codex"]` and
 `RESEARCH_STAGE_CAPABILITIES` is an exhaustive
 `Readonly<Record<QuestStage, ResearchStageCapabilityDefinition>>`.
+
+### Frozen successor signatures (not implemented in C01)
+
+Successor public types add `ActivationId` (`act_`), `ApprovalId` (`apr_`), activation/approval entities and state maps, four schema-v2 event kinds, immutable capability definitions, and mixed-ledger event unions. Existing v1 signatures and root export behavior do not change. Exact shapes are frozen in the active C01 task's `research/procedure-capability-policy-contract.md` and `research/activation-approval-contract.md`.
 
 ## 3. Contracts
 
@@ -391,6 +399,14 @@ Do not import from `channel/internal/**`. Any future shared-lock extraction
 requires fresh upstream impact analysis plus complete Channel and Research lock
 regression coverage.
 
+### Frozen successor contracts (not implemented in C01)
+
+- Parse all existing kinds only as schema v1 and exactly four new activation/approval kinds only as schema v2; replay one globally contiguous mixed ledger.
+- Keep every v1 payload and existing projection schema unchanged. Activation/approval-only events advance the existing projection watermark but do not change entity data or `updatedAt`.
+- Allow exactly one immutable activation per Dispatch and canonical grant/revoke/consume approval transitions. Expiry is computed at command/Context boundaries, never by reducer wall-clock access.
+- Consume approval only as the third event in the same validated batch as v1 Result then v1 Proposal.
+- Once a v2 event exists, rollback is forward-fix only; never rewrite or down-convert ledger history.
+
 ## 4. Validation & Error Matrix
 
 | Condition | Required behavior |
@@ -422,6 +438,8 @@ regression coverage.
 | Update/safe-delete/hash/backup/cleanup targets `.trellis/research/**` | Skip before filesystem mutation; do not rewrite, delete, hash, or back up the path |
 | Migration source/destination is research or recursively contains research | Classify and execute as protected skip; `--force` cannot bypass |
 | Two writers overlap | Lock serializes commits; ledger remains contiguous |
+
+Successor matrix additions: reject kind/schema mismatches, duplicate activation, invalid approval transitions, reordered/mismatched consumption, and mixed-ledger relation errors. Activation/approval-only events must preserve entity data while advancing projection watermarks. Existing v1 matrix rows remain unchanged.
 
 ## 5. Good / Base / Bad Cases
 
@@ -532,6 +550,12 @@ resolveResearchStageCapability({
 Required result: an explicit non-dispatchable resolution with null capability and
 skill fields. `ownerSkill` does not override the current Quest stage.
 
+### Frozen successor cases
+
+- **Good**: unchanged v1 events replay with v2 activation/grant and a Result/Proposal/consumption batch; rebuild is deterministic.
+- **Base**: a pure v1 ledger reduces exactly as before with empty activation/approval maps.
+- **Bad**: a reducer consults wall clock/policy/filesystem, rewrites v1, or accepts consumption outside its matching batch.
+
 ## 6. Tests Required
 
 Core research tests live under `packages/core/test/research/`.
@@ -605,6 +629,8 @@ import {
 
 The resolver must not appear on the `@mindfoldhq/trellis-core` root barrel, and
 adding it must not change package export keys.
+
+Frozen successor tests additionally require exact v1 non-regression, strict v2 payload/version vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry boundary inputs, exact relation order, and three-event atomicity. Run fresh GitNexus impact and warn before editing the CRITICAL reducer/store symbols listed in the C01 impact map.
 
 ## 7. Wrong vs Correct
 
@@ -690,3 +716,10 @@ const resolution = resolveResearchStageCapability({
 
 The stage selects the logical capability. Exact optional discovery or the
 bundled fallback selects execution; no result is written into tracked state.
+
+### Frozen successor: mixed versions
+
+```text
+Wrong: rewrite schema-v1 events or store approval in sidecars only.
+Correct: preserve v1 bytes, append strict v2 activation/approval events, and reduce one mixed canonical ledger.
+```

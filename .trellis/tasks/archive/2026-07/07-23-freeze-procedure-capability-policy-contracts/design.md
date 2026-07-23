@@ -88,12 +88,12 @@ trellis research dispatch prepare ... --capability <id>
 trellis research dispatch plan-activation <dispatch-id> --capability <id>
 trellis research dispatch authorize <dispatch-id> --host <claude|codex>
 trellis research dispatch approve <dispatch-id> --host <claude|codex>
-trellis research dispatch revoke <approval-id>
+trellis research dispatch revoke <approval-id> [--reason <text>]
 trellis research dispatch context <dispatch-id> --host <claude|codex>
-trellis research dispatch record-result <dispatch-id> --input <path|->
+trellis research dispatch record-result <dispatch-id> --approval <apr-id> --input <path|->
 ```
 
-`plan-activation` is compatibility bridge for an existing v1 Dispatch lacking activation. Name remains frozen only after CLI conflict review in C01; if conflict appears, update C01 contract before implementation. `approve` is interactive TTY, shows exact bound scope, and requires deterministic challenge phrase. No `--yes`.
+`plan-activation` is compatibility bridge for an existing v1 Dispatch lacking activation. Name remains frozen only after CLI conflict review in C01; if conflict appears, update C01 contract before implementation. `approve` is interactive TTY, shows exact bound scope, and requires deterministic challenge phrase. No `--yes`. `record-result` requires explicit approval selection because valid grants are host-bound and may coexist for Claude and Codex. `revoke` accepts `--reason` for non-interactive use and prompts only on a TTY when omitted.
 
 ## Test strategy
 

@@ -90,3 +90,16 @@ Compare frozen versions, export map, schema-v1 fixtures, cleanup evidence, gener
 - Fix only confirmed C01 contract/fixture defects.
 - Archive C01 with `--no-commit` after all acceptance checks pass.
 - Leave C02-C10 planning and inactive; C02 may be planned only after C01 archive.
+
+## Final evidence
+
+- Added `research/compatibility-freeze.md`, `research/procedure-capability-policy-contract.md`, `research/activation-approval-contract.md`, and `research/gitnexus-impact-map.md`.
+- Added `packages/cli/test/commands/research-dispatch-arbitrary-metadata-compatibility.test.ts` plus schema-v1 fixture proving arbitrary historical `ownerSkill`, `provider`, and `taskRef` remain readable, round-trip unchanged, and do not route execution.
+- Updated nine Research code-specs with all seven required executable-contract sections.
+- Independent `trellis-check` verdict: PASS after seven fixes: explicit `--approval` selection, reducer-safe expiry replacement, non-interactive revocation reason, Procedure-aware constraint merge, exact 18-path retirement inventory, resolved GitNexus warning gates, and removal of stale deleted-test references.
+- Core suite: 29 files; 436 passed, 1 skipped. CLI Research suite: 14 files; 191 passed. Platform/shared-hook suite: 3 files; 22 passed. Uninstall Research-preservation suite: 21 passed.
+- Core and CLI lint/typecheck/build checks passed. Python lint reported 0 errors and 32 inherited warnings. Workspace typecheck passed.
+- Packed CLI audit passed with 363 entries, 180 required entries, no forbidden generic entries, and exact core `0.6.7` pin.
+- Task validation, seven-section heading validation, frozen-count validation (14 capabilities, 4 schema-v2 event kinds, 18 unique retirement paths), `git diff --check`, and untracked final-LF/whitespace checks passed.
+- GitNexus changed-scope review found no production symbols or execution flows in C01. Production source, package, cleanup inventory, packed-audit source, and schema-v1 fixture diffs remained empty.
+- `docs-site` and `marketplace` dirty subrepositories remained untouched. No push occurred.

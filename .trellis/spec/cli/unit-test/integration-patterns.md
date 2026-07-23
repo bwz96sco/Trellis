@@ -6,6 +6,10 @@ Use real temporary filesystems for command orchestration, parser boundaries, gen
 
 Function-level integration remains appropriate for command internals. When parsing, aliases, or package contents are the feature, tests must execute the built parser/bin or packed artifact rather than calling an action function directly.
 
+### Frozen successor scope (not implemented in C01)
+
+C02-C10 additionally trigger this spec for mixed-ledger replay, approval command subprocesses, zero-write digest/scope drift, generic worker parity, migration rehearsal, and packed removal of active Research Skills.
+
 ## 2. Signatures
 
 Function-level entry points:
@@ -37,6 +41,10 @@ root: init update upgrade uninstall research
 research: init status validate rebuild repo quest campaign run evidence claim dispatch
 dispatch: context prepare record-result apply reject
 ```
+
+### Frozen successor signatures (not implemented in C01)
+
+Built-parser coverage adds Dispatch `plan-activation`, `authorize`, `approve`, and `revoke`; Context changes from request-file/Skill discovery to Dispatch-ID/approval gating. Packed fixtures add Procedures and retirement evidence and forbid active Research Skill paths after C09.
 
 ## 3. Contracts
 
@@ -112,6 +120,14 @@ The core proof clean-builds and packs a real tarball, validates every tar path b
 
 The CLI proof clean-builds and packs a separate real tarball, asserts required Research/compatibility inventory, rejects forbidden generic entries/prefixes, and checks the exact packed core dependency. Collector output and dirty `dist` are not substitutes.
 
+### Frozen successor contracts (not implemented in C01)
+
+- Preserve fixed schema-v1 trees byte-for-byte and add separate mixed-v2 ledgers; never refresh v1 fixtures into v2.
+- Use real files/subprocesses for TTY rejection, forbidden `--yes`, exact challenge, activation/approval sidecars, Context zero-write, and record-result three-event atomicity.
+- Compare provider-neutral normalized worker JSON across hosts and prove no Skill/Procedure filesystem discovery.
+- Rehearse 0.6.7-style installed Skill cleanup with pristine, modified, malformed, unknown, external, protected, and concurrent cases.
+- Audit real clean tarballs before/after Skill removal; dirty `dist` or collector output is not evidence.
+
 ## 4. Validation & Error Matrix
 
 | Scenario | Required assertion |
@@ -133,11 +149,19 @@ The CLI proof clean-builds and packs a separate real tarball, asserts required R
 | Dirty CLI `dist` contains stale generic file | Clean build removes it; packed tar remains clean. |
 | Clean CLI build still emits forbidden path | Packed-CLI audit failure. |
 
+Successor matrix additions require full-tree zero-write assertions for every approval/Context failure, exact mixed-event order for successful recording, byte preservation for non-pristine retirement cases, and real packed positive/negative Procedure/Skill inventory.
+
 ## 5. Good / Base / Bad Cases
 
 - **Good**: a subprocess passes `--registry` to both aliases, receives Commander unknown-option errors, and the full temporary tree remains byte-identical.
 - **Base**: direct `init({ yes: true, codex: true })` writes the exact Research base plus Codex payload; a second update is a true no-op.
 - **Bad**: calling `init({ registry: ... } as unknown as InitOptions)` to simulate parser behavior, checking only that `.trellis` exists, or auditing package contents from the source collector.
+
+### Frozen successor cases
+
+- **Good**: subprocess and filesystem fixtures prove explicit approval, zero-write Context, atomic consumption, host parity, safe retirement, and clean packed inventory.
+- **Base**: unchanged v1 fixtures and current behavior remain separate characterization oracles until each owning child deliberately updates successor expectations.
+- **Bad**: mocks bypass TTY/parser/filesystem/package behavior or existing golden bytes are regenerated to hide drift.
 
 ## 6. Tests Required
 
@@ -154,6 +178,8 @@ The CLI proof clean-builds and packs a separate real tarball, asserts required R
 - Real clean-built packed-core runtime/declaration consumer proof.
 - Clean CLI `dist` plus real packed-CLI positive/negative inventory.
 - Exact packed CLI dependency on the matching core version.
+
+Frozen successor suites additionally require mixed-ledger golden fixtures, real TTY/parser approval boundaries, one captured clock for expiry tests, full-tree Context snapshots, shared host inputs, released-byte retirement fixtures, and real clean tarball audits.
 
 ## 7. Wrong vs Correct
 
@@ -178,4 +204,11 @@ Correct: use function-level tests for domain orchestration and built-bin tests f
 ```text
 Wrong: list `dist` after an incremental build.
 Correct: run the clean build, pack a tarball, normalize entries, and audit required/forbidden inventory.
+```
+
+### Frozen successor: approval and migration proof
+
+```text
+Wrong: unit-mock TTY approval, assert Context wrote nothing by checking one path, or derive retirement hashes from current source.
+Correct: execute parser/subprocess boundaries, snapshot the full tree, and use immutable released-byte fixtures with provenance.
 ```

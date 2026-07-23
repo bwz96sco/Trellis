@@ -6,6 +6,10 @@ This specification applies to versioning, build, pack, publication, and any clai
 
 Package proof requires clean builds and independent audits of both real packed tarballs. Source inspection, collector output, `npm pack --dry-run`, and dirty `dist` listings are insufficient.
 
+### Frozen successor scope (not implemented in C01)
+
+C08-C10 additionally trigger this spec when Procedures and Research Skill retirement evidence become required packed entries and all active Research Skill source/payload paths become forbidden entries.
+
 ## 2. Signatures
 
 Published packages:
@@ -34,6 +38,10 @@ node packages/cli/scripts/release-preflight.js publish-plan
 ```
 
 Official publication is CI-only through `.github/workflows/publish.yml`.
+
+### Frozen successor signatures (not implemented in C01)
+
+The packed-CLI audit retains its entrypoints. Its successor required inventory adds all registry-bound `procedure.json`/`PROCEDURE.md` pairs and immutable Research Skill retirement evidence; its forbidden inventory adds both active Research Skill roots after C09.
 
 ## 3. Contracts
 
@@ -126,6 +134,10 @@ Generic CLI implementations and generic templates must be absent from source, cl
 - Modified submodule SHAs must exist on their remotes before a version tag references them.
 - Release staging must exclude `.trellis/`, `docs-site`, and `marketplace` from blanket staging.
 
+### Frozen successor contracts (not implemented in C01)
+
+C09 changes packed inventory only after runtime cutover: require every registry-bound Procedure pair and dedicated retirement evidence; reject all active Research Skill source/build/tar paths. Keep workers, hooks, configs, commands, migration manifests, frozen generic cleanup evidence, exact core dependency, package versions, and generic core exports under their existing contracts.
+
 ## 4. Validation & Error Matrix
 
 | Condition | Required behavior |
@@ -145,11 +157,19 @@ Generic CLI implementations and generic templates must be absent from source, cl
 | One package is already public during CI rerun | Skip that publish idempotently and verify both afterward. |
 | Local official publish is attempted | Prohibited; use CI. |
 
+Successor matrix additions: missing Procedure/evidence entry or retained active Research Skill entry fails packed verification after C09; stale dirty output cannot satisfy or invalidate the proof because verification clean-builds and packs a real tarball.
+
 ## 5. Good / Base / Bad Cases
 
 - **Good**: independent clean builds produce a core tarball whose frozen exports import and typecheck from an isolated consumer, followed by a CLI tarball containing the exact Research payload, compatibility evidence, exact core pin, and no forbidden generic paths.
 - **Base**: stale files existed in a developer's prior `dist`; each package clean build removes them before packing.
 - **Bad**: asserting package safety from source exports, `collectResearchPlatformPayload()`, source paths, `npm pack --dry-run`, or a dirty build; extracting an unvalidated tarball; or coupling core proof to the CLI inventory audit.
+
+### Frozen successor cases
+
+- **Good**: a clean tarball contains all Procedures/evidence/workers and no active Research Skill path.
+- **Base**: stale Skills exist only in old `dist`; clean build removes them before pack.
+- **Bad**: collector output or source deletion alone is claimed as packed proof.
 
 ## 6. Tests Required
 
@@ -164,6 +184,8 @@ Generic CLI implementations and generic templates must be absent from source, cl
 - Exact packed CLI-to-core dependency check.
 - CLI/core equal-version and tag/dist-tag checks.
 - Fresh temporary repository smoke test for selected Claude/Codex Research output and update idempotency.
+
+Frozen successor tests additionally require exact registry-derived Procedure entries, retirement evidence, forbidden active Skill exact/prefix paths, real clean tarball proof, migration rehearsal, and retained version/export/dependency compatibility.
 
 ## 7. Wrong vs Correct
 
@@ -185,4 +207,11 @@ Correct: audit a real packed tarball and fail on missing or forbidden normalized
 ```text
 Wrong: `tl` has a second parser that happens to look equivalent.
 Correct: both bin names point to `bin/trellis.js`, which loads one Commander tree.
+```
+
+### Frozen successor: packed Procedure cutover
+
+```text
+Wrong: source no longer generates Skills, therefore the package is clean.
+Correct: clean-pack and require every Procedure/evidence entry while forbidding every active Research Skill path.
 ```

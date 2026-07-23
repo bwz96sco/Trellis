@@ -20,23 +20,23 @@ Freeze executable contracts and current compatibility evidence before any Resear
 - Record upstream GitNexus impact for every existing production symbol expected to change in C02-C09. Warn and stop before any HIGH or CRITICAL edit not already approved.
 - Use seven-section code-spec depth for every cross-layer/schema/command contract.
 - Do not change production runtime routing, emit schema-v2 events, stop Skill generation, remove files, or alter packed payload in C01.
-- Preserve unrelated dirty work, `.trellis/research/**`, docs-site, marketplace, generic core exports, versions, and Git history. No commit or push.
+- Preserve unrelated dirty work, `.trellis/research/**`, docs-site, marketplace, generic core exports, versions, and Git history. C01 closeout commit may contain only evidence, specs, characterization tests, and task archival; no push.
 
 ## Acceptance Criteria
 
-- [ ] Exact initial capability and Procedure inventory is frozen with bounded/workflow/advisory classification and activation policy.
-- [ ] Procedure manifest, `PROCEDURE.md`, override, digest, policy, request digest, and scope-hash contracts are executable and unambiguous.
-- [ ] Schema-v2 activation/approval event payloads, reducer transitions, batch ordering, mixed replay, expiry/revocation/consumption, and forward-fix rollback rule are frozen.
-- [ ] Existing schema-v1 golden fixtures pass unchanged and prove no existing payload/projection migration.
-- [ ] Historical Dispatch compatibility fixtures accept arbitrary `ownerSkill`, `provider`, and `taskRef` values unchanged.
-- [ ] Current Skill resolver and worker behavior is characterized before removal.
-- [ ] CLI validation/error matrix covers automatic eligibility, explicit workflow approval, TTY/challenge behavior, drift, wrong host, expiry, revocation, duplicate grants, materialization mismatch, and atomic consumption.
-- [ ] Claude/Codex normalized worker contract and forbidden authority are frozen.
-- [ ] Research Skill retirement evidence contract preserves modified, unknown, malformed, external, and Research-state files.
-- [ ] GitNexus impact map names all existing symbols targeted by C02-C09, callers/processes, risk, and required warning gates.
-- [ ] Relevant code-specs contain all seven required sections and point to focused tests.
-- [ ] Focused characterization tests, task validation, and `git diff --check` pass.
-- [ ] No production execution flow, canonical Research state, generated payload, packed artifact, commit, or push changes in C01.
+- [x] Exact initial capability and Procedure inventory is frozen with bounded/workflow/advisory classification and activation policy.
+- [x] Procedure manifest, `PROCEDURE.md`, override, digest, policy, request digest, and scope-hash contracts are executable and unambiguous.
+- [x] Schema-v2 activation/approval event payloads, reducer transitions, batch ordering, mixed replay, expiry/revocation/consumption, and forward-fix rollback rule are frozen.
+- [x] Existing schema-v1 golden fixtures pass unchanged and prove no existing payload/projection migration.
+- [x] Historical Dispatch compatibility fixtures accept arbitrary `ownerSkill`, `provider`, and `taskRef` values unchanged.
+- [x] Current Skill resolver and worker behavior is characterized before removal.
+- [x] CLI validation/error matrix covers automatic eligibility, explicit workflow approval, TTY/challenge behavior, drift, wrong host, expiry, revocation, duplicate grants, materialization mismatch, and atomic consumption.
+- [x] Claude/Codex normalized worker contract and forbidden authority are frozen.
+- [x] Research Skill retirement evidence contract preserves modified, unknown, malformed, external, and Research-state files.
+- [x] GitNexus impact map names all existing symbols targeted by C02-C09, callers/processes, risk, and required warning gates.
+- [x] Relevant code-specs contain all seven required sections and point to focused tests.
+- [x] Focused characterization tests, task validation, and `git diff --check` pass.
+- [x] C01 changes only evidence, specs, and characterization tests; production execution flow, canonical Research state, generated payload, packed inventory, and cleanup authority remain unchanged. No push occurs.
 
 ## Dependency and Handoff
 

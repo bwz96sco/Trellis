@@ -16,6 +16,10 @@ type TemplateDir = "common" | "claude" | "codex";
 
 `AI_TOOLS`, `PLATFORM_IDS`, and `PLATFORM_FUNCTIONS` contain the same two IDs. No direct import, template branch, Python adapter, alias, cleanup descriptor, or core export may create a hidden active host.
 
+### Frozen successor scope (not implemented in C01)
+
+C07-C09 additionally trigger this spec when workers consume embedded Procedures, active Research Skill generation stops, Procedure/retirement evidence enters the payload, or packed host inventory changes.
+
 ## 2. Signatures
 
 ```ts
@@ -55,6 +59,10 @@ Retained init host options:
 --codex
 --with-statusline
 ```
+
+### Frozen successor signatures (not implemented in C01)
+
+Successor payload collection keeps the same collector/writer APIs while replacing the 18 generated Skill files with bundled versioned Procedure directories plus dedicated immutable Research Skill retirement evidence. Worker paths and host IDs stay unchanged.
 
 ## 3. Contracts
 
@@ -157,6 +165,14 @@ The 0.6.7 snapshot contains exactly 1,009 globally unique safe generated paths. 
 
 These inventories may support exact-key manifest recognition, path-specific scrubbing, backup preservation, and confirmed-empty root pruning. They must not widen active types/registries, register options, detect hosts, configure output, restore templates/adapters, or claim arbitrary descendants.
 
+### Frozen successor contracts (not implemented in C01)
+
+- Both current hosts keep one worker but receive no generated Research Skills after C08.
+- Bundled Procedures are exact strict pairs selected through immutable capability bindings, not broad template discovery.
+- Claude/Codex workers receive equivalent embedded-Procedure input and perform no Skill discovery/invocation.
+- Normal update preserves project policy/overrides; retirement deletes only exact pristine released historical Skill bytes under separate evidence.
+- C09 packed/source inventory forbids active `.claude/skills/trellis-research-*/**` and `.agents/skills/trellis-research-*/**` payload.
+
 ## 4. Validation & Error Matrix
 
 | Condition | Required behavior |
@@ -174,11 +190,19 @@ These inventories may support exact-key manifest recognition, path-specific scru
 | Retired exact key is manifest-listed | May remain compatibility evidence. |
 | Unknown descendant under retired/current root | Unowned; never infer ownership from the root. |
 
+Successor matrix additions: a fresh/update payload containing any active Research Skill path fails after C08; missing/invalid Procedure inventory fails closed; modified historical Skill bytes are preserved; a pristine exact released match may be retired without touching workers, hooks, policy, overrides, or Research state.
+
 ## 5. Good / Base / Bad Cases
 
 - **Good**: dual-host generation writes exactly two bounded workers, eighteen stage-skill copies, the approved hook/config matrix, optional Claude statusline when requested, and no generic payload.
 - **Base**: a Claude-only repository adds Codex; only Codex payload paths are added and workflow ownership is unchanged.
 - **Bad**: scanning `templates/common`, treating `.agents/skills` as detection, copying a retired host root, registering an old host flag, or using cleanup inventory as current collection.
+
+### Frozen successor cases
+
+- **Good**: fresh dual-host generation writes two generic workers and bundled Procedures, with zero Research Skill directories.
+- **Base**: update preserves project policy/overrides and a modified historical Skill.
+- **Bad**: broad directory discovery emits Skills or cleanup infers ownership from a `research-*` prefix.
 
 ## 6. Tests Required
 
@@ -192,6 +216,8 @@ These inventories may support exact-key manifest recognition, path-specific scru
 - C07/C09 fail-closed and provider-neutral parity regressions.
 - Frozen 137-path and 1,009-path cleanup integrity.
 - Clean `dist` and packed-tarball negative inventory for retired hosts and generic payload.
+
+Frozen successor tests additionally require exact Procedure payload pairs, no generated Research Skill paths after C08, configure/collect parity, project policy/override preservation, generic worker parity, dedicated retirement evidence, and clean packed negative Skill inventory.
 
 ## 7. Wrong vs Correct
 
@@ -221,4 +247,11 @@ Correct: both paths call collectResearchPlatformPayload() and use identical rend
 ```text
 Wrong: a path is below `.windsurf`, therefore Trellis owns it.
 Correct: only an exact frozen key, exact structured descriptor, or canonical migration evidence can recognize ownership.
+```
+
+### Frozen successor: Procedures, not Skills
+
+```text
+Wrong: keep generating Research Skills beside Procedures or let workers discover either root.
+Correct: generate bundled Procedures plus generic workers, embed validated instructions in Context, and retire only exact pristine historical Skills.
 ```

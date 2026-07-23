@@ -6,6 +6,10 @@ This specification covers versioned migration manifests, manifest-key ownership,
 
 Migration data is compatibility evidence. It does not restore retired commands, platforms, templates, registry downloads, generic workflow generation, or Task creation.
 
+### Frozen successor scope (not implemented in C01)
+
+C08-C09 additionally trigger this spec for the separate immutable Research Skill retirement evidence. The frozen 137/1,009 generic cleanup evidence remains outside that successor authority.
+
 ## 2. Signatures
 
 Manifest location:
@@ -45,6 +49,10 @@ Historical inventories:
 CURRENT_HOST_GENERIC_CLEANUP_PATHS     exactly 137 paths
 RETIRED_GENERATED_PATHS                exactly 1,009 paths across 17 retired hosts
 ```
+
+### Frozen successor signatures (not implemented in C01)
+
+Dedicated Research Skill retirement evidence records an exact historical path, released package/version provenance, immutable released source/tar entry, normalization rule, and reproduced SHA-256. It is separate from migration inventory membership and from the frozen generic cleanup snapshots.
 
 ## 3. Contracts
 
@@ -106,6 +114,13 @@ They may not:
 | `skip-modified` | Preserve bytes whose hash is not released deletion evidence. |
 | `skip-protected` | Preserve Research regardless of other flags. |
 
+### Frozen successor contracts (not implemented in C01)
+
+- Retirement evidence covers exactly the nine historical Trellis Research Skill files under each of the Claude and `.agents` roots.
+- Deletion requires exact safe key, existing ownership/migration authority, contained regular non-symlink file, current-byte match to immutable released hash, and no current/protected/concurrent exclusion.
+- Modified, malformed, unknown, untracked, external `research-*`, worker, hook, config, and `.trellis/research/**` files survive.
+- Remove only confirmed-empty directories with `rmdir`; never infer ownership or recursively remove a Skill root.
+
 ## 4. Validation & Error Matrix
 
 | Condition | Required behavior |
@@ -121,11 +136,19 @@ They may not:
 | Manifest key is absolute, traversal, backslash, drive-relative, NUL, or non-normalized | Reject as unsafe; perform no filesystem access. |
 | Frozen inventory cardinality/path changes unintentionally | Test and package audit failure. |
 
+Successor matrix additions: dedicated evidence plus exact released-byte match may delete one historical Skill file; inventory-only, current-collector, modified, malformed, unknown, external, unowned, symlinked, protected, or concurrently changed cases preserve bytes.
+
 ## 5. Good / Base / Bad Cases
 
 - **Good**: an exact historical key with released matching bytes is safely removed while an unknown sibling and all Research data remain byte-identical.
 - **Base**: a frozen path is absent or modified; update reports it and preserves the project without inventing ownership.
 - **Bad**: walking `.claude`, `.codex`, `.windsurf`, or `.trellis` and hashing/deleting every discovered descendant; deriving `allowed_hashes` from a fixture; or feeding retired inventory into active payload collection.
+
+### Frozen successor cases
+
+- **Good**: one exact owned pristine released Skill is deleted and its now-empty directory is removed.
+- **Base**: modified or absent historical Skill is preserved/no-op while ownership is handled safely.
+- **Bad**: generic cleanup counts/hashes are edited or a whole Skill root is scanned/deleted.
 
 ## 6. Tests Required
 
@@ -139,6 +162,8 @@ They may not:
 - Cover pristine, modified, missing, protected, skipped, malformed, and current-template-precedence cases.
 - Prove dry-run and cancellation do not persist pruning.
 - Require every migration manifest in clean `dist` and the packed tarball.
+
+Frozen successor tests additionally require exact 18-path dedicated evidence, released provenance reproduction, pristine deletion, all preservation classes, dry-run/cancellation/concurrent revalidation, confirmed-empty-only cleanup, and unchanged 137/1,009 generic evidence.
 
 ## 7. Wrong vs Correct
 
@@ -166,4 +191,11 @@ allowed_hashes: [releasedNormalizedSha256];
 ```text
 Wrong: `.windsurf` is a cleanup root, therefore every child is Trellis-owned.
 Correct: only an exact frozen key, exact structured descriptor, or already-safe canonical migration key is recognized.
+```
+
+### Frozen successor: Research Skill retirement
+
+```text
+Wrong: reuse generic cleanup inventory or current collector bytes as deletion authority.
+Correct: use separate immutable released provenance and delete one exact owned matching historical Skill file.
 ```
