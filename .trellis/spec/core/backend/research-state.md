@@ -17,6 +17,7 @@ Use this spec when changing any of these contracts:
 - `.trellis/research/events.jsonl` or tracked projection layout.
 - `.trellis/.runtime/research` lock, sequence, or projection cache behavior.
 - Immutable Research capability selection and execution-host validation.
+- Strict Procedure parsing, project-policy validation, exact digests, effective authority, and automatic eligibility.
 - `@mindfoldhq/trellis-core/research` exports.
 
 Authority rules:
@@ -55,7 +56,7 @@ Disposable runtime layout:
 
 ### Mixed-ledger rollout scope
 
-C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03 implements immutable capability selection. C04-C06 later add Procedure/policy resolution, validated emitters, Context gating, and approval consumption commands. Existing v1 entities, mutations, and projection schemas remain compatibility authority.
+C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03 implements immutable capability selection. C04 implements pure Procedure/policy parsing, digests, effective authority, and automatic eligibility without emit authority. C05-C06 later add validated emitters, Context gating, and approval consumption commands. Existing v1 entities, mutations, and projection schemas remain compatibility authority.
 
 ## 2. Signatures
 
@@ -197,6 +198,27 @@ function resolveResearchCapability(input: {
   capability: ResearchCapabilityDefinition;
   selection: "explicit" | "default";
 };
+
+function parseResearchProcedure(input: {
+  capabilityId: string;
+  source: "bundled" | "project";
+  manifestBytes: Uint8Array;
+  instructionBytes: Uint8Array;
+}): ParsedResearchProcedure;
+
+function parseResearchProjectPolicy(
+  policyBytes: Uint8Array,
+): ParsedResearchProjectPolicy;
+
+function resolveResearchEffectiveAuthority(input: {
+  capabilityId: string;
+  procedure: ParsedResearchProcedure;
+  policy: ParsedResearchProjectPolicy;
+}): ResearchEffectiveAuthority;
+
+function evaluateResearchAutomaticEligibility(
+  authority: ResearchEffectiveAuthority,
+): ResearchAutomaticEligibility;
 ```
 
 `RESEARCH_EXECUTION_HOSTS` remains exactly `["claude", "codex"]`.
@@ -267,6 +289,46 @@ Host parsing remains a separate exact validation API accepting only lowercase
 `claude` and `codex`. Historical `Dispatch.ownerSkill`, `provider`, and `taskRef`
 remain readable schema-v1 compatibility metadata. They are not rewritten,
 persisted as computed capability fields, or used to select a capability.
+
+### Strict Procedure and project-policy contracts
+
+Procedure and policy APIs are pure, host-neutral, and public only through the
+Research subpath. They consume the immutable capability registry without adding
+capabilities or emit authority.
+
+- Strict JSON decoding rejects BOM, malformed UTF-8, comments, trailing tokens,
+  invalid grammar, unpaired surrogate escapes, and duplicate decoded keys at
+  every object depth, including escaped-equivalent keys.
+- `procedure.json` is one compact canonical object in fixed key order with exactly
+  one final LF. Bundled manifests omit `replaces`; project manifests require the
+  exact bundled `{ id, version }`. Identity must match the selected capability.
+- Procedure authority may only tighten registry authority: network to forbidden,
+  repository scope to single, and positive limits downward. Instruction bytes are
+  non-empty UTF-8 without BOM/NUL and are never newline-normalized.
+- Procedure digest framing is
+  `UTF8("trellis-research-procedure-digest-v1\0") || canonical manifest bytes
+  excluding final LF || 0x0A || exact instruction bytes`.
+- Policy parsing requires complete schema v1, rejects unknown capability IDs, and
+  preserves exact valid source text. Literal `true` in any `allow*` field,
+  `activation:"automatic"`, or an override limit above its policy default throws
+  `POLICY_WIDENS_AUTHORITY`; `enabled:true` remains a valid no-op.
+- Policy digest framing is
+  `UTF8("trellis-research-policy-digest-v1\0") ||
+  UTF8(stableResearchJson(strictParsedCompletePolicy))`. Source formatting and key
+  order do not affect this digest.
+- Effective authority merges registry, Procedure, policy defaults, then the
+  capability override. Limits use the minimum; false policy grants may tighten
+  network/repository scope; external cost, canonical mutation, and capability
+  chaining remain false.
+- `automaticEnabled:true` is the sole automatic opt-in. Eligibility returns every
+  failed condition in stable order and requires enabled, bounded, automatic,
+  forbidden network, single Repository, no external cost/mutation/chaining, at
+  most one Dispatch, and at most 15 minutes.
+- Returned semantic objects, nested objects, and arrays are runtime-frozen. Input
+  bytes are defensively copied and mutable byte views are not exposed.
+
+C04 computes authority only. It emits no activation, approval, authorization,
+Context decision, event, or canonical mutation.
 
 ### Canonical research lifecycle protection
 
@@ -477,6 +539,10 @@ regression coverage.
 | Capability ID is empty, whitespace, case-varied, adorned, or unknown | Throw typed `UNKNOWN_CAPABILITY` |
 | Known capability belongs to another stage | Throw typed `CAPABILITY_STAGE_MISMATCH` |
 | Stage is `complete` or runtime-invalid, regardless of supplied capability | Throw typed `QUEST_STAGE_NOT_DISPATCHABLE` before lookup |
+| Procedure JSON is noncanonical, duplicate-keyed, identity-mismatched, or widens registry authority | Reject as `INVALID_RESEARCH_PROCEDURE`; do not normalize bytes |
+| Policy JSON is malformed, incomplete, unknown-keyed, or names an unknown capability | Reject as `INVALID_RESEARCH_POLICY` |
+| Policy contains a recognized grant attempt | Reject as `POLICY_WIDENS_AUTHORITY`; do not return partial authority |
+| Automatic policy opt-in is absent or another eligibility condition fails | Return all applicable reasons in stable order; create no authorization state |
 | Empty mutation batch | Throw `Research event batch must contain at least one mutation` |
 | Existing `idempotencyKey` | Return prior matching events with `replayed: true`; append nothing |
 | Batch contains valid mutation followed by invalid mutation | Reject whole batch; append nothing |
@@ -566,6 +632,10 @@ resolveResearchCapability({ stage: "writing" });
 // selection: "default", capability.id: "research.writing.case"
 ```
 
+A conservative policy keeps automatic execution disabled. Parsing and evaluating
+it returns immutable semantics and deterministic ineligibility reasons without
+writing Research state.
+
 ### Bad
 
 Non-portable or unresolved artifact:
@@ -623,6 +693,16 @@ Core research tests live under `packages/core/test/research/`.
     arrays, default map, and returned canonical definitions.
   - host parser accepts only `claude` and `codex`; capability input/output has no
     host, discovery, Skill, fallback, selected-Skill, or source concept.
+- `strict-json.test.ts`
+  - complete JSON grammar, fatal UTF-8/BOM handling, malformed numbers/escapes,
+    trailing tokens/comments, valid surrogate pairs, invalid unpaired surrogates,
+    and nested escaped-equivalent duplicate keys.
+- `procedure-policy.test.ts`
+  - canonical manifests for all 14 capabilities, source-specific `replaces`, exact
+    digest framing/newline behavior, SemVer/array/schema failures, Procedure
+    tightening, policy widening classification, formatting-independent policy
+    digest, runtime freezing, all-capability authority merge, and stable automatic
+    eligibility reasons.
 - `schema.test.ts`
   - All ID prefixes and entity shapes.
   - Unknown keys rejected.
@@ -685,8 +765,11 @@ Also verify built consumer import:
 ```ts
 import {
   RESEARCH_CAPABILITY_REGISTRY,
+  parseResearchProcedure,
+  parseResearchProjectPolicy,
   readResearchState,
   resolveResearchCapability,
+  resolveResearchEffectiveAuthority,
 } from "@mindfoldhq/trellis-core/research";
 ```
 
@@ -780,6 +863,23 @@ const resolution = resolveResearchCapability({
 The stage is validated first, and omission selects the explicit default map.
 Host, discovery order, Skill names, and Dispatch compatibility metadata never
 select the canonical capability; no result is written into tracked state.
+
+### Wrong: normalize Procedure instructions before hashing
+
+```ts
+const instructionBytes = new TextEncoder().encode(text.replaceAll("\r\n", "\n"));
+```
+
+### Correct: digest exact validated instruction bytes
+
+```ts
+const digest = computeResearchProcedureDigest({
+  canonicalManifestBytes,
+  instructionBytes,
+});
+```
+
+Line endings and final-newline presence are Procedure identity.
 
 ### C02: mixed versions without premature write authority
 

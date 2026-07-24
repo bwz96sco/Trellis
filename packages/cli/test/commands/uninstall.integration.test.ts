@@ -120,6 +120,9 @@ describe("uninstall() integration", () => {
     expect(fs.existsSync(path.join(tmpDir, ".trellis"))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(true);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".trellis", "research", "policy.json")),
+    ).toBe(false);
 
     const hashesBefore = loadHashes(tmpDir);
     expect(Object.keys(hashesBefore).length).toBeGreaterThan(0);
@@ -149,6 +152,9 @@ describe("uninstall() integration", () => {
       return fs.existsSync(path.join(tmpDir, ...p.split("/")));
     });
     expect(stillPresentOpaque).toEqual([]);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".trellis", "research", "policy.json")),
+    ).toBe(false);
 
     // Any structured file that remains must have been scrubbed: it must NOT
     // contain any references to the deleted manifest paths.

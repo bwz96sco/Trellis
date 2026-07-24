@@ -5,6 +5,7 @@ import {
   buildPackedCliInventory,
   normalizeTarEntry,
   parseTarListing,
+  RESEARCH_PROCEDURE_IDS,
   RESEARCH_STAGE_SKILLS,
 } from "../../scripts/packed-cli-audit.js";
 
@@ -96,6 +97,14 @@ describe("packed CLI inventory audit", () => {
     for (const skill of RESEARCH_STAGE_SKILLS) {
       expect(inventory.requiredEntries).toContain(
         `package/dist/templates/common/bundled-skills/${skill}/SKILL.md`,
+      );
+    }
+    for (const procedureId of RESEARCH_PROCEDURE_IDS) {
+      expect(inventory.requiredEntries).toContain(
+        `package/dist/templates/research/procedures/${procedureId}/1.0.0/procedure.json`,
+      );
+      expect(inventory.requiredEntries).toContain(
+        `package/dist/templates/research/procedures/${procedureId}/1.0.0/PROCEDURE.md`,
       );
     }
     expect(inventory.requiredEntries).toContain(

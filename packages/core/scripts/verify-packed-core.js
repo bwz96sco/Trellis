@@ -56,6 +56,9 @@ const expectations = [
   ["mem.searchMemSessions", mem.searchMemSessions],
   ["research.readResearchState", research.readResearchState],
   ["research.resolveResearchCapability", research.resolveResearchCapability],
+  ["research.parseResearchProcedure", research.parseResearchProcedure],
+  ["research.parseResearchProjectPolicy", research.parseResearchProjectPolicy],
+  ["research.resolveResearchEffectiveAuthority", research.resolveResearchEffectiveAuthority],
   ["task.emptyTaskRecord", task.emptyTaskRecord],
 ];
 for (const [name, value] of expectations) {
@@ -97,8 +100,17 @@ import { parseChannelType } from "${PACKAGE_NAME}/channel";
 import type { ChannelType } from "${PACKAGE_NAME}/channel";
 import { searchMemSessions } from "${PACKAGE_NAME}/mem";
 import type { MemSessionInfo } from "${PACKAGE_NAME}/mem";
-import { readResearchState, resolveResearchCapability } from "${PACKAGE_NAME}/research";
-import type { ResearchCapabilityId, ResearchState } from "${PACKAGE_NAME}/research";
+import {
+  CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON,
+  parseResearchProjectPolicy,
+  readResearchState,
+  resolveResearchCapability,
+} from "${PACKAGE_NAME}/research";
+import type {
+  ParsedResearchProjectPolicy,
+  ResearchCapabilityId,
+  ResearchState,
+} from "${PACKAGE_NAME}/research";
 import * as taskNamespace from "${PACKAGE_NAME}/task";
 import { emptyTaskRecord } from "${PACKAGE_NAME}/task";
 import type { TrellisTaskRecord } from "${PACKAGE_NAME}/task";
@@ -120,6 +132,9 @@ const taskRecord: TrellisTaskRecord = emptyTaskRecord();
 const memReader: typeof searchMemSessions = searchMemSessions;
 const researchReader: (root: string) => Promise<ResearchState> = readResearchState;
 const capabilityId: ResearchCapabilityId = resolveResearchCapability({ stage: "audit" }).capability.id;
+const parsedPolicy: ParsedResearchProjectPolicy = parseResearchProjectPolicy(
+  new TextEncoder().encode(CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON),
+);
 const memSession = undefined as MemSessionInfo | undefined;
 root.parseChannelType;
 root.emptyTaskRecord;
@@ -127,7 +142,16 @@ root.emptyTaskRecord;
 root.searchMemSessions;
 // @ts-expect-error Research remains outside the root compatibility barrel.
 root.readResearchState;
-void [channelType, taskRecord, memReader, researchReader, capabilityId, memSession, testing];
+void [
+  channelType,
+  taskRecord,
+  memReader,
+  researchReader,
+  capabilityId,
+  parsedPolicy,
+  memSession,
+  testing,
+];
 `,
   );
   fs.writeFileSync(

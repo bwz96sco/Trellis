@@ -166,6 +166,16 @@ describe("update() integration", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
+  it("does not create an absent Research project policy", async () => {
+    await setupProject();
+    const policyPath = projectFile(".trellis/research/policy.json");
+    expect(fs.existsSync(policyPath)).toBe(false);
+
+    await update({ force: true });
+
+    expect(fs.existsSync(policyPath)).toBe(false);
+  });
+
   it("#1 same version update is a true no-op after ownership self-heal", async () => {
     await setupProject();
     // The first update may release stale ownership recorded by older init

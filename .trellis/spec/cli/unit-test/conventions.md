@@ -59,6 +59,8 @@ delete process.env.OPENCODE_RUN_ID;
 | Change Type | Test Type | Example |
 |-------------|-----------|---------|
 | New pure/utility function | Unit test | Added `compareVersions()` → test boundary values |
+| Strict Procedure/policy parser or authority merge | Table-driven unit + exact digest vectors | Cover grammar, canonical bytes, widening classification, freezing, and stable reason order |
+| Procedure/policy filesystem resolution | Real-temp-tree integration test | Cover project-first fallback, symlink/type/identity failures, exact-byte preservation, and no-replace creation |
 | Public package export/proof change | Core-owned compatibility + packed audit tests | Freeze export order/targets, imports, declarations, and deep-import blocking |
 | CLI core dependency-boundary change | CLI-owned source + clean-build scanner test | Accept only exact `@mindfoldhq/trellis-core/research` |
 | New platform | Unit (auto-covered by `registry-invariants.test.ts`) | Added opencode → invariants verify consistency |
@@ -224,6 +226,16 @@ For each removed root/Research command and removed init option:
 
 Removed init options are `--user`, `--monorepo`, `--no-monorepo`, `--template`, `--registry`, `--overwrite`, and `--append`. Removed command surfaces are `channel`, `mem`, `workflow`, and the `research task` subtree. Do not call `init()` with cast legacy fields to simulate parser behavior; that bypasses the contract under test.
 
+### Procedure and policy checks
+
+- Strict JSON tests must include complete token grammar, fatal UTF-8/BOM handling, comments/trailing tokens, malformed numbers/escapes, valid paired surrogates, invalid unpaired surrogates, and duplicate decoded keys including escaped-equivalent nested keys.
+- Procedure tests must use independent digest oracles/vectors, not implementation output copied into fixtures. Assert domain prefix/NUL/LF framing, exact instruction bytes, CRLF/final-newline differences, Unicode, array order, and optional omission.
+- Table-drive all 14 registered capabilities through canonical parsing and effective-authority merge. Assert nested runtime freezing and stable all-reasons automatic eligibility.
+- Distinguish malformed policy (`INVALID_RESEARCH_POLICY`) from recognized grants (`POLICY_WIDENS_AUTHORITY`). Include `enabled:true` as valid no-op and global `automaticEnabled:true` as sole opt-in.
+- Filesystem resolution tests use real temp trees. Cover genuine-absence fallback, valid override precedence, every present-invalid no-fallback class, full-chain and both-named-file post-pair revalidation, concurrent ignored unnamed sibling creation/removal, symlink/type/containment/identity failures, clean-built resolver execution, and unknown capability before filesystem access. Directory metadata noise from ignored siblings must not be treated as authoritative drift; named-file size/timestamp drift must fail.
+- Policy-init tests compare exact bytes and full-tree snapshots. Cover fresh/matching/dry-run/conflict paths, custom-format preservation, malformed/symlink/non-regular winners, complete originally captured parent-chain revalidation, exclusive no-replace publication, and staging-path replacement cleanup that preserves unrelated bytes.
+- Packed tests retain current positive Skill inventory while requiring every Procedure pair. Real clean tarballs remain mandatory; source or dirty `dist` is not proof.
+
 ### Protected-state snapshots
 
 Snapshot `.trellis/research/**` before and after init, host-addition re-init, full/force init, update, and uninstall compatibility flows. Compare path sets and bytes exactly. A test that only checks the directory still exists is insufficient.
@@ -271,6 +283,9 @@ vi.spyOn(console, "log").mockImplementation(noop);
 | Existing schema-v1 fixture | Keep bytes immutable; add successor fixtures separately. |
 | Arbitrary historical Dispatch metadata | Use deliberately non-current values and assert exact round trip without routing assumptions. |
 | Procedure/policy digest vector | Assert exact framed bytes, prefix, lowercase hash, optional omission, array order, and newline behavior. |
+| Present-invalid project Procedure | Assert source-specific error and prove bundled parser/read path is not used. |
+| Concurrent policy creator | Assert final destination is never replacement-written; preserve and strict-validate winner. |
+| Research-init policy behavior | Full-tree snapshots prove fresh/matching creation only, dry-run/conflict zero-write, and root init/update/uninstall non-creation. |
 | Activation/approval transition | Assert exact event version, payload keys, refs/order, reducer state, and late-failure atomicity. |
 | Expiry boundary | Inject one captured clock; equality with `expiresAt` is expired. |
 | Context authorization failure | Compare complete filesystem snapshots and assert no lock/runtime/target/Git write. |
@@ -485,19 +500,29 @@ If production code starts using `tasks/.length === 0` as the discriminator betwe
 
 ## 5. Good / Base / Bad Cases
 
-- **Good**: unchanged v1 golden fixtures remain the compatibility oracle while separate fixed vectors cover strict v2 events, Procedure/policy/request/scope digests, approval lifecycle, host parity, and released-byte retirement.
-- **Base**: current Skill resolver/payload/packed behavior remains characterized until its owning successor intentionally changes the expected inventory.
-- **Bad**: refresh a v1 fixture into v2, hardcode current implementation output as a digest oracle, mock away TTY/filesystem/package behavior, or use non-deletable bytes in a preservation test.
+- **Good**: unchanged v1 golden fixtures remain the compatibility oracle; separate fixed C04 vectors cover strict JSON, canonical Procedures, policy classification/digests, authority merge, real filesystem resolution, init creation, and additive packed proof. Later vectors cover v2 emitters, approval lifecycle, host parity, and released-byte retirement.
+- **Base**: current Skill resolver/payload/packed behavior remains characterized while all 14 bundled Procedure pairs are added as positive inventory; Skill removal waits for its owning successor.
+- **Bad**: refresh a v1 fixture into v2, hardcode current implementation output as a digest oracle, mock away filesystem/package behavior, claim source assets as packed proof, or use non-deletable bytes in a preservation test.
 
 ## 6. Tests Required
 
-C02-C09 must add focused ownership-appropriate tests for exact schema versions, capability inventory, Procedure/policy strictness, deterministic digest vectors, activation/approval ordering and transitions, zero-write Context, atomic consumption, normalized Claude/Codex input, separate retirement evidence, and real packed inventory. Every production-symbol edit requires prior GitNexus upstream impact; HIGH/CRITICAL edits require a warning and the affected-flow suites.
+C04 requires `strict-json.test.ts`, `procedure-policy.test.ts`, `research-procedure-resolution.integration.test.ts`, `research-policy-init.integration.test.ts`, Research-subpath compatibility proof, packed CLI inventory tests, and both real packed-package verifiers. Existing init/update/uninstall suites remain regression gates. C02-C09 collectively require exact schema versions, capability inventory, Procedure/policy strictness, deterministic digest vectors, activation/approval ordering and transitions, zero-write Context, atomic consumption, normalized Claude/Codex input, separate retirement evidence, and real packed inventory. Every production-symbol edit requires prior GitNexus upstream impact; HIGH/CRITICAL edits require a warning and affected-flow suites.
 
 ## 7. Wrong vs Correct
 
 ```text
 Wrong: regenerate existing golden bytes when successor behavior lands.
 Correct: retain compatibility fixtures and add a separate successor fixture with explicit version/authority expectations.
+```
+
+```text
+Wrong: test project override precedence with a valid override only.
+Correct: seed a present-invalid override and prove resolution returns INVALID_PROJECT_PROCEDURE without opening bundled files.
+```
+
+```text
+Wrong: call policy creation twice sequentially and label it a no-replace publication test.
+Correct: exercise destination-exists winner handling and assert winner bytes survive exact; use a real concurrent creator test when the race itself is under test.
 ```
 
 ```text

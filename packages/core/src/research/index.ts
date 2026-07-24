@@ -107,6 +107,29 @@ export type {
 } from "./stage-capabilities.js";
 
 export {
+  CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON,
+  ResearchProcedurePolicyError,
+  computeResearchProcedureDigest,
+  computeResearchProjectPolicyDigest,
+  evaluateResearchAutomaticEligibility,
+  parseResearchProcedure,
+  parseResearchProjectPolicy,
+  resolveResearchEffectiveAuthority,
+} from "./procedure-policy.js";
+export type {
+  ParsedResearchProcedure,
+  ParsedResearchProjectPolicy,
+  ResearchAutomaticEligibility,
+  ResearchAutomaticIneligibilityReason,
+  ResearchCapabilityPolicyV1,
+  ResearchEffectiveAuthority,
+  ResearchProcedureManifest,
+  ResearchProcedurePolicyErrorCode,
+  ResearchProcedureSource,
+  ResearchProjectPolicyV1,
+} from "./procedure-policy.js";
+
+export {
   workspaceSchema,
   repositorySchema,
   artifactRefSchema,

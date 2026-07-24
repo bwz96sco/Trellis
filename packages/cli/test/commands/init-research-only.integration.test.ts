@@ -328,6 +328,9 @@ describe("Research-only init", () => {
     );
     expect(loadHashes(tmpDir)[PATHS.WORKFLOW_GUIDE_FILE]).toBeUndefined();
     expect(loadWorkflowSelection(tmpDir)).toEqual({ kind: "missing" });
+    expect(
+      fs.existsSync(path.join(tmpDir, ".trellis", "research", "policy.json")),
+    ).toBe(false);
   });
 
   it("does not claim an untracked colliding Claude statusline", async () => {
@@ -380,6 +383,9 @@ describe("Research-only init", () => {
     await init({ yes: true, force: true });
 
     expect(snapshotFiles(tmpDir)).toEqual(before);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".trellis", "research", "policy.json")),
+    ).toBe(false);
   });
 
   it("is byte-idempotent on repeated Codex-only force init", async () => {

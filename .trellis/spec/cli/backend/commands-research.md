@@ -6,9 +6,9 @@
 
 CLI code must never read or write `.trellis/research/events.jsonl` directly and must import research behavior only through the public `@mindfoldhq/trellis-core/research` subpath.
 
-### Frozen successor scope (not implemented in C01)
+### Procedure/policy and frozen successor scope
 
-C05-C06 additionally trigger this spec for capability-bound prepare, activation planning, automatic authorization, interactive approval, revocation, approval-gated zero-write Context, and atomic approval consumption.
+C04 adds strict host-neutral Procedure/project-policy resolution and conservative policy creation during explicit Research initialization. C05-C06 additionally trigger this spec for capability-bound prepare, activation planning, automatic authorization, interactive approval, revocation, approval-gated zero-write Context, and atomic approval consumption.
 
 ## 2. Signatures
 
@@ -52,7 +52,9 @@ All event-producing commands support `--idempotency-key`, `--dry-run`, and `--js
 - Provenance source is `trellis research <subcommand>`.
 - Omitted keys are generated as unique CLI keys. Cross-process retries must provide an explicit key.
 - `init` defaults to `research:init`, creates one workspace, returns a no-op for matching state, and rejects conflicting arguments.
-- Dry-run uses `validateResearchBatch`; it must not leave ledger, projection, or runtime files changed.
+- Fresh or matching non-dry-run Research init ensures `.trellis/research/policy.json` exists and is valid before ledger mutation/replay return. It creates only an absent file with exact conservative bytes and preserves every valid existing byte.
+- Conflicting Research init returns before policy repair. Dry-run validates prospective conservative policy in memory but creates no policy directory/file.
+- Dry-run uses `validateResearchBatch`; it must not leave policy, ledger, projection, or runtime files changed.
 - Idempotent replay is successful and returns the original events with `replayed: true`.
 - Explicit IDs and enum arguments are validated before commit. Create commands generate public core IDs when omitted.
 
@@ -97,6 +99,29 @@ All event-producing commands support `--idempotency-key`, `--dry-run`, and `--js
 - Runtime binding and observation files use strict versioned shapes, stable JSON,
   a trailing newline, and same-directory atomic replacement.
 - Child repositories do not need a `.trellis` directory.
+
+### Host-neutral Procedure and policy resolution contract
+
+C04 package-internal resolution prepares authority inputs for C05/C06 without
+changing current Dispatch Context, workers, hooks, or Skill routing.
+
+- Resolve an exact capability through the immutable core registry before any
+  Procedure or policy filesystem access.
+- Resolve `.trellis/research/procedures/<procedure-id>/<version>/` first, then the
+  package-internal bundled pair only when the exact project candidate is genuinely
+  absent. Present-invalid project content is authoritative failure and never falls
+  back.
+- Read only `procedure.json` and `PROCEDURE.md`; unnamed siblings are ignored
+  without enumeration. Map selected project failures to
+  `INVALID_PROJECT_PROCEDURE` and bundled failures to
+  `INVALID_BUNDLED_PROCEDURE`.
+- Ordinary authority resolution requires strict existing
+  `.trellis/research/policy.json`; it never substitutes conservative defaults.
+- Merge validated registry, Procedure, policy defaults, and capability override,
+  then evaluate automatic eligibility. Results are computation only: no grant,
+  approval, event, Context decision, or runtime/tracked write.
+- C04 APIs are package-internal on CLI side and import core behavior only from
+  `@mindfoldhq/trellis-core/research`.
 
 ### Read-only Dispatch Context Contract
 
@@ -276,6 +301,12 @@ Exact schemas, ordering, error codes, and recovery rules are frozen in the activ
 | Condition | Required behavior |
 | --- | --- |
 | Selected root lacks `.trellis` | Fail; never search ancestors or child repositories |
+| Research init is fresh or matching and policy is absent | Non-dry-run creates exact conservative policy before ledger work; dry-run writes nothing |
+| Research init conflicts with canonical workspace | Fail before policy creation or repair |
+| Existing policy is valid but custom-formatted | Preserve exact bytes and use strict semantic parse |
+| Existing policy is malformed, widening, symlinked, non-regular, or escaping | Fail without overwrite; classify widening separately |
+| Project Procedure is present but invalid or partial | Return `INVALID_PROJECT_PROCEDURE`; do not fall back to bundle |
+| Capability ID is unknown | Throw core `UNKNOWN_CAPABILITY` before root/Procedure/policy filesystem access |
 | Dispatch context host is blank, case-varied, retired, an installer ID, or arbitrary | Return `INVALID_HOST`; perform no target observation or write |
 | Dispatch context skill name is path-like, namespaced, adorned, case-varied, or body-like | Return `INVALID_SKILL_NAME`; never scan or read skill files |
 | Claude worker envelope has blanks, extra lines/tail, prefix/suffix, alias, traversal, backslash, absolute path, or case variation | Deny Agent startup before C07; emit no updated prompt |
@@ -351,6 +382,12 @@ Codex worker reads the target first, routes from `ownerSkill`, retries through
 `npx`, requests `--add-dir`, or wraps its final JSON in prose; each behavior
 violates the adapter contract even if the scientific work itself appears correct.
 
+### Procedure/policy cases
+
+- **Good**: fresh explicit Research init creates exact conservative policy, then initializes canonical state; later matching init preserves custom valid policy bytes.
+- **Base**: absent project override resolves the package-internal bundled pair; strict policy keeps automatic execution disabled and produces deterministic reasons only.
+- **Bad**: repair policy during a conflicting init, fall back around a malformed project override, or treat computed eligibility as authorization.
+
 ### Frozen successor cases
 
 - **Good**: bounded automatic authorization or explicit TTY approval leads to zero-write Context and one atomic consumed result batch.
@@ -364,6 +401,8 @@ pnpm --filter @mindfoldhq/trellis-core build
 pnpm --filter @mindfoldhq/trellis exec vitest run \
   test/commands/research.test.ts \
   test/commands/research.integration.test.ts \
+  test/commands/research-procedure-resolution.integration.test.ts \
+  test/commands/research-policy-init.integration.test.ts \
   test/commands/research-dispatch.integration.test.ts \
   test/commands/research-dispatch-context.integration.test.ts \
   test/commands/research-workflow.integration.test.ts \
@@ -391,6 +430,8 @@ two-pass direct metadata discovery, denial anomalies, exact injected JSON,
 selected-skill behavior, and full-tree zero-write.
 
 The consolidated workflow suite must additionally prove Research initialization, root plus three independent Git repositories, Quest repository association, Dispatch review, durable lifecycle projections, byte-stable rebuild, malformed-ledger fail-closed behavior, historical native digest recognition without active native/custom resolution, legacy source byte preservation, ignored runtime state, and absence of POSIX/Windows/UNC/fixture-local absolute paths in tracked research records. Parser tests must prove the exact Research and Dispatch child sets and byte-identical zero-write rejection of `research task`, `task link`, and `task unlink`. The suite exercises request/result/proposal/decision contracts but does not pretend to execute a real Claude worker.
+
+C04 coverage additionally requires all 14 bundled Procedure pairs and seven-section instructions, project-first/fail-closed resolution, strict policy creation/read/preservation, dry-run/conflict zero-write behavior, no-replace winner handling, exact core import boundary, and unchanged root-init/update/uninstall Research preservation.
 
 Frozen successor tests additionally require exact parser command sets, prepare/bridge atomicity, automatic eligibility matrix, TTY and challenge subprocesses, approval lifecycle/host/expiry/drift failures, full-tree zero-write Context, three-event consumption, and post-commit same-key recovery.
 
@@ -485,6 +526,22 @@ await commitResearchBatch({
 
 Core still performs the digest read before append, but the absolute root exists
 only in the current call and is never serialized.
+
+### Wrong: repair policy before checking Research-init conflict
+
+```ts
+await ensureResearchProjectPolicyForInit({ root, dryRun });
+if (existingWorkspaceConflicts) throw conflict;
+```
+
+### Correct: preserve conflict zero-write behavior
+
+```ts
+if (existingWorkspaceConflicts) throw conflict;
+await ensureResearchProjectPolicyForInit({ root, dryRun });
+```
+
+Fresh and matching initialization may ensure policy; conflicting initialization may not.
 
 ### Frozen successor: approval consumption
 

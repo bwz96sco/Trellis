@@ -12,6 +12,23 @@ export const RESEARCH_STAGE_SKILLS = [
   "trellis-research-writing",
 ];
 
+export const RESEARCH_PROCEDURE_IDS = [
+  "project-setup-v1",
+  "quest-framing-v1",
+  "quest-admin-v1",
+  "literature-scan-v1",
+  "literature-review-v1",
+  "idea-generation-v1",
+  "idea-evaluation-v1",
+  "experiment-round-v1",
+  "experiment-campaign-v1",
+  "computation-case-v1",
+  "theory-case-v1",
+  "review-case-v1",
+  "review-campaign-v1",
+  "writing-case-v1",
+];
+
 const REQUIRED_RESEARCH_ENTRIES = [
   "package.json",
   "bin/trellis.js",
@@ -111,6 +128,13 @@ export function buildPackedCliInventory(migrationManifestNames) {
     ...REQUIRED_RESEARCH_ENTRIES.map(withPackedRoot),
     ...RESEARCH_STAGE_SKILLS.map((skill) =>
       withPackedRoot(`dist/templates/common/bundled-skills/${skill}/SKILL.md`),
+    ),
+    ...RESEARCH_PROCEDURE_IDS.flatMap((procedureId) =>
+      ["procedure.json", "PROCEDURE.md"].map((fileName) =>
+        withPackedRoot(
+          `dist/templates/research/procedures/${procedureId}/1.0.0/${fileName}`,
+        ),
+      ),
     ),
     ...migrationManifestNames.map((name) =>
       withPackedRoot(`dist/migrations/manifests/${name}`),

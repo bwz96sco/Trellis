@@ -46,6 +46,7 @@ import {
   type ResearchStatusResult,
   type ResearchValidationResult,
 } from "./common.js";
+import { ensureResearchProjectPolicyForInit } from "./project-policy.js";
 import { clearResearchSessionRun, setResearchSessionRun } from "./session.js";
 
 export interface InitializeResearchOptions extends ResearchMutationOptions {
@@ -149,6 +150,10 @@ export async function initializeResearch(
         `Research workspace is already initialized as '${state.workspace.name}'`,
       );
     }
+    await ensureResearchProjectPolicyForInit({
+      root,
+      dryRun: options.dryRun === true,
+    });
     return {
       command: "research init",
       idempotencyKey,
@@ -161,6 +166,10 @@ export async function initializeResearch(
     };
   }
 
+  await ensureResearchProjectPolicyForInit({
+    root,
+    dryRun: options.dryRun === true,
+  });
   const result = await executeResearchMutations(
     "init",
     { ...options, root, idempotencyKey },
