@@ -147,13 +147,17 @@ describe("Research-only CLI surface", () => {
     ]);
   });
 
-  it("keeps the exact five Dispatch children", async () => {
+  it("keeps the exact nine Dispatch children", async () => {
     const result = await runCli(["research", "dispatch", "--help"]);
 
     expect(result.commanderCode).toBe("commander.helpDisplayed");
     expect(commandNames(result.stdout)).toEqual([
       "context",
       "prepare",
+      "plan-activation",
+      "authorize",
+      "approve",
+      "revoke",
       "record-result",
       "apply",
       "reject",

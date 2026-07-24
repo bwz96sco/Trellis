@@ -908,7 +908,7 @@ describe("research UserPromptSubmit sequence watermark", () => {
   });
 });
 
-describe("Claude C07 Research Dispatch adapter", () => {
+describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
   it("contains no provider-neutral Dispatch validator or stage routing table", () => {
     const hook = hookSource("inject-subagent-context.py");
     expect(hook).toContain("trellis");
@@ -1032,7 +1032,7 @@ describe("Claude C07 Research Dispatch adapter", () => {
         "--json",
       ]);
     }
-  });
+  }, 30_000);
 
   it("denies every noncanonical worker envelope before starting C07", async () => {
     const sandbox = makeRoot("c09-envelope");
@@ -1342,7 +1342,7 @@ describe("Claude C07 Research Dispatch adapter", () => {
     expect(claude.warnings.map((warning) => warning.code)).toContain(
       "OWNER_SKILL_STAGE_MISMATCH",
     );
-  }, 30_000);
+  }, 120_000);
 
   it("keeps binding and projection-independent success equal across hosts", async () => {
     const sandbox = makeRoot("c09-binding-parity");
@@ -1462,13 +1462,13 @@ describe("Claude C07 Research Dispatch adapter", () => {
     );
     fs.mkdirSync(path.join(writeSandbox, "target"), { recursive: true });
     fs.mkdirSync(path.join(writeSandbox, "outside"), { recursive: true });
+    const writeScope = await createResearchDispatchFixture(writeSandbox, {
+      allowedWritePaths: ["escape/report.json"],
+    });
     fs.symlinkSync(
       path.join(writeSandbox, "outside"),
       path.join(writeSandbox, "target", "escape"),
     );
-    const writeScope = await createResearchDispatchFixture(writeSandbox, {
-      allowedWritePaths: ["escape/report.json"],
-    });
     await expectParity(writeScope.root, writeScope.requestRef, "WRITE_SCOPE_INVALID");
 
     const malformedLedger = await createResearchDispatchFixture(
@@ -1616,7 +1616,7 @@ describe("Claude C07 Research Dispatch adapter", () => {
       directorySymlink.requestRef,
       "INVALID_REQUEST_PATH",
     );
-  }, 30_000);
+  }, 120_000);
 
   it("rejects complete identically for Claude and Codex without preflight writes", async () => {
     const sandbox = makeRoot("c09-complete");

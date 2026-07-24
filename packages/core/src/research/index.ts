@@ -202,6 +202,12 @@ export type {
 export { stableResearchJson } from "./projections.js";
 
 export {
+  digestDispatchRequest,
+  hashDispatchScope,
+} from "./dispatch-authority.js";
+export type { NormalizedDispatchScopeV1 } from "./dispatch-authority.js";
+
+export {
   normalizeRepositoryLocator,
   normalizeArtifactPath,
   resolveArtifactPath,

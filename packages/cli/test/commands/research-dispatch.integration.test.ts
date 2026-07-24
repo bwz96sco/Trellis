@@ -238,7 +238,12 @@ describe("research repositories and dispatch integration", () => {
     const campaignId = createCampaignId();
     const runId = createRunId();
     const dispatchId = createDispatchId();
-    await createResearchQuest({ root, id: questId, title: "Recovery quest" });
+    await createResearchQuest({
+      root,
+      id: questId,
+      title: "Recovery quest",
+      repositoryIds: [repository.id],
+    });
     await createResearchCampaign({
       root,
       id: campaignId,
@@ -265,6 +270,7 @@ describe("research repositories and dispatch integration", () => {
       campaignId,
       repositoryId: repository.id,
       ownerSkill: "research-runner",
+      capabilityId: "research.setup.project",
       objective: "Exercise recovery",
       acceptanceCriteria: [],
       allowedWritePaths: ["results/report.json"],
@@ -305,7 +311,12 @@ describe("research repositories and dispatch integration", () => {
     const questId = createQuestId();
     const campaignId = createCampaignId();
     const runId = createRunId();
-    await createResearchQuest({ root, id: questId, title: "Dispatch quest" });
+    await createResearchQuest({
+      root,
+      id: questId,
+      title: "Dispatch quest",
+      repositoryIds: [repository.id],
+    });
     await createResearchCampaign({
       root,
       id: campaignId,
@@ -324,13 +335,17 @@ describe("research repositories and dispatch integration", () => {
         campaignId,
         repositoryId: repository.id,
         ownerSkill: "research-runner",
+        capabilityId: "research.setup.project",
         objective: "Wrong hierarchy",
         acceptanceCriteria: [],
         allowedWritePaths: ["results/report.json"],
         expectedOutputs: [],
         checks: [],
       }),
-    ).rejects.toThrow(/belongs to quest/);
+    ).rejects.toMatchObject({
+      code: "DISPATCH_HIERARCHY_INVALID",
+      message: "Dispatch Quest does not exist",
+    });
     await expect(
       prepareResearchDispatch({
         root,
@@ -339,6 +354,7 @@ describe("research repositories and dispatch integration", () => {
         campaignId,
         repositoryId: repository.id,
         ownerSkill: "research-runner",
+        capabilityId: "research.setup.project",
         objective: "Escaping write",
         acceptanceCriteria: [],
         allowedWritePaths: ["../escape"],
@@ -355,6 +371,7 @@ describe("research repositories and dispatch integration", () => {
       campaignId,
       repositoryId: repository.id,
       ownerSkill: "research-runner",
+      capabilityId: "research.setup.project",
       objective: "Produce a bounded report",
       acceptanceCriteria: ["Report is complete"],
       allowedWritePaths: ["results/report.json"],
@@ -363,8 +380,18 @@ describe("research repositories and dispatch integration", () => {
       taskRef: "task:dispatch-test",
       idempotencyKey: "prepare:dispatch",
     });
+    expect(prepared.events.map((event) => [event.schemaVersion, event.kind])).toEqual([
+      [1, "dispatch.recorded"],
+      [2, "activation.planned"],
+    ]);
     expect(prepared.requestFile).toMatch(/request\.json$/);
     expect(prepared.manifestFile).toMatch(/manifest\.json$/);
+    expect(prepared.activationFile).toMatch(/activation\.json$/);
+    expect(
+      JSON.parse(
+        fs.readFileSync(path.join(root, prepared.activationFile ?? ""), "utf-8"),
+      ),
+    ).toEqual({ schemaVersion: 2, activation: prepared.activation });
     const requestText = fs.readFileSync(path.join(root, prepared.requestFile ?? ""), "utf-8");
     expect(requestText.endsWith("\n")).toBe(true);
     expect(requestText).not.toContain(root);
@@ -541,7 +568,12 @@ describe("research repositories and dispatch integration", () => {
     const questId = createQuestId();
     const campaignId = createCampaignId();
     const runId = createRunId();
-    await createResearchQuest({ root, id: questId, title: "Bound digest quest" });
+    await createResearchQuest({
+      root,
+      id: questId,
+      title: "Bound digest quest",
+      repositoryIds: [repository.id],
+    });
     await createResearchCampaign({
       root,
       id: campaignId,
@@ -556,6 +588,7 @@ describe("research repositories and dispatch integration", () => {
       questId,
       repositoryId: repository.id,
       ownerSkill: "runner",
+      capabilityId: "research.setup.project",
       objective: "Produce a bound artifact",
       acceptanceCriteria: [],
       allowedWritePaths: ["results/bound.txt"],
@@ -640,7 +673,12 @@ describe("research repositories and dispatch integration", () => {
     const questId = createQuestId();
     const campaignId = createCampaignId();
     const runId = createRunId();
-    await createResearchQuest({ root, id: questId, title: "Reject quest" });
+    await createResearchQuest({
+      root,
+      id: questId,
+      title: "Reject quest",
+      repositoryIds: [repository.id],
+    });
     await createResearchCampaign({
       root,
       id: campaignId,
@@ -655,6 +693,7 @@ describe("research repositories and dispatch integration", () => {
       questId,
       repositoryId: repository.id,
       ownerSkill: "runner",
+      capabilityId: "research.setup.project",
       objective: "Inspect",
       acceptanceCriteria: [],
       allowedWritePaths: ["results/data.txt"],

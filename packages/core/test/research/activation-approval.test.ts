@@ -391,6 +391,23 @@ describe("activation and approval schemas", () => {
     expect(() => approvalIdSchema.parse("apr_NOT-A-UUID")).toThrow(/apr_/);
   });
 
+  it("counts approval text limits by Unicode code point", () => {
+    const grant = approvalEvent().payload.approval as Record<string, unknown>;
+    expect(
+      researchApprovalGrantSchema.parse({
+        ...grant,
+        approverLabel: "😀".repeat(128),
+        rationale: "界".repeat(1_024),
+      }).approverLabel,
+    ).toBe("😀".repeat(128));
+    expect(() =>
+      researchApprovalGrantSchema.parse({
+        ...grant,
+        approverLabel: "😀".repeat(129),
+      }),
+    ).toThrow(/Unicode code points/);
+  });
+
   it("rejects unknown keys, malformed bindings, timestamps, and terminal shapes", () => {
     const activation = (
       activationEvent().payload.activation as Record<string, unknown>

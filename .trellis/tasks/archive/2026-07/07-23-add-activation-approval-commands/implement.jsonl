@@ -1,0 +1,18 @@
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/activation-approval-contract.md","reason":"Normative activation, approval, command, TTY/challenge, expiry, sidecar, recovery, and C05/C06 ownership contract."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/procedure-capability-policy-contract.md","reason":"Normative request digest, scope hash, capability, Procedure, policy, and automatic-authority ceilings."}
+{"file":".trellis/tasks/archive/2026-07/07-23-freeze-procedure-capability-policy-contracts/research/compatibility-freeze.md","reason":"Permanent schema-v1 Dispatch and ownerSkill/provider/taskRef compatibility boundary."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-dual-version-activation-approval-state/design.md","reason":"Committed C02 dual-version reader/reducer design and deliberate no-emitter boundary that C05 extends."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-procedure-project-policy-resolution/research/frozen-contract-and-registry.md","reason":"Exact C03 capability bindings plus C04 Procedure/policy authority and automatic behavior."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-activation-approval-commands/research/frozen-boundary-and-cli.md","reason":"Researched exact C05 command signatures, event batches, compatibility behavior, and exclusions."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-activation-approval-commands/research/core-mutations-and-digests.md","reason":"Researched typed v2 mutation boundary, minimal CRITICAL store edit, request digest, and scope hash."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-activation-approval-commands/research/approval-lifecycle-and-recovery.md","reason":"Researched automatic/interactive grants, TTY challenge, expiry, revocation, materialization, replay, and errors."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-activation-approval-commands/research/impact-scope-and-tests.md","reason":"GitNexus risks, exact file scope, test matrix, packed gates, and rollback boundaries."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-activation-approval-commands/research/unresolved-decisions-and-readiness.md","reason":"Resolved non-normative design decisions and confirmed planning readiness."}
+{"file":".trellis/tasks/archive/2026-07/07-23-add-activation-approval-commands/research/c05-review-blockers-hierarchy-sidecar.md","reason":"Renewed planning authority for exact Context hierarchy parity and strongest practical pure-Node sidecar detect-and-fail replacement safety."}
+{"file":".trellis/spec/core/backend/index.md","reason":"Core package boundaries and Research-subpath ownership."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Applicable executable contract for mixed-version events, typed emitters, replay, validation, and compatibility."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Applicable executable contract for observable Dispatch command signatures, order, sidecars, errors, and recovery."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Exact core/CLI import, export-map, root non-leakage, version-lock, and packed-core contracts."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Frozen current Context, worker, hook, Skill, and platform payload behavior through C05."}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Strict typing, error, timestamp, idempotency, containment, and surgical shared-path conventions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Real filesystem, TTY/process, recovery, preservation, clean-build, and packed verification patterns."}

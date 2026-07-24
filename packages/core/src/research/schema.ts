@@ -137,8 +137,11 @@ function boundedString(
   maximumLength: number,
 ): string {
   const parsed = stringValue(value, name);
-  if (parsed.length === 0 || parsed.length > maximumLength) {
-    throw new Error(`${name} must contain between 1 and ${maximumLength} characters`);
+  const length = [...parsed].length;
+  if (length === 0 || length > maximumLength) {
+    throw new Error(
+      `${name} must contain between 1 and ${maximumLength} Unicode code points`,
+    );
   }
   return parsed;
 }

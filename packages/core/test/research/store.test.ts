@@ -5,8 +5,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   commitResearchBatch,
+  createActivationId,
+  createApprovalId,
   createArtifactId,
   createCampaignId,
+  createDispatchId,
   createQuestId,
   createRepositoryId,
   createRunId,
@@ -68,6 +71,137 @@ describe("research store", () => {
     });
     return workspaceId;
   }
+
+  it("emits and reduces typed mixed-version activation and approval mutations", async () => {
+    await initialize();
+    const repositoryId = createRepositoryId();
+    const questId = createQuestId();
+    const campaignId = createCampaignId();
+    const runId = createRunId();
+    const dispatchId = createDispatchId();
+    const activationId = createActivationId();
+    const approvalId = createApprovalId();
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "mixed-prerequisites",
+      timestamp: NOW,
+      mutations: [
+        {
+          kind: "repository.register",
+          repository: {
+            id: repositoryId,
+            name: "Repository",
+            kind: "code",
+            locator: "repository",
+            capabilities: { hasTrellis: false },
+          },
+        },
+        {
+          kind: "quest.create",
+          quest: {
+            id: questId,
+            title: "Quest",
+            description: "",
+            repositoryIds: [repositoryId],
+            artifactRefs: [],
+          },
+        },
+        {
+          kind: "campaign.create",
+          campaign: { id: campaignId, questId, title: "Campaign", protocolDigest: "p" },
+        },
+        { kind: "run.create", run: { id: runId, campaignId, title: "Run" } },
+      ],
+    });
+    const timestamp = "2026-07-17T00:01:00.000Z";
+    const dispatch = {
+      id: dispatchId,
+      questId,
+      campaignId,
+      runId,
+      repositoryId,
+      ownerSkill: "opaque",
+      objective: "Bounded work",
+      acceptanceCriteria: [],
+      context: [],
+      allowedWritePaths: [],
+      expectedOutputs: [],
+      checks: [],
+      createdAt: timestamp,
+    };
+    const activation = {
+      id: activationId,
+      dispatchId,
+      questId,
+      capabilityId: "research.setup.project",
+      mode: "explicit" as const,
+      procedure: { id: "project-setup-v1", version: "1.0.0", digest: `sha256:${"1".repeat(64)}` },
+      policyDigest: `sha256:${"2".repeat(64)}`,
+      requestDigest: `sha256:${"3".repeat(64)}`,
+      scopeHash: `sha256:${"4".repeat(64)}`,
+      maxDurationMinutes: 10,
+      maxDispatches: 1,
+      createdAt: timestamp,
+    };
+    const planned = await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "mixed-plan",
+      timestamp,
+      mutations: [
+        { kind: "dispatch.record", dispatch },
+        { kind: "activation.plan", activation },
+      ],
+    });
+    expect(planned.events.map((event) => [event.schemaVersion, event.kind])).toEqual([
+      [1, "dispatch.recorded"],
+      [2, "activation.planned"],
+    ]);
+
+    const grantedAt = "2026-07-17T00:02:00.000Z";
+    const grant = {
+      id: approvalId,
+      activationId,
+      dispatchId,
+      host: "claude" as const,
+      mode: "automatic" as const,
+      approverLabel: "trellis-policy-v1",
+      rationale: "Eligible under immutable registry and project policy.",
+      requestDigest: activation.requestDigest,
+      procedureDigest: activation.procedure.digest,
+      policyDigest: activation.policyDigest,
+      scopeHash: activation.scopeHash,
+      grantedAt,
+      expiresAt: "2026-07-17T00:12:00.000Z",
+    };
+    const granted = await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "mixed-grant",
+      timestamp: grantedAt,
+      mutations: [{ kind: "approval.grant", approval: grant }],
+    });
+    expect(granted.events[0]).toMatchObject({ schemaVersion: 2, kind: "approval.granted" });
+    const revokedAt = "2026-07-17T00:03:00.000Z";
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "mixed-revoke",
+      timestamp: revokedAt,
+      mutations: [
+        { kind: "approval.revoke", approvalId, revokedAt, reason: "No longer needed" },
+      ],
+    });
+    expect((await readResearchState(root)).approvals[approvalId]).toMatchObject({
+      status: "revoked",
+      revocationReason: "No longer needed",
+    });
+  });
 
   it("returns prior success for a duplicate idempotency key", async () => {
     await initialize();

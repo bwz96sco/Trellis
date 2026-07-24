@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  createActivationId,
   createDecisionId,
   createDispatchId,
   normalizeArtifactPath,
@@ -23,6 +24,7 @@ import {
   type ProposalOperation,
   type QuestId,
   type RepositoryId,
+  type ResearchActivation,
   type ResearchEvent,
   type Result,
   type RunId,
@@ -36,6 +38,16 @@ import {
   type ResearchMutationResult,
 } from "./common.js";
 import { ResearchDispatchFileError } from "./errors.js";
+import {
+  classifyPrepareEvents,
+  executeResearchLifecycleMutations,
+  findResearchLifecycleReplay,
+} from "./dispatch-activation-command.js";
+import {
+  activationFromCandidate,
+  resolveDispatchActivationCandidate,
+} from "./dispatch-authority.js";
+import { materializeResearchActivation } from "./dispatch-activation-materialization.js";
 import { executeRepositoryDispatchMutations } from "./mutation.js";
 import {
   resolveRepositoryForUse,
@@ -57,11 +69,15 @@ export interface PrepareResearchDispatchOptions extends ResearchMutationOptions 
   expectedOutputs: string[];
   checks: string[];
   taskRef?: string;
+  capabilityId: string;
 }
 
 export interface PrepareResearchDispatchResult extends ResearchMutationResult {
   dispatch: Dispatch;
+  legacyPrepare: boolean;
+  activation: ResearchActivation | null;
   requestFile: string | null;
+  activationFile: string | null;
   manifestFile: string | null;
 }
 
@@ -398,40 +414,84 @@ export async function prepareResearchDispatch(
   options: PrepareResearchDispatchOptions,
 ): Promise<PrepareResearchDispatchResult> {
   const root = resolveResearchRoot(options);
-  const state = await readResearchState(root);
-  const run = state.runs[options.runId];
-  if (!run) throw new Error(`Unknown research run '${options.runId}'`);
-  const campaign = state.campaigns[run.campaignId];
-  if (!campaign)
-    throw new Error(`Unknown research campaign '${run.campaignId}'`);
-  if (campaign.questId !== options.questId) {
-    throw new Error(
-      `Run '${run.id}' belongs to quest '${campaign.questId}', not '${options.questId}'`,
-    );
+  if (options.idempotencyKey !== undefined) {
+    const replay = await findResearchLifecycleReplay({
+      root,
+      idempotencyKey: options.idempotencyKey,
+      classify: (events) => classifyPrepareEvents(events, options.id),
+    });
+    if (replay !== null) {
+      const classified = classifyPrepareEvents(replay, options.id);
+      const repositoryResolution = await resolveRepositoryForUse(
+        root,
+        classified.dispatch.repositoryId,
+        false,
+      );
+      const headSeq = (await readResearchState(root)).projectedThroughSeq;
+      const result: ResearchMutationResult = {
+        command: "research dispatch prepare",
+        idempotencyKey: options.idempotencyKey,
+        dryRun: options.dryRun === true,
+        replayed: true,
+        headSeq,
+        events: replay,
+      };
+      if (result.dryRun) {
+        return {
+          ...result,
+          dispatch: classified.dispatch,
+          legacyPrepare: classified.legacy,
+          activation: classified.activation,
+          requestFile: null,
+          activationFile: null,
+          manifestFile: null,
+        };
+      }
+      const files = dispatchPaths(root, classified.dispatch.id);
+      const recovery = `retry 'trellis research dispatch prepare' with idempotency key '${result.idempotencyKey}'`;
+      writeCommittedJson(
+        root,
+        headSeq,
+        files.requestFile,
+        classified.dispatch,
+        recovery,
+      );
+      writeCommittedJson(
+        root,
+        headSeq,
+        files.manifestFile,
+        {
+          schemaVersion: 1,
+          dispatchId: classified.dispatch.id,
+          controlRoot: root,
+          repositoryRoot: repositoryResolution.observation.path,
+          requestFile: files.requestFile,
+          observation: repositoryResolution.observation,
+          generatedAt: classified.dispatch.createdAt,
+        },
+        recovery,
+      );
+      return {
+        ...result,
+        dispatch: classified.dispatch,
+        legacyPrepare: classified.legacy,
+        activation: classified.activation,
+        requestFile: relativeToRoot(root, files.requestFile),
+        activationFile:
+          classified.activation === null
+            ? null
+            : materializeResearchActivation({
+                root,
+                headSeq,
+                activation: classified.activation,
+                recovery,
+              }),
+        manifestFile: relativeToRoot(root, files.manifestFile),
+      };
+    }
   }
-  if (options.campaignId !== undefined && options.campaignId !== campaign.id) {
-    throw new Error(
-      `Run '${run.id}' belongs to campaign '${campaign.id}', not '${options.campaignId}'`,
-    );
-  }
-  if (run.status !== "planned" && run.status !== "running") {
-    throw new Error(
-      `Dispatch requires a planned or running run, received '${run.status}'`,
-    );
-  }
-  const repositoryResolution = await resolveRepositoryForUse(
-    root,
-    options.repositoryId,
-    options.dryRun !== true,
-  );
+
   const context = parseContextFile(options.contextFile);
-  const artifactRepositoryRoots = await verifyArtifacts(
-    root,
-    context
-      .map((entry) => entry.artifact)
-      .filter((artifact): artifact is ArtifactRef => artifact !== undefined),
-    options.dryRun !== true,
-  );
   const createdAt = new Date().toISOString();
   const dispatch: Dispatch = {
     id: options.id ?? createDispatchId(),
@@ -456,32 +516,70 @@ export async function prepareResearchDispatch(
       : { taskRef: assertPortableReference(options.taskRef, "task ref") }),
     createdAt,
   };
-  const result = await executeRepositoryDispatchMutations(
-    "dispatch prepare",
-    { ...options, root },
-    [{ kind: "dispatch.record", dispatch }],
+  const candidate = await resolveDispatchActivationCandidate({
+    root,
+    dispatch,
+    capabilityId: options.capabilityId,
+    candidate: true,
+  });
+  const activation = activationFromCandidate(
+    candidate,
+    createActivationId(),
+    createdAt,
+  );
+  const repositoryResolution = await resolveRepositoryForUse(
+    root,
+    options.repositoryId,
+    false,
+  );
+  const artifactRepositoryRoots = await verifyArtifacts(
+    root,
+    context
+      .map((entry) => entry.artifact)
+      .filter((artifact): artifact is ArtifactRef => artifact !== undefined),
+    false,
+  );
+  const result = await executeResearchLifecycleMutations({
+    command: "prepare",
+    root,
+    options,
+    mutations: [
+      { kind: "dispatch.record", dispatch },
+      { kind: "activation.plan", activation },
+    ],
+    timestamp: createdAt,
+    classify: (events) => classifyPrepareEvents(events, dispatch.id),
     artifactRepositoryRoots,
-  );
-  const canonical = eventPayload<Dispatch>(
-    result.events,
-    "dispatch.recorded",
-    "dispatch",
-  );
+  });
+  const canonical = classifyPrepareEvents(result.events, dispatch.id);
+  if (canonical.legacy) {
+    throw new Error("New prepare unexpectedly resolved to a legacy batch");
+  }
   if (result.dryRun) {
     return {
       ...result,
-      dispatch: canonical,
+      dispatch: canonical.dispatch,
+      legacyPrepare: false,
+      activation: canonical.activation,
       requestFile: null,
+      activationFile: null,
       manifestFile: null,
     };
   }
-  const files = dispatchPaths(root, canonical.id);
+  const canonicalRepositoryResolution = result.replayed
+    ? await resolveRepositoryForUse(
+        root,
+        canonical.dispatch.repositoryId,
+        false,
+      )
+    : repositoryResolution;
+  const files = dispatchPaths(root, canonical.dispatch.id);
   const recovery = `retry 'trellis research dispatch prepare' with idempotency key '${result.idempotencyKey}'`;
   writeCommittedJson(
     root,
     result.headSeq,
     files.requestFile,
-    canonical,
+    canonical.dispatch,
     recovery,
   );
   writeCommittedJson(
@@ -490,19 +588,27 @@ export async function prepareResearchDispatch(
     files.manifestFile,
     {
       schemaVersion: 1,
-      dispatchId: canonical.id,
+      dispatchId: canonical.dispatch.id,
       controlRoot: root,
-      repositoryRoot: repositoryResolution.observation.path,
+      repositoryRoot: canonicalRepositoryResolution.observation.path,
       requestFile: files.requestFile,
-      observation: repositoryResolution.observation,
-      generatedAt: createdAt,
+      observation: canonicalRepositoryResolution.observation,
+      generatedAt: canonical.dispatch.createdAt,
     },
     recovery,
   );
   return {
     ...result,
-    dispatch: canonical,
+    dispatch: canonical.dispatch,
+    legacyPrepare: false,
+    activation: canonical.activation,
     requestFile: relativeToRoot(root, files.requestFile),
+    activationFile: materializeResearchActivation({
+      root,
+      headSeq: result.headSeq,
+      activation: canonical.activation,
+      recovery,
+    }),
     manifestFile: relativeToRoot(root, files.manifestFile),
   };
 }

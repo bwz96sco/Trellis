@@ -122,6 +122,10 @@ describe("research command helpers", () => {
     expect(childNames(commandAt(research, "dispatch"))).toEqual([
       "context",
       "prepare",
+      "plan-activation",
+      "authorize",
+      "approve",
+      "revoke",
       "record-result",
       "apply",
       "reject",
@@ -136,6 +140,11 @@ describe("research command helpers", () => {
       "--root",
       "--json",
     ]);
+    expect(
+      commandAt(research, "dispatch", "approve").options.map(
+        (option) => option.long,
+      ),
+    ).toEqual(["--host", "--root", "--idempotency-key"]);
     expect(childNames(commandAt(research, "quest"))).toEqual([
       "create",
       "status",

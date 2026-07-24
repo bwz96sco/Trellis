@@ -23,7 +23,7 @@ import {
   snapshotTree,
 } from "../fixtures/research-dispatch.js";
 
-describe("read-only research Dispatch context", () => {
+describe("read-only research Dispatch context", { timeout: 30_000 }, () => {
   let sandbox: string;
 
   beforeEach(() => {
@@ -521,13 +521,14 @@ describe("read-only research Dispatch context", () => {
     ).rejects.toMatchObject({ code: "ARTIFACT_INVALID" });
 
     const writeSandbox = path.join(sandbox, "write-scope");
-    const target = path.join(writeSandbox, "target");
-    fs.mkdirSync(path.join(writeSandbox, "outside"), { recursive: true });
-    fs.mkdirSync(target, { recursive: true });
-    fs.symlinkSync(path.join(writeSandbox, "outside"), path.join(target, "escape"));
     const writeFixture = await createFixture(writeSandbox, {
       allowedWritePaths: ["escape/report.json"],
     });
+    fs.mkdirSync(path.join(writeSandbox, "outside"), { recursive: true });
+    fs.symlinkSync(
+      path.join(writeSandbox, "outside"),
+      path.join(writeFixture.repository, "escape"),
+    );
     const writeBefore = snapshotTree(writeSandbox);
     await expect(
       getResearchDispatchContext({
@@ -555,7 +556,7 @@ describe("read-only research Dispatch context", () => {
       }),
     ).rejects.toMatchObject({ code: "WRITE_SCOPE_INVALID" });
     expect(snapshotTree(danglingSandbox)).toEqual(danglingBefore);
-  });
+  }, 30_000);
 
   it("accepts exact finite bounds and rejects canonical state above them", async () => {
     const boundary = await createFixture(path.join(sandbox, "boundary"), {

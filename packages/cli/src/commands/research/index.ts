@@ -30,6 +30,15 @@ import {
   type ReviewResearchProposalOptions,
 } from "./dispatch-command.js";
 import {
+  approveResearchDispatch,
+  authorizeResearchDispatch,
+  planResearchActivation,
+  revokeResearchApproval,
+  type GrantResearchApprovalOptions,
+  type PlanResearchActivationOptions,
+  type RevokeResearchApprovalOptions,
+} from "./dispatch-activation-command.js";
+import {
   getResearchDispatchContext,
   type GetResearchDispatchContextOptions,
 } from "./dispatch-context.js";
@@ -61,6 +70,7 @@ import {
   type ResearchOutputOptions,
 } from "./common.js";
 import type {
+  ApprovalId,
   CampaignId,
   CampaignStatus,
   ClaimId,
@@ -158,7 +168,26 @@ interface DispatchPrepareCliOptions extends ResearchMutationOptions {
   expectedOutput: string[];
   check: string[];
   taskRef?: string;
+  capability?: string;
   id?: DispatchId;
+}
+
+interface DispatchActivationCliOptions extends ResearchMutationOptions {
+  capability?: string;
+}
+
+interface DispatchApprovalCliOptions extends ResearchMutationOptions {
+  host: string;
+}
+
+interface DispatchInteractiveApprovalCliOptions {
+  root?: string;
+  idempotencyKey?: string;
+  host: string;
+}
+
+interface DispatchRevokeCliOptions extends ResearchMutationOptions {
+  reason?: string;
 }
 
 interface DispatchRecordResultCliOptions extends ResearchMutationOptions {
@@ -195,6 +224,10 @@ function parseRepositoryIdArgument(value: string): RepositoryId {
 
 function parseDispatchIdArgument(value: string): DispatchId {
   return parseResearchIdArgument<DispatchId>(value, "dsp", "dispatch ID");
+}
+
+function parseApprovalIdArgument(value: string): ApprovalId {
+  return parseResearchIdArgument<ApprovalId>(value, "apr", "approval ID");
 }
 
 function parseProposalIdArgument(value: string): ProposalId {
@@ -768,6 +801,7 @@ export function registerResearchCommand(program: Command): void {
         parseRepositoryIdArgument,
       )
       .requiredOption("--owner-skill <skill>", "owning skill")
+      .option("--capability <id>", "explicit Research capability ID")
       .requiredOption("--objective <text>", "bounded objective")
       .option(
         "--acceptance <text>",
@@ -807,6 +841,7 @@ export function registerResearchCommand(program: Command): void {
         campaignId: options.campaign,
         repositoryId: options.repository,
         ownerSkill: options.ownerSkill,
+        capabilityId: options.capability ?? "",
         acceptanceCriteria: options.acceptance,
         allowedWritePaths: options.allowWrite,
         expectedOutputs: options.expectedOutput,
@@ -814,6 +849,79 @@ export function registerResearchCommand(program: Command): void {
       } as PrepareResearchDispatchOptions),
     );
   });
+
+  addMutationOptions(
+    dispatch
+      .command("plan-activation")
+      .description("Plan activation for a historical Dispatch")
+      .argument("<dispatch-id>", "dispatch ID", parseDispatchIdArgument)
+      .option("--capability <id>", "explicit Research capability ID"),
+  ).action(
+    async (dispatchId: DispatchId, options: DispatchActivationCliOptions) => {
+      await runAction(options.json, () =>
+        planResearchActivation({
+          ...options,
+          dispatchId,
+          capabilityId: options.capability ?? "",
+        } as PlanResearchActivationOptions),
+      );
+    },
+  );
+
+  addMutationOptions(
+    dispatch
+      .command("authorize")
+      .description("Grant a policy-bounded automatic approval")
+      .argument("<dispatch-id>", "dispatch ID", parseDispatchIdArgument)
+      .requiredOption("--host <host>", "execution host: claude or codex"),
+  ).action(
+    async (dispatchId: DispatchId, options: DispatchApprovalCliOptions) => {
+      await runAction(options.json, () =>
+        authorizeResearchDispatch({
+          ...options,
+          dispatchId,
+        } as GrantResearchApprovalOptions),
+      );
+    },
+  );
+
+  dispatch
+    .command("approve")
+    .description("Interactively approve one Dispatch for a host")
+    .argument("<dispatch-id>", "dispatch ID", parseDispatchIdArgument)
+    .requiredOption("--host <host>", "execution host: claude or codex")
+    .option("--root <path>", "explicit research control-plane root")
+    .option("--idempotency-key <key>", "durable retry key")
+    .action(
+      async (
+        dispatchId: DispatchId,
+        options: DispatchInteractiveApprovalCliOptions,
+      ) => {
+        await runAction(false, () =>
+          approveResearchDispatch({
+            ...options,
+            dispatchId,
+          } as GrantResearchApprovalOptions),
+        );
+      },
+    );
+
+  addMutationOptions(
+    dispatch
+      .command("revoke")
+      .description("Revoke one granted Research approval")
+      .argument("<approval-id>", "approval ID", parseApprovalIdArgument)
+      .option("--reason <text>", "revocation reason"),
+  ).action(
+    async (approvalId: ApprovalId, options: DispatchRevokeCliOptions) => {
+      await runAction(options.json, () =>
+        revokeResearchApproval({
+          ...options,
+          approvalId,
+        } as RevokeResearchApprovalOptions),
+      );
+    },
+  );
 
   addMutationOptions(
     dispatch

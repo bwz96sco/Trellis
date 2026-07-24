@@ -4,10 +4,14 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  commitResearchBatch,
   createCampaignId,
   createDispatchId,
   createQuestId,
   createRunId,
+  RESEARCH_DEFAULT_CAPABILITY_BY_STAGE,
+  stableResearchJson,
+  type Dispatch,
   type QuestStage,
 } from "@mindfoldhq/trellis-core/research";
 
@@ -93,6 +97,7 @@ export interface ResearchDispatchFixtureOptions {
   expectedOutputs?: string[];
   stage?: Exclude<QuestStage, "complete">;
   git?: boolean;
+  automaticEnabled?: boolean;
 }
 
 export async function createResearchDispatchFixture(
@@ -113,6 +118,14 @@ export async function createResearchDispatchFixture(
     runResearchFixtureGit(repository, "remote", "add", "origin", options.expectedRemote);
   }
   await initializeResearch({ root, name: "Dispatch context" });
+  if (options.automaticEnabled === true) {
+    const policyPath = path.join(root, ".trellis", "research", "policy.json");
+    const policy = JSON.parse(fs.readFileSync(policyPath, "utf8")) as {
+      defaults: { automaticEnabled: boolean };
+    };
+    policy.defaults.automaticEnabled = true;
+    fs.writeFileSync(policyPath, `${JSON.stringify(policy, null, 2)}\n`);
+  }
 
   const registered = await addResearchRepository({
     root,
@@ -133,10 +146,12 @@ export async function createResearchDispatchFixture(
     repositoryIds:
       options.associateRepository === false ? [] : [registered.repository.id],
   });
+  const requestedStage = options.stage ?? "literature";
+  const prepareStage = requestedStage === "complete" ? "literature" : requestedStage;
   await setResearchQuestStage({
     root,
     questId,
-    stage: options.stage ?? "literature",
+    stage: prepareStage,
   });
   await createResearchCampaign({
     root,
@@ -152,48 +167,85 @@ export async function createResearchDispatchFixture(
   fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
   fs.writeFileSync(artifactPath, artifactBody);
   const digest = createHash("sha256").update(artifactBody).digest("hex");
-  const contextFile = path.join(sandbox, "context.json");
-  fs.writeFileSync(
-    contextFile,
-    JSON.stringify([
-      { text: "Use only declared context." },
-      {
-        artifact: {
-          id: "art_33333333-3333-4333-8333-333333333333",
-          repositoryId: registered.repository.id,
-          path: "inputs/source.txt",
-          kind: "source",
-          ...(revision === null ? {} : { revision }),
-          sha256: digest,
-          mediaType: "text/plain",
-        },
+  const context: Dispatch["context"] = [
+    { text: "Use only declared context." },
+    {
+      artifact: {
+        id: "art_33333333-3333-4333-8333-333333333333",
+        repositoryId: registered.repository.id,
+        path: "inputs/source.txt",
+        kind: "source",
+        ...(revision === null ? {} : { revision }),
+        sha256: digest,
+        mediaType: "text/plain",
       },
-    ]),
-  );
-  const prepared = await prepareResearchDispatch({
-    root,
-    id: dispatchId,
-    runId,
-    questId,
-    campaignId,
-    repositoryId: registered.repository.id,
-    ownerSkill: options.ownerSkill ?? "historical-research-runner",
-    provider: options.provider ?? "claude",
-    objective: options.objective ?? "Produce a bounded deterministic report",
-    acceptanceCriteria: options.acceptanceCriteria ?? ["Report is deterministic"],
-    contextFile,
-    allowedWritePaths: options.allowedWritePaths ?? ["outputs/report.json"],
-    expectedOutputs: options.expectedOutputs ?? ["Golden report"],
-    checks: ["test -f outputs/report.json"],
-    taskRef: options.taskRef ?? "tasks/legacy-context",
-    idempotencyKey: `prepare:${dispatchId}`,
-  });
+    },
+  ];
+  const contextFile = path.join(sandbox, "context.json");
+  fs.writeFileSync(contextFile, JSON.stringify(context));
+  let requestRef: string;
+  if (options.associateRepository === false) {
+    const createdAt = new Date().toISOString();
+    const dispatch: Dispatch = {
+      id: dispatchId,
+      questId,
+      campaignId,
+      runId,
+      repositoryId: registered.repository.id,
+      ownerSkill: options.ownerSkill ?? "historical-research-runner",
+      provider: options.provider ?? "claude",
+      objective: options.objective ?? "Produce a bounded deterministic report",
+      acceptanceCriteria: options.acceptanceCriteria ?? ["Report is deterministic"],
+      context,
+      allowedWritePaths: options.allowedWritePaths ?? ["outputs/report.json"],
+      expectedOutputs: options.expectedOutputs ?? ["Golden report"],
+      checks: ["test -f outputs/report.json"],
+      taskRef: options.taskRef ?? "tasks/legacy-context",
+      createdAt,
+    };
+    await commitResearchBatch({
+      root,
+      actor: { type: "agent", id: "historical-fixture" },
+      provenance: { source: "historical-fixture" },
+      idempotencyKey: `prepare:${dispatchId}`,
+      timestamp: createdAt,
+      mutations: [{ kind: "dispatch.record", dispatch }],
+    });
+    requestRef = `.trellis/research/dispatches/${dispatchId}/request.json`;
+    const requestPath = path.join(root, ...requestRef.split("/"));
+    fs.mkdirSync(path.dirname(requestPath), { recursive: true });
+    fs.writeFileSync(requestPath, stableResearchJson(dispatch));
+  } else {
+    const prepared = await prepareResearchDispatch({
+      root,
+      id: dispatchId,
+      runId,
+      questId,
+      campaignId,
+      repositoryId: registered.repository.id,
+      ownerSkill: options.ownerSkill ?? "historical-research-runner",
+      capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE[prepareStage],
+      provider: options.provider ?? "claude",
+      objective: options.objective ?? "Produce a bounded deterministic report",
+      acceptanceCriteria: options.acceptanceCriteria ?? ["Report is deterministic"],
+      contextFile,
+      allowedWritePaths: options.allowedWritePaths ?? ["outputs/report.json"],
+      expectedOutputs: options.expectedOutputs ?? ["Golden report"],
+      checks: ["test -f outputs/report.json"],
+      taskRef: options.taskRef ?? "tasks/legacy-context",
+      idempotencyKey: `prepare:${dispatchId}`,
+    });
+    requestRef = prepared.requestFile as string;
+  }
+  if (requestedStage === "complete") {
+    await setResearchQuestStage({ root, questId, stage: "complete" });
+  }
 
   return {
     root,
     repository,
-    requestRef: prepared.requestFile as string,
-    requestPath: path.join(root, prepared.requestFile as string),
+    requestRef,
+    requestPath: path.join(root, requestRef),
     artifactPath,
     artifactBody,
     revision,

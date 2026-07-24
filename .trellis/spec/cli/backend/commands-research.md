@@ -8,7 +8,7 @@ CLI code must never read or write `.trellis/research/events.jsonl` directly and 
 
 ### Procedure/policy and frozen successor scope
 
-C04 adds strict host-neutral Procedure/project-policy resolution and conservative policy creation during explicit Research initialization. C05-C06 additionally trigger this spec for capability-bound prepare, activation planning, automatic authorization, interactive approval, revocation, approval-gated zero-write Context, and atomic approval consumption.
+C04 adds strict host-neutral Procedure/project-policy resolution and conservative policy creation during explicit Research initialization. C05 adds capability-bound prepare, activation planning, automatic authorization, interactive approval, revocation, and recoverable activation/approval sidecars. C06 later adds approval-gated zero-write Context and atomic approval consumption.
 
 ## 2. Signatures
 
@@ -20,7 +20,7 @@ trellis research campaign create|protocol|freeze|status
 trellis research run create|status|invalidate
 trellis research evidence create|status
 trellis research claim create|status
-trellis research dispatch context <request-file> --host claude|codex [--skill-name <name>...]|prepare|record-result|apply|reject
+trellis research dispatch context|prepare|plan-activation|authorize|approve|revoke|record-result|apply|reject
 ```
 
 Worker execution, hooks, Task lifecycle and linking, workflow selection, and
@@ -28,11 +28,11 @@ Mempal are outside this command family. Best-effort Run session pointers are
 CLI integration behavior, not canonical research state. The exact active
 Research groups are `init`, `status`, `validate`, `rebuild`, `repo`, `quest`,
 `campaign`, `run`, `evidence`, `claim`, and `dispatch`; the exact Dispatch
-children are `context`, `prepare`, `record-result`, `apply`, and `reject`.
+children are exactly `context`, `prepare`, `plan-activation`, `authorize`, `approve`, `revoke`, `record-result`, `apply`, and `reject`, in that observable order.
 
-### Frozen successor signatures (not implemented in C01)
+### C05 Dispatch lifecycle signatures
 
-The successor Dispatch children are `prepare`, `plan-activation`, `authorize`, `approve`, `revoke`, `context`, `record-result`, `apply`, and `reject`. `prepare` requires `--capability`; Context accepts a Dispatch ID and host; `record-result` requires `--approval <apr-id> --input <path|->`; `revoke` accepts `[--reason <text>]`; interactive `approve` accepts no automation flag.
+`prepare` requires an explicit `--capability <id>` at callback validation. `plan-activation <dispatch-id> --capability <id>` bridges a historical v1 Dispatch. `authorize <dispatch-id> --host <claude|codex>` performs policy-bounded automatic authorization. `approve <dispatch-id> --host <claude|codex>` is interactive-only and registers no JSON, dry-run, yes, or force option. `revoke <approval-id> [--reason <text>]` permits a TTY reason prompt only in human non-dry-run mode. Current Context and `record-result` signatures remain unchanged until C06.
 
 ## 3. Contracts
 
@@ -46,7 +46,7 @@ The successor Dispatch children are `prepare`, `plan-activation`, `authorize`, `
 
 ### Mutation Contract
 
-All event-producing commands support `--idempotency-key`, `--dry-run`, and `--json`.
+All non-interactive event-producing commands support `--idempotency-key`, `--dry-run`, and `--json`. Interactive `dispatch approve` supports only `--host`, `--root`, and `--idempotency-key` and requires all three standard streams to be TTYs.
 
 - Actor defaults to `{ type: "agent", id: "trellis-cli" }`.
 - Provenance source is `trellis research <subcommand>`.
@@ -55,7 +55,8 @@ All event-producing commands support `--idempotency-key`, `--dry-run`, and `--js
 - Fresh or matching non-dry-run Research init ensures `.trellis/research/policy.json` exists and is valid before ledger mutation/replay return. It creates only an absent file with exact conservative bytes and preserves every valid existing byte.
 - Conflicting Research init returns before policy repair. Dry-run validates prospective conservative policy in memory but creates no policy directory/file.
 - Dry-run uses `validateResearchBatch`; it must not leave policy, ledger, projection, or runtime files changed.
-- Idempotent replay is successful and returns the original events with `replayed: true`.
+- Idempotent replay is successful only when the canonical events match the command family, target, and exact batch shape; otherwise return `IDEMPOTENCY_KEY_CONFLICT`.
+- C05 classifies an explicit key before lifecycle validation, every validation result, and every commit result. Dry-run rereads the ledger and treats returned events as replay only when every returned event ID is canonical.
 - Explicit IDs and enum arguments are validated before commit. Create commands generate public core IDs when omitted.
 
 ### Quest Repository Association Contract
@@ -226,10 +227,45 @@ success and failure preflight paths are full-tree zero-write.
 
 ### Dispatch Contract
 
-- `dispatch prepare` validates Run/Quest/Campaign relationships and the target
-  Repository, commits the Dispatch, then atomically writes portable
-  `request.json` and a runtime manifest under
-  `.trellis/.runtime/research/dispatches`.
+- New `dispatch prepare --capability <id>` validates hierarchy, explicit
+  stage-matched capability, project-first Procedure, strict policy, effective
+  authority, Repository/artifacts/write scope, request digest, and normalized
+  scope hash without observation persistence or target Repository writes. It
+  commits exactly unchanged v1 `dispatch.recorded` then v2 `activation.planned`
+  in one batch with one timestamp/key.
+- A historical one-event prepare replay appends nothing, returns
+  `legacyPrepare:true` with null activation fields, and repairs only request plus
+  legacy runtime manifest. It never silently upgrades the Dispatch; a new-key
+  `plan-activation` strict-reads the tracked request, requires canonical equality,
+  and commits exactly one activation without rewriting Dispatch/request bytes.
+- `authorize` revalidates Procedure, policy, request, and scope bindings, requires
+  automatic eligibility, enforces one unexpired grant per activation/host, permits
+  different hosts, and uses exact automatic label `trellis-policy-v1` and rationale
+  `Eligible under immutable registry and project policy.` Expiry equality permits
+  same-host replacement.
+- `approve` requires stdin/stdout/stderr TTYs, renders deterministic authority,
+  prompts for operator label then rationale, and requires exact challenge
+  `APPROVE <dispatch-id> <host> <first-12-request-digest-hex>`. It revalidates all
+  bindings after the challenge before capturing grant time. Same-key replay still
+  requires TTY and challenge and never replaces canonical grant metadata.
+- Approval labels are 1–128 Unicode code points; rationale and revocation reason
+  are 1–1,024 Unicode code points. `revoke` permits pre- or post-expiry revocation
+  while canonical status remains `granted`; JSON, dry-run, and non-TTY calls must
+  supply `--reason`.
+- After ledger commit, C05 writes canonical sidecars with `stableResearchJson`
+  and no extra LF:
+  `.trellis/research/dispatches/<dsp-id>/activation.json` and
+  `approvals/<apr-id>.json`. Sidecars are recoverable projections, never authority;
+  component grammar, bigint identity snapshots, descriptor-bound staging, full-chain
+  revalidation, short-write handling, file `fsync`, and post-publication identity/byte
+  checks detect replacement and containment drift as committed recovery errors. An
+  absent target uses exclusive hard-link publication; an unchanged present target
+  uses atomic rename replacement. Windows closes the staging descriptor only after
+  all write checks and immediately revalidates before publication. This is practical
+  pure-Node detect-and-fail behavior, not mathematical directory-FD-relative or
+  conditional-CAS safety: nanosecond, ABA, hard-link-alias, and final-check gaps need
+  native `openat`/`renameat`-style support outside C05. Grant/revoke recovery repairs
+  activation plus only the target approval.
 - `dispatch record-result` strict-parses a Result and Proposal, verifies their
   relationship to the Dispatch, validates referenced artifacts, and commits both
   in one core ledger batch before writing tracked `result.json` and
@@ -252,9 +288,11 @@ success and failure preflight paths are full-tree zero-write.
 - Dry-run performs the same relation, operation, repository, revision, and
   artifact validation without durable ledger, tracked-file, binding,
   observation, or manifest writes.
-- Tracked request/result/proposal/decision files use stable JSON, one trailing
-  newline, and atomic writes. They contain portable references only; absolute
-  paths remain in runtime manifests.
+- Tracked request/activation/approval/result/proposal/decision files use stable
+  JSON, one trailing newline, and atomic writes. Activation and approval events
+  contain only digests/hashes and portable IDs; absolute normalized scope paths
+  are preflight inputs only. Existing request/result/proposal/decision portability
+  remains unchanged.
 - If the ledger commits but a tracked dispatch file cannot be written, report a
   committed error with the ledger head, target file, and retry/recovery details.
   Do not append a replacement batch.
@@ -287,14 +325,17 @@ gates, Campaign relaunch, richer scientific entity fields, convenience lifecycle
 aliases, or direct Mempal references. These are accepted future high-impact
 changes, not hidden command behavior.
 
-### Frozen successor contracts (not implemented in C01)
+### C05 closure and C06 deferrals
 
-- New prepare atomically records unchanged v1 Dispatch plus immutable v2 activation; `plan-activation` bridges an untouched existing v1 Dispatch exactly once.
-- `authorize` grants only bounded automatic work inside registry/policy limits. `approve` is TTY-only, displays exact authority, prompts for label/rationale, and requires `APPROVE <dispatch-id> <host> <first-12-request-digest-hex>`; no `--yes`.
-- Context remains zero-write and requires matching unexpired host approval plus Procedure, policy, request, scope, and materialization bindings.
-- Result recording requires explicit matching approval ID, then commits v1 Result, v1 Proposal, and v2 approval consumption in one batch. This disambiguates simultaneous valid host-bound grants without changing worker Result/Proposal JSON.
-
-Exact schemas, ordering, error codes, and recovery rules are frozen in the active C01 task research artifacts.
+- C05 implements atomic prepare activation, historical activation bridging,
+  automatic authorization, exact TTY approval, revocation, sidecars, drift checks,
+  and race-safe replay classification.
+- Production Context remains the current zero-write Skill-compatible command. C05
+  does not require or consume approval and does not repair sidecars from Context.
+- Current Result recording remains exactly v1 Result plus v1 Proposal and accepts
+  no approval ID. C05 adds no `approval.consumed` mutation or event emitter.
+- C06 later requires a matching unexpired host approval in Context and atomically
+  appends Result, Proposal, then consumption without changing worker JSON.
 
 ## 4. Validation & Error Matrix
 
@@ -334,7 +375,23 @@ Exact schemas, ordering, error codes, and recovery rules are frozen in the activ
 | Ledger commits but a tracked dispatch file write fails | Report `committed: true`, head, target, and same-key recovery instruction |
 | Dry-run succeeds or fails | Leave ledger, projections, observations, manifests, and tracked dispatch files unchanged |
 
-Successor matrix additions: unknown/stage-mismatched capability, duplicate/late activation, automatic-policy violation, non-TTY/forbidden automation, challenge mismatch, duplicate grant, wrong host, absent/expired/revoked/consumed approval, every digest/scope drift, stale materialization, and non-atomic consumption all fail before unauthorized writes.
+C05 matrix additions:
+
+| Condition | Required behavior |
+| --- | --- |
+| Prepare/plan capability is absent, unknown, or stage-mismatched | Return the stable capability error before commit |
+| Activation already exists or Result/Proposal makes planning late | Return `DUPLICATE_ACTIVATION` or `ACTIVATION_TOO_LATE`; append nothing |
+| Tracked request is absent/non-regular versus malformed/mismatched | Return `REQUEST_NOT_FOUND` versus `REQUEST_STATE_MISMATCH` |
+| Procedure, policy, request digest, or normalized scope drifts | Return the matching stable mismatch code before grant |
+| Automatic eligibility fails | Return explicit/interactivity, limit, or forbidden-authority code; create no approval |
+| Same host has a still-granted approval and current time is before expiry | Return `DUPLICATE_ACTIVE_APPROVAL`; equality is eligible for replacement |
+| `approve` lacks any TTY or receives forbidden automation flags | Reject before callback/prompt mutation |
+| Label/rationale/reason is blank or exceeds its Unicode code-point bound | Return `INVALID_APPROVAL_INPUT` |
+| Challenge differs by any byte | Return `APPROVAL_CHALLENGE_MISMATCH`; append nothing |
+| Revocation target is absent or terminal | Return `APPROVAL_NOT_FOUND` or `INVALID_APPROVAL_TRANSITION` |
+| Explicit idempotency key belongs to another family, target, or exact shape | Return `IDEMPOTENCY_KEY_CONFLICT` before success/materialization |
+| Sidecar parent/target is symlinked, replaced, or escaping after commit | Report committed recovery; never write outside `.trellis/research` |
+| C05 Context or record-result is asked to gate/consume approval | Unsupported until C06; preserve current behavior |
 
 ## 5. Good / Base / Bad Cases
 
@@ -388,11 +445,11 @@ violates the adapter contract even if the scientific work itself appears correct
 - **Base**: absent project override resolves the package-internal bundled pair; strict policy keeps automatic execution disabled and produces deterministic reasons only.
 - **Bad**: repair policy during a conflicting init, fall back around a malformed project override, or treat computed eligibility as authorization.
 
-### Frozen successor cases
+### C05 activation and approval cases
 
-- **Good**: bounded automatic authorization or explicit TTY approval leads to zero-write Context and one atomic consumed result batch.
-- **Base**: an untouched v1 Dispatch gains one compatibility activation without changing its request metadata.
-- **Bad**: route from `ownerSkill`, accept `approve --yes`, repair sidecars in Context, or consume approval separately.
+- **Good**: new prepare appends `[v1 dispatch.recorded, v2 activation.planned]`; bounded automatic authorization and exact TTY approval create host-bound grants; same-key replay reconstructs activation and only the target approval sidecar.
+- **Base**: an untouched v1 Dispatch gains one compatibility activation without changing its Dispatch event or request metadata; conservative policy returns `EXPLICIT_APPROVAL_REQUIRED` without a grant.
+- **Bad**: route from `ownerSkill`, accept `approve --yes`, grant after Procedure/policy/request/scope drift, reuse a key for another family/target/shape, escape sidecar containment, repair sidecars in Context, or emit consumption in C05.
 
 ## 6. Tests Required
 
@@ -404,6 +461,7 @@ pnpm --filter @mindfoldhq/trellis exec vitest run \
   test/commands/research-procedure-resolution.integration.test.ts \
   test/commands/research-policy-init.integration.test.ts \
   test/commands/research-dispatch.integration.test.ts \
+  test/commands/research-dispatch-activation.integration.test.ts \
   test/commands/research-dispatch-context.integration.test.ts \
   test/commands/research-workflow.integration.test.ts \
   test/templates/codex.test.ts \
@@ -433,7 +491,7 @@ The consolidated workflow suite must additionally prove Research initialization,
 
 C04 coverage additionally requires all 14 bundled Procedure pairs and seven-section instructions, project-first/fail-closed resolution, strict policy creation/read/preservation, dry-run/conflict zero-write behavior, no-replace winner handling, exact core import boundary, and unchanged root-init/update/uninstall Research preservation.
 
-Frozen successor tests additionally require exact parser command sets, prepare/bridge atomicity, automatic eligibility matrix, TTY and challenge subprocesses, approval lifecycle/host/expiry/drift failures, full-tree zero-write Context, three-event consumption, and post-commit same-key recovery.
+C05 tests additionally require exact nine-child parser order and approve option inventory; mixed prepare/bridge atomicity and historical replay discrimination; automatic eligibility, dual-host coexistence, expiry equality, TTY combinations, summary/challenge order, Unicode boundaries, canonical replay metadata, grant/revoke drift and transition failures; exact family/target/shape idempotency conflicts including dry-run races; activation/approval sidecar envelopes, same-key recovery, and symlink/containment rejection. Current Context zero-write and current two-v1-event Result/Proposal behavior remain regression requirements; three-event consumption belongs to C06.
 
 ## 7. Wrong vs Correct
 
@@ -543,11 +601,11 @@ await ensureResearchProjectPolicyForInit({ root, dryRun });
 
 Fresh and matching initialization may ensure policy; conflicting initialization may not.
 
-### Frozen successor: approval consumption
+### C05: sidecars are not approval authority
 
 ```text
-Wrong: automate interactive approval or record Result/Proposal before consuming authority.
-Correct: require exact TTY challenge for explicit approval and append Result, Proposal, then consumption atomically.
+Wrong: automate interactive approval, trust activation/approval sidecars as canonical, or add consumption to record-result.
+Correct: require the exact TTY challenge, commit typed grant/revoke events first, then materialize recoverable contained sidecars with the same key.
 ```
 
 ### Wrong: retry a committed Decision with a new key after `decision.json` fails

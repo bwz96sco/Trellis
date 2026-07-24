@@ -56,7 +56,7 @@ Disposable runtime layout:
 
 ### Mixed-ledger rollout scope
 
-C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03 implements immutable capability selection. C04 implements pure Procedure/policy parsing, digests, effective authority, and automatic eligibility without emit authority. C05-C06 later add validated emitters, Context gating, and approval consumption commands. Existing v1 entities, mutations, and projection schemas remain compatibility authority.
+C02 implements strict schema-v1/schema-v2 activation and approval reading, reduction, and rebuild support. C03 implements immutable capability selection. C04 implements pure Procedure/policy parsing, digests, effective authority, and automatic eligibility without emit authority. C05 adds typed activation planning, approval grant, and approval revocation emitters plus pure Dispatch request/scope bindings. C06 later adds Context gating and atomic approval consumption. Existing v1 entities, mappings, and projection schemas remain compatibility authority.
 
 ## 2. Signatures
 
@@ -114,6 +114,44 @@ interface ResearchStatus {
   projectedThroughSeq: number;
   projectionStale: boolean;
 }
+
+interface NormalizedDispatchScopeV1 {
+  readonly schemaVersion: 1;
+  readonly dispatchId: DispatchId;
+  readonly repository: Readonly<{
+    id: RepositoryId;
+    resolvedRoot: string;
+    locator: string;
+    expectedRemote?: string;
+    observedRemote?: string;
+    headRevision?: string;
+  }>;
+  readonly artifacts: readonly Readonly<{
+    id: ArtifactId;
+    repositoryId: RepositoryId;
+    path: string;
+    resolvedPath: string;
+    revision?: string;
+    sha256?: string;
+  }>[];
+  readonly allowedWritePaths: readonly Readonly<{
+    declaredPath: string;
+    resolvedPath: string;
+  }>[];
+}
+
+function digestDispatchRequest(dispatch: Dispatch): string;
+function hashDispatchScope(scope: NormalizedDispatchScopeV1): string;
+
+type C05ResearchMutation =
+  | { kind: "activation.plan"; activation: ResearchActivation }
+  | { kind: "approval.grant"; approval: ResearchApprovalGrant }
+  | {
+      kind: "approval.revoke";
+      approvalId: ApprovalId;
+      revokedAt: string;
+      reason: string;
+    };
 ```
 
 Event and projection envelopes:
@@ -231,7 +269,7 @@ subpath.
 
 ### C02 mixed-ledger signatures
 
-The Research subpath exports `ActivationId`, `ApprovalId`, `ResearchActivation`, `ResearchApprovalGrant`, terminal `ResearchApprovalState`, `ResearchSchemaV1Event`, `ResearchSchemaV2Event`, the mixed `ResearchEvent` union, strict schemas, `RESEARCH_EVENT_SCHEMA_VERSION`, and both ordered event-kind inventories. `ResearchState` adds only activation/approval maps and indexes. Existing v1 signatures, `ResearchMutation`, package export keys, and root-barrel behavior do not change. C03 adds the immutable registry without emit authority; C04-C06 contracts remain frozen in the archived C01 Procedure and activation/approval artifacts.
+The Research subpath exports `ActivationId`, `ApprovalId`, `ResearchActivation`, `ResearchApprovalGrant`, terminal `ResearchApprovalState`, `ResearchSchemaV1Event`, `ResearchSchemaV2Event`, the mixed `ResearchEvent` union, strict schemas, `RESEARCH_EVENT_SCHEMA_VERSION`, and both ordered event-kind inventories. `ResearchState` adds only activation/approval maps and indexes. C05 extends `ResearchMutation` only with `activation.plan`, `approval.grant`, and `approval.revoke`, and exports `digestDispatchRequest`, `hashDispatchScope`, and `NormalizedDispatchScopeV1` only from the Research subpath. Package export keys and root-barrel behavior do not change; there is no C05 consumption mutation.
 
 ## 3. Contracts
 
@@ -329,6 +367,32 @@ capabilities or emit authority.
 
 C04 computes authority only. It emits no activation, approval, authorization,
 Context decision, event, or canonical mutation.
+
+### C05 Dispatch bindings and typed emitters
+
+- `digestDispatchRequest` strict-parses the complete Dispatch and hashes
+  `UTF8("trellis-research-dispatch-request-digest-v1\0") || UTF8(stableResearchJson(dispatch))`.
+- `hashDispatchScope` validates the complete schema-v1 normalized scope, requires
+  absolute machine paths, normalizes POSIX/Windows separators, drive-letter case,
+  dot segments, and trailing separators, preserves artifact order, rejects duplicate
+  artifact IDs, and deduplicates/sorts declared/resolved write pairs before hashing
+  with `trellis-research-dispatch-scope-hash-v1\0`.
+- Both bindings return `sha256:<64 lowercase hex>` and are pure. Absolute resolved
+  paths may participate in the scope hash but are never serialized into activation,
+  approval, event, or tracked projection payloads.
+- `activation.plan` maps only to schema-v2 `activation.planned` with Activation
+  aggregate and ordered Dispatch/Quest relations.
+- `approval.grant` maps only to schema-v2 `approval.granted` with Approval aggregate
+  and ordered Activation/Dispatch/Quest relations derived from reduced state.
+- `approval.revoke` maps only to schema-v2 `approval.revoked` with ordered
+  Activation/Dispatch relations derived from the canonical grant.
+- Internal event drafts carry their schema version. Mixed batches build and reduce
+  progressively so new prepare can validate unchanged v1 `dispatch.recorded`
+  followed by v2 `activation.planned` atomically.
+- Every existing schema-v1 mapping, lock, sequence, idempotency, append, projection,
+  artifact-digest, Result/Proposal, and Decision contract remains unchanged.
+- Approval label, rationale, and revocation-reason bounds count Unicode code points.
+  C05 emits no `approval.consumed`; C06 owns consumption.
 
 ### Canonical research lifecycle protection
 
@@ -524,7 +588,7 @@ regression coverage.
 - Grant only against matching activation/Dispatch/Quest bindings. Approval IDs are globally unique. A new still-granted approval for the same activation/host is allowed only when every prior still-granted approval has `expiresAt <= newEvent.timestamp`; reducer never reads wall clock.
 - Revocation and consumption are terminal. Revocation allows pre/post-expiry transition from `granted`; consumption requires `event.timestamp < expiresAt`, so equality is expired.
 - Reduce consumption only when it immediately follows matching v1 Result then v1 Proposal events. All three events must share timestamp, actor, provenance, and idempotency key.
-- C02 adds no v2 `ResearchMutation`, event-draft, batch, commit, or CLI emitter. Existing two-event Result + Proposal mutation behavior remains unchanged until C06 adds mandatory approval consumption.
+- C02 originally added no v2 mutation or emitter. C05 now emits only activation plan, approval grant, and approval revocation through the existing validated batch boundary; the existing two-event Result + Proposal mutation remains unchanged until C06 adds mandatory approval consumption.
 - Once a v2 event exists, rollback is forward-fix only; never rewrite or down-convert ledger history.
 
 ## 4. Validation & Error Matrix
@@ -543,6 +607,11 @@ regression coverage.
 | Policy JSON is malformed, incomplete, unknown-keyed, or names an unknown capability | Reject as `INVALID_RESEARCH_POLICY` |
 | Policy contains a recognized grant attempt | Reject as `POLICY_WIDENS_AUTHORITY`; do not return partial authority |
 | Automatic policy opt-in is absent or another eligibility condition fails | Return all applicable reasons in stable order; create no authorization state |
+| Dispatch request digest input is malformed or contains unknown fields | Reject before hashing |
+| Normalized scope has unknown/missing fields, relative machine paths, duplicate artifact IDs, or malformed portable paths | Reject before hashing |
+| Activation/grant/revoke relation IDs disagree with reduced canonical state | Reject the complete batch; append nothing |
+| Approval label, rationale, or revocation reason exceeds its Unicode code-point limit | Reject before append |
+| C05 mutation attempts `approval.consumed` | No such mutation exists; consumption remains C06-only |
 | Empty mutation batch | Throw `Research event batch must contain at least one mutation` |
 | Existing `idempotencyKey` | Return prior matching events with `replayed: true`; append nothing |
 | Batch contains valid mutation followed by invalid mutation | Reject whole batch; append nothing |
@@ -614,6 +683,23 @@ resolveResearchCapability({
 // selection: "explicit", capability.id: "research.audit.campaign"
 ```
 
+A new prepare batch may atomically mix versions without a raw event API:
+
+```ts
+await commitResearchBatch({
+  root,
+  actor,
+  provenance,
+  idempotencyKey,
+  timestamp,
+  mutations: [
+    { kind: "dispatch.record", dispatch },
+    { kind: "activation.plan", activation },
+  ],
+});
+// event order: [v1 dispatch.recorded, v2 activation.planned]
+```
+
 ### Base
 
 Missing ledger or runtime cache:
@@ -676,7 +762,7 @@ Required result: typed `QUEST_STAGE_NOT_DISPATCHABLE` before capability lookup.
 
 - **Good**: unchanged v1 events replay with v2 activation/grant and adjacent Result/Proposal/consumption events; rebuild is deterministic and advances existing watermarks.
 - **Base**: a pure v1 ledger reduces exactly as before with empty activation/approval maps; existing two-event Result + Proposal mutation still works.
-- **Bad**: v2 uses expanded-year/non-millisecond timestamps, reducer consults wall clock/policy/filesystem, v1 bytes change, consumption is non-adjacent/expired, or C02 introduces an emit-capable v2 mutation.
+- **Bad**: v2 uses expanded-year/non-millisecond timestamps, reducer consults wall clock/policy/filesystem, v1 bytes change, consumption is non-adjacent/expired, or C05 bypasses typed plan/grant/revoke mutations with raw event input.
 
 ## 6. Tests Required
 
@@ -723,10 +809,15 @@ Core research tests live under `packages/core/test/research/`.
   - v2 requires four-digit RFC3339 UTC millisecond timestamps; expanded years fail while v1 compatibility remains accepted.
   - activation uniqueness/hierarchy/late-planning, grant binding/host/expiry replacement, terminal revocation, and event-time consumption expiry.
   - consumption adjacency plus shared timestamp/actor/provenance/idempotency key.
+  - approval label/rationale/revocation bounds count Unicode code points.
   - prebuilt mixed-ledger rebuild advances existing projection watermarks without changing entity data, `updatedAt`, projection schemas, or file inventory.
-  - public `ResearchMutation` and current two-event Result + Proposal behavior remain unchanged; no v2 emitter exists.
+  - C05 plan/grant/revoke mutations exist; no consumption mutation exists and current Result + Proposal remains two v1 events.
+- `dispatch-authority.test.ts`
+  - deterministic domain-separated Dispatch request digest and mutation sensitivity.
+  - strict complete normalized scope, machine-path normalization, duplicate artifact rejection, preserved artifact order, and canonical write-pair deduplication/sorting.
 - `store.test.ts`
   - duplicate idempotency key returns original events and no append.
+  - exact typed v1 Dispatch + v2 activation batch, grant, and revoke mappings reduce to canonical state.
   - complete batch validation prevents partial append.
   - 20+ concurrent commits produce exact `1..N` sequence.
   - stale runtime sequence repairs from ledger.
@@ -765,6 +856,8 @@ Also verify built consumer import:
 ```ts
 import {
   RESEARCH_CAPABILITY_REGISTRY,
+  digestDispatchRequest,
+  hashDispatchScope,
   parseResearchProcedure,
   parseResearchProjectPolicy,
   readResearchState,
@@ -777,7 +870,7 @@ The registry and resolver must not appear on the `@mindfoldhq/trellis-core` root
 barrel, retired Skill-routing exports must be absent from the Research subpath,
 and this change must not alter package export keys.
 
-C02 tests additionally require exact v1 fixture hashes/non-regression, strict v2 payload/version/timestamp vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry equality inputs, exact relation order, consumption adjacency, and proof that no v2 mutation/emitter was added. Run fresh GitNexus impact and warn before editing the HIGH parser or CRITICAL reducer symbols listed in the C01 impact map. Store mutation/batch/commit changes belong to C05/C06, not C02.
+Mixed-ledger tests additionally require exact v1 fixture hashes/non-regression, strict v2 payload/version/timestamp vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry equality inputs, exact relation order, and consumption adjacency. C05 must prove only plan/grant/revoke emitters were added, all v1 mappings remain unchanged, and no consumption mutation exists. Run fresh GitNexus impact and warn before editing HIGH/CRITICAL parser, reducer, or store symbols.
 
 ## 7. Wrong vs Correct
 
@@ -881,9 +974,9 @@ const digest = computeResearchProcedureDigest({
 
 Line endings and final-newline presence are Procedure identity.
 
-### C02: mixed versions without premature write authority
+### C05: typed mixed-version write authority
 
 ```text
-Wrong: rewrite schema-v1 events, store approval in sidecars only, or expose v2 ResearchMutation before validation dependencies exist.
-Correct: preserve v1 bytes, strictly read/reduce one mixed canonical ledger in C02, then add validated v2 emitters only in C05/C06.
+Wrong: rewrite schema-v1 events, store approval only in sidecars, accept raw v2 drafts, or add approval consumption to C05.
+Correct: preserve v1 mappings, emit only typed plan/grant/revoke mutations through the existing validated batch, and keep the mixed ledger canonical.
 ```

@@ -33,6 +33,7 @@ import chalk from "chalk";
 import { InvalidArgumentError } from "commander";
 
 import {
+  ResearchActivationError,
   ResearchDispatchContextError,
   ResearchDispatchFileError,
 } from "./errors.js";
@@ -350,6 +351,34 @@ export function renderResearchError(error: unknown, json: boolean): void {
         chalk.red("Error:"),
         `${message}. Run '${recovery.recovery}' to repair projections.`,
       );
+    }
+    return;
+  }
+
+  const stableCode =
+    error instanceof ResearchActivationError
+      ? error.code
+      : typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          typeof error.code === "string" &&
+          new Set([
+            "UNKNOWN_CAPABILITY",
+            "CAPABILITY_STAGE_MISMATCH",
+            "QUEST_STAGE_NOT_DISPATCHABLE",
+            "INVALID_PROJECT_PROCEDURE",
+            "INVALID_BUNDLED_PROCEDURE",
+            "INVALID_RESEARCH_PROCEDURE",
+            "INVALID_RESEARCH_POLICY",
+            "POLICY_WIDENS_AUTHORITY",
+          ]).has(error.code)
+        ? error.code
+        : null;
+  if (stableCode !== null) {
+    if (json) {
+      console.error(JSON.stringify({ error: { code: stableCode, message } }));
+    } else {
+      console.error(chalk.red("Error:"), `${stableCode}: ${message}`);
     }
     return;
   }

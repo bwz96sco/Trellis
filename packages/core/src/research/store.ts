@@ -40,7 +40,9 @@ import {
   workspaceSchema,
 } from "./schema.js";
 import {
+  RESEARCH_EVENT_SCHEMA_VERSION,
   RESEARCH_SCHEMA_VERSION,
+  type ApprovalId,
   type ArtifactRef,
   type CampaignId,
   type CampaignStatus,
@@ -56,10 +58,13 @@ import {
   type QuestStatus,
   type Repository,
   type RepositoryId,
+  type ResearchActivation,
   type ResearchActor,
+  type ResearchApprovalGrant,
   type ResearchEvent,
   type ResearchEventKind,
   type ResearchProvenance,
+  type ResearchSchemaV2EventKind,
   type ResearchState,
   type Result,
   type RunId,
@@ -141,6 +146,14 @@ export type ResearchMutation =
     }
   | { kind: "claim.status"; claimId: ClaimId; status: ClaimStatus }
   | { kind: "dispatch.record"; dispatch: Dispatch }
+  | { kind: "activation.plan"; activation: ResearchActivation }
+  | { kind: "approval.grant"; approval: ResearchApprovalGrant }
+  | {
+      kind: "approval.revoke";
+      approvalId: ApprovalId;
+      revokedAt: string;
+      reason: string;
+    }
   | { kind: "result.record"; result: Result }
   | { kind: "proposal.record"; proposal: Proposal }
   | { kind: "decision.record"; decision: Decision };
@@ -186,7 +199,10 @@ export class ResearchProjectionError extends Error {
 }
 
 interface EventDraft {
-  kind: ResearchEventKind;
+  schemaVersion:
+    | typeof RESEARCH_SCHEMA_VERSION
+    | typeof RESEARCH_EVENT_SCHEMA_VERSION;
+  kind: ResearchEventKind | ResearchSchemaV2EventKind;
   aggregate: ResearchEvent["aggregate"];
   related: ResearchEvent["related"];
   payload: Record<string, unknown>;
@@ -307,12 +323,14 @@ function buildValidatedBatch(
     input.timestamp ?? new Date().toISOString(),
     "timestamp",
   );
-  const events = input.mutations.map((mutation, index) => {
-    const draft = mutationToEventDraft(mutation, timestamp);
-    return parseResearchEvent({
-      schemaVersion: RESEARCH_SCHEMA_VERSION,
+  let candidateState = reduceResearchEvents(existing);
+  const events: ResearchEvent[] = [];
+  for (const mutation of input.mutations) {
+    const draft = mutationToEventDraft(mutation, timestamp, candidateState);
+    const event = parseResearchEvent({
+      schemaVersion: draft.schemaVersion,
       eventId: createEventId(),
-      seq: existing.length + index + 1,
+      seq: existing.length + events.length + 1,
       timestamp,
       kind: draft.kind,
       aggregate: draft.aggregate,
@@ -322,7 +340,9 @@ function buildValidatedBatch(
       idempotencyKey,
       provenance,
     });
-  });
+    events.push(event);
+    candidateState = reduceResearchEvents([...existing, ...events]);
+  }
   validateDispatchBatch(events, reduceResearchEvents(existing), timestamp);
   const state = reduceResearchEvents([...existing, ...events]);
   validateArtifactDigests(
@@ -431,6 +451,24 @@ function validateDispatchBatch(
 function mutationToEventDraft(
   mutation: ResearchMutation,
   timestamp: string,
+  state?: ResearchState,
+): EventDraft {
+  const draft = buildMutationEventDraft(mutation, timestamp, state);
+  if (state === undefined && draft.schemaVersion === RESEARCH_SCHEMA_VERSION) {
+    const { schemaVersion, ...comparable } = draft;
+    Object.defineProperty(comparable, "schemaVersion", {
+      value: schemaVersion,
+      enumerable: false,
+    });
+    return comparable as EventDraft;
+  }
+  return draft;
+}
+
+function buildMutationEventDraft(
+  mutation: ResearchMutation,
+  timestamp: string,
+  state?: ResearchState,
 ): EventDraft {
   switch (mutation.kind) {
     case "workspace.create": {
@@ -443,6 +481,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "workspace.created",
         aggregate: { type: "workspace", id: workspace.id },
         related: [],
@@ -456,6 +495,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "repository.registered",
         aggregate: { type: "repository", id: repository.id },
         related: [],
@@ -465,6 +505,7 @@ function mutationToEventDraft(
     case "artifact.register": {
       const artifact = artifactRefSchema.parse(mutation.artifact);
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "artifact.registered",
         aggregate: { type: "artifact", id: artifact.id },
         related: [{ type: "repository", id: artifact.repositoryId }],
@@ -480,6 +521,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "quest.created",
         aggregate: { type: "quest", id: quest.id },
         related: quest.repositoryIds.map((id) => ({ type: "repository", id })),
@@ -488,6 +530,7 @@ function mutationToEventDraft(
     }
     case "quest.status":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "quest.status_changed",
         aggregate: { type: "quest", id: mutation.questId },
         related: [],
@@ -495,6 +538,7 @@ function mutationToEventDraft(
       };
     case "quest.stage":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "quest.stage_changed",
         aggregate: { type: "quest", id: mutation.questId },
         related: [],
@@ -509,6 +553,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "campaign.created",
         aggregate: { type: "campaign", id: campaign.id },
         related: [{ type: "quest", id: campaign.questId }],
@@ -517,6 +562,7 @@ function mutationToEventDraft(
     }
     case "campaign.protocol":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "campaign.protocol_updated",
         aggregate: { type: "campaign", id: mutation.campaignId },
         related: [],
@@ -529,6 +575,7 @@ function mutationToEventDraft(
       };
     case "campaign.freeze":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "campaign.frozen",
         aggregate: { type: "campaign", id: mutation.campaignId },
         related: [],
@@ -536,6 +583,7 @@ function mutationToEventDraft(
       };
     case "campaign.status":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "campaign.status_changed",
         aggregate: { type: "campaign", id: mutation.campaignId },
         related: [],
@@ -549,6 +597,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "run.created",
         aggregate: { type: "run", id: run.id },
         related: [{ type: "campaign", id: run.campaignId }],
@@ -557,6 +606,7 @@ function mutationToEventDraft(
     }
     case "run.status":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "run.status_changed",
         aggregate: { type: "run", id: mutation.runId },
         related: [],
@@ -564,6 +614,7 @@ function mutationToEventDraft(
       };
     case "run.invalidate":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "run.invalidated",
         aggregate: { type: "run", id: mutation.runId },
         related: [],
@@ -579,6 +630,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "evidence.created",
         aggregate: { type: "evidence", id: evidence.id },
         related: [
@@ -590,6 +642,7 @@ function mutationToEventDraft(
     }
     case "evidence.status":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "evidence.status_changed",
         aggregate: { type: "evidence", id: mutation.evidenceId },
         related: [],
@@ -603,6 +656,7 @@ function mutationToEventDraft(
         updatedAt: timestamp,
       });
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "claim.created",
         aggregate: { type: "claim", id: claim.id },
         related: [
@@ -614,6 +668,7 @@ function mutationToEventDraft(
     }
     case "claim.status":
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "claim.status_changed",
         aggregate: { type: "claim", id: mutation.claimId },
         related: [],
@@ -622,6 +677,7 @@ function mutationToEventDraft(
     case "dispatch.record": {
       const dispatch = dispatchSchema.parse(mutation.dispatch);
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "dispatch.recorded",
         aggregate: { type: "dispatch", id: dispatch.id },
         related: [
@@ -635,9 +691,61 @@ function mutationToEventDraft(
         payload: { dispatch },
       };
     }
+    case "activation.plan": {
+      const activation = mutation.activation;
+      return {
+        schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+        kind: "activation.planned",
+        aggregate: { type: "activation", id: activation.id },
+        related: [
+          { type: "dispatch", id: activation.dispatchId },
+          { type: "quest", id: activation.questId },
+        ],
+        payload: { activation },
+      };
+    }
+    case "approval.grant": {
+      const approval = mutation.approval;
+      const activation = state?.activations[approval.activationId];
+      if (!activation) {
+        throw new Error(`Unknown research activation '${approval.activationId}'`);
+      }
+      return {
+        schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+        kind: "approval.granted",
+        aggregate: { type: "approval", id: approval.id },
+        related: [
+          { type: "activation", id: approval.activationId },
+          { type: "dispatch", id: approval.dispatchId },
+          { type: "quest", id: activation.questId },
+        ],
+        payload: { approval },
+      };
+    }
+    case "approval.revoke": {
+      const approval = state?.approvals[mutation.approvalId];
+      if (!approval) {
+        throw new Error(`Unknown research approval '${mutation.approvalId}'`);
+      }
+      return {
+        schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+        kind: "approval.revoked",
+        aggregate: { type: "approval", id: mutation.approvalId },
+        related: [
+          { type: "activation", id: approval.grant.activationId },
+          { type: "dispatch", id: approval.grant.dispatchId },
+        ],
+        payload: {
+          approvalId: mutation.approvalId,
+          revokedAt: mutation.revokedAt,
+          reason: mutation.reason,
+        },
+      };
+    }
     case "result.record": {
       const result = resultSchema.parse(mutation.result);
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "result.recorded",
         aggregate: { type: "result", id: result.id },
         related: [
@@ -650,6 +758,7 @@ function mutationToEventDraft(
     case "proposal.record": {
       const proposal = proposalSchema.parse(mutation.proposal);
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "proposal.recorded",
         aggregate: { type: "proposal", id: proposal.id },
         related: [
@@ -662,6 +771,7 @@ function mutationToEventDraft(
     case "decision.record": {
       const decision = decisionSchema.parse(mutation.decision);
       return {
+        schemaVersion: RESEARCH_SCHEMA_VERSION,
         kind: "decision.recorded",
         aggregate: { type: "decision", id: decision.id },
         related: [{ type: "proposal", id: decision.proposalId }],

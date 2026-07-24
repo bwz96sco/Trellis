@@ -23,6 +23,45 @@ export class ResearchDispatchContextError extends Error {
   }
 }
 
+export type ResearchActivationErrorCode =
+  | ResearchDispatchContextErrorCode
+  | "UNKNOWN_CAPABILITY"
+  | "CAPABILITY_STAGE_MISMATCH"
+  | "CAPABILITY_DISABLED"
+  | "DUPLICATE_ACTIVATION"
+  | "ACTIVATION_TOO_LATE"
+  | "ACTIVATION_REQUIRED"
+  | "EXPLICIT_APPROVAL_REQUIRED"
+  | "AUTOMATIC_LIMIT_EXCEEDED"
+  | "AUTOMATIC_AUTHORITY_FORBIDDEN"
+  | "INTERACTIVE_APPROVAL_REQUIRED"
+  | "APPROVAL_CHALLENGE_MISMATCH"
+  | "INVALID_APPROVAL_INPUT"
+  | "DUPLICATE_ACTIVE_APPROVAL"
+  | "DISPATCH_ALREADY_COMPLETED"
+  | "APPROVAL_NOT_FOUND"
+  | "REVOCATION_REASON_REQUIRED"
+  | "INVALID_APPROVAL_TRANSITION"
+  | "IDEMPOTENCY_KEY_CONFLICT"
+  | "PROCEDURE_DIGEST_MISMATCH"
+  | "POLICY_DIGEST_MISMATCH"
+  | "REQUEST_DIGEST_MISMATCH"
+  | "SCOPE_HASH_MISMATCH";
+
+export class ResearchActivationError extends Error {
+  readonly code: ResearchActivationErrorCode;
+
+  constructor(
+    code: ResearchActivationErrorCode,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "ResearchActivationError";
+    this.code = code;
+  }
+}
+
 export class ResearchDispatchFileError extends Error {
   readonly committed = true;
   readonly headSeq: number;
