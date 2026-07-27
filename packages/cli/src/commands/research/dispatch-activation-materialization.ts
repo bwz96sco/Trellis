@@ -4,8 +4,10 @@ import path from "node:path";
 
 import {
   stableResearchJson,
+  type Proposal,
   type ResearchActivation,
   type ResearchApprovalState,
+  type Result,
 } from "@mindfoldhq/trellis-core/research";
 
 import { ResearchDispatchFileError } from "./errors.js";
@@ -385,12 +387,22 @@ function writeSidecar(input: {
         BigInt(bytes.length),
       );
       validateDirectorySelection(selection);
-      validateTargetSnapshot(
-        selection,
-        targetPath,
-        input.fileName,
-        targetBefore,
-      );
+      try {
+        validateTargetSnapshot(
+          selection,
+          targetPath,
+          input.fileName,
+          targetBefore,
+        );
+      } catch (error) {
+        if (
+          targetBefore.state !== "present" ||
+          !isEquivalentWinner(selection, targetPath, input.fileName, bytes)
+        ) {
+          throw error;
+        }
+        return path.relative(input.root, target).split(path.sep).join("/");
+      }
 
       if (process.platform === "win32") {
         fs.closeSync(fd);
@@ -494,5 +506,33 @@ export function materializeResearchApproval(input: {
     ],
     fileName: `${input.approval.grant.id}.json`,
     value: { schemaVersion: 2, approval: input.approval },
+  });
+}
+
+export function materializeResearchResult(input: {
+  readonly root: string;
+  readonly headSeq: number;
+  readonly result: Result;
+  readonly recovery: string;
+}): string {
+  return writeSidecar({
+    ...input,
+    segments: [".trellis", "research", "dispatches", input.result.dispatchId],
+    fileName: "result.json",
+    value: input.result,
+  });
+}
+
+export function materializeResearchProposal(input: {
+  readonly root: string;
+  readonly headSeq: number;
+  readonly proposal: Proposal;
+  readonly recovery: string;
+}): string {
+  return writeSidecar({
+    ...input,
+    segments: [".trellis", "research", "dispatches", input.proposal.dispatchId],
+    fileName: "proposal.json",
+    value: input.proposal,
   });
 }

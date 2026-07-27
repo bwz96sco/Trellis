@@ -8,21 +8,21 @@ import {
   createArtifactId,
   createCampaignId,
   createDispatchId,
-  createProposalId,
   createQuestId,
-  createResultId,
   createRunId,
   readResearchLedger,
   readResearchState,
 } from "@mindfoldhq/trellis-core/research";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { approveResearchDispatch } from "../../src/commands/research/dispatch-activation-command.js";
 import {
   applyResearchProposal,
   prepareResearchDispatch,
   recordResearchDispatchResult,
   rejectResearchProposal,
 } from "../../src/commands/research/dispatch-command.js";
+import { deriveResearchOutputIds } from "../../src/commands/research/dispatch-output-ids.js";
 import {
   createResearchCampaign,
   createResearchQuest,
@@ -53,6 +53,39 @@ function initializeGitRepository(repository: string): string {
   git(repository, "add", "README.md");
   git(repository, "commit", "-qm", "initial");
   return git(repository, "rev-parse", "HEAD");
+}
+
+async function approveDispatchOutput(
+  root: string,
+  dispatchId: ReturnType<typeof createDispatchId>,
+  idempotencyKey: string,
+) {
+  const granted = await approveResearchDispatch(
+    {
+      root,
+      dispatchId,
+      host: "claude",
+      idempotencyKey,
+    },
+    {
+      stdinIsTTY: true,
+      stdoutIsTTY: true,
+      stderrIsTTY: true,
+      writeSummary: () => undefined,
+      question: async (prompt) => {
+        if (prompt === "Operator label: ") return "integration-test";
+        if (prompt === "Rationale: ") {
+          return "Approved for successor lifecycle integration test";
+        }
+        return prompt.match(/^Type '([^']+)': $/)?.[1] ?? "";
+      },
+      close: () => undefined,
+    },
+  );
+  return {
+    approvalId: granted.approval.grant.id,
+    ...deriveResearchOutputIds(granted.approval.grant.id),
+  };
 }
 
 function trackedFiles(root: string): string[] {
@@ -397,11 +430,16 @@ describe("research repositories and dispatch integration", () => {
     expect(requestText).not.toContain(root);
     expect(requestText).not.toContain(child);
 
-    const resultInput = path.join(sandbox, "result.json");
-    const proposalId = createProposalId();
+    const output = await approveDispatchOutput(
+      root,
+      prepared.dispatch.id,
+      "approve:result",
+    );
+    const resultInput = path.join(root, "result.json");
+    const proposalId = output.proposalId;
     const resultRevision = git(child, "rev-parse", "HEAD");
     const baseResult = {
-      id: createResultId(),
+      id: output.resultId,
       dispatchId: prepared.dispatch.id,
       runId,
       status: "completed",
@@ -436,9 +474,10 @@ describe("research repositories and dispatch integration", () => {
       recordResearchDispatchResult({
         root,
         dispatchId: prepared.dispatch.id,
-        file: resultInput,
+        approvalId: output.approvalId,
+        input: { kind: "path", cwd: sandbox, path: resultInput },
       }),
-    ).rejects.toThrow(/Proposal IDs/);
+    ).rejects.toThrow(/Proposal relations/);
     expect(await readResearchLedger(root)).toEqual(beforeInvalidResult);
 
     fs.writeFileSync(
@@ -463,12 +502,14 @@ describe("research repositories and dispatch integration", () => {
     const recorded = await recordResearchDispatchResult({
       root,
       dispatchId: prepared.dispatch.id,
-      file: resultInput,
+      approvalId: output.approvalId,
+      input: { kind: "path", cwd: sandbox, path: resultInput },
       idempotencyKey: "record:result",
     });
     expect(recorded.events.map((event) => event.kind)).toEqual([
       "result.recorded",
       "proposal.recorded",
+      "approval.consumed",
     ]);
 
     const ledgerBeforeDryRun = await readResearchLedger(root);
@@ -596,17 +637,22 @@ describe("research repositories and dispatch integration", () => {
       checks: [],
     });
 
+    const output = await approveDispatchOutput(
+      root,
+      prepared.dispatch.id,
+      "approve:bound-result",
+    );
     const artifactPath = path.join(child, "results", "bound.txt");
     fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
     fs.writeFileSync(artifactPath, "bound data");
     const artifactId = createArtifactId();
-    const proposalId = createProposalId();
-    const input = path.join(sandbox, "bound-result.json");
+    const proposalId = output.proposalId;
+    const input = path.join(root, "bound-result.json");
     fs.writeFileSync(
       input,
       JSON.stringify({
         result: {
-          id: createResultId(),
+          id: output.resultId,
           dispatchId: prepared.dispatch.id,
           runId,
           status: "completed",
@@ -644,7 +690,8 @@ describe("research repositories and dispatch integration", () => {
     await recordResearchDispatchResult({
       root,
       dispatchId: prepared.dispatch.id,
-      file: input,
+      approvalId: output.approvalId,
+      input: { kind: "path", cwd: sandbox, path: input },
     });
     await applyResearchProposal({
       root,
@@ -701,17 +748,22 @@ describe("research repositories and dispatch integration", () => {
       checks: [],
     });
 
+    const output = await approveDispatchOutput(
+      root,
+      prepared.dispatch.id,
+      "approve:artifact-result",
+    );
     const artifactPath = path.join(child, "results", "data.txt");
     fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
     fs.writeFileSync(artifactPath, "data");
     const artifactId = createArtifactId();
-    const proposalId = createProposalId();
-    const input = path.join(sandbox, "artifact-result.json");
+    const proposalId = output.proposalId;
+    const input = path.join(root, "artifact-result.json");
     fs.writeFileSync(
       input,
       JSON.stringify({
         result: {
-          id: createResultId(),
+          id: output.resultId,
           dispatchId: prepared.dispatch.id,
           runId,
           status: "completed",
@@ -747,7 +799,8 @@ describe("research repositories and dispatch integration", () => {
     await recordResearchDispatchResult({
       root,
       dispatchId: prepared.dispatch.id,
-      file: input,
+      approvalId: output.approvalId,
+      input: { kind: "path", cwd: sandbox, path: input },
     });
     const before = await readResearchLedger(root);
     await expect(

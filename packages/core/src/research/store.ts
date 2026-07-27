@@ -53,6 +53,7 @@ import {
   type EvidenceId,
   type EvidenceStatus,
   type Proposal,
+  type ProposalId,
   type QuestId,
   type QuestStage,
   type QuestStatus,
@@ -67,6 +68,7 @@ import {
   type ResearchSchemaV2EventKind,
   type ResearchState,
   type Result,
+  type ResultId,
   type RunId,
   type RunStatus,
   type WorkspaceId,
@@ -153,6 +155,12 @@ export type ResearchMutation =
       approvalId: ApprovalId;
       revokedAt: string;
       reason: string;
+    }
+  | {
+      kind: "approval.consume";
+      approvalId: ApprovalId;
+      resultId: ResultId;
+      proposalId: ProposalId;
     }
   | { kind: "result.record"; result: Result }
   | { kind: "proposal.record"; proposal: Proposal }
@@ -252,6 +260,19 @@ export async function validateResearchBatch(
     }
     return buildValidatedBatch(events, input);
   });
+}
+
+export async function validateResearchBatchReadOnly(
+  input: CommitResearchBatchInput,
+): Promise<ResearchBatchValidation> {
+  const events = await readResearchLedger(input.root);
+  const replay = events.filter(
+    (event) => event.idempotencyKey === input.idempotencyKey,
+  );
+  if (replay.length > 0) {
+    return { events: replay, state: reduceResearchEvents(events) };
+  }
+  return buildValidatedBatch(events, input);
 }
 
 export async function commitResearchBatch(
@@ -363,14 +384,22 @@ function validateDispatchBatch(
   const proposalEvents = events.filter(
     (event) => event.kind === "proposal.recorded",
   );
-  if (resultEvents.length > 0 || proposalEvents.length > 0) {
-    if (
-      events.length !== 2 ||
-      events[0]?.kind !== "result.recorded" ||
-      events[1]?.kind !== "proposal.recorded"
-    ) {
+  const consumptionEvents = events.filter(
+    (event) => event.kind === "approval.consumed",
+  );
+  if (
+    resultEvents.length > 0 ||
+    proposalEvents.length > 0 ||
+    consumptionEvents.length > 0
+  ) {
+    const successor =
+      events.length === 3 &&
+      events[0]?.kind === "result.recorded" &&
+      events[1]?.kind === "proposal.recorded" &&
+      events[2]?.kind === "approval.consumed";
+    if (!successor) {
       throw new Error(
-        "Research Result and Proposal must be recorded together in one batch",
+        "Research Result, Proposal, and Approval consumption must be recorded together in exactly one isolated batch",
       );
     }
     const result = events[0].payload.result as Result;
@@ -379,6 +408,17 @@ function validateDispatchBatch(
       throw new Error(
         "Research Result and Proposal must reference the same Dispatch",
       );
+    }
+    if (successor) {
+      const consumption = events[2];
+      if (
+        consumption?.payload.resultId !== result.id ||
+        consumption.payload.proposalId !== proposal.id
+      ) {
+        throw new Error(
+          "Research Approval consumption must reference the batched Result and Proposal",
+        );
+      }
     }
   }
 
@@ -739,6 +779,29 @@ function buildMutationEventDraft(
           approvalId: mutation.approvalId,
           revokedAt: mutation.revokedAt,
           reason: mutation.reason,
+        },
+      };
+    }
+    case "approval.consume": {
+      const approval = state?.approvals[mutation.approvalId];
+      if (!approval) {
+        throw new Error(`Unknown research approval '${mutation.approvalId}'`);
+      }
+      return {
+        schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+        kind: "approval.consumed",
+        aggregate: { type: "approval", id: mutation.approvalId },
+        related: [
+          { type: "activation", id: approval.grant.activationId },
+          { type: "dispatch", id: approval.grant.dispatchId },
+          { type: "result", id: mutation.resultId },
+          { type: "proposal", id: mutation.proposalId },
+        ],
+        payload: {
+          approvalId: mutation.approvalId,
+          resultId: mutation.resultId,
+          proposalId: mutation.proposalId,
+          consumedAt: timestamp,
         },
       };
     }

@@ -12,7 +12,7 @@ import {
   parseQuestStatus,
   parseRunStatus,
   ResearchProjectionError,
-  validateResearchBatch,
+  validateResearchBatchReadOnly,
   type CampaignId,
   type CampaignStatus,
   type ClaimId,
@@ -239,7 +239,7 @@ export async function executeResearchMutations(
 
   if (options.dryRun === true) {
     const before = await getResearchStatus(root);
-    const validation = await validateResearchBatch(input);
+    const validation = await validateResearchBatchReadOnly(input);
     const replayed = validation.events.some(
       (event) =>
         event.idempotencyKey === idempotencyKey && event.seq <= before.headSeq,

@@ -1,16 +1,11 @@
 import { proposalSchema, resultSchema } from "@mindfoldhq/trellis-core/research";
 import { describe, expect, it } from "vitest";
 
-import { RESEARCH_STAGE_CAPABILITIES } from "../../src/commands/research/legacy-skill-routing.js";
 import {
   getConfigTemplate,
   getHooksConfig,
   getResearchWorkerTemplate,
 } from "../../src/templates/codex/index.js";
-
-const OPTIONAL_RESEARCH_SKILLS = Object.values(RESEARCH_STAGE_CAPABILITIES)
-  .filter((definition) => definition.dispatchable)
-  .map((definition) => definition.optionalSkill);
 
 function researchWorkerTemplate(): string {
   const worker = getResearchWorkerTemplate();
@@ -32,36 +27,40 @@ describe("Codex Research templates", () => {
     expect(hooks.hooks).toBeDefined();
   });
 
-  it("pins the one-line pointer, name-only discovery, and preflight-first order", () => {
+  it("pins the Dispatch-ID envelope and Context-first Procedure order", () => {
     const content = researchWorkerTemplate();
     const orderedMarkers = [
-      "## 1. Validate the invocation envelope",
-      "## 2. Discover optional skill names only",
-      "## 3. Run the C07 preflight as the first process",
-      "## 4. Validate the preflight response",
-      "## 5. Load exactly the selected skill",
-      "## 6. Execute only bounded work",
-      "## 7. Return raw JSON",
+      "## 1. Validate the exact invocation without a process",
+      "## 2. Run Context as the first process",
+      "## 3. Pre-Context failures are non-materializable",
+      "## 4. Execute the embedded Procedure only",
+      "## 5. Forbidden actions",
+      "## 6. Return exact raw JSON after valid Context",
     ];
     const indexes = orderedMarkers.map((marker) => content.indexOf(marker));
     expect(indexes.every((index) => index >= 0)).toBe(true);
     expect(indexes).toEqual([...indexes].sort((left, right) => left - right));
-    for (const skillName of OPTIONAL_RESEARCH_SKILLS) {
-      expect(content).toContain(`\`${skillName}\``);
-    }
-    expect(content).toContain("--host codex");
-    expect(content).toContain("--skill-name <canonical-name>");
+    expect(content).toContain(
+      "^Research dispatch: (dsp_[0-9a-f]{8}-[0-9a-f]{4}",
+    );
+    expect(content).toContain(
+      "trellis research dispatch context <dsp-id> --host codex --root . --json",
+    );
+    expect(content).toContain("context.procedure.instructions");
+    expect(content).not.toContain("--skill-name");
+    expect(content).not.toContain("selectedSkill");
   });
 
-  it("fails closed and forbids nested agents and canonical mutation", () => {
+  it("fails closed and forbids nested agents, escalation, and canonical mutation", () => {
     const content = researchWorkerTemplate();
     for (const prohibition of [
-      "Do not manually read or parse `request.json`",
-      "Do not use `jq`, pipes, redirects",
+      "perform filesystem discovery",
+      "package installer",
       "Never call `spawn_agent`",
-      "trellis research dispatch record-result",
-      "trellis research dispatch apply",
-      "trellis research dispatch reject",
+      "record a Result or consume an approval",
+      "review, accept, reject, or apply a Proposal",
+      "danger-full-access",
+      "--add-dir",
       "git commit",
       "git push",
       "git merge",
@@ -69,6 +68,8 @@ describe("Codex Research templates", () => {
     ]) {
       expect(content).toContain(prohibition);
     }
+    expect(content).toContain('sandbox_mode = "workspace-write"');
+    expect(content).toContain("multi_agent = false");
     expect(content).not.toContain("Required: Load Trellis Context First");
     expect(content).not.toContain("{TASK_DIR}");
   });
@@ -80,12 +81,13 @@ describe("Codex Research templates", () => {
     expect(match).not.toBeNull();
     const materialized = (match?.[1] ?? "")
       .replaceAll("<result-id>", "res_11111111-1111-4111-8111-111111111111")
-      .replaceAll("<proposal-id>", "prp_22222222-2222-4222-8222-222222222222")
+      .replaceAll("<proposal-id>", "prp_11111111-1111-4111-8111-111111111111")
       .replaceAll("<dispatch-id>", "dsp_33333333-3333-4333-8333-333333333333")
       .replaceAll("<run-id>", "run_44444444-4444-4444-8444-444444444444")
       .replaceAll("<quest-id>", "qst_55555555-5555-4555-8555-555555555555")
       .replaceAll("<timestamp>", "2026-07-20T12:00:00.000Z");
     const envelope = JSON.parse(materialized) as Record<string, unknown>;
+    expect(Object.keys(envelope)).toEqual(["result", "proposal"]);
     const result = resultSchema.parse(envelope.result);
     const proposal = proposalSchema.parse(envelope.proposal);
     expect(result.dispatchId).toBe(proposal.dispatchId);

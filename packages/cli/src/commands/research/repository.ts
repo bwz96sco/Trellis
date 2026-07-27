@@ -11,6 +11,7 @@ import {
   type Repository,
   type RepositoryId,
   type RepositoryKind,
+  type ResearchState,
 } from "@mindfoldhq/trellis-core/research";
 
 import { writeFileAtomic } from "../../utils/atomic-write.js";
@@ -92,6 +93,7 @@ export interface ResearchRepositoryContextResolution {
   path: string;
   gitRoot: string | null;
   revision: string | null;
+  remote: string | null;
   remoteVerified: boolean;
 }
 
@@ -383,9 +385,10 @@ export async function listResearchRepositories(
 export async function resolveResearchRepositoryContext(
   root: string,
   repositoryId: RepositoryId,
+  state?: ResearchState,
 ): Promise<ResearchRepositoryContextResolution> {
-  const state = await readResearchState(root);
-  const repository = state.repositories[repositoryId];
+  const capturedState = state ?? (await readResearchState(root));
+  const repository = capturedState.repositories[repositoryId];
   if (!repository) {
     throw new Error(`Unknown research repository '${repositoryId}'`);
   }
@@ -414,21 +417,13 @@ export async function resolveResearchRepositoryContext(
     "--get",
     "remote.origin.url",
   ]);
-  if (
-    repository.expectedRemote !== undefined &&
-    remote !== repository.expectedRemote
-  ) {
-    throw new Error(
-      `Repository '${repository.id}' origin remote does not match`,
-    );
-  }
-
   return {
     repository,
     source: binding === undefined ? "locator" : "binding",
     path: repositoryPath,
     gitRoot,
     revision,
+    remote,
     remoteVerified:
       repository.expectedRemote === undefined ||
       remote === repository.expectedRemote,

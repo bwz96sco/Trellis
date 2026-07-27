@@ -980,3 +980,13 @@ Line endings and final-newline presence are Procedure identity.
 Wrong: rewrite schema-v1 events, store approval only in sidecars, accept raw v2 drafts, or add approval consumption to C05.
 Correct: preserve v1 mappings, emit only typed plan/grant/revoke mutations through the existing validated batch, and keep the mixed ledger canonical.
 ```
+
+## Research Procedure dispatch cutover guard
+
+C06+C07 production recording accepts only the successor isolated batch: schema-v1 `result.recorded`, schema-v1 `proposal.recorded`, then schema-v2 `approval.consumed`. The three events share one timestamp, actor, provenance, and idempotency key; the Approval relation and Approval-derived Result/Proposal IDs must match exactly. The predecessor two-event Result/Proposal production batch is rejected. Result and pending Proposal remain distinct canonical entities, and applying or rejecting the Proposal remains a separate root-owned mutation.
+
+Core read-only validation and lockful commit are separate authorities. `validateResearchBatchReadOnly` validates a caller-supplied canonical snapshot without acquiring the Research lock, reserving a head, or writing ledger, runtime, projection, cache, or materialization state. `commitResearchBatch` remains the only lockful append path and revalidates authoritative under-lock state before committing the isolated batch.
+
+Approval-bound exact same-key replay is classified from canonical ledger before current clock validation, Approval terminal/current eligibility checks, or original path/stdin access. Canonical replay may reconstruct Result/Proposal event payloads plus consumed Approval reduced state and authorize root-side hardened sidecar repair without appending, rerunning worker, or requiring original input. Result, Proposal, and Approval sidecars are projections only; missing, stale, partial, or failed sequential materialization never outranks canonical ledger authority.
+
+This guard changes neither historical mixed-ledger parsing nor replay of already-valid schema-v1/schema-v2 events. It does not authorize generic raw append, worker-side validation/recording/recovery, Approval consumption outside the exact adjacent batch, sidecars as canonical authority, dry-run locking/writes, replacement events for materialization recovery, or C08/C09 Skill retirement work.

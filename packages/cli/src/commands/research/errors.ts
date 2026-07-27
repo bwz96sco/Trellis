@@ -1,4 +1,4 @@
-export type ResearchDispatchContextErrorCode =
+type LegacyResearchDispatchContextErrorCode =
   | "INVALID_HOST"
   | "INVALID_SKILL_NAME"
   | "INVALID_REQUEST_PATH"
@@ -13,18 +13,8 @@ export type ResearchDispatchContextErrorCode =
   | "WRITE_SCOPE_INVALID"
   | "CONTEXT_LIMIT_EXCEEDED";
 
-export class ResearchDispatchContextError extends Error {
-  readonly code: ResearchDispatchContextErrorCode;
-
-  constructor(code: ResearchDispatchContextErrorCode, message: string) {
-    super(message);
-    this.name = "ResearchDispatchContextError";
-    this.code = code;
-  }
-}
-
 export type ResearchActivationErrorCode =
-  | ResearchDispatchContextErrorCode
+  | LegacyResearchDispatchContextErrorCode
   | "UNKNOWN_CAPABILITY"
   | "CAPABILITY_STAGE_MISMATCH"
   | "CAPABILITY_DISABLED"
@@ -39,6 +29,13 @@ export type ResearchActivationErrorCode =
   | "INVALID_APPROVAL_INPUT"
   | "DUPLICATE_ACTIVE_APPROVAL"
   | "DISPATCH_ALREADY_COMPLETED"
+  | "APPROVAL_REQUIRED"
+  | "APPROVAL_HOST_MISMATCH"
+  | "APPROVAL_REVOKED"
+  | "APPROVAL_EXPIRED"
+  | "APPROVAL_RELATION_MISMATCH"
+  | "MATERIALIZATION_STATE_MISMATCH"
+  | "OUTPUT_ID_CONFLICT"
   | "APPROVAL_NOT_FOUND"
   | "REVOCATION_REASON_REQUIRED"
   | "INVALID_APPROVAL_TRANSITION"
@@ -47,6 +44,18 @@ export type ResearchActivationErrorCode =
   | "POLICY_DIGEST_MISMATCH"
   | "REQUEST_DIGEST_MISMATCH"
   | "SCOPE_HASH_MISMATCH";
+
+export type ResearchDispatchContextErrorCode = ResearchActivationErrorCode;
+
+export class ResearchDispatchContextError extends Error {
+  readonly code: ResearchDispatchContextErrorCode;
+
+  constructor(code: ResearchDispatchContextErrorCode, message: string) {
+    super(message);
+    this.name = "ResearchDispatchContextError";
+    this.code = code;
+  }
+}
 
 export class ResearchActivationError extends Error {
   readonly code: ResearchActivationErrorCode;

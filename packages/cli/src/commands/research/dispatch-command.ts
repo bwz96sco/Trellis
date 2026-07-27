@@ -1,8 +1,9 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 import {
+  approvalIdSchema,
   createActivationId,
   createDecisionId,
   createDispatchId,
@@ -11,8 +12,11 @@ import {
   proposalSchema,
   readResearchLedger,
   readResearchState,
+  reduceResearchEvents,
+  resolveResearchCapability,
   resultSchema,
   stableResearchJson,
+  type ApprovalId,
   type ArtifactRef,
   type CampaignId,
   type Decision,
@@ -23,10 +27,15 @@ import {
   type ProposalId,
   type ProposalOperation,
   type QuestId,
+  type QuestStage,
   type RepositoryId,
   type ResearchActivation,
+  type ResearchApprovalState,
   type ResearchEvent,
+  type ResearchMutation,
+  type ResearchState,
   type Result,
+  type ResultId,
   type RunId,
 } from "@mindfoldhq/trellis-core/research";
 
@@ -37,7 +46,10 @@ import {
   type ResearchMutationOptions,
   type ResearchMutationResult,
 } from "./common.js";
-import { ResearchDispatchFileError } from "./errors.js";
+import {
+  ResearchActivationError,
+  ResearchDispatchFileError,
+} from "./errors.js";
 import {
   classifyPrepareEvents,
   executeResearchLifecycleMutations,
@@ -47,12 +59,31 @@ import {
   activationFromCandidate,
   resolveDispatchActivationCandidate,
 } from "./dispatch-authority.js";
-import { materializeResearchActivation } from "./dispatch-activation-materialization.js";
+import {
+  materializeResearchActivation,
+  materializeResearchApproval,
+  materializeResearchProposal,
+  materializeResearchResult,
+} from "./dispatch-activation-materialization.js";
+import {
+  readResearchContainedFile,
+  readResearchDispatchMaterialization,
+  ResearchDispatchMaterializationReadError,
+} from "./dispatch-materialization-reader.js";
+import {
+  classifyResearchOutputIdOccupation,
+  deriveResearchOutputIds,
+} from "./dispatch-output-ids.js";
+import {
+  revalidateDispatchActivationStaged,
+  type StagedDispatchRevalidation,
+} from "./dispatch-revalidation.js";
 import { executeRepositoryDispatchMutations } from "./mutation.js";
 import {
   resolveRepositoryForUse,
   type RepositoryObservation,
 } from "./repository.js";
+import { parseStrictJsonInput } from "./strict-json-input.js";
 
 export interface PrepareResearchDispatchOptions extends ResearchMutationOptions {
   id?: DispatchId;
@@ -81,17 +112,39 @@ export interface PrepareResearchDispatchResult extends ResearchMutationResult {
   manifestFile: string | null;
 }
 
+export type ResearchDispatchResultInput =
+  | {
+      readonly kind: "path";
+      readonly path: string;
+      readonly cwd: string;
+    }
+  | {
+      readonly kind: "stdin";
+      readonly read: () => Uint8Array;
+      readonly cwd: string;
+    };
+
 export interface RecordResearchDispatchResultOptions extends ResearchMutationOptions {
-  dispatchId: DispatchId;
-  file: string;
+  readonly dispatchId: DispatchId;
+  readonly approvalId: ApprovalId;
+  readonly input: ResearchDispatchResultInput;
 }
 
-export interface RecordResearchDispatchResultResult extends ResearchMutationResult {
-  result: Result;
-  proposal: Proposal;
-  resultFile: string | null;
-  proposalFile: string | null;
+export interface RecordApprovedResearchDispatchResultOptions extends RecordResearchDispatchResultOptions {
+  readonly now?: Date;
 }
+
+export interface RecordApprovedResearchDispatchResultResult extends ResearchMutationResult {
+  readonly result: Result;
+  readonly proposal: Proposal;
+  readonly approval: ResearchApprovalState;
+  readonly resultFile: string | null;
+  readonly proposalFile: string | null;
+  readonly approvalFile: string | null;
+}
+
+export type RecordResearchDispatchResultResult =
+  RecordApprovedResearchDispatchResultResult;
 
 export interface ReviewResearchProposalOptions extends ResearchMutationOptions {
   proposalId: ProposalId;
@@ -613,99 +666,652 @@ export async function prepareResearchDispatch(
   };
 }
 
-export async function recordResearchDispatchResult(
-  options: RecordResearchDispatchResultOptions,
-): Promise<RecordResearchDispatchResultResult> {
-  const root = resolveResearchRoot(options);
-  const state = await readResearchState(root);
-  const dispatch = state.dispatches[options.dispatchId];
-  if (!dispatch)
-    throw new Error(`Unknown research dispatch '${options.dispatchId}'`);
-  const input = readJson(path.resolve(process.cwd(), options.file));
+function approvedResultError(
+  code: ConstructorParameters<typeof ResearchActivationError>[0],
+  message: string,
+  cause?: unknown,
+): never {
+  throw new ResearchActivationError(code, message, { cause });
+}
+
+function resolveApprovedResultPreflight(
+  options: RecordApprovedResearchDispatchResultOptions,
+): {
+  readonly root: string;
+  readonly dispatchId: DispatchId;
+  readonly approvalId: ApprovalId;
+  readonly idempotencyKey: string;
+  readonly input:
+    | { readonly kind: "path"; readonly path: string }
+    | { readonly kind: "stdin"; readonly read: () => Uint8Array };
+} {
+  assertDispatchId(options.dispatchId);
+  const dispatchId = options.dispatchId;
+  const approvalId = approvalIdSchema.parse(options.approvalId);
+  if (!path.isAbsolute(options.input.cwd)) {
+    throw new Error("record-result cwd must be absolute");
+  }
+  const root = path.resolve(options.input.cwd, options.root ?? ".");
+  const idempotencyKey = requireResearchText(
+    options.idempotencyKey ?? `cli:dispatch:record-result:${randomUUID()}`,
+    "idempotency key",
+  );
+  return {
+    root,
+    dispatchId,
+    approvalId,
+    idempotencyKey,
+    input:
+      options.input.kind === "path"
+        ? {
+            kind: "path",
+            path: path.resolve(options.input.cwd, options.input.path),
+          }
+        : { kind: "stdin", read: options.input.read },
+  };
+}
+
+function serializeApprovedResultTimestamp(value: Date | undefined): string {
+  const instant = value ?? new Date();
+  if (!Number.isFinite(instant.getTime())) {
+    approvedResultError("APPROVAL_EXPIRED", "record-result time is invalid");
+  }
+  return instant.toISOString();
+}
+
+async function validateApprovedResultRoot(root: string): Promise<void> {
+  try {
+    const trellis = await fs.promises.stat(path.join(root, ".trellis"));
+    if (!trellis.isDirectory()) throw new Error("not a directory");
+  } catch (error) {
+    throw new Error(
+      `Research root '${root}' must contain a .trellis directory`,
+      {
+        cause: error,
+      },
+    );
+  }
+}
+
+function validateApprovedResultHierarchy(
+  state: ResearchState,
+  dispatch: Dispatch,
+): QuestStage {
+  const quest = state.quests[dispatch.questId];
+  if (quest === undefined) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Dispatch Quest does not exist",
+    );
+  }
+  if (quest.status !== "active") {
+    approvedResultError(
+      "QUEST_NOT_DISPATCHABLE",
+      "Dispatch Quest must be active",
+    );
+  }
+  const run = state.runs[dispatch.runId];
+  if (
+    run === undefined ||
+    (run.status !== "planned" && run.status !== "running")
+  ) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Dispatch Run must be planned or running",
+    );
+  }
+  if (run.dispatchId !== dispatch.id) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Run Dispatch identity does not match",
+    );
+  }
+  const campaign = state.campaigns[run.campaignId];
+  if (campaign?.questId !== quest.id) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Run Campaign does not belong to the Dispatch Quest",
+    );
+  }
+  if (!campaign.runIds.includes(run.id)) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Run is not registered in its Campaign",
+    );
+  }
+  if (
+    dispatch.campaignId !== undefined &&
+    dispatch.campaignId !== campaign.id
+  ) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Dispatch Campaign does not match the Run Campaign",
+    );
+  }
+  const repository = state.repositories[dispatch.repositoryId];
+  if (
+    repository === undefined ||
+    !quest.repositoryIds.includes(repository.id)
+  ) {
+    approvedResultError(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Target Repository is not associated with the Dispatch Quest",
+    );
+  }
+  return quest.stage;
+}
+
+function requireApprovedResultActivation(
+  state: ResearchState,
+  dispatch: Dispatch,
+): ResearchActivation {
+  const activationId = state.activationByDispatchId[dispatch.id];
+  if (activationId === undefined) {
+    approvedResultError(
+      "ACTIVATION_REQUIRED",
+      `Dispatch '${dispatch.id}' requires an activation`,
+    );
+  }
+  const activation = state.activations[activationId];
+  if (
+    activation?.id !== activationId ||
+    activation?.dispatchId !== dispatch.id ||
+    activation?.questId !== dispatch.questId
+  ) {
+    approvedResultError(
+      "APPROVAL_RELATION_MISMATCH",
+      "Dispatch activation index does not match canonical state",
+    );
+  }
+  return activation;
+}
+
+function requireApprovedResultApproval(
+  state: ResearchState,
+  activation: ResearchActivation,
+  approvalId: ApprovalId,
+): ResearchApprovalState {
+  const approval = state.approvals[approvalId];
+  if (approval === undefined) {
+    approvedResultError(
+      "APPROVAL_REQUIRED",
+      `Approval '${approvalId}' was not found`,
+    );
+  }
+  if (
+    approval.grant.id !== approvalId ||
+    approval.grant.activationId !== activation.id ||
+    approval.grant.dispatchId !== activation.dispatchId ||
+    approval.grant.requestDigest !== activation.requestDigest ||
+    approval.grant.procedureDigest !== activation.procedure.digest ||
+    approval.grant.policyDigest !== activation.policyDigest ||
+    approval.grant.scopeHash !== activation.scopeHash ||
+    !(state.approvalIdsByActivationId[activation.id] ?? []).includes(approvalId)
+  ) {
+    approvedResultError(
+      "APPROVAL_RELATION_MISMATCH",
+      "Selected approval does not match its activation bindings",
+    );
+  }
+  return approval;
+}
+
+function validateApprovedResultBindings(
+  activation: ResearchActivation,
+  candidate: StagedDispatchRevalidation,
+): void {
+  if (
+    candidate.authority.capabilityId !== activation.capabilityId ||
+    candidate.authority.activation !== activation.mode ||
+    candidate.authority.procedure.id !== activation.procedure.id ||
+    candidate.authority.procedure.version !== activation.procedure.version ||
+    candidate.authority.maxDurationMinutes !== activation.maxDurationMinutes ||
+    candidate.authority.maxDispatches !== activation.maxDispatches
+  ) {
+    approvedResultError(
+      "APPROVAL_RELATION_MISMATCH",
+      "Activation authority no longer matches canonical state",
+    );
+  }
+}
+
+function classifyApprovedResultEvents(
+  events: readonly ResearchEvent[],
+  dispatchId: DispatchId,
+  approvalId: ApprovalId,
+): { readonly result: Result; readonly proposal: Proposal } {
+  const ids = deriveResearchOutputIds(approvalId);
+  const result = events[0]?.payload.result as Result | undefined;
+  const proposal = events[1]?.payload.proposal as Proposal | undefined;
+  const consumption = events[2];
+  if (
+    events.length !== 3 ||
+    events[0]?.schemaVersion !== 1 ||
+    events[0].kind !== "result.recorded" ||
+    events[1]?.schemaVersion !== 1 ||
+    events[1].kind !== "proposal.recorded" ||
+    consumption?.schemaVersion !== 2 ||
+    consumption.kind !== "approval.consumed" ||
+    result?.id !== ids.resultId ||
+    result.dispatchId !== dispatchId ||
+    proposal?.id !== ids.proposalId ||
+    proposal.dispatchId !== dispatchId ||
+    consumption.payload.approvalId !== approvalId ||
+    consumption.payload.resultId !== ids.resultId ||
+    consumption.payload.proposalId !== ids.proposalId
+  ) {
+    approvedResultError(
+      "IDEMPOTENCY_KEY_CONFLICT",
+      "Idempotency key belongs to another command, target, approval, or batch shape",
+    );
+  }
+  return { result, proposal };
+}
+
+function consumedApprovalFromEvents(
+  approval: ResearchApprovalState,
+  events: readonly ResearchEvent[],
+): ResearchApprovalState {
+  const consumption = events[2];
+  if (
+    approval.status === "consumed" &&
+    consumption?.kind === "approval.consumed"
+  ) {
+    return approval;
+  }
+  if (consumption?.kind !== "approval.consumed") {
+    approvedResultError(
+      "IDEMPOTENCY_KEY_CONFLICT",
+      "Result batch is missing approval consumption",
+    );
+  }
+  return {
+    grant: approval.grant,
+    status: "consumed",
+    consumedAt: consumption.payload.consumedAt as string,
+    resultId: consumption.payload.resultId as Result["id"],
+    proposalId: consumption.payload.proposalId as Proposal["id"],
+  };
+}
+
+function materializeApprovedResult(input: {
+  readonly root: string;
+  readonly headSeq: number;
+  readonly idempotencyKey: string;
+  readonly result: Result;
+  readonly proposal: Proposal;
+  readonly approval: ResearchApprovalState;
+}): Pick<
+  RecordApprovedResearchDispatchResultResult,
+  "resultFile" | "proposalFile" | "approvalFile"
+> {
+  const recovery = [
+    `trellis research dispatch record-result ${input.result.dispatchId}`,
+    `--approval ${input.approval.grant.id}`,
+    "--input -",
+    `--root ${JSON.stringify(input.root)}`,
+    `--idempotency-key ${JSON.stringify(input.idempotencyKey)}`,
+  ].join(" ");
+  const resultFile = materializeResearchResult({
+    root: input.root,
+    headSeq: input.headSeq,
+    result: input.result,
+    recovery,
+  });
+  const proposalFile = materializeResearchProposal({
+    root: input.root,
+    headSeq: input.headSeq,
+    proposal: input.proposal,
+    recovery,
+  });
+  return {
+    resultFile,
+    proposalFile,
+    approvalFile: materializeResearchApproval({
+      root: input.root,
+      headSeq: input.headSeq,
+      approval: input.approval,
+      recovery,
+    }),
+  };
+}
+
+function isApprovedResultOutputIdConflict(
+  error: unknown,
+  resultId: ResultId,
+  proposalId: ProposalId,
+): boolean {
+  if (!(error instanceof Error)) return false;
+  return (
+    error.message === `Research result '${resultId}' already exists` ||
+    error.message === `Research proposal '${proposalId}' already exists`
+  );
+}
+
+function parseApprovedResultInput(
+  bytes: Uint8Array,
+  dispatch: Dispatch,
+  approvalId: ApprovalId,
+): { readonly result: Result; readonly proposal: Proposal } {
+  const input = parseStrictJsonInput(bytes);
   if (typeof input !== "object" || input === null || Array.isArray(input)) {
     throw new Error("result input must be a JSON object");
   }
   const value = input as Record<string, unknown>;
-  if (
-    Object.keys(value).length !== 2 ||
-    !("result" in value) ||
-    !("proposal" in value)
-  ) {
+  const keys = Object.keys(value);
+  if (keys.length !== 2 || !("result" in value) || !("proposal" in value)) {
     throw new Error("result input must contain exactly result and proposal");
   }
-  const resultValue = resultSchema.parse(value.result);
-  const proposalValue = proposalSchema.parse(value.proposal);
+  if (keys[0] !== "result" || keys[1] !== "proposal") {
+    throw new Error("result input must contain result followed by proposal");
+  }
+  const result = resultSchema.parse(value.result);
+  const proposal = proposalSchema.parse(value.proposal);
   if (
-    resultValue.dispatchId !== dispatch.id ||
-    resultValue.runId !== dispatch.runId
+    result.status === "blocked" &&
+    (proposal.status !== "pending" || proposal.operations.length !== 0)
   ) {
-    throw new Error("Result IDs do not match the requested dispatch");
+    throw new Error("blocked Result requires an empty pending Proposal");
+  }
+  const ids = deriveResearchOutputIds(approvalId);
+  if (result.id !== ids.resultId || proposal.id !== ids.proposalId) {
+    throw new Error("Result and Proposal IDs must match the selected approval");
+  }
+  if (result.dispatchId !== dispatch.id || result.runId !== dispatch.runId) {
+    throw new Error("Result relations do not match the requested dispatch");
   }
   if (
-    proposalValue.dispatchId !== dispatch.id ||
-    proposalValue.questId !== dispatch.questId
+    proposal.dispatchId !== dispatch.id ||
+    proposal.questId !== dispatch.questId
   ) {
-    throw new Error("Proposal IDs do not match the requested dispatch");
+    throw new Error("Proposal relations do not match the requested dispatch");
   }
-  if (resultValue.sessionRef !== undefined) {
-    assertPortableReference(resultValue.sessionRef, "result session ref");
+  if (result.sessionRef !== undefined) {
+    assertPortableReference(result.sessionRef, "result session ref");
   }
-  const artifactRepositoryRoots = await verifyArtifacts(
-    root,
-    resultValue.artifactRefs,
-    options.dryRun !== true,
+  return { result, proposal };
+}
+
+export async function recordApprovedResearchDispatchResult(
+  options: RecordApprovedResearchDispatchResultOptions,
+): Promise<RecordApprovedResearchDispatchResultResult> {
+  const preflight = resolveApprovedResultPreflight(options);
+  await validateApprovedResultRoot(preflight.root);
+  const ledger = await readResearchLedger(preflight.root);
+  const state = reduceResearchEvents(ledger);
+  const replay = ledger.filter(
+    (event) => event.idempotencyKey === preflight.idempotencyKey,
   );
-  const committed = await executeRepositoryDispatchMutations(
-    "dispatch record-result",
-    { ...options, root },
-    [
-      { kind: "result.record", result: resultValue },
-      { kind: "proposal.record", proposal: proposalValue },
-    ],
-    artifactRepositoryRoots,
-  );
-  const canonicalResult = eventPayload<Result>(
-    committed.events,
-    "result.recorded",
-    "result",
-  );
-  const canonicalProposal = eventPayload<Proposal>(
-    committed.events,
-    "proposal.recorded",
-    "proposal",
-  );
-  if (committed.dryRun) {
-    return {
-      ...committed,
-      result: canonicalResult,
-      proposal: canonicalProposal,
+  if (replay.length > 0) {
+    const canonical = classifyApprovedResultEvents(
+      replay,
+      preflight.dispatchId,
+      preflight.approvalId,
+    );
+    const approval = state.approvals[preflight.approvalId];
+    if (
+      approval?.status !== "consumed" ||
+      approval?.resultId !== canonical.result.id ||
+      approval?.proposalId !== canonical.proposal.id
+    ) {
+      approvedResultError(
+        "IDEMPOTENCY_KEY_CONFLICT",
+        "Replayed approval consumption does not match canonical state",
+      );
+    }
+    const result: RecordApprovedResearchDispatchResultResult = {
+      command: "research dispatch record-result",
+      idempotencyKey: preflight.idempotencyKey,
+      dryRun: options.dryRun === true,
+      replayed: true,
+      headSeq: state.projectedThroughSeq,
+      events: replay,
+      result: canonical.result,
+      proposal: canonical.proposal,
+      approval,
       resultFile: null,
       proposalFile: null,
+      approvalFile: null,
+    };
+    if (result.dryRun) return result;
+    return {
+      ...result,
+      ...materializeApprovedResult({
+        root: preflight.root,
+        headSeq: result.headSeq,
+        idempotencyKey: result.idempotencyKey,
+        result: result.result,
+        proposal: result.proposal,
+        approval: result.approval,
+      }),
     };
   }
-  const files = dispatchPaths(root, dispatch.id);
-  const recovery = `retry 'trellis research dispatch record-result ${dispatch.id}' with idempotency key '${committed.idempotencyKey}'`;
-  writeCommittedJson(
-    root,
-    committed.headSeq,
-    files.resultFile,
-    canonicalResult,
-    recovery,
+
+  const timestamp = serializeApprovedResultTimestamp(options.now);
+  const dispatch = state.dispatches[preflight.dispatchId];
+  if (dispatch === undefined) {
+    approvedResultError(
+      "DISPATCH_NOT_FOUND",
+      `Dispatch '${preflight.dispatchId}' was not found`,
+    );
+  }
+  const stage = validateApprovedResultHierarchy(state, dispatch);
+  if (
+    Object.values(state.results).some(
+      (result) => result.dispatchId === dispatch.id,
+    ) ||
+    Object.values(state.proposals).some(
+      (proposal) => proposal.dispatchId === dispatch.id,
+    )
+  ) {
+    approvedResultError(
+      "DISPATCH_ALREADY_COMPLETED",
+      `Dispatch '${dispatch.id}' is already completed`,
+    );
+  }
+  const activation = requireApprovedResultActivation(state, dispatch);
+  const approval = requireApprovedResultApproval(
+    state,
+    activation,
+    preflight.approvalId,
   );
-  writeCommittedJson(
-    root,
-    committed.headSeq,
-    files.proposalFile,
-    canonicalProposal,
-    recovery,
+  if (approval.status === "consumed") {
+    approvedResultError(
+      "DISPATCH_ALREADY_COMPLETED",
+      `Approval '${preflight.approvalId}' is already consumed`,
+    );
+  }
+  if (approval.status === "revoked") {
+    approvedResultError(
+      "APPROVAL_REVOKED",
+      `Approval '${preflight.approvalId}' is revoked`,
+    );
+  }
+  if (Date.parse(timestamp) >= Date.parse(approval.grant.expiresAt)) {
+    approvedResultError(
+      "APPROVAL_EXPIRED",
+      `Approval '${preflight.approvalId}' is expired`,
+    );
+  }
+  try {
+    resolveResearchCapability({ stage, capabilityId: activation.capabilityId });
+  } catch (error) {
+    const code =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error.code === "UNKNOWN_CAPABILITY" ||
+        error.code === "CAPABILITY_STAGE_MISMATCH")
+        ? error.code
+        : "DISPATCH_HIERARCHY_INVALID";
+    approvedResultError(
+      code,
+      error instanceof Error ? error.message : String(error),
+      error,
+    );
+  }
+  try {
+    readResearchDispatchMaterialization({
+      root: preflight.root,
+      dispatchId: dispatch.id,
+      kind: "request",
+      expected: dispatch,
+    });
+  } catch (error) {
+    if (error instanceof ResearchDispatchMaterializationReadError) {
+      approvedResultError("REQUEST_STATE_MISMATCH", error.message, error);
+    }
+    throw error;
+  }
+  const candidate = await revalidateDispatchActivationStaged({
+    root: preflight.root,
+    state,
+    dispatch,
+    activation,
+  });
+  validateApprovedResultBindings(activation, candidate);
+  const ids = deriveResearchOutputIds(approval.grant.id);
+  if (
+    classifyResearchOutputIdOccupation({
+      state,
+      dispatchId: dispatch.id,
+      ids,
+    }) !== "available"
+  ) {
+    approvedResultError(
+      "OUTPUT_ID_CONFLICT",
+      "Approval-derived Result or Proposal ID is already occupied",
+    );
+  }
+  const bytes =
+    preflight.input.kind === "path"
+      ? readResearchContainedFile(preflight.root, preflight.input.path)
+      : preflight.input.read();
+  const parsed = parseApprovedResultInput(
+    bytes,
+    dispatch,
+    preflight.approvalId,
   );
-  return {
+  const artifactRepositoryRoots = await verifyArtifacts(
+    preflight.root,
+    parsed.result.artifactRefs,
+    false,
+  );
+  const mutations: readonly ResearchMutation[] = [
+    { kind: "result.record", result: parsed.result },
+    { kind: "proposal.record", proposal: parsed.proposal },
+    {
+      kind: "approval.consume",
+      approvalId: preflight.approvalId,
+      resultId: parsed.result.id,
+      proposalId: parsed.proposal.id,
+    },
+  ];
+  let committed: ResearchMutationResult;
+  try {
+    committed = await executeResearchLifecycleMutations({
+      command: "record-result",
+      root: preflight.root,
+      options: {
+        root: preflight.root,
+        idempotencyKey: preflight.idempotencyKey,
+        dryRun: options.dryRun,
+      },
+      mutations,
+      timestamp: timestamp,
+      classify: (events) => {
+        classifyApprovedResultEvents(
+          events,
+          preflight.dispatchId,
+          preflight.approvalId,
+        );
+      },
+      artifactRepositoryRoots,
+    });
+  } catch (error) {
+    let latestState: ResearchState | undefined;
+    try {
+      latestState = await readResearchState(preflight.root);
+    } catch {
+      // Preserve the commit failure when current state cannot be re-read.
+    }
+    const latestApproval = latestState?.approvals[preflight.approvalId];
+    if (latestApproval?.status === "revoked") {
+      approvedResultError(
+        "APPROVAL_REVOKED",
+        `Approval '${preflight.approvalId}' is revoked`,
+        error,
+      );
+    }
+    if (
+      latestApproval?.status === "consumed" ||
+      Object.values(latestState?.results ?? {}).some(
+        (result) => result.dispatchId === dispatch.id,
+      ) ||
+      Object.values(latestState?.proposals ?? {}).some(
+        (proposal) => proposal.dispatchId === dispatch.id,
+      )
+    ) {
+      approvedResultError(
+        "DISPATCH_ALREADY_COMPLETED",
+        `Dispatch '${dispatch.id}' is already completed`,
+        error,
+      );
+    }
+    if (
+      isApprovedResultOutputIdConflict(
+        error,
+        parsed.result.id,
+        parsed.proposal.id,
+      )
+    ) {
+      approvedResultError(
+        "OUTPUT_ID_CONFLICT",
+        "Approval-derived Result or Proposal ID was occupied before commit",
+        error,
+      );
+    }
+    throw error;
+  }
+  const canonical = classifyApprovedResultEvents(
+    committed.events,
+    preflight.dispatchId,
+    preflight.approvalId,
+  );
+  const canonicalApproval = consumedApprovalFromEvents(
+    approval,
+    committed.events,
+  );
+  const result: RecordApprovedResearchDispatchResultResult = {
     ...committed,
-    result: canonicalResult,
-    proposal: canonicalProposal,
-    resultFile: relativeToRoot(root, files.resultFile),
-    proposalFile: relativeToRoot(root, files.proposalFile),
+    result: canonical.result,
+    proposal: canonical.proposal,
+    approval: canonicalApproval,
+    resultFile: null,
+    proposalFile: null,
+    approvalFile: null,
   };
+  if (result.dryRun) return result;
+  return {
+    ...result,
+    ...materializeApprovedResult({
+      root: preflight.root,
+      headSeq: result.headSeq,
+      idempotencyKey: result.idempotencyKey,
+      result: result.result,
+      proposal: result.proposal,
+      approval: result.approval,
+    }),
+  };
+}
+
+export async function recordResearchDispatchResult(
+  options: RecordResearchDispatchResultOptions,
+): Promise<RecordResearchDispatchResultResult> {
+  return recordApprovedResearchDispatchResult({
+    ...options,
+    now: new Date(),
+  });
 }
 
 async function reviewProposal(

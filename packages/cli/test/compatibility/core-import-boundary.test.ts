@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +8,10 @@ import { describe, expect, it } from "vitest";
 const CLI_ROOT = path.dirname(
   fileURLToPath(new URL("../../package.json", import.meta.url)),
 );
+const BUILT_CLI_ROOT = process.env.TRELLIS_TEST_BUILT_CLI_ROOT;
+if (BUILT_CLI_ROOT === undefined) {
+  throw new Error("Isolated built CLI root was not provided by global setup");
+}
 const CORE_PACKAGE_PREFIX = "@mindfoldhq/trellis-core";
 const ALLOWED_CORE_IMPORT = "@mindfoldhq/trellis-core/research";
 const EXCLUDED_DIRECTORIES = new Set([
@@ -188,26 +191,17 @@ describe("CLI production core import boundary", () => {
     ).toEqual([]);
   });
 
-  it(
-    "keeps source and a clean CLI build on the exact Research subpath",
-    () => {
-      execFileSync("pnpm", ["run", "build"], {
-        cwd: CLI_ROOT,
-        stdio: "inherit",
-      });
+  it("keeps source and a clean CLI build on the exact Research subpath", () => {
+    const sourceViolations = scanProductionTree(
+      path.join(CLI_ROOT, "src"),
+      new Set([".ts", ".js"]),
+    );
+    const builtViolations = scanProductionTree(
+      path.join(BUILT_CLI_ROOT, "dist"),
+      new Set([".js", ".mjs", ".cjs"]),
+    );
 
-      const sourceViolations = scanProductionTree(
-        path.join(CLI_ROOT, "src"),
-        new Set([".ts", ".js"]),
-      );
-      const builtViolations = scanProductionTree(
-        path.join(CLI_ROOT, "dist"),
-        new Set([".js", ".mjs", ".cjs"]),
-      );
-
-      expect(sourceViolations).toEqual([]);
-      expect(builtViolations).toEqual([]);
-    },
-    120_000,
-  );
+    expect(sourceViolations).toEqual([]);
+    expect(builtViolations).toEqual([]);
+  });
 });

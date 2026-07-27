@@ -17,8 +17,11 @@ import {
   readResearchLedger,
   readResearchState,
   rebuildResearchProjections,
+  validateResearchBatch,
+  validateResearchBatchReadOnly,
   researchPaths,
   ResearchProjectionError,
+  type ResearchMutation,
 } from "../../src/research/index.js";
 
 const ACTOR = { type: "agent" as const, id: "test" };
@@ -739,5 +742,669 @@ describe("research store", () => {
     expect(fs.existsSync(paths.cacheFile)).toBe(true);
     expect(fs.existsSync(paths.workspaceFile)).toBe(true);
     expect(fs.existsSync(paths.repositoriesFile)).toBe(true);
+  });
+});
+
+const CONSUMPTION_WORKSPACE_ID = "wsp_11111111-1111-4111-8111-111111111111" as const;
+const CONSUMPTION_REPOSITORY_ID = "rep_22222222-2222-4222-8222-222222222222" as const;
+const CONSUMPTION_QUEST_ID = "qst_33333333-3333-4333-8333-333333333333" as const;
+const CONSUMPTION_CAMPAIGN_ID = "cmp_44444444-4444-4444-8444-444444444444" as const;
+const CONSUMPTION_RUN_ID = "run_55555555-5555-4555-8555-555555555555" as const;
+const CONSUMPTION_DISPATCH_ID = "dsp_66666666-6666-4666-8666-666666666666" as const;
+const CONSUMPTION_ACTIVATION_ID = "act_77777777-7777-4777-8777-777777777777" as const;
+const CONSUMPTION_APPROVAL_ID = "apr_88888888-8888-4888-8888-888888888888" as const;
+const CONSUMPTION_RESULT_ID = "res_88888888-8888-4888-8888-888888888888" as const;
+const CONSUMPTION_PROPOSAL_ID = "prp_88888888-8888-4888-8888-888888888888" as const;
+const CONSUMPTION_ACTOR = { type: "agent" as const, id: "test" };
+const CONSUMPTION_PROVENANCE = { source: "approval consumption mutation test" };
+const CONSUMPTION_PLANNED_AT = "2026-07-24T00:00:00.000Z";
+const CONSUMPTION_RECORDED_AT = "2026-07-24T00:05:00.000Z";
+const CONSUMPTION_DIGEST_A = `sha256:${"a".repeat(64)}`;
+const CONSUMPTION_DIGEST_B = `sha256:${"b".repeat(64)}`;
+const CONSUMPTION_DIGEST_C = `sha256:${"c".repeat(64)}`;
+const CONSUMPTION_DIGEST_D = `sha256:${"d".repeat(64)}`;
+
+function CONSUMPTION_prerequisiteMutations(): readonly ResearchMutation[] {
+  return [
+    {
+      kind: "workspace.create",
+      workspace: { id: CONSUMPTION_WORKSPACE_ID, name: "Research", description: "" },
+    },
+    {
+      kind: "repository.register",
+      repository: {
+        id: CONSUMPTION_REPOSITORY_ID,
+        name: "Repository",
+        kind: "code",
+        locator: "repository",
+        capabilities: { hasTrellis: false },
+      },
+    },
+    {
+      kind: "quest.create",
+      quest: {
+        id: CONSUMPTION_QUEST_ID,
+        title: "Quest",
+        description: "",
+        repositoryIds: [CONSUMPTION_REPOSITORY_ID],
+        artifactRefs: [],
+      },
+    },
+    {
+      kind: "campaign.create",
+      campaign: {
+        id: CONSUMPTION_CAMPAIGN_ID,
+        questId: CONSUMPTION_QUEST_ID,
+        title: "Campaign",
+        protocolDigest: "protocol-v1",
+      },
+    },
+    {
+      kind: "run.create",
+      run: { id: CONSUMPTION_RUN_ID, campaignId: CONSUMPTION_CAMPAIGN_ID, title: "Run" },
+    },
+    {
+      kind: "dispatch.record",
+      dispatch: {
+        id: CONSUMPTION_DISPATCH_ID,
+        questId: CONSUMPTION_QUEST_ID,
+        campaignId: CONSUMPTION_CAMPAIGN_ID,
+        runId: CONSUMPTION_RUN_ID,
+        repositoryId: CONSUMPTION_REPOSITORY_ID,
+        ownerSkill: "legacy",
+        objective: "Bounded work",
+        acceptanceCriteria: [],
+        context: [],
+        allowedWritePaths: [],
+        expectedOutputs: [],
+        checks: [],
+        createdAt: CONSUMPTION_PLANNED_AT,
+      },
+    },
+    {
+      kind: "activation.plan",
+      activation: {
+        id: CONSUMPTION_ACTIVATION_ID,
+        dispatchId: CONSUMPTION_DISPATCH_ID,
+        questId: CONSUMPTION_QUEST_ID,
+        capabilityId: "research.setup.project",
+        mode: "explicit",
+        procedure: {
+          id: "project-setup-v1",
+          version: "1.0.0",
+          digest: CONSUMPTION_DIGEST_A,
+        },
+        policyDigest: CONSUMPTION_DIGEST_B,
+        requestDigest: CONSUMPTION_DIGEST_C,
+        scopeHash: CONSUMPTION_DIGEST_D,
+        maxDurationMinutes: 10,
+        maxDispatches: 1,
+        createdAt: CONSUMPTION_PLANNED_AT,
+      },
+    },
+    {
+      kind: "approval.grant",
+      approval: {
+        id: CONSUMPTION_APPROVAL_ID,
+        activationId: CONSUMPTION_ACTIVATION_ID,
+        dispatchId: CONSUMPTION_DISPATCH_ID,
+        host: "claude",
+        mode: "interactive",
+        approverLabel: "operator",
+        rationale: "Approved",
+        requestDigest: CONSUMPTION_DIGEST_C,
+        procedureDigest: CONSUMPTION_DIGEST_A,
+        policyDigest: CONSUMPTION_DIGEST_B,
+        scopeHash: CONSUMPTION_DIGEST_D,
+        grantedAt: CONSUMPTION_PLANNED_AT,
+        expiresAt: "2026-07-24T00:10:00.000Z",
+      },
+    },
+  ];
+}
+
+function CONSUMPTION_resultMutations(includeConsumption: boolean): readonly ResearchMutation[] {
+  const mutations: ResearchMutation[] = [
+    {
+      kind: "result.record",
+      result: {
+        id: CONSUMPTION_RESULT_ID,
+        dispatchId: CONSUMPTION_DISPATCH_ID,
+        runId: CONSUMPTION_RUN_ID,
+        status: "completed",
+        summary: "Complete",
+        commands: [],
+        checks: [],
+        artifactRefs: [],
+        blockers: [],
+        createdAt: CONSUMPTION_RECORDED_AT,
+      },
+    },
+    {
+      kind: "proposal.record",
+      proposal: {
+        id: CONSUMPTION_PROPOSAL_ID,
+        dispatchId: CONSUMPTION_DISPATCH_ID,
+        questId: CONSUMPTION_QUEST_ID,
+        title: "No changes",
+        operations: [],
+        status: "pending",
+        createdAt: CONSUMPTION_RECORDED_AT,
+        updatedAt: CONSUMPTION_RECORDED_AT,
+      },
+    },
+  ];
+  if (includeConsumption) {
+    mutations.push({
+      kind: "approval.consume",
+      approvalId: CONSUMPTION_APPROVAL_ID,
+      resultId: CONSUMPTION_RESULT_ID,
+      proposalId: CONSUMPTION_PROPOSAL_ID,
+    });
+  }
+  return mutations;
+}
+
+describe("typed approval consumption mutation", () => {
+  let root: string;
+
+  beforeEach(async () => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-consumption-"));
+    await commitResearchBatch({
+      root,
+      actor: CONSUMPTION_ACTOR,
+      provenance: CONSUMPTION_PROVENANCE,
+      idempotencyKey: "prerequisites",
+      timestamp: CONSUMPTION_PLANNED_AT,
+      mutations: CONSUMPTION_prerequisiteMutations(),
+    });
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("emits the exact successor family and consumes the approval", async () => {
+    const committed = await commitResearchBatch({
+      root,
+      actor: CONSUMPTION_ACTOR,
+      provenance: CONSUMPTION_PROVENANCE,
+      idempotencyKey: "successor-result",
+      timestamp: CONSUMPTION_RECORDED_AT,
+      mutations: CONSUMPTION_resultMutations(true),
+    });
+
+    expect(committed.events.map((event) => [event.schemaVersion, event.kind])).toEqual([
+      [1, "result.recorded"],
+      [1, "proposal.recorded"],
+      [2, "approval.consumed"],
+    ]);
+    const firstSeq = committed.events[0]?.seq;
+    if (firstSeq === undefined) throw new Error("Expected successor events");
+    expect(committed.events.map((event) => event.seq)).toEqual([
+      firstSeq,
+      firstSeq + 1,
+      firstSeq + 2,
+    ]);
+    for (const event of committed.events) {
+      expect(event).toMatchObject({
+        timestamp: CONSUMPTION_RECORDED_AT,
+        actor: CONSUMPTION_ACTOR,
+        provenance: CONSUMPTION_PROVENANCE,
+        idempotencyKey: "successor-result",
+      });
+    }
+    expect(committed.events[2]).toMatchObject({
+      aggregate: { type: "approval", id: CONSUMPTION_APPROVAL_ID },
+      related: [
+        { type: "activation", id: CONSUMPTION_ACTIVATION_ID },
+        { type: "dispatch", id: CONSUMPTION_DISPATCH_ID },
+        { type: "result", id: CONSUMPTION_RESULT_ID },
+        { type: "proposal", id: CONSUMPTION_PROPOSAL_ID },
+      ],
+      payload: {
+        approvalId: CONSUMPTION_APPROVAL_ID,
+        resultId: CONSUMPTION_RESULT_ID,
+        proposalId: CONSUMPTION_PROPOSAL_ID,
+        consumedAt: CONSUMPTION_RECORDED_AT,
+      },
+    });
+    expect((await readResearchState(root)).approvals[CONSUMPTION_APPROVAL_ID]).toMatchObject({
+      status: "consumed",
+      consumedAt: CONSUMPTION_RECORDED_AT,
+      resultId: CONSUMPTION_RESULT_ID,
+      proposalId: CONSUMPTION_PROPOSAL_ID,
+    });
+  });
+
+  it("rejects the isolated legacy Result and Proposal pair", async () => {
+    const before = await readResearchLedger(root);
+    await expect(
+      validateResearchBatch({
+        root,
+        actor: CONSUMPTION_ACTOR,
+        provenance: CONSUMPTION_PROVENANCE,
+        idempotencyKey: "legacy-result",
+        timestamp: CONSUMPTION_RECORDED_AT,
+        mutations: CONSUMPTION_resultMutations(false),
+      }),
+    ).rejects.toThrow(/Result, Proposal, and Approval consumption/);
+    expect(await readResearchLedger(root)).toEqual(before);
+  });
+
+  it("rejects consumption without the same complete ordered pair and appends nothing", async () => {
+    const before = await readResearchLedger(root);
+    await expect(
+      commitResearchBatch({
+        root,
+        actor: CONSUMPTION_ACTOR,
+        provenance: CONSUMPTION_PROVENANCE,
+        idempotencyKey: "consumption-only",
+        timestamp: CONSUMPTION_RECORDED_AT,
+        mutations: [
+          {
+            kind: "approval.consume",
+            approvalId: CONSUMPTION_APPROVAL_ID,
+            resultId: CONSUMPTION_RESULT_ID,
+            proposalId: CONSUMPTION_PROPOSAL_ID,
+          },
+        ],
+      }),
+    ).rejects.toThrow(/immediately follow matching Result and Proposal/);
+    expect(await readResearchLedger(root)).toEqual(before);
+  });
+});
+
+const INVALID_WORKSPACE_ID = "wsp_11111111-1111-4111-8111-111111111111" as const;
+const INVALID_REPOSITORY_ID = "rep_22222222-2222-4222-8222-222222222222" as const;
+const INVALID_QUEST_ID = "qst_33333333-3333-4333-8333-333333333333" as const;
+const INVALID_CAMPAIGN_ID = "cmp_44444444-4444-4444-8444-444444444444" as const;
+const INVALID_RUN_ID = "run_55555555-5555-4555-8555-555555555555" as const;
+const INVALID_DISPATCH_ID = "dsp_66666666-6666-4666-8666-666666666666" as const;
+const INVALID_ACTIVATION_ID = "act_77777777-7777-4777-8777-777777777777" as const;
+const INVALID_APPROVAL_ID = "apr_88888888-8888-4888-8888-888888888888" as const;
+const INVALID_RESULT_ID = "res_88888888-8888-4888-8888-888888888888" as const;
+const INVALID_PROPOSAL_ID = "prp_88888888-8888-4888-8888-888888888888" as const;
+const INVALID_WRONG_RESULT_ID = "res_99999999-9999-4999-8999-999999999999" as const;
+const INVALID_WRONG_PROPOSAL_ID = "prp_99999999-9999-4999-8999-999999999999" as const;
+const INVALID_FOREIGN_APPROVAL_ID = "apr_99999999-9999-4999-8999-999999999999" as const;
+const INVALID_FOREIGN_DISPATCH_ID = "dsp_99999999-9999-4999-8999-999999999999" as const;
+const INVALID_NOW = "2026-07-24T00:00:00.000Z";
+const INVALID_RECORDED_AT = "2026-07-24T00:05:00.000Z";
+const INVALID_ACTOR = { type: "agent" as const, id: "invalid-batch-test" };
+const INVALID_PROVENANCE = { source: "invalid approval consumption batch test" };
+const INVALID_DIGEST_A = `sha256:${"a".repeat(64)}`;
+const INVALID_DIGEST_B = `sha256:${"b".repeat(64)}`;
+const INVALID_DIGEST_C = `sha256:${"c".repeat(64)}`;
+const INVALID_DIGEST_D = `sha256:${"d".repeat(64)}`;
+
+function INVALID_setupMutations(): readonly ResearchMutation[] {
+  return [
+    {
+      kind: "workspace.create",
+      workspace: { id: INVALID_WORKSPACE_ID, name: "Research", description: "" },
+    },
+    {
+      kind: "repository.register",
+      repository: {
+        id: INVALID_REPOSITORY_ID,
+        name: "Repository",
+        kind: "code",
+        locator: "repository",
+        capabilities: { hasTrellis: false },
+      },
+    },
+    {
+      kind: "quest.create",
+      quest: {
+        id: INVALID_QUEST_ID,
+        title: "Quest",
+        description: "",
+        repositoryIds: [INVALID_REPOSITORY_ID],
+        artifactRefs: [],
+      },
+    },
+    {
+      kind: "campaign.create",
+      campaign: {
+        id: INVALID_CAMPAIGN_ID,
+        questId: INVALID_QUEST_ID,
+        title: "Campaign",
+        protocolDigest: "protocol-v1",
+      },
+    },
+    {
+      kind: "run.create",
+      run: { id: INVALID_RUN_ID, campaignId: INVALID_CAMPAIGN_ID, title: "Run" },
+    },
+    {
+      kind: "dispatch.record",
+      dispatch: {
+        id: INVALID_DISPATCH_ID,
+        questId: INVALID_QUEST_ID,
+        campaignId: INVALID_CAMPAIGN_ID,
+        runId: INVALID_RUN_ID,
+        repositoryId: INVALID_REPOSITORY_ID,
+        ownerSkill: "legacy",
+        objective: "Bounded work",
+        acceptanceCriteria: [],
+        context: [],
+        allowedWritePaths: [],
+        expectedOutputs: [],
+        checks: [],
+        createdAt: INVALID_NOW,
+      },
+    },
+    {
+      kind: "activation.plan",
+      activation: {
+        id: INVALID_ACTIVATION_ID,
+        dispatchId: INVALID_DISPATCH_ID,
+        questId: INVALID_QUEST_ID,
+        capabilityId: "research.setup.project",
+        mode: "explicit",
+        procedure: {
+          id: "project-setup-v1",
+          version: "1.0.0",
+          digest: INVALID_DIGEST_A,
+        },
+        policyDigest: INVALID_DIGEST_B,
+        requestDigest: INVALID_DIGEST_C,
+        scopeHash: INVALID_DIGEST_D,
+        maxDurationMinutes: 10,
+        maxDispatches: 1,
+        createdAt: INVALID_NOW,
+      },
+    },
+    {
+      kind: "approval.grant",
+      approval: {
+        id: INVALID_APPROVAL_ID,
+        activationId: INVALID_ACTIVATION_ID,
+        dispatchId: INVALID_DISPATCH_ID,
+        host: "claude",
+        mode: "interactive",
+        approverLabel: "operator",
+        rationale: "Approved",
+        requestDigest: INVALID_DIGEST_C,
+        procedureDigest: INVALID_DIGEST_A,
+        policyDigest: INVALID_DIGEST_B,
+        scopeHash: INVALID_DIGEST_D,
+        grantedAt: INVALID_NOW,
+        expiresAt: "2026-07-24T00:10:00.000Z",
+      },
+    },
+  ];
+}
+
+function INVALID_resultMutation(): ResearchMutation {
+  return {
+    kind: "result.record",
+    result: {
+      id: INVALID_RESULT_ID,
+      dispatchId: INVALID_DISPATCH_ID,
+      runId: INVALID_RUN_ID,
+      status: "completed",
+      summary: "Complete",
+      commands: [],
+      checks: [],
+      artifactRefs: [],
+      blockers: [],
+      createdAt: INVALID_RECORDED_AT,
+    },
+  };
+}
+
+function INVALID_proposalMutation(): ResearchMutation {
+  return {
+    kind: "proposal.record",
+    proposal: {
+      id: INVALID_PROPOSAL_ID,
+      dispatchId: INVALID_DISPATCH_ID,
+      questId: INVALID_QUEST_ID,
+      title: "No changes",
+      operations: [],
+      status: "pending",
+      createdAt: INVALID_RECORDED_AT,
+      updatedAt: INVALID_RECORDED_AT,
+    },
+  };
+}
+
+function INVALID_consumeMutation(
+  resultId = INVALID_RESULT_ID,
+  proposalId = INVALID_PROPOSAL_ID,
+  approvalId = INVALID_APPROVAL_ID,
+): ResearchMutation {
+  return {
+    kind: "approval.consume",
+    approvalId,
+    resultId,
+    proposalId,
+  };
+}
+
+function INVALID_invalidFamilies(): readonly (readonly ResearchMutation[])[] {
+  const result = INVALID_resultMutation();
+  const proposal = INVALID_proposalMutation();
+  const consume = INVALID_consumeMutation();
+  const extra: ResearchMutation = {
+    kind: "run.status",
+    runId: INVALID_RUN_ID,
+    status: "running",
+  };
+  const crossDispatchProposal = INVALID_proposalMutation();
+  if (crossDispatchProposal.kind !== "proposal.record") {
+    throw new Error("Expected Proposal mutation");
+  }
+  crossDispatchProposal.proposal.dispatchId = INVALID_FOREIGN_DISPATCH_ID;
+  return [
+    [result],
+    [proposal],
+    [consume],
+    [result, consume],
+    [proposal, consume],
+    [proposal, result],
+    [consume, result, proposal],
+    [result, consume, proposal],
+    [result, proposal, INVALID_consumeMutation(INVALID_WRONG_RESULT_ID)],
+    [
+      result,
+      proposal,
+      INVALID_consumeMutation(INVALID_RESULT_ID, INVALID_WRONG_PROPOSAL_ID),
+    ],
+    [
+      result,
+      proposal,
+      INVALID_consumeMutation(
+        INVALID_RESULT_ID,
+        INVALID_PROPOSAL_ID,
+        INVALID_FOREIGN_APPROVAL_ID,
+      ),
+    ],
+    [result, crossDispatchProposal, consume],
+    [result, result, proposal, consume],
+    [result, proposal, proposal, consume],
+    [extra, result, proposal],
+    [result, proposal, extra],
+    [extra, result, proposal, consume],
+    [result, proposal, consume, extra],
+    [result, proposal, consume, consume],
+  ];
+}
+
+describe("approval consumption invalid batch matrix", () => {
+  let root: string;
+
+  beforeEach(async () => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-invalid-batch-"));
+    await commitResearchBatch({
+      root,
+      actor: INVALID_ACTOR,
+      provenance: INVALID_PROVENANCE,
+      idempotencyKey: "setup",
+      timestamp: INVALID_NOW,
+      mutations: INVALID_setupMutations(),
+    });
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it.each(INVALID_invalidFamilies().map((mutations, index) => [index, mutations] as const))(
+    "rejects invalid family %s without appending",
+    async (index, mutations) => {
+      const before = await readResearchLedger(root);
+      await expect(
+        commitResearchBatch({
+          root,
+          actor: INVALID_ACTOR,
+          provenance: INVALID_PROVENANCE,
+          idempotencyKey: `invalid-${index}`,
+          timestamp: INVALID_RECORDED_AT,
+          mutations,
+        }),
+      ).rejects.toThrow();
+      expect(await readResearchLedger(root)).toEqual(before);
+    },
+  );
+});
+
+function READ_ONLY_snapshotTree(root: string): Map<string, string> {
+  const snapshot = new Map<string, string>();
+  const walk = (directory: string): void => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const absolute = path.join(directory, entry.name);
+      const relative = path.relative(root, absolute);
+      if (entry.isDirectory()) {
+        snapshot.set(`${relative}/`, "directory");
+        walk(absolute);
+      } else {
+        snapshot.set(relative, fs.readFileSync(absolute).toString("base64"));
+      }
+    }
+  };
+  walk(root);
+  return snapshot;
+}
+
+describe("read-only research batch validation", () => {
+  it("validates a new batch without creating lock or runtime state", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-read-only-new-"));
+    try {
+      fs.mkdirSync(path.join(root, ".trellis"));
+      const before = READ_ONLY_snapshotTree(root);
+      const validation = await validateResearchBatchReadOnly({
+        root,
+        actor: ACTOR,
+        provenance: PROVENANCE,
+        idempotencyKey: "read-only-new",
+        timestamp: NOW,
+        mutations: [
+          {
+            kind: "workspace.create",
+            workspace: {
+              id: createWorkspaceId(),
+              name: "Read only",
+              description: "",
+            },
+          },
+        ],
+      });
+
+      expect(validation.events.map((event) => event.kind)).toEqual([
+        "workspace.created",
+      ]);
+      expect(READ_ONLY_snapshotTree(root)).toEqual(before);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects an invalid batch without creating lock or runtime state", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-read-only-invalid-"));
+    try {
+      fs.mkdirSync(path.join(root, ".trellis"));
+      const before = READ_ONLY_snapshotTree(root);
+
+      await expect(
+        validateResearchBatchReadOnly({
+          root,
+          actor: ACTOR,
+          provenance: PROVENANCE,
+          idempotencyKey: "read-only-invalid",
+          timestamp: NOW,
+          mutations: [
+            {
+              kind: "workspace.create",
+              workspace: {
+                id: createWorkspaceId(),
+                name: "First",
+                description: "",
+              },
+            },
+            {
+              kind: "workspace.create",
+              workspace: {
+                id: createWorkspaceId(),
+                name: "Second",
+                description: "",
+              },
+            },
+          ],
+        }),
+      ).rejects.toThrow("Research workspace already exists");
+      expect(READ_ONLY_snapshotTree(root)).toEqual(before);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("returns canonical replay from one snapshot without changing files", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-read-only-replay-"));
+    try {
+      const committed = await commitResearchBatch({
+        root,
+        actor: ACTOR,
+        provenance: PROVENANCE,
+        idempotencyKey: "read-only-replay",
+        timestamp: NOW,
+        mutations: [
+          {
+            kind: "workspace.create",
+            workspace: {
+              id: createWorkspaceId(),
+              name: "Canonical",
+              description: "",
+            },
+          },
+        ],
+      });
+      const before = READ_ONLY_snapshotTree(root);
+      const replay = await validateResearchBatchReadOnly({
+        root,
+        actor: ACTOR,
+        provenance: PROVENANCE,
+        idempotencyKey: "read-only-replay",
+        timestamp: NOW,
+        mutations: [
+          {
+            kind: "workspace.create",
+            workspace: {
+              id: createWorkspaceId(),
+              name: "Ignored",
+              description: "",
+            },
+          },
+        ],
+      });
+
+      expect(replay.events).toEqual(committed.events);
+      expect(replay.state.projectedThroughSeq).toBe(committed.headSeq);
+      expect(READ_ONLY_snapshotTree(root)).toEqual(before);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   });
 });

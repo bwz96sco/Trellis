@@ -255,3 +255,71 @@ Correct: only an exact frozen key, exact structured descriptor, or canonical mig
 Wrong: keep generating Research Skills beside Procedures or let workers discover either root.
 Correct: generate bundled Procedures plus generic workers, embed validated instructions in Context, and retire only exact pristine historical Skills.
 ```
+
+## Scenario: Research Procedure dispatch cutover
+
+### 1. Scope / Trigger
+
+This scenario applies when collecting, installing, updating, building, or packing active Claude/Codex Research worker, Claude Dispatch hook, and generated Research workflow during C07. Task #63 hardens root-side C06 authority only: C07 adapter/worker/template bytes remain frozen. C08 retires installed historical Skills; C09 removes their source and packed payload.
+
+### 2. Signatures
+
+```ts
+collectResearchPlatformPayload(platformId, cwd?, options?): Map<string, string>;
+writeResearchPlatformPayload(platformId, cwd, options?): Promise<void>;
+```
+
+Active worker paths remain:
+
+```text
+.claude/agents/trellis-research-worker.md
+.codex/agents/trellis-research-worker.toml
+```
+
+### 3. Contracts
+
+- Existing collectors, output paths, structured config merging, ownership behavior, and configure/collect byte parity remain unchanged.
+- Fresh Claude-only, Codex-only, and dual-host installs receive existing generic worker and successor hook/workflow bytes; Task #63 adds no generated asset, path, config key, or ownership hash.
+- Pristine managed predecessor bytes still update only to established successor bytes; modified or user-owned worker/hook/workflow files remain preserved and reported by existing ownership rules.
+- Root-side one-state/one-observation Context, staged binding precedence, snapshot-only dry-run, lockful commit, replay-before-clock/input, and hardened sidecar recovery do not alter platform payload bytes.
+- `.trellis/research/**`, project policy, Procedure overrides, and user config remain byte-preserved except for explicit Research-domain mutations. Generic init/update never repairs output sidecars or creates lock/runtime/projection/cache state as part of Task #63.
+- During C07, dormant stage Skill files remain in required payload and packed inventory, but active worker/hook/workflow bytes contain no Skill routing, invocation, inventory path, or `SKILL.md` load.
+- Packed verification extracts active files from actual `.tgz` with `tar -xOf`; source, collector, or dirty-`dist` inspection is insufficient.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Required active worker/hook/workflow asset is missing | Fail collection/build/packed audit closed. |
+| Configure/collect path or byte maps differ | Test failure naming divergence. |
+| Task #63 changes any established adapter/worker/template/hook/workflow byte | Byte-conformance failure; revert host-surface drift. |
+| Existing active file matches managed predecessor bytes | Update to established successor bytes and ownership hash only. |
+| Existing active file is modified or user-owned | Preserve bytes and report conflict. |
+| Active packed file contains request-file, Skill-routing, random-ID, or `--file` token | Packed active-content audit fails. |
+| Dormant Research Skill path exists during C07 | Remains required; do not globally reject it. |
+| Init/update creates Research lock/runtime/projection/cache or changes canonical state | Preservation failure. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: root-side remediation passes while source, collected, installed, built, and packed host bytes remain identical to established C07 successor bytes.
+- **Base**: host addition installs only missing established host payload while preserving Research state and modified user files.
+- **Bad**: edit template prose for remediation, add adapter recovery logic, regenerate ownership hashes without byte need, scan only source bytes, or delete dormant Skill payload assigned to C08/C09.
+
+### 6. Tests Required
+
+- Exact source/configure/collect/install/build/pack path and byte parity for both hosts before and after Task #63.
+- Fresh Claude-only, Codex-only, dual-host, host-addition, and update propagation assertions.
+- Pristine managed update plus modified/user-owned preservation/reporting.
+- Full `.trellis/research/**` preservation across init/update, including absence of new lock/runtime/projection/cache files.
+- Clean build, real pack, exact active-file extraction, positive successor content, forbidden-token mutations, and retained dormant Skill inventory.
+- Root-side remediation tests live outside payload generation and prove no host asset fixture/ownership hash changes.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: update worker/template wording so hosts explain new root-side validation and recovery.
+Correct: keep host bytes frozen; root Context/recording own remediation.
+
+Wrong: infer packed byte stability from source or collector output.
+Correct: pack package, extract each active file from .tgz, compare exact established bytes.
+```

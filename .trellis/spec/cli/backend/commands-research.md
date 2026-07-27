@@ -619,3 +619,86 @@ await applyResearchProposal({ ...options, idempotencyKey: "new-key" });
 ```ts
 await applyResearchProposal({ ...options, idempotencyKey: originalKey });
 ```
+
+## Scenario: Research Procedure dispatch cutover
+
+### 1. Scope / Trigger
+
+This scenario applies to the C06+C07 public cutover from request-file and Skill routing to approval-gated Dispatch-ID Context and generic embedded-Procedure workers, including Task #63 root-side authority/read-only remediation. It supersedes predecessor Context and record-result signatures in this file. C07 removes active execution references; C08 owns installed Skill retirement; C09 owns source/packed Skill removal. Remediation does not change worker, hook, workflow, or template bytes.
+
+### 2. Signatures
+
+```text
+trellis research dispatch context <dsp-id> --host <claude|codex> [--root <root>] [--json]
+trellis research dispatch record-result <dsp-id> --approval <apr-id> --input <path|-> [--root <root>] [--json]
+```
+
+There is no public `--skill-name`, request-file positional input, `record-result --file`, compatibility alias, or injectable clock. A Context domain failure rendered with `--json` has this exact envelope and key set:
+
+```json
+{"schemaVersion":1,"command":"research dispatch context","valid":false,"error":{"code":"<code>","message":"<message>"},"safeAction":"report-to-root-no-write"}
+```
+
+### 3. Contracts
+
+- Context strict-parses one Dispatch ID and exact host, delegates to the approval-gated resolver, and writes nothing.
+- Context uses one captured canonical `ResearchState`. Request materialization mismatch precedes binding drift. Staged binding precedence is request digest -> Procedure resolution/digest -> project policy read/digest -> effective authority/automatic eligibility -> foreign-Repository artifact rejection -> one cache-free target Repository observation -> normalized scope/scope hash -> remote verification -> deferred artifact revision/SHA-256 verification -> broad activation-authority relation. Approval selection, activation/approval materialization checks, and output-ID availability follow.
+- The one target observation performs no observation-cache read/write and no `git status`; its path, Git root, HEAD, and remote are reused for Repository scope, allowed write paths, and artifacts. `multipleRepositories: false` forbids alternate Repository access.
+- Successful Context returns canonical Dispatch, Activation, matching unexpired host Approval, immutable Capability, embedded Procedure, resolved Repository/scope, complete false authority ceiling, and Approval-derived Result/Proposal IDs.
+- Public Context converts only internal `ResearchActivationError` failures to `ResearchDispatchContextError`. JSON rendering emits only the exact failure envelope above: no ledger head, warnings, Context, Activation, Approval, Procedure, Repository, or output identity fragment.
+- Commander captures one absolute `process.cwd()` for root and input resolution. `--input -` is read lazily; a path must resolve to a contained regular file below the selected control root.
+- Recording strict-reads canonical ledger first and classifies exact same-key replay before current clock validation, Approval eligibility revalidation, output collision checks, path open, or stdin invocation. Replay may succeed with an invalid/expired current clock and unavailable original input.
+- New execution accepts exactly one JSON object with top-level keys `result`, then `proposal`. Supplied output IDs and Dispatch/Run/Quest relations must match Context.
+- Dry-run validation is snapshot-only through `validateResearchBatchReadOnly`: no Research lock, runtime/projection/cache write, or head reservation. Non-dry-run commit remains lockful through `commitResearchBatch` and revalidates authoritative state under that path.
+- Successful recording commits exactly schema-v1 `result.recorded`, schema-v1 `proposal.recorded`, then schema-v2 `approval.consumed`. Result, Proposal, and consumed-Approval sidecars use hardened publication. Canonical ledger plus same-key replay repairs missing sidecars without worker/input rerun or replacement append.
+- Applying or rejecting pending Proposal remains separate root-owned command.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Unknown/case-varied host or malformed Dispatch/Approval ID | Commander/domain rejection before callback mutation. |
+| Request path positional, `--skill-name`, or `--file` | Parse failure; complete filesystem remains byte-identical. |
+| Context domain failure | Exact schema-v1 failure envelope on stderr; no success-field fragment and no write. |
+| Request sidecar plus binding/artifact drift | `REQUEST_STATE_MISMATCH` wins. |
+| Request, Procedure, policy, or scope binding drift plus later artifact drift | First staged binding error wins; artifact bytes are not checked early. |
+| Invalid observation cache or foreign-Repository artifact | Ignore cache; foreign Repository fails before alternate access; full tree unchanged. |
+| Missing, expired, revoked, wrong-host, consumed, or drifted Approval | Bounded Context/recording failure; no partial Context or event. |
+| Input path escapes control root, is a symlink escape, or is non-regular | Reject before input acceptance or ledger mutation. |
+| Worker output has extra top-level keys, wrong IDs, relations, status, or schema | Reject complete batch. |
+| Same successful key with invalid clock or unavailable input | Replay canonical events first; repair Result, Proposal, and Approval sidecars; append nothing. |
+| New key with invalid/expired clock | Reject before path/stdin access or append. |
+| Sidecar parent/target/staging identity changes | Report committed recovery after append; never trust or overwrite an unsafe winner. |
+| New key after consumption | Reject duplicate recording. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: root retains Approval/output IDs, launches `Research dispatch: <dsp-id>`, receives unchanged normalized Context, validates returned pair, then records with `--approval --input`.
+- **Base**: blocked work returns blocked Result plus empty pending Proposal with supplied IDs; root records it, then reviews Proposal separately.
+- **Base**: exact replay runs after expiry with missing original input, restores hardened sidecars from canonical events, and does not append.
+- **Bad**: let artifact drift mask Procedure/policy drift, consult observation cache, acquire lock during dry-run, validate clock before replay, rerun worker for recovery, or treat sequential sidecar publication as transactional storage.
+
+### 6. Tests Required
+
+- Exact command tree, argument, and option inventories.
+- Built `trellis` and `tl` positive Context cases for both hosts and positive path/stdin recording cases.
+- Built-parser zero-write failures for request-path Context, `--skill-name`, and `--file`.
+- Exact Context failure object/key order and absence of every success/authority fragment.
+- Full-tree Context success/failure snapshots; staged precedence; one state/one cache-free Repository observation; no alternate Repository access.
+- Snapshot-only dry-run tests proving no lock/runtime/projection/cache creation; separate lockful commit tests.
+- Replay-before-clock/input tests with invalid clock and throwing stdin; exact `[1, 1, 2]` event schemas/order; duplicate rejection.
+- Hardened Result/Proposal/Approval sidecar publication, unsafe-target failure, equivalent-winner handling, committed failure reporting, and same-key repair.
+- Real packed active-content audit over unchanged command, worker, hook, and workflow bytes extracted from `.tgz`.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: validate artifact bytes before request, Procedure, policy, and scope bindings.
+Correct: preserve staged binding precedence, then verify artifact revision/SHA-256 after scope hash.
+
+Wrong: validate current clock or open --input before exact replay classification.
+Correct: read canonical ledger and replay first; validate clock/input only for new execution.
+
+Wrong: dry-run acquires the Research lock, or recovery reruns worker and appends replacement events.
+Correct: dry-run validates one snapshot without writes; commit stays lockful; canonical replay repairs hardened sidecars.
+```

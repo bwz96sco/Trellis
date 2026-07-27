@@ -20,7 +20,7 @@ describe("Trellis Research templates", () => {
   it("preserves bounded Research workflow authority and direct commands", () => {
     for (const token of [
       "## Authority model",
-      "## Stage capabilities",
+      "Generic workers execute one embedded Procedure",
       "## Root loop",
       "## Invariants",
       "trellis research status --json",

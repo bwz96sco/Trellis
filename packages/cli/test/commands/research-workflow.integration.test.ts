@@ -7,9 +7,7 @@ import {
   createCampaignId,
   createClaimId,
   createEvidenceId,
-  createProposalId,
   createQuestId,
-  createResultId,
   createRunId,
   readResearchLedger,
   readResearchState,
@@ -39,11 +37,13 @@ import {
   setResearchRunStatus,
   validateResearch,
 } from "../../src/commands/research/command.js";
+import { approveResearchDispatch } from "../../src/commands/research/dispatch-activation-command.js";
 import {
   applyResearchProposal,
   prepareResearchDispatch,
   recordResearchDispatchResult,
 } from "../../src/commands/research/dispatch-command.js";
+import { deriveResearchOutputIds } from "../../src/commands/research/dispatch-output-ids.js";
 import { addResearchRepository } from "../../src/commands/research/repository.js";
 import { update } from "../../src/commands/update.js";
 import { PATHS } from "../../src/constants/paths.js";
@@ -135,6 +135,39 @@ function isGitIgnored(root: string, relativePath: string): boolean {
   );
 }
 
+async function approveDispatchOutput(
+  root: string,
+  dispatchId: Parameters<typeof approveResearchDispatch>[0]["dispatchId"],
+  idempotencyKey: string,
+) {
+  const granted = await approveResearchDispatch(
+    {
+      root,
+      dispatchId,
+      host: "claude",
+      idempotencyKey,
+    },
+    {
+      stdinIsTTY: true,
+      stdoutIsTTY: true,
+      stderrIsTTY: true,
+      writeSummary: () => undefined,
+      question: async (prompt) => {
+        if (prompt === "Operator label: ") return "integration-test";
+        if (prompt === "Rationale: ") {
+          return "Approved for successor lifecycle integration test";
+        }
+        return prompt.match(/^Type '([^']+)': $/)?.[1] ?? "";
+      },
+      close: () => undefined,
+    },
+  );
+  return {
+    approvalId: granted.approval.grant.id,
+    output: deriveResearchOutputIds(granted.approval.grant.id),
+  };
+}
+
 function writeResultProposal(
   file: string,
   input: {
@@ -144,15 +177,16 @@ function writeResultProposal(
     repository: string;
     summary: string;
     operations: unknown[];
+    output: ReturnType<typeof deriveResearchOutputIds>;
   },
-): string {
-  const proposalId = createProposalId();
+): ReturnType<typeof deriveResearchOutputIds>["proposalId"] {
+  const proposalId = input.output.proposalId;
   fs.writeFileSync(
     file,
     `${JSON.stringify(
       {
         result: {
-          id: createResultId(),
+          id: input.output.resultId,
           dispatchId: input.dispatchId,
           runId: input.runId,
           status: "completed",
@@ -348,7 +382,12 @@ describe("research workflow end-to-end closure", () => {
       checks: ["reviewed by root session"],
       idempotencyKey: "e2e:prepare:task-free",
     });
-    const taskFreeInput = path.join(sandbox, "task-free-result.json");
+    const taskFreeApproval = await approveDispatchOutput(
+      root,
+      taskFreeDispatch.dispatch.id,
+      "e2e:approve:task-free",
+    );
+    const taskFreeInput = path.join(root, "task-free-result.json");
     const taskFreeProposalId = writeResultProposal(taskFreeInput, {
       dispatchId: taskFreeDispatch.dispatch.id,
       runId: taskFreeRunId,
@@ -356,16 +395,19 @@ describe("research workflow end-to-end closure", () => {
       repository: paper,
       summary: "Task-free literature review complete",
       operations: [{ kind: "quest.stage", questId, stage: "literature" }],
+      output: taskFreeApproval.output,
     });
     const taskFreeRecorded = await recordResearchDispatchResult({
       root,
       dispatchId: taskFreeDispatch.dispatch.id,
-      file: taskFreeInput,
+      approvalId: taskFreeApproval.approvalId,
+      input: { kind: "path", cwd: sandbox, path: taskFreeInput },
       idempotencyKey: "e2e:record:task-free",
     });
     expect(taskFreeRecorded.events.map((event) => event.kind)).toEqual([
       "result.recorded",
       "proposal.recorded",
+      "approval.consumed",
     ]);
     const beforeTaskFreeDryRun = await readResearchLedger(root);
     const taskFreeDryRun = await applyResearchProposal({
@@ -429,7 +471,12 @@ describe("research workflow end-to-end closure", () => {
       status: "running",
     });
 
-    const taskLinkedInput = path.join(sandbox, "task-linked-result.json");
+    const taskLinkedApproval = await approveDispatchOutput(
+      root,
+      taskLinkedDispatch.dispatch.id,
+      "e2e:approve:task-linked",
+    );
+    const taskLinkedInput = path.join(root, "task-linked-result.json");
     const taskLinkedProposalId = writeResultProposal(taskLinkedInput, {
       dispatchId: taskLinkedDispatch.dispatch.id,
       runId: taskLinkedRunId,
@@ -439,11 +486,13 @@ describe("research workflow end-to-end closure", () => {
       operations: [
         { kind: "run.status", runId: taskLinkedRunId, status: "succeeded" },
       ],
+      output: taskLinkedApproval.output,
     });
     await recordResearchDispatchResult({
       root,
       dispatchId: taskLinkedDispatch.dispatch.id,
-      file: taskLinkedInput,
+      approvalId: taskLinkedApproval.approvalId,
+      input: { kind: "path", cwd: sandbox, path: taskLinkedInput },
       idempotencyKey: "e2e:record:task-linked",
     });
     const beforeTaskLinkedDryRun = await readResearchLedger(root);

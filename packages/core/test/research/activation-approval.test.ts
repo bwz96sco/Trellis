@@ -773,9 +773,9 @@ describe("mixed ledger store compatibility", () => {
     return root;
   }
 
-  it("keeps current Result plus Proposal mutation behavior after activation", async () => {
+  it("records Result, Proposal, and approval consumption after activation", async () => {
     const root = tempRoot();
-    const initial = [...setupEvents(), activationEvent()];
+    const initial = [...setupEvents(), activationEvent(), approvalEvent()];
     fs.writeFileSync(
       researchPaths(root).eventsFile,
       serializeResearchEvents(initial),
@@ -818,16 +818,26 @@ describe("mixed ledger store compatibility", () => {
             updatedAt: timestamp,
           },
         },
+        {
+          kind: "approval.consume",
+          approvalId: APPROVAL_ID,
+          resultId: RESULT_ID,
+          proposalId: PROPOSAL_ID,
+        },
       ],
     });
 
     const ledger = await readResearchLedger(root);
     expect(ledger.map(({ schemaVersion, kind }) => ({ schemaVersion, kind })).slice(-3)).toEqual([
-      { schemaVersion: 2, kind: "activation.planned" },
       { schemaVersion: 1, kind: "result.recorded" },
       { schemaVersion: 1, kind: "proposal.recorded" },
+      { schemaVersion: 2, kind: "approval.consumed" },
     ]);
-    expect((await readResearchState(root)).approvals).toEqual({});
+    expect((await readResearchState(root)).approvals[APPROVAL_ID]).toMatchObject({
+      status: "consumed",
+      resultId: RESULT_ID,
+      proposalId: PROPOSAL_ID,
+    });
   });
 
   it("advances existing projection watermarks without changing projection data", async () => {

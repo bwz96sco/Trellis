@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   commitResearchBatch,
+  createActivationId,
+  createApprovalId,
   createCampaignId,
   createDecisionId,
   createDispatchId,
@@ -55,7 +57,10 @@ describe("dispatch reducer legality", () => {
     const runId = createRunId();
     const repositoryId = createRepositoryId();
     const dispatchId = createDispatchId();
+    const activationId = createActivationId();
+    const approvalId = createApprovalId();
     const proposalId = createProposalId();
+    const digest = `sha256:${"a".repeat(64)}`;
     await commitResearchBatch({
       root,
       actor: ACTOR,
@@ -122,6 +127,45 @@ describe("dispatch reducer legality", () => {
             createdAt: NOW,
           },
         },
+        {
+          kind: "activation.plan",
+          activation: {
+            id: activationId,
+            dispatchId,
+            questId,
+            capabilityId: "research.audit.case",
+            mode: "explicit",
+            procedure: {
+              id: "audit-case-v1",
+              version: "1.0.0",
+              digest,
+            },
+            policyDigest: digest,
+            requestDigest: digest,
+            scopeHash: digest,
+            maxDurationMinutes: 10,
+            maxDispatches: 1,
+            createdAt: NOW,
+          },
+        },
+        {
+          kind: "approval.grant",
+          approval: {
+            id: approvalId,
+            activationId,
+            dispatchId,
+            host: "claude",
+            mode: "interactive",
+            approverLabel: "test",
+            rationale: "Approved for reducer test",
+            requestDigest: digest,
+            procedureDigest: digest,
+            policyDigest: digest,
+            scopeHash: digest,
+            grantedAt: NOW,
+            expiresAt: "2026-07-17T00:10:00.000Z",
+          },
+        },
       ],
     });
 
@@ -169,6 +213,12 @@ describe("dispatch reducer legality", () => {
       mutations: [
         { kind: "result.record", result },
         { kind: "proposal.record", proposal },
+        {
+          kind: "approval.consume",
+          approvalId,
+          resultId: result.id,
+          proposalId,
+        },
       ],
     });
 

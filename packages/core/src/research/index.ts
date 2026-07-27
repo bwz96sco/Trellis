@@ -187,6 +187,7 @@ export {
   readResearchState,
   getResearchStatus,
   validateResearchBatch,
+  validateResearchBatchReadOnly,
   commitResearchBatch,
   rebuildResearchProjections,
   ResearchProjectionError,

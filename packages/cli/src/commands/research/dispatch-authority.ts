@@ -13,6 +13,7 @@ import {
   type ArtifactRef,
   type Dispatch,
   type NormalizedDispatchScopeV1,
+  type ParsedResearchProcedure,
   type ResearchActivation,
   type ResearchAutomaticEligibility,
   type ResearchEffectiveAuthority,
@@ -32,6 +33,7 @@ export interface DispatchActivationCandidate {
   readonly dispatch: Dispatch;
   readonly stage: string;
   readonly authority: ResearchEffectiveAuthority;
+  readonly procedure: ParsedResearchProcedure;
   readonly automaticEligibility: ResearchAutomaticEligibility;
   readonly policyDigest: string;
   readonly requestDigest: string;
@@ -332,10 +334,11 @@ export async function resolveDispatchActivationCandidate(input: {
   readonly root: string;
   readonly dispatch: Dispatch;
   readonly capabilityId: string;
+  readonly state?: ResearchState;
   readonly candidate?: boolean;
   readonly allowExistingActivation?: boolean;
 }): Promise<DispatchActivationCandidate> {
-  const state = await readResearchState(input.root);
+  const state = input.state ?? (await readResearchState(input.root));
   const { stage } = validateHierarchy(
     state,
     input.dispatch,
@@ -459,6 +462,7 @@ export async function resolveDispatchActivationCandidate(input: {
     dispatch: input.dispatch,
     stage,
     authority: resolvedAuthority.authority,
+    procedure: resolvedAuthority.procedure,
     automaticEligibility: resolvedAuthority.automaticEligibility,
     policyDigest: resolvedAuthority.policy.digest,
     requestDigest: digestDispatchRequest(input.dispatch),

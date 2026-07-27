@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import {
   commitResearchBatch,
   getResearchStatus,
-  validateResearchBatch,
+  validateResearchBatchReadOnly,
   type RepositoryId,
   type ResearchMutation,
 } from "@mindfoldhq/trellis-core/research";
@@ -37,7 +37,7 @@ export async function executeRepositoryDispatchMutations(
 
   if (options.dryRun === true) {
     const before = await getResearchStatus(root);
-    const validation = await validateResearchBatch(input);
+    const validation = await validateResearchBatchReadOnly(input);
     return {
       command: `research ${command}`,
       idempotencyKey,

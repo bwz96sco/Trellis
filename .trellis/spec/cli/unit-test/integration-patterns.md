@@ -212,3 +212,93 @@ Correct: run the clean build, pack a tarball, normalize entries, and audit requi
 Wrong: unit-mock TTY approval, assert Context wrote nothing by checking one path, or derive retirement hashes from current source.
 Correct: execute parser/subprocess boundaries, snapshot the full tree, and use immutable released-byte fixtures with provenance.
 ```
+
+## Scenario: Research Procedure dispatch cutover
+
+### 1. Scope / Trigger
+
+Use this scenario when proving C06+C07 public lifecycle plus Task #63 root-side remediation: staged Context authority, one-state/one-observation behavior, exact public failures, snapshot-only dry-run, lockful commit, replay-before-clock/input, hardened sidecar recovery, unchanged host bytes, installed assets, and packed active content. Exercise real filesystem/process/package boundaries where behavior depends on them; deterministic worker output is an oracle, not cloud-model simulation.
+
+### 2. Signatures
+
+Required test helpers:
+
+```ts
+readInstalledResearchHostAssets(root, host);
+runClaudeResearchHookProcess(options);
+assertCodexResearchWorkerContract(toml);
+makeDeterministicResearchWorkerOutput(context, outcome);
+runApprovalConsumptionLifecycle(options);
+```
+
+Built and packed entry points:
+
+```text
+node packages/cli/bin/trellis.js research dispatch ...
+node packages/cli/scripts/release-preflight.js verify-packed-cli
+```
+
+Exact Context JSON failure oracle:
+
+```json
+{"schemaVersion":1,"command":"research dispatch context","valid":false,"error":{"code":"<code>","message":"<message>"},"safeAction":"report-to-root-no-write"}
+```
+
+### 3. Contracts
+
+- Built `trellis` and `tl` tests execute same compiled parser, not action functions, for exact options and legacy rejection.
+- Negative parser and Context cases compare complete path-and-byte snapshots and prove no callback-visible mutation.
+- Context precedence fixtures combine request, Procedure, policy, scope, artifact, Approval, materialization, and output-ID faults. Tests assert earliest staged code, deferred artifact access, one `ResearchState`, one cache-free target Repository observation, no `git status`, and no alternate Repository access.
+- Public API conversion tests prove only `ResearchActivationError` becomes `ResearchDispatchContextError`; unrelated errors preserve identity. CLI failure tests assert exact envelope/key set and absence of ledger head, warnings, Context, authority, Approval, Procedure, Repository, and output IDs.
+- Dry-run tests exercise real generic and Dispatch lifecycle owners through `validateResearchBatchReadOnly`, compare full trees, and prove no lock/runtime/projection/cache/materialization/head reservation. Separate non-dry-run tests prove lockful `commitResearchBatch` remains authority.
+- Claude adapter proof executes actual generated Python hook with fake `trellis` on `PATH`, captures exact Context argv/call count, validates byte-identical normalized success injection, and rejects failure without partial data or recomputation.
+- Codex natural-language execution is checked statically for exact control-root, first-process, supplied-ID, sandbox, and prohibition clauses; this does not claim live model compliance.
+- Deterministic worker output uses only Context-supplied IDs and strict schema-v1 Result/pending-Proposal shapes. Host adapter/worker/template bytes and packed success contract remain unchanged by Task #63.
+- Public recording invokes real Approval-bound command/API. Exact same-key replay is tested before current clock/input by using invalid clock plus missing path/throwing stdin. Replay repairs Result/Proposal/Approval sidecars from canonical state and appends nothing.
+- New execution verifies exact `[1, 1, 2]` event schemas, kinds, relations, timestamps, lockful atomic append, materializations, and duplicate rejection. Sidecar tests exercise hardened containment, directory/target/staging identity, fsync/publication result, committed failure metadata, sequential partial writes, and same-key repair.
+- Packed proof creates/uses real `.tgz`, extracts active bytes with `tar -xOf`, and mutation-tests each forbidden token while retaining dormant Skill entries through C07.
+
+### 4. Validation & Error Matrix
+
+| Test shortcut or condition | Required assertion |
+|---|---|
+| Direct function call used to claim unknown-option behavior | Invalid test; execute built parser. |
+| One-path check used to claim Context/dry-run zero-write | Invalid test; compare complete tree including lock/runtime/projection/cache paths. |
+| Independent state/Repository mocks hide duplicate reads | Invalid test; count one canonical state and one target observation across complete Context. |
+| Artifact mismatch asserted without earlier combined faults | Incomplete precedence proof; combine faults and assert deferred artifact access. |
+| Failure object checked only with `toMatchObject` | Incomplete public contract; assert exact object/key set and forbidden-field absence. |
+| Mocked hook function used to claim process argv/count | Invalid test; execute generated Python. |
+| Codex prose treated as executable model proof | State limitation; validate static contract only. |
+| Worker oracle invents IDs or changes normalized success bytes | Test failure; derive exact supplied output contract and compare bytes. |
+| Dry-run uses commit mock/lock | Contract failure; require read-only snapshot validator and full-tree zero-write. |
+| Same-key replay validates clock, opens input, reruns worker, or appends | Lifecycle failure; replay/repair must precede those actions. |
+| Sidecar success asserted without race/committed-failure fixtures | Incomplete hardened publication proof. |
+| Packed audit reads source or unpacked dist only | Invalid release evidence; inspect actual tarball. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: one-state/one-observation Context returns unchanged normalized success to real Claude/static Codex adapters; lockful recording creates exact events; expired same-key replay repairs hardened sidecars without input/append.
+- **Base**: snapshot-only dry-run validates prospective batch with complete tree unchanged; blocked oracle output keeps supplied IDs and empty Proposal operations.
+- **Bad**: mock Commander, check one path, hide duplicate observations, test artifact fault alone, partial-match failure JSON, acquire dry-run lock, validate replay clock first, rerun worker for recovery, or infer packed bytes from collector output.
+
+### 6. Tests Required
+
+- Built alias Context for both hosts, path/stdin recording, legacy zero-write parser rejection, and exact JSON failure envelope.
+- Staged combined-fault precedence and deferred artifact-open tests; one-state/one-observation/cache-free/no-`git status`/no-alternate-Repository assertions.
+- Full-tree snapshot-only dry-run success/failure for generic mutations, activation/approval/recording owners, plus separate lockful commit coverage.
+- Full Approval/Context/recording lifecycle for Claude/Codex fixtures; replay-before-clock/path/stdin with no worker/input rerun.
+- Actual Claude hook subprocess with one-call Context capture, byte-identical normalized success, exact typed denial, oversized/malformed denial, and no partial/recomputed data.
+- Static Codex TOML validator, installed-byte reader, deterministic output oracle, exact event order, and unchanged adapter/worker/template byte fixtures.
+- Hardened Result/Proposal/Approval publication race matrix, exact committed recovery fields, sequential partial materialization, and same-key repair without append.
+- Unit mutation fixtures and real tarball mutations for request-file, `--skill-name`, `--file`, selected-Skill, Claude Skill tool, Codex inventory, random IDs, second Context pass, and stale workflow content.
+- Executable spec test extracts exactly one ordered seven-section scenario from each approved file, locks all Task #63 clauses, and treats core spec as expanded guard-only.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: prove one happy Context, one artifact failure, and one dry-run return value.
+Correct: combine staged faults, count state/observation access, assert exact failure bytes, compare full dry-run tree.
+
+Wrong: recreate input or rerun worker after expiry to repair missing sidecars.
+Correct: exact same-key replay wins before clock/input and repairs all sidecars from canonical authority.
+```

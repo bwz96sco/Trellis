@@ -9,7 +9,7 @@ import {
   parseResearchExecutionHost,
   readResearchLedger,
   readResearchState,
-  validateResearchBatch,
+  validateResearchBatchReadOnly,
   type ActivationId,
   type ApprovalId,
   type Dispatch,
@@ -164,7 +164,7 @@ export async function executeResearchLifecycleMutations(input: {
     };
   }
   if (input.options.dryRun === true) {
-    const validation = await validateResearchBatch(batch);
+    const validation = await validateResearchBatchReadOnly(batch);
     input.classify(validation.events);
     const canonicalIds = new Set(
       (await readResearchLedger(input.root)).map((event) => event.eventId),

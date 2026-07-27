@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import { InvalidArgumentError, type Command } from "commander";
 
 import {
@@ -80,6 +83,7 @@ import type {
   EvidenceStatus,
   ProposalId,
   QuestId,
+  ResearchExecutionHost,
   QuestStage,
   QuestStatus,
   RepositoryId,
@@ -150,8 +154,7 @@ interface RepositoryBindCliOptions extends ResearchOutputOptions {
 }
 
 interface DispatchContextCliOptions extends ResearchOutputOptions {
-  host?: string;
-  skillName: string[];
+  host: ResearchExecutionHost;
 }
 
 interface DispatchPrepareCliOptions extends ResearchMutationOptions {
@@ -191,7 +194,8 @@ interface DispatchRevokeCliOptions extends ResearchMutationOptions {
 }
 
 interface DispatchRecordResultCliOptions extends ResearchMutationOptions {
-  file: string;
+  approval: ApprovalId;
+  input: string;
 }
 
 interface DispatchReviewCliOptions extends ResearchMutationOptions {
@@ -232,6 +236,13 @@ function parseApprovalIdArgument(value: string): ApprovalId {
 
 function parseProposalIdArgument(value: string): ProposalId {
   return parseResearchIdArgument<ProposalId>(value, "prp", "proposal ID");
+}
+
+function parseResearchHostArgument(value: string): ResearchExecutionHost {
+  if (value !== "claude" && value !== "codex") {
+    throw new InvalidArgumentError("host must be exactly 'claude' or 'codex'");
+  }
+  return value;
 }
 
 function parseRepositoryKindArgument(value: string): RepositoryKind {
@@ -295,14 +306,15 @@ function renderExtendedResearchResult(result: unknown, json: boolean): void {
   }
   const value = result as Record<string, unknown>;
   if (value.command === "research dispatch context" && value.valid === true) {
-    const dispatch = value.dispatch as { id: string };
-    const capability = value.capability as {
-      stage: string;
-      selectedSkill: string;
+    const context = value.context as {
+      host: string;
+      dispatch: { id: string };
+      capability: { id: string; stage: string };
+      approval: { id: string };
+      repository: { id: string };
     };
-    const repository = value.repository as { id: string };
     console.log(
-      `research dispatch context: ${dispatch.id} host=${String(value.host)} stage=${capability.stage} skill=${capability.selectedSkill} head=${String(value.ledgerHead)} repository=${repository.id}`,
+      `research dispatch context: ${context.dispatch.id} host=${context.host} stage=${context.capability.stage} capability=${context.capability.id} approval=${context.approval.id} head=${String(value.ledgerHead)} repository=${context.repository.id}`,
     );
     return;
   }
@@ -761,28 +773,23 @@ export function registerResearchCommand(program: Command): void {
   addOutputOptions(
     dispatch
       .command("context")
-      .description("Validate and emit bounded read-only Dispatch context")
-      .argument(
-        "<request-file>",
-        "canonical .trellis/research/dispatches/<dsp-id>/request.json path",
-      )
-      .option("--host <host>", "execution host: claude or codex (required)")
-      .option(
-        "--skill-name <name>",
-        "discovered canonical skill name (repeatable)",
-        collectString,
-        [] as string[],
+      .description("Validate and emit approved read-only Dispatch context")
+      .argument("<dispatch-id>", "dispatch ID", parseDispatchIdArgument)
+      .requiredOption(
+        "--host <host>",
+        "execution host: claude or codex",
+        parseResearchHostArgument,
       ),
-  ).action(async (requestFile: string, options: DispatchContextCliOptions) => {
-    await runAction(options.json, () =>
-      getResearchDispatchContext({
-        ...options,
-        requestFile,
-        host: options.host ?? "",
-        discoveredSkillNames: options.skillName,
-      } as GetResearchDispatchContextOptions),
-    );
-  });
+  ).action(
+    async (dispatchId: DispatchId, options: DispatchContextCliOptions) => {
+      await runAction(options.json, () =>
+        getResearchDispatchContext({
+          ...options,
+          dispatchId,
+        } as GetResearchDispatchContextOptions),
+      );
+    },
+  );
 
   addMutationOptions(
     dispatch
@@ -926,15 +933,30 @@ export function registerResearchCommand(program: Command): void {
   addMutationOptions(
     dispatch
       .command("record-result")
-      .description("Record one worker Result and pending Proposal")
+      .description("Record one approved worker Result and pending Proposal")
       .argument("<dispatch-id>", "dispatch ID", parseDispatchIdArgument)
-      .requiredOption("--file <json>", "result and proposal JSON file"),
+      .requiredOption(
+        "--approval <apr-id>",
+        "approval ID",
+        parseApprovalIdArgument,
+      )
+      .requiredOption("--input <path|->", "result and proposal JSON input"),
   ).action(
     async (dispatchId: DispatchId, options: DispatchRecordResultCliOptions) => {
+      const cwd = path.resolve(process.cwd());
       await runAction(options.json, () =>
         recordResearchDispatchResult({
           ...options,
           dispatchId,
+          approvalId: options.approval,
+          input:
+            options.input === "-"
+              ? {
+                  kind: "stdin",
+                  cwd,
+                  read: () => fs.readFileSync(0),
+                }
+              : { kind: "path", cwd, path: options.input },
         } as RecordResearchDispatchResultOptions),
       );
     },

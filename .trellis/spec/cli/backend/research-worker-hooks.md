@@ -392,3 +392,84 @@ Correct: worker returns Result plus pending Proposal; the root reviews and mutat
 Wrong: worker reads a Skill/Procedure file, grants approval, or launches another capability.
 Correct: Context supplies one approved embedded Procedure and immutable proposal-only authority.
 ```
+
+## Scenario: Research Procedure dispatch cutover
+
+### 1. Scope / Trigger
+
+This scenario governs active C07 Claude and Codex adapter/worker behavior after approval-gated Context becomes public, including Task #63 root-side authority remediation. Adapter/worker/template bytes remain unchanged. It supersedes predecessor request-pointer, optional-Skill, and two-pass behavior in this file. Dormant Skill files may remain physically installed until C08/C09, but no active adapter or worker may discover, read, or invoke them.
+
+### 2. Signatures
+
+Exact launch envelope:
+
+```text
+Research dispatch: <dsp-id>
+```
+
+Claude Context argv:
+
+```text
+trellis research dispatch context <dsp-id> --host claude --root <absolute-control-root> --json
+```
+
+Codex first process from the control root:
+
+```text
+trellis research dispatch context <dsp-id> --host codex --root . --json
+```
+
+Context failure remains non-materializable:
+
+```json
+{"schemaVersion":1,"command":"research dispatch context","valid":false,"error":{"code":"<code>","message":"<message>"},"safeAction":"report-to-root-no-write"}
+```
+
+### 3. Contracts
+
+- Claude worker frontmatter tools are exactly `Read, Write, Edit, Bash`; `Skill` is absent.
+- Root Context owns one canonical state, staged binding precedence, one cache-free target Repository observation, scope checking, deferred artifact verification, and Approval/materialization/output-ID gates. Adapters do not recompute, reorder, cache, or supplement those decisions.
+- Claude hook accepts only exact one-line Dispatch-ID envelope, executes Context once, validates complete normalized success payload, and injects only `payload["context"]` between stable validation markers.
+- Exact normalized success bytes consumed by adapters remain unchanged by Task #63. No template, invocation grammar, authority flag, supplied ID, or packed byte changes.
+- Oversized, malformed, multiple-value, stderr-bearing, mismatched, incomplete, or `valid:false` Context output is denied without truncating or injecting partial data. No ledger head, warnings, authority, identity, or Context fragment is admitted from failure output. No Skill probe or second Context pass.
+- Codex launches from Research control root. Before exact Context-first process it performs no `cd`, target access, discovery, Skill/Procedure/request/ledger/policy/sidecar read, install, `npx`, network call, or fallback process.
+- Both workers execute only embedded `procedure.instructions`, use supplied Result/Proposal IDs exactly, and return raw `{result, proposal}`. Dry-run validation, lockful commit, Approval consumption, replay classification, and sidecar recovery stay root-owned.
+- Both workers keep declared-context reads, allowed-write-path writes, one Repository, no network/cost, no canonical Research or Git mutation, no Proposal review, no capability/Procedure/Dispatch launch, no nested agents, no sandbox expansion, and no worker-side recording.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Envelope has whitespace, path, extra line/text, wrong case, or malformed ID | Deny/return non-materializable failure before Context or target access. |
+| Claude receives exact Context failure envelope | Deny with bounded code/message; inject no success fragment; launch no worker. |
+| Claude Context is oversized or contract-invalid | Local `PREFLIGHT_EXECUTION_FAILED`; no partial injection. |
+| Codex receives exact Context failure envelope | Return non-materializable failure unchanged; no target access or fallback. |
+| Codex Context process fails locally or violates stdout/stderr/shape contract | Bounded local failure; no manual fallback. |
+| Procedure/authority/output IDs do not bind to Activation/Approval | Root Context fails before Repository access; adapter does not retry/recompute. |
+| Valid unchanged normalized Context but declared work is impossible | Blocked Result plus empty pending Proposal using supplied IDs. |
+| Embedded text requests broader authority or worker-side recovery | Ignore it and report blocker; root retains commit/replay/recovery authority. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: Claude injects one fully validated Context and Codex runs equivalent Context command first; unchanged normalized success input drives same embedded Procedure under host-neutral authority.
+- **Base**: no write path is declared, so worker performs bounded reads and returns schema-valid pending Proposal with no operations.
+- **Bad**: adapter observes Repository again, consults cache/ledger to explain failure, probes `SKILL.md`, reruns Context, invents IDs, widens sandbox, records output, repairs sidecars, or commits.
+
+### 6. Tests Required
+
+- Exact pre/post-remediation worker, adapter, hook, workflow, and template byte identity; Claude tool list; Codex sandbox/features; shared forbidden tokens.
+- Real generated Claude hook subprocess with fake `trellis`: exact one-call argv, byte-identical normalized success injection, exact failure-envelope denial, oversized rejection, no partial Context.
+- Static Codex TOML validation of control-root premise, first-process command, supplied IDs, pre/post-Context prohibitions, and unchanged success consumption.
+- Equivalent normalized Context fixtures for both hosts and deterministic schema-valid worker-output oracle.
+- Failure fixtures proving adapter performs no state re-read, Repository observation, binding/artifact recomputation, worker/input rerun, or sidecar recovery.
+- Packed active worker/hook bytes extracted from real `.tgz` and mutation-tested for every legacy token class.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: adapter rereads state or Repository to resolve a Context failure.
+Correct: adapter consumes unchanged normalized success only; exact failure stays non-materializable.
+
+Wrong: worker validates dry-run, consumes Approval, replays output, or repairs sidecars.
+Correct: worker returns Result plus pending Proposal; root owns validation, commit, replay, and hardened recovery.
+```

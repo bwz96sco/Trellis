@@ -99,6 +99,15 @@ Correct: clean-build, pack, list normalized tar entries, and audit required and 
 | [Uninstall Scrubbers](./uninstall-scrubbers.md) | Pure compatibility scrubbers for exact mixed-ownership config paths | Done |
 | [`trellis research` Command](./commands-research.md) | Deterministic research workspace inspection, validation, projection recovery, and Quest/Campaign/Run/Evidence/Claim lifecycle mutations | Done |
 | [Research Worker Skills and Claude Hooks](./research-worker-hooks.md) | Stage-owner skills, bounded worker cards, compact research session state, sequence watermark, and explicit Claude Dispatch validation | Done |
+
+### Research Procedure dispatch cutover scenarios
+
+- [`trellis research` command](./commands-research.md#scenario-research-procedure-dispatch-cutover)
+- [Research worker and hook adapters](./research-worker-hooks.md#scenario-research-procedure-dispatch-cutover)
+- [Platform installation and packed content](./platform-integration.md#scenario-research-procedure-dispatch-cutover)
+- [Filesystem and mutation safety](./filesystem-safety.md#scenario-research-procedure-dispatch-cutover)
+- [Integration test patterns](../unit-test/integration-patterns.md#scenario-research-procedure-dispatch-cutover)
+
 ---
 
 ## Pre-Development Checklist

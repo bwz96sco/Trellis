@@ -51,8 +51,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  auditPackedActiveContent,
   auditPackedEntries,
   buildPackedCliInventory,
+  PACKED_ACTIVE_RESEARCH_ENTRIES,
   parseTarListing,
 } from "./packed-cli-audit.js";
 
@@ -249,31 +251,46 @@ function verifyPackedCore() {
 
 function verifyPackedCli() {
   const v = checkVersions({ requireTag: false });
+  const testArchive =
+    process.env.VITEST === "true"
+      ? process.env.TRELLIS_TEST_PACKED_CLI_TARBALL
+      : undefined;
 
-  console.log(
-    `${DIM}clean-building CLI before package verification...${RESET}`,
-  );
-  execFileSync("pnpm", ["run", "build"], {
-    cwd: CLI_DIR,
-    stdio: "inherit",
-  });
-
-  const tmp = fs.mkdtempSync(path.join(REPO_ROOT, ".pack-verify-"));
-  try {
-    execFileSync("pnpm", ["pack", "--pack-destination", tmp], {
+  let tmp = null;
+  let packed = testArchive ? path.resolve(testArchive) : null;
+  if (packed === null) {
+    console.log(
+      `${DIM}clean-building CLI before package verification...${RESET}`,
+    );
+    execFileSync("pnpm", ["run", "build"], {
       cwd: CLI_DIR,
-      stdio: ["pipe", "pipe", "pipe"],
+      stdio: "inherit",
     });
-    const tarballs = fs
-      .readdirSync(tmp)
-      .filter((entry) => entry.endsWith(".tgz"))
-      .sort();
-    if (tarballs.length !== 1) {
-      fail(
-        `pnpm pack produced ${tarballs.length} tarballs in ${tmp}; expected exactly one.`,
-      );
+
+    tmp = fs.mkdtempSync(path.join(REPO_ROOT, ".pack-verify-"));
+    try {
+      execFileSync("pnpm", ["pack", "--pack-destination", tmp], {
+        cwd: CLI_DIR,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      const tarballs = fs
+        .readdirSync(tmp)
+        .filter((entry) => entry.endsWith(".tgz"))
+        .sort();
+      if (tarballs.length !== 1) {
+        throw new Error(
+          `pnpm pack produced ${tarballs.length} tarballs in ${tmp}; expected exactly one.`,
+        );
+      }
+      packed = path.join(tmp, tarballs[0]);
+    } catch (error) {
+      fs.rmSync(tmp, { recursive: true, force: true });
+      tmp = null;
+      fail(error instanceof Error ? error.message : String(error));
     }
-    const packed = path.join(tmp, tarballs[0]);
+  }
+
+  try {
     const tarListing = execFileSync("tar", ["-tzf", packed], {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
@@ -286,8 +303,19 @@ function verifyPackedCli() {
     const inventory = buildPackedCliInventory(migrationManifestNames);
 
     let audit;
+    let activeAudit;
     try {
       audit = auditPackedEntries(entries, inventory);
+      const activeContents = new Map(
+        Object.values(PACKED_ACTIVE_RESEARCH_ENTRIES).map((entry) => [
+          entry,
+          execFileSync("tar", ["-xOf", packed, entry], {
+            encoding: "utf-8",
+            stdio: ["pipe", "pipe", "pipe"],
+          }),
+        ]),
+      );
+      activeAudit = auditPackedActiveContent(activeContents);
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
     }
@@ -317,10 +345,14 @@ function verifyPackedCli() {
         `no forbidden generic entries.`,
     );
     console.log(
+      `${GREEN}ok${RESET} packed CLI active content: ${activeAudit.activeEntryCount} ` +
+        `command/worker/hook/workflow files satisfy the successor contract.`,
+    );
+    console.log(
       `${GREEN}ok${RESET} packed CLI pins @mindfoldhq/trellis-core to exact ${v.cliVersion}.`,
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    if (tmp !== null) fs.rmSync(tmp, { recursive: true, force: true });
   }
 }
 

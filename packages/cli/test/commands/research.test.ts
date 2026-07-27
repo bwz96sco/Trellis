@@ -132,13 +132,24 @@ describe("research command helpers", () => {
     ]);
     const context = commandAt(research, "dispatch", "context");
     expect(context.registeredArguments.map((argument) => argument.name())).toEqual([
-      "request-file",
+      "dispatch-id",
     ]);
     expect(context.options.map((option) => option.long)).toEqual([
       "--host",
-      "--skill-name",
       "--root",
       "--json",
+    ]);
+    const recordResult = commandAt(research, "dispatch", "record-result");
+    expect(
+      recordResult.registeredArguments.map((argument) => argument.name()),
+    ).toEqual(["dispatch-id"]);
+    expect(recordResult.options.map((option) => option.long)).toEqual([
+      "--approval",
+      "--input",
+      "--root",
+      "--json",
+      "--idempotency-key",
+      "--dry-run",
     ]);
     expect(
       commandAt(research, "dispatch", "approve").options.map(

@@ -4,7 +4,6 @@ import os from "node:os";
 import path from "node:path";
 
 import {
-  commitResearchBatch,
   proposalSchema,
   resultSchema,
   type QuestStage,
@@ -15,21 +14,14 @@ import {
   PLATFORM_IDS,
   collectPlatformTemplates,
 } from "../../src/configurators/index.js";
-import { RESEARCH_STAGE_CAPABILITIES } from "../../src/commands/research/legacy-skill-routing.js";
+import { authorizeResearchDispatch } from "../../src/commands/research/dispatch-activation-command.js";
 import { getResearchWorkerTemplate as getClaudeResearchWorkerTemplate } from "../../src/templates/claude/index.js";
 import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
 import { getResearchDispatchContext } from "../../src/commands/research/dispatch-context.js";
-import {
-  setResearchQuestStage,
-  setResearchQuestStatus,
-  setResearchRunStatus,
-} from "../../src/commands/research/command.js";
-import { bindResearchRepository } from "../../src/commands/research/repository.js";
 import { getResearchStageSkillTemplates } from "../../src/templates/common/index.js";
 import { getSharedHookScriptsForPlatform } from "../../src/templates/shared-hooks/index.js";
 import {
   createResearchDispatchFixture,
-  runResearchFixtureGit,
   snapshotTree,
 } from "../fixtures/research-dispatch.js";
 
@@ -46,15 +38,17 @@ const IDS = {
   proposal: "prp_88888888-8888-4888-8888-888888888888",
 } as const;
 
-const ACTIVE_STAGE_CAPABILITIES = Object.entries(
-  RESEARCH_STAGE_CAPABILITIES,
-).filter((entry) => entry[1].dispatchable);
-const OWNER_BY_STAGE = Object.fromEntries(
-  ACTIVE_STAGE_CAPABILITIES.map(([stage, definition]) => [
-    stage,
-    definition.fallbackSkill,
-  ]),
-) as Record<Exclude<QuestStage, "complete">, string>;
+const OWNER_BY_STAGE: Record<Exclude<QuestStage, "complete">, string> = {
+  setup: "trellis-research-setup",
+  framing: "trellis-research-quest",
+  literature: "trellis-research-literature",
+  ideation: "trellis-research-ideation",
+  experiment: "trellis-research-experiment",
+  computation: "trellis-research-computation",
+  theory: "trellis-research-theory",
+  audit: "trellis-research-audit",
+  writing: "trellis-research-writing",
+};
 
 const tempRoots: string[] = [];
 
@@ -442,26 +436,32 @@ describe("research stage-owner and worker templates", () => {
     }
   });
 
-  it("ships separate bounded Claude and Codex Research workers", () => {
+  it("ships separate generic Claude and Codex Procedure workers", () => {
     const claudeWorker = getClaudeResearchWorkerTemplate().content;
-    expect(claudeWorker).toContain("tools: Read, Write, Edit, Bash, Skill");
+    expect(claudeWorker).toContain("tools: Read, Write, Edit, Bash");
+    expect(claudeWorker).not.toContain("tools: Read, Write, Edit, Bash, Skill");
     expect(claudeWorker).toContain("# Validated Research Dispatch");
     expect(claudeWorker).toContain("VALIDATED_DISPATCH_CONTEXT_START");
-    expect(claudeWorker).toContain("`capability.selectedSkill`");
-    expect(claudeWorker).toContain("through the Claude `Skill` tool");
-    expect(claudeWorker).toContain("work.allowedWritePaths[].resolvedPath");
-    expect(claudeWorker).toContain("Immediately before every write");
-    expect(claudeWorker).toContain("blocked Result plus an empty pending Proposal");
+    expect(claudeWorker).toContain("procedure.instructions");
+    expect(claudeWorker).toContain("outputContract.resultId");
+    expect(claudeWorker).toContain("Immediately before each write");
+    expect(claudeWorker).toContain("blocked Result and empty pending Proposal");
     expect(claudeWorker).toContain("record-result");
     expect(claudeWorker).toContain("git commit");
-    expect(claudeWorker).not.toContain("tools: Read, Write, Edit, Bash, Glob");
-    expect(claudeWorker).not.toContain("Run the C07 preflight as the first process");
+    expect(claudeWorker).not.toContain("selectedSkill");
+    expect(claudeWorker).not.toContain("Skill tool");
 
     const codexWorker = getCodexResearchWorkerTemplate().content;
-    expect(codexWorker).toContain("Run the C07 preflight as the first process");
-    expect(codexWorker).toContain("trellis research dispatch context");
-    expect(codexWorker).toContain("result-plus-pending-proposal");
-    expect(codexWorker).not.toContain("trellis-hook-injected");
+    expect(codexWorker).toContain("Run Context as the first process");
+    expect(codexWorker).toContain(
+      "trellis research dispatch context <dsp-id> --host codex --root . --json",
+    );
+    expect(codexWorker).toContain("context.procedure.instructions");
+    expect(codexWorker).toContain("context.outputContract.resultId");
+    expect(codexWorker).toContain('sandbox_mode = "workspace-write"');
+    expect(codexWorker).toContain("multi_agent = false");
+    expect(codexWorker).not.toContain("--skill-name");
+    expect(codexWorker).not.toContain("request.json");
   });
 });
 
@@ -908,34 +908,44 @@ describe("research UserPromptSubmit sequence watermark", () => {
   });
 });
 
-describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
-  it("contains no provider-neutral Dispatch validator or stage routing table", () => {
+describe("Claude Research Procedure Dispatch adapter", { timeout: 60_000 }, () => {
+  async function approvedClaudeContext(sandbox: string) {
+    const fixture = await createResearchDispatchFixture(sandbox, {
+      automaticEnabled: true,
+    });
+    await authorizeResearchDispatch({
+      root: fixture.root,
+      dispatchId: fixture.ids.dispatchId,
+      host: "claude",
+      idempotencyKey: `hook:${fixture.ids.dispatchId}`,
+    });
+    const response = await getResearchDispatchContext({
+      root: fixture.root,
+      dispatchId: fixture.ids.dispatchId,
+      host: "claude",
+    });
+    return { fixture, response };
+  }
+
+  it("uses one exact Dispatch-ID Context process with no Skill routing", () => {
     const hook = hookSource("inject-subagent-context.py");
-    expect(hook).toContain("trellis");
-    expect(hook).toContain('"dispatch",');
     expect(hook).toContain('"context",');
-    expect(hook).toContain('"--host",');
     expect(hook).toContain('"claude",');
     expect(hook).toContain('"--json"');
     expect(hook).toContain('"permissionDecision": "deny"');
-    expect(hook).not.toContain("_RESEARCH_OWNER_BY_STAGE");
+    expect(hook).not.toContain("--skill-name");
+    expect(hook).not.toContain("SKILL.md");
+    expect(hook).not.toContain("optional_skill");
+    expect(hook).not.toContain("request.json");
     expect(hook).not.toContain("_parse_dispatch_request");
     expect(hook).not.toContain("_validate_dispatch_hierarchy");
-    expect(hook).not.toContain("_resolve_dispatch_repository");
-    expect(hook).not.toContain("_validate_dispatch_paths");
-    expect(hook).not.toContain("_read_research_projection");
   });
 
-  it("injects the exact successful Claude C07 JSON and preserves the fixture tree", async () => {
-    const sandbox = makeRoot("c09-success");
-    const fixture = await createResearchDispatchFixture(sandbox);
-    const direct = await getResearchDispatchContext({
-      root: fixture.root,
-      requestFile: fixture.requestRef,
-      host: "claude",
-    });
+  it("injects only validated normalized Context and preserves the fixture tree", async () => {
+    const sandbox = makeRoot("procedure-success");
+    const { fixture, response } = await approvedClaudeContext(sandbox);
     const fake = installFakeTrellis([
-      { status: 0, stdout: JSON.stringify(direct) },
+      { status: 0, stdout: JSON.stringify(response) },
     ]);
     expect(
       runDispatch(
@@ -950,7 +960,7 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
 
     const output = runDispatch(
       fixture.root,
-      `Research dispatch: ${fixture.requestRef}`,
+      `Research dispatch: ${fixture.ids.dispatchId}`,
       "trellis-research-worker",
       fixture.root,
       fake.env,
@@ -962,16 +972,15 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     ).toBe("allow");
     const prompt = updatedPrompt(output);
     expect(prompt).toContain("# Validated Research Dispatch");
-    expect(validatedDispatchContext(prompt)).toEqual(direct);
+    expect(validatedDispatchContext(prompt)).toEqual(response.context);
+    expect(validatedDispatchContext(prompt)).not.toHaveProperty("command");
     expect(prompt).not.toContain(fixture.artifactBody.trim());
-    expect(prompt).not.toContain("Original Worker Instruction");
-    expect(direct.work.expectedOutputs).toEqual(["Golden report"]);
     expect(readFakeArgv(fake.argvLog)).toEqual([
       [
         "research",
         "dispatch",
         "context",
-        fixture.requestRef,
+        fixture.ids.dispatchId,
         "--host",
         "claude",
         "--root",
@@ -982,74 +991,21 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     expect(snapshotTree(sandbox)).toEqual(before);
   });
 
-  it("runs a second C07 pass only for exact direct project or personal skill metadata", async () => {
-    for (const source of ["project", "personal"] as const) {
-      const sandbox = makeRoot(`c09-skill-${source}`);
-      const fixture = await createResearchDispatchFixture(sandbox);
-      const first = await getResearchDispatchContext({
-        root: fixture.root,
-        requestFile: fixture.requestRef,
-        host: "claude",
-      });
-      const optionalSkill = first.capability.optionalSkill;
-      const second = await getResearchDispatchContext({
-        root: fixture.root,
-        requestFile: fixture.requestRef,
-        host: "claude",
-        discoveredSkillNames: [optionalSkill],
-      });
-      const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-home-"));
-      tempRoots.push(fakeHome);
-      const skillRoot =
-        source === "project"
-          ? path.join(fixture.root, ".claude", "skills")
-          : path.join(fakeHome, ".claude", "skills");
-      const skillFile = path.join(skillRoot, optionalSkill, "SKILL.md");
-      fs.mkdirSync(path.dirname(skillFile), { recursive: true });
-      fs.writeFileSync(skillFile, "private body must not be read by the hook\n");
-      const fake = installFakeTrellis([
-        { status: 0, stdout: JSON.stringify(first) },
-        { status: 0, stdout: JSON.stringify(second) },
-      ]);
-
-      const prompt = updatedPrompt(
-        runDispatch(
-          fixture.root,
-          `Research dispatch: ${fixture.requestRef}`,
-          "trellis-research-worker",
-          fixture.root,
-          { ...fake.env, HOME: fakeHome },
-        ),
-      );
-      expect(validatedDispatchContext(prompt)).toEqual(second);
-      expect(prompt).not.toContain("private body must not be read");
-      const calls = readFakeArgv(fake.argvLog);
-      expect(calls).toHaveLength(2);
-      expect(calls[0]).not.toContain("--skill-name");
-      expect(calls[1]?.slice(-3)).toEqual([
-        "--skill-name",
-        optionalSkill,
-        "--json",
-      ]);
-    }
-  }, 30_000);
-
-  it("denies every noncanonical worker envelope before starting C07", async () => {
-    const sandbox = makeRoot("c09-envelope");
-    const fixture = await createResearchDispatchFixture(sandbox);
+  it("denies every noncanonical worker envelope before starting Context", async () => {
+    const sandbox = makeRoot("procedure-envelope");
+    const { fixture } = await approvedClaudeContext(sandbox);
     const fake = installFakeTrellis([]);
-    const upper = fixture.requestRef.toUpperCase();
+    const id = fixture.ids.dispatchId;
     const invalidPrompts = [
-      `\nResearch dispatch: ${fixture.requestRef}`,
-      `Research dispatch: ${fixture.requestRef}\n`,
-      `Research dispatch: ${fixture.requestRef}\nextra`,
-      `prefix Research dispatch: ${fixture.requestRef}`,
-      `Research dispatch: ${fixture.requestRef} suffix`,
-      `Research Dispatch: ${fixture.requestRef}`,
-      `Research dispatch: ${upper}`,
-      `Research dispatch: .trellis/research/dispatches/${fixture.ids.dispatchId}/../request.json`,
-      `Research dispatch: ${fixture.requestRef.replaceAll("/", "\\")}`,
-      `Research dispatch: ${path.join(fixture.root, fixture.requestRef)}`,
+      `\nResearch dispatch: ${id}`,
+      `Research dispatch: ${id}\n`,
+      `Research dispatch: ${id}\nextra`,
+      `prefix Research dispatch: ${id}`,
+      `Research dispatch: ${id} suffix`,
+      `Research Dispatch: ${id}`,
+      `Research dispatch: ${id.toUpperCase()}`,
+      `Research dispatch: ${fixture.requestRef}`,
+      `Research dispatch: ${id} --approval apr_11111111-1111-4111-8111-111111111111`,
     ];
 
     for (const prompt of invalidPrompts) {
@@ -1071,28 +1027,24 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     expect(readFakeArgv(fake.argvLog)).toEqual([]);
   });
 
-  it("runs no C07 process for ordinary agents or already-injected prompts", async () => {
-    const sandbox = makeRoot("c09-no-process");
-    const fixture = await createResearchDispatchFixture(sandbox);
+  it("runs no process for ordinary agents or already-injected prompts", async () => {
+    const sandbox = makeRoot("procedure-no-process");
+    const { fixture } = await approvedClaudeContext(sandbox);
+    const envelope = `Research dispatch: ${fixture.ids.dispatchId}`;
     const fake = installFakeTrellis([]);
-    runDispatch(
-      fixture.root,
-      `Research dispatch: ${fixture.requestRef}`,
-      "trellis-implement",
-      fixture.root,
-      fake.env,
-    );
-    runDispatch(
-      fixture.root,
-      `Research dispatch: ${fixture.requestRef}`,
-      "trellis-research",
-      fixture.root,
-      fake.env,
-    );
     expect(
       runDispatch(
         fixture.root,
-        `Research dispatch: ${fixture.requestRef}\n<!-- trellis-hook-injected -->`,
+        envelope,
+        "trellis-implement",
+        fixture.root,
+        fake.env,
+      ),
+    ).toBe("");
+    expect(
+      runDispatch(
+        fixture.root,
+        `${envelope}\n<!-- trellis-hook-injected -->`,
         "trellis-research-worker",
         fixture.root,
         fake.env,
@@ -1101,16 +1053,16 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     expect(readFakeArgv(fake.argvLog)).toEqual([]);
   });
 
-  it("preserves a typed C07 failure as a bounded Claude denial", async () => {
-    const sandbox = makeRoot("c09-typed-failure");
-    const fixture = await createResearchDispatchFixture(sandbox);
+  it("preserves one typed no-write failure as a bounded Claude denial", async () => {
+    const sandbox = makeRoot("procedure-typed-failure");
+    const { fixture } = await approvedClaudeContext(sandbox);
     const failure = {
       schemaVersion: 1,
       command: "research dispatch context",
       valid: false,
       error: {
-        code: "REQUEST_STATE_MISMATCH",
-        message: "Tracked request differs from canonical state",
+        code: "APPROVAL_EXPIRED",
+        message: "Selected approval has expired",
       },
       safeAction: "report-to-root-no-write",
     };
@@ -1131,7 +1083,7 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     const decision = parseHookDecision(
       runDispatch(
         fixture.root,
-        `Research dispatch: ${fixture.requestRef}`,
+        `Research dispatch: ${fixture.ids.dispatchId}`,
         "trellis-research-worker",
         fixture.root,
         fake.env,
@@ -1139,507 +1091,70 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     );
     expect(decision.hookSpecificOutput.permissionDecision).toBe("deny");
     expect(decision.hookSpecificOutput.permissionDecisionReason).toBe(
-      "Research Dispatch preflight failed [REQUEST_STATE_MISMATCH]: Tracked request differs from canonical state",
+      "Research Dispatch preflight failed [APPROVAL_EXPIRED]: Selected approval has expired",
     );
-    expect(decision.hookSpecificOutput.updatedInput).toBeUndefined();
     expect(snapshotTree(sandbox)).toEqual(before);
   });
 
-  it("maps process and response anomalies to local preflight denial", async () => {
-    const sandbox = makeRoot("c09-anomalies");
-    const fixture = await createResearchDispatchFixture(sandbox);
-    const valid = await getResearchDispatchContext({
-      root: fixture.root,
-      requestFile: fixture.requestRef,
-      host: "claude",
-    });
-    const mutatedResponse = (
-      mutate: (payload: Record<string, unknown>) => void,
-    ): FakePreflightResponse => {
-      const payload = structuredClone(valid) as unknown as Record<string, unknown>;
-      mutate(payload);
-      return { status: 0, stdout: JSON.stringify(payload) };
-    };
-    const cases: { label: string; response: FakePreflightResponse }[] = [
-      { label: "empty", response: { status: 0, stdout: "" } },
-      { label: "malformed", response: { status: 0, stdout: "{" } },
-      {
-        label: "multiple",
-        response: { status: 0, stdout: `${JSON.stringify(valid)} {}` },
-      },
-      {
-        label: "successful stderr",
-        response: {
-          status: 0,
-          stdout: JSON.stringify(valid),
-          stderr: "warning",
-        },
-      },
-      {
-        label: "host mismatch",
-        response: mutatedResponse((payload) => {
-          payload.host = "codex";
-        }),
-      },
-      {
-        label: "request mismatch",
-        response: mutatedResponse((payload) => {
-          payload.requestRef = `${fixture.requestRef}.other`;
-        }),
-      },
-      {
-        label: "authority mismatch",
-        response: mutatedResponse((payload) => {
-          const authority = payload.authority as Record<string, unknown>;
-          authority.readScope = "workspace";
-        }),
-      },
-      {
-        label: "output contract mismatch",
-        response: mutatedResponse((payload) => {
-          const output = payload.outputContract as Record<string, unknown>;
-          output.type = "result-only";
-        }),
-      },
-      {
-        label: "untyped failure",
-        response: { status: 1, stderr: "not-json" },
-      },
+  it("fails closed for malformed, mismatched, and oversized successful output", async () => {
+    const sandbox = makeRoot("procedure-anomalies");
+    const { fixture, response } = await approvedClaudeContext(sandbox);
+    const mutated = structuredClone(response);
+    mutated.context.authority.network = true as false;
+    const wrongId = structuredClone(response);
+    wrongId.context.outputContract.resultId =
+      "res_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const cases: FakePreflightResponse[] = [
+      { status: 0, stdout: "" },
+      { status: 0, stdout: "{" },
+      { status: 0, stdout: `${JSON.stringify(response)} {}` },
+      { status: 0, stdout: JSON.stringify(response), stderr: "warning" },
+      { status: 0, stdout: JSON.stringify(mutated) },
+      { status: 0, stdout: JSON.stringify(wrongId) },
+      { status: 1, stderr: "not-json" },
+      { status: 0, stdout: " ".repeat(1_048_577) },
     ];
 
-    for (const testCase of cases) {
-      const fake = installFakeTrellis([testCase.response]);
+    for (const responseCase of cases) {
+      const fake = installFakeTrellis([responseCase]);
       const decision = parseHookDecision(
         runDispatch(
           fixture.root,
-          `Research dispatch: ${fixture.requestRef}`,
+          `Research dispatch: ${fixture.ids.dispatchId}`,
           "trellis-research-worker",
           fixture.root,
           fake.env,
         ),
       );
-      expect(
-        decision.hookSpecificOutput.permissionDecisionReason,
-        testCase.label,
-      ).toContain("[PREFLIGHT_EXECUTION_FAILED]");
+      expect(decision.hookSpecificOutput.permissionDecision).toBe("deny");
+      expect(decision.hookSpecificOutput.permissionDecisionReason).toContain(
+        "[PREFLIGHT_EXECUTION_FAILED]",
+      );
+      expect(decision.hookSpecificOutput.updatedInput).toBeUndefined();
     }
+  });
 
-    const python = spawnSync(PYTHON, ["-c", "import sys; print(sys.executable)"], {
-      encoding: "utf-8",
-    }).stdout.trim();
-    const missing = parseHookDecision(
-      runDispatch(
-        fixture.root,
-        `Research dispatch: ${fixture.requestRef}`,
-        "trellis-research-worker",
-        fixture.root,
-        { HOME: path.join(sandbox, "empty-home"), PATH: path.dirname(python) },
-      ),
-    );
-    expect(missing.hookSpecificOutput.permissionDecisionReason).toContain(
-      "[PREFLIGHT_EXECUTION_FAILED]",
-    );
-  }, 30_000);
-
-  it("discovers the root control plane from a child Repository invocation", async () => {
-    const sandbox = makeRoot("c09-child");
-    const fixture = await createResearchDispatchFixture(sandbox);
-    const direct = await getResearchDispatchContext({
-      root: fixture.root,
-      requestFile: fixture.requestRef,
-      host: "claude",
-    });
+  it("discovers the control root from a child Repository invocation", async () => {
+    const sandbox = makeRoot("procedure-child-root");
+    const { fixture, response } = await approvedClaudeContext(sandbox);
     const fake = installFakeTrellis([
-      { status: 0, stdout: JSON.stringify(direct) },
+      { status: 0, stdout: JSON.stringify(response) },
     ]);
 
     const prompt = updatedPrompt(
       runDispatch(
         fixture.root,
-        `Research dispatch: ${fixture.requestRef}`,
+        `Research dispatch: ${fixture.ids.dispatchId}`,
         "trellis-research-worker",
         fixture.repository,
         fake.env,
       ),
     );
-    expect(validatedDispatchContext(prompt)).toEqual(direct);
+    expect(validatedDispatchContext(prompt)).toEqual(response.context);
     expect(readFakeArgv(fake.argvLog)[0]).toContain(fs.realpathSync(fixture.root));
   });
 
-  it("keeps provider-neutral C07 decisions equal across all active stages", async () => {
-    const sandbox = makeRoot("c09-stage-parity");
-    type DispatchContext = Awaited<ReturnType<typeof getResearchDispatchContext>>;
-    const normalize = (value: DispatchContext): Record<string, unknown> => {
-      const copy = structuredClone(value) as Record<string, unknown> & {
-        warnings: { code: string }[];
-      };
-      Reflect.deleteProperty(copy, "host");
-      copy.warnings = copy.warnings.filter(
-        (warning) => warning.code !== "PROVIDER_HINT_MISMATCH",
-      );
-      return copy;
-    };
-
-    for (const [stage, definition] of ACTIVE_STAGE_CAPABILITIES) {
-      const fixture = await createResearchDispatchFixture(
-        path.join(sandbox, stage),
-        { stage: stage as Exclude<QuestStage, "complete"> },
-      );
-      for (const discoveredSkillNames of [
-        [],
-        [definition.optionalSkill as string],
-      ]) {
-        const [claude, codex] = await Promise.all(
-          (["claude", "codex"] as const).map((host) =>
-            getResearchDispatchContext({
-              root: fixture.root,
-              requestFile: fixture.requestRef,
-              host,
-              discoveredSkillNames,
-            }),
-          ),
-        );
-        expect(normalize(claude), `${stage}:${discoveredSkillNames.length}`).toEqual(
-          normalize(codex),
-        );
-        expect(claude.capability).toMatchObject({
-          stage,
-          capability: definition.capability,
-          optionalSkill: definition.optionalSkill,
-          fallbackSkill: definition.fallbackSkill,
-          selectedSkill:
-            discoveredSkillNames.length === 0
-              ? definition.fallbackSkill
-              : definition.optionalSkill,
-          source: discoveredSkillNames.length === 0 ? "bundled" : "host",
-        });
-        expect(claude.warnings.map((warning) => warning.code)).toEqual([
-          "LEGACY_OWNER_SKILL_IGNORED",
-          "TASK_REF_IGNORED",
-        ]);
-        expect(codex.warnings.map((warning) => warning.code)).toEqual([
-          "LEGACY_OWNER_SKILL_IGNORED",
-          "PROVIDER_HINT_MISMATCH",
-          "TASK_REF_IGNORED",
-        ]);
-      }
-    }
-
-    const wrongStageOwner = await createResearchDispatchFixture(
-      path.join(sandbox, "wrong-stage-owner"),
-      { ownerSkill: "trellis-research-writing", stage: "literature" },
-    );
-    const [claude, codex] = await Promise.all(
-      (["claude", "codex"] as const).map((host) =>
-        getResearchDispatchContext({
-          root: wrongStageOwner.root,
-          requestFile: wrongStageOwner.requestRef,
-          host,
-        }),
-      ),
-    );
-    expect(normalize(claude)).toEqual(normalize(codex));
-    expect(claude.warnings.map((warning) => warning.code)).toContain(
-      "OWNER_SKILL_STAGE_MISMATCH",
-    );
-  }, 120_000);
-
-  it("keeps binding and projection-independent success equal across hosts", async () => {
-    const sandbox = makeRoot("c09-binding-parity");
-    const fixture = await createResearchDispatchFixture(sandbox);
-    const alternate = path.join(sandbox, "alternate");
-    fs.cpSync(fixture.repository, alternate, { recursive: true });
-    await bindResearchRepository({
-      root: fixture.root,
-      repositoryId: fixture.ids.repositoryId,
-      path: alternate,
-    });
-    fs.writeFileSync(
-      path.join(
-        fixture.root,
-        ".trellis",
-        "research",
-        "quests",
-        fixture.ids.questId,
-        "quest.json",
-      ),
-      "{projection is not authority\n",
-    );
-    const before = snapshotTree(sandbox);
-    const results = await Promise.all(
-      (["claude", "codex"] as const).map((host) =>
-        getResearchDispatchContext({
-          root: fixture.root,
-          requestFile: fixture.requestRef,
-          host,
-        }),
-      ),
-    );
-    const normalize = (value: (typeof results)[number]): Record<string, unknown> => {
-      const copy = structuredClone(value) as Record<string, unknown> & {
-        warnings: { code: string }[];
-      };
-      Reflect.deleteProperty(copy, "host");
-      copy.warnings = copy.warnings.filter(
-        (warning) => warning.code !== "PROVIDER_HINT_MISMATCH",
-      );
-      return copy;
-    };
-    expect(normalize(results[0])).toEqual(normalize(results[1]));
-    expect(results[0].repository).toMatchObject({
-      path: fs.realpathSync(alternate),
-      resolutionSource: "binding",
-    });
-    expect(snapshotTree(sandbox)).toEqual(before);
-  });
-
-  it("returns equal provider-neutral errors across canonical Dispatch failure boundaries", async () => {
-    const errorCode = async (
-      root: string,
-      requestFile: string,
-      host: "claude" | "codex",
-    ): Promise<string> => {
-      try {
-        await getResearchDispatchContext({ root, requestFile, host });
-      } catch (error) {
-        return String((error as { code?: unknown }).code);
-      }
-      throw new Error("Expected Dispatch context failure");
-    };
-    const expectParity = async (
-      root: string,
-      requestFile: string,
-      expected: string,
-    ): Promise<void> => {
-      const before = snapshotTree(path.dirname(root));
-      const codes = await Promise.all(
-        (["claude", "codex"] as const).map((host) =>
-          errorCode(root, requestFile, host),
-        ),
-      );
-      expect(codes).toEqual([expected, expected]);
-      expect(snapshotTree(path.dirname(root))).toEqual(before);
-    };
-
-    const invalidPath = await createResearchDispatchFixture(
-      path.join(makeRoot("c09-error-parity"), "invalid-path"),
-    );
-    await expectParity(
-      invalidPath.root,
-      `./${invalidPath.requestRef}`,
-      "INVALID_REQUEST_PATH",
-    );
-
-    const stale = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "stale"),
-    );
-    const request = JSON.parse(fs.readFileSync(stale.requestPath, "utf-8")) as {
-      objective: string;
-    };
-    request.objective = "tracked edits are not authority";
-    fs.writeFileSync(stale.requestPath, `${JSON.stringify(request)}\n`);
-    await expectParity(stale.root, stale.requestRef, "REQUEST_STATE_MISMATCH");
-
-    const hierarchy = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "hierarchy"),
-      { associateRepository: false },
-    );
-    await expectParity(
-      hierarchy.root,
-      hierarchy.requestRef,
-      "DISPATCH_HIERARCHY_INVALID",
-    );
-
-    const artifact = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "artifact"),
-    );
-    fs.writeFileSync(artifact.artifactPath, "changed after Dispatch\n");
-    await expectParity(artifact.root, artifact.requestRef, "ARTIFACT_INVALID");
-
-    const writeSandbox = path.join(
-      path.dirname(path.dirname(invalidPath.root)),
-      "write-scope",
-    );
-    fs.mkdirSync(path.join(writeSandbox, "target"), { recursive: true });
-    fs.mkdirSync(path.join(writeSandbox, "outside"), { recursive: true });
-    const writeScope = await createResearchDispatchFixture(writeSandbox, {
-      allowedWritePaths: ["escape/report.json"],
-    });
-    fs.symlinkSync(
-      path.join(writeSandbox, "outside"),
-      path.join(writeSandbox, "target", "escape"),
-    );
-    await expectParity(writeScope.root, writeScope.requestRef, "WRITE_SCOPE_INVALID");
-
-    const malformedLedger = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "malformed-ledger"),
-    );
-    const ledgerPath = path.join(
-      malformedLedger.root,
-      ".trellis",
-      "research",
-      "events.jsonl",
-    );
-    const ledgerLines = fs.readFileSync(ledgerPath, "utf-8").trim().split("\n");
-    const firstEvent = JSON.parse(ledgerLines[0] ?? "{}") as Record<string, unknown>;
-    firstEvent.unexpected = true;
-    ledgerLines[0] = JSON.stringify(firstEvent);
-    fs.writeFileSync(ledgerPath, `${ledgerLines.join("\n")}\n`);
-    await expectParity(malformedLedger.root, malformedLedger.requestRef, "INVALID_REQUEST");
-
-    const paused = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "paused"),
-    );
-    await setResearchQuestStatus({
-      root: paused.root,
-      questId: paused.ids.questId,
-      status: "paused",
-    });
-    await expectParity(paused.root, paused.requestRef, "QUEST_NOT_DISPATCHABLE");
-
-    const terminal = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "terminal"),
-    );
-    await setResearchRunStatus({
-      root: terminal.root,
-      runId: terminal.ids.runId,
-      status: "running",
-    });
-    await setResearchRunStatus({
-      root: terminal.root,
-      runId: terminal.ids.runId,
-      status: "succeeded",
-    });
-    await expectParity(terminal.root, terminal.requestRef, "DISPATCH_HIERARCHY_INVALID");
-
-    const remote = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "remote"),
-      { expectedRemote: "git@example.test:expected.git" },
-    );
-    runResearchFixtureGit(
-      remote.repository,
-      "remote",
-      "set-url",
-      "origin",
-      "git@example.test:other.git",
-    );
-    await expectParity(remote.root, remote.requestRef, "REPOSITORY_INVALID");
-
-    const revision = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "revision"),
-    );
-    fs.writeFileSync(path.join(revision.repository, "new-head.txt"), "new head\n");
-    runResearchFixtureGit(revision.repository, "add", "new-head.txt");
-    runResearchFixtureGit(revision.repository, "commit", "-qm", "advance head");
-    await expectParity(revision.root, revision.requestRef, "ARTIFACT_INVALID");
-
-    const registration = await createResearchDispatchFixture(
-      path.join(path.dirname(path.dirname(invalidPath.root)), "registration"),
-    );
-    await commitResearchBatch({
-      root: registration.root,
-      actor: { type: "agent", id: "parity-test" },
-      provenance: { source: "C09 parity fixture" },
-      idempotencyKey: `register:${registration.ids.dispatchId}`,
-      mutations: [
-        {
-          kind: "artifact.register",
-          artifact: {
-            id: "art_33333333-3333-4333-8333-333333333333",
-            repositoryId: registration.ids.repositoryId,
-            path: "inputs/different.txt",
-          },
-        },
-      ],
-    });
-    await expectParity(registration.root, registration.requestRef, "ARTIFACT_INVALID");
-
-    const artifactSymlinkSandbox = path.join(
-      path.dirname(path.dirname(invalidPath.root)),
-      "artifact-symlink",
-    );
-    const artifactSymlink = await createResearchDispatchFixture(
-      artifactSymlinkSandbox,
-    );
-    const outsideArtifact = path.join(artifactSymlinkSandbox, "outside.txt");
-    fs.writeFileSync(outsideArtifact, artifactSymlink.artifactBody);
-    fs.rmSync(artifactSymlink.artifactPath);
-    fs.symlinkSync(outsideArtifact, artifactSymlink.artifactPath);
-    await expectParity(
-      artifactSymlink.root,
-      artifactSymlink.requestRef,
-      "ARTIFACT_INVALID",
-    );
-
-    const danglingSandbox = path.join(
-      path.dirname(path.dirname(invalidPath.root)),
-      "dangling-write",
-    );
-    const dangling = await createResearchDispatchFixture(danglingSandbox, {
-      allowedWritePaths: ["dangling/report.json"],
-    });
-    fs.symlinkSync(
-      path.join(danglingSandbox, "outside-missing"),
-      path.join(dangling.repository, "dangling"),
-    );
-    await expectParity(dangling.root, dangling.requestRef, "WRITE_SCOPE_INVALID");
-
-    const requestSymlinkSandbox = path.join(
-      path.dirname(path.dirname(invalidPath.root)),
-      "request-symlink",
-    );
-    const requestSymlink = await createResearchDispatchFixture(
-      requestSymlinkSandbox,
-    );
-    const outsideRequest = path.join(requestSymlinkSandbox, "outside-request.json");
-    fs.renameSync(requestSymlink.requestPath, outsideRequest);
-    fs.symlinkSync(outsideRequest, requestSymlink.requestPath);
-    await expectParity(
-      requestSymlink.root,
-      requestSymlink.requestRef,
-      "INVALID_REQUEST_PATH",
-    );
-
-    const directorySymlinkSandbox = path.join(
-      path.dirname(path.dirname(invalidPath.root)),
-      "directory-symlink",
-    );
-    const directorySymlink = await createResearchDispatchFixture(
-      directorySymlinkSandbox,
-    );
-    const dispatchDirectory = path.dirname(directorySymlink.requestPath);
-    const outsideDirectory = path.join(directorySymlinkSandbox, "outside-dispatch");
-    fs.renameSync(dispatchDirectory, outsideDirectory);
-    fs.symlinkSync(outsideDirectory, dispatchDirectory);
-    await expectParity(
-      directorySymlink.root,
-      directorySymlink.requestRef,
-      "INVALID_REQUEST_PATH",
-    );
-  }, 120_000);
-
-  it("rejects complete identically for Claude and Codex without preflight writes", async () => {
-    const sandbox = makeRoot("c09-complete");
-    const fixture = await createResearchDispatchFixture(sandbox);
-    await setResearchQuestStage({
-      root: fixture.root,
-      questId: fixture.ids.questId,
-      stage: "complete",
-    });
-    const before = snapshotTree(sandbox);
-    for (const host of ["claude", "codex"] as const) {
-      await expect(
-        getResearchDispatchContext({
-          root: fixture.root,
-          requestFile: fixture.requestRef,
-          host,
-        }),
-      ).rejects.toMatchObject({ code: "QUEST_NOT_DISPATCHABLE" });
-      expect(snapshotTree(sandbox)).toEqual(before);
-    }
-  });
-
-  it("provides a strict materializable Claude Result plus pending Proposal", () => {
+  it("provides a strict materializable Result plus pending Proposal", () => {
     const worker = getClaudeResearchWorkerTemplate().content;
     const match = worker.match(
       /RESULT_PROPOSAL_EXAMPLE_START\n([\s\S]*?)\nRESULT_PROPOSAL_EXAMPLE_END/,
@@ -1647,7 +1162,7 @@ describe("Claude C07 Research Dispatch adapter", { timeout: 60_000 }, () => {
     expect(match).not.toBeNull();
     const materialized = (match?.[1] ?? "")
       .replaceAll("<result-id>", "res_11111111-1111-4111-8111-111111111111")
-      .replaceAll("<proposal-id>", "prp_22222222-2222-4222-8222-222222222222")
+      .replaceAll("<proposal-id>", "prp_11111111-1111-4111-8111-111111111111")
       .replaceAll("<dispatch-id>", "dsp_33333333-3333-4333-8333-333333333333")
       .replaceAll("<run-id>", "run_44444444-4444-4444-8444-444444444444")
       .replaceAll("<quest-id>", "qst_55555555-5555-4555-8555-555555555555")

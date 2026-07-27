@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Claude C09 adapter for one explicit bounded Research worker Dispatch."""
+"""Claude adapter for one explicit approved Research worker Dispatch."""
 from __future__ import annotations
 
 import json
@@ -18,12 +18,10 @@ if sys.platform.startswith("win"):
             reconfigure(encoding="utf-8", errors="replace")
 
 AGENT_RESEARCH_WORKER = "trellis-research-worker"
-_RESEARCH_POINTER_RE = re.compile(
-    r"^Research dispatch: (\.trellis/research/dispatches/"
-    r"dsp_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-"
-    r"[89ab][0-9a-f]{3}-[0-9a-f]{12}/request\.json)$"
+_RESEARCH_DISPATCH_RE = re.compile(
+    r"^Research dispatch: (dsp_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-"
+    r"[89ab][0-9a-f]{3}-[0-9a-f]{12})$"
 )
-_RESEARCH_SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _RESEARCH_MAX_PROCESS_OUTPUT = 1_048_576
 _RESEARCH_MAX_MESSAGE = 512
 
@@ -35,6 +33,7 @@ def _detect_platform(input_data: dict) -> str | None:
     if ".claude" in set(Path(sys.argv[0]).parts):
         return "claude"
     return None
+
 
 def _find_research_control_root(input_data: dict, cwd: str) -> Path | None:
     """Find the root Research control plane without reading canonical state."""
@@ -66,7 +65,7 @@ def _find_research_control_root(input_data: dict, cwd: str) -> Path | None:
 
 
 def _parse_dispatch_envelope(prompt: str) -> str | None:
-    match = _RESEARCH_POINTER_RE.fullmatch(prompt)
+    match = _RESEARCH_DISPATCH_RE.fullmatch(prompt)
     return match.group(1) if match is not None else None
 
 
@@ -96,16 +95,33 @@ def _bounded_preflight_text(value: Any, label: str) -> str:
     return candidate
 
 
-def _research_response_id(value: Any, prefix: str, label: str) -> str:
-    if not isinstance(value, str):
-        raise ValueError(f"{label} must be a {prefix}_ UUID")
-    pattern = re.compile(
-        rf"^{prefix}_[0-9a-f]{{8}}-[0-9a-f]{{4}}-[1-8][0-9a-f]{{3}}-"
-        rf"[89ab][0-9a-f]{{3}}-[0-9a-f]{{12}}$"
-    )
-    if pattern.fullmatch(value) is None:
-        raise ValueError(f"{label} must be a {prefix}_ UUID")
+def _require_object(value: Any, label: str) -> dict:
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be an object")
     return value
+
+
+def _require_list(value: Any, label: str) -> list:
+    if not isinstance(value, list):
+        raise ValueError(f"{label} must be an array")
+    return value
+
+
+def _require_string(value: Any, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{label} must be a non-empty string")
+    return value
+
+
+def _research_response_id(value: Any, prefix: str, label: str) -> str:
+    candidate = _require_string(value, label)
+    pattern = re.compile(
+        rf"^{prefix}_[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-8][0-9a-fA-F]{{3}}-"
+        rf"[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}}$"
+    )
+    if pattern.fullmatch(candidate) is None:
+        raise ValueError(f"{label} must be a {prefix}_ UUID")
+    return candidate
 
 
 def _validate_c07_failure(payload: dict) -> dict:
@@ -117,9 +133,7 @@ def _validate_c07_failure(payload: dict) -> dict:
         raise ValueError("typed preflight failure must set valid to false")
     if payload.get("safeAction") != "report-to-root-no-write":
         raise ValueError("typed preflight failure has an invalid safe action")
-    error = payload.get("error")
-    if not isinstance(error, dict):
-        raise ValueError("typed preflight failure is missing error details")
+    error = _require_object(payload.get("error"), "typed preflight error")
     return {
         "code": _bounded_preflight_text(error.get("code"), "preflight error code"),
         "message": _bounded_preflight_text(
@@ -128,119 +142,184 @@ def _validate_c07_failure(payload: dict) -> dict:
     }
 
 
-def _validate_dispatch_context_response(payload: dict, request_ref: str) -> dict:
-    if payload.get("schemaVersion") != 1:
-        raise ValueError("preflight response has an invalid schema version")
+def _validate_dispatch_context_response(payload: dict, dispatch_id: str) -> dict:
     if payload.get("command") != "research dispatch context":
         raise ValueError("preflight response has an invalid command")
     if payload.get("valid") is not True:
         raise ValueError("preflight response must set valid to true")
-    if payload.get("host") != "claude":
-        raise ValueError("preflight response host does not match Claude")
-    if payload.get("requestRef") != request_ref:
-        raise ValueError("preflight response request does not match the envelope")
+    ledger_head = payload.get("ledgerHead")
+    if isinstance(ledger_head, bool) or not isinstance(ledger_head, int) or ledger_head < 0:
+        raise ValueError("preflight response ledger head is invalid")
+    warnings = _require_list(payload.get("warnings"), "preflight warnings")
+    for warning in warnings:
+        item = _require_object(warning, "preflight warning")
+        _bounded_preflight_text(item.get("code"), "preflight warning code")
+        _bounded_preflight_text(item.get("message"), "preflight warning message")
 
-    dispatch = payload.get("dispatch")
-    capability = payload.get("capability")
-    repository = payload.get("repository")
-    work = payload.get("work")
-    authority = payload.get("authority")
-    output = payload.get("outputContract")
-    warnings_value = payload.get("warnings")
-    if not isinstance(dispatch, dict):
-        raise ValueError("preflight response is missing Dispatch identity")
-    if not isinstance(capability, dict):
-        raise ValueError("preflight response is missing capability selection")
-    if not isinstance(repository, dict) or not isinstance(repository.get("path"), str):
-        raise ValueError("preflight response is missing Repository context")
-    if not isinstance(work, dict):
-        raise ValueError("preflight response is missing bounded work context")
-    if not isinstance(warnings_value, list):
-        raise ValueError("preflight response warnings must be an array")
-    for key in ("context", "allowedWritePaths", "expectedOutputs", "checks"):
-        if not isinstance(work.get(key), list):
-            raise ValueError(f"preflight response work.{key} must be an array")
-
-    for key in (
-        "stage",
+    context = _require_object(payload.get("context"), "preflight context")
+    expected_context_keys = {
+        "schemaVersion",
+        "host",
+        "dispatch",
+        "activation",
+        "approval",
         "capability",
-        "optionalSkill",
-        "fallbackSkill",
-        "selectedSkill",
-        "source",
+        "procedure",
+        "repository",
+        "context",
+        "artifacts",
+        "allowedWritePaths",
+        "expectedOutputs",
+        "checks",
+        "authority",
+        "outputContract",
+    }
+    if set(context) != expected_context_keys:
+        raise ValueError("preflight context has an invalid normalized shape")
+    if context.get("schemaVersion") != 1 or context.get("host") != "claude":
+        raise ValueError("preflight context host or schema does not match Claude")
+
+    dispatch = _require_object(context.get("dispatch"), "context.dispatch")
+    actual_dispatch_id = _research_response_id(
+        dispatch.get("id"), "dsp", "context.dispatch.id"
+    )
+    if actual_dispatch_id != dispatch_id:
+        raise ValueError("preflight Dispatch identity does not match the envelope")
+    run_id = _research_response_id(dispatch.get("runId"), "run", "context.dispatch.runId")
+    quest_id = _research_response_id(
+        dispatch.get("questId"), "qst", "context.dispatch.questId"
+    )
+
+    activation = _require_object(context.get("activation"), "context.activation")
+    _research_response_id(activation.get("id"), "act", "context.activation.id")
+    _require_string(activation.get("capabilityId"), "context.activation.capabilityId")
+    if activation.get("mode") not in {"automatic", "explicit"}:
+        raise ValueError("context.activation.mode is invalid")
+    for key in ("requestDigest", "procedureDigest", "policyDigest", "scopeHash"):
+        _require_string(activation.get(key), f"context.activation.{key}")
+
+    approval = _require_object(context.get("approval"), "context.approval")
+    approval_id = _research_response_id(approval.get("id"), "apr", "context.approval.id")
+    if approval.get("mode") not in {"automatic", "interactive"}:
+        raise ValueError("context.approval.mode is invalid")
+    _require_string(approval.get("expiresAt"), "context.approval.expiresAt")
+
+    capability = _require_object(context.get("capability"), "context.capability")
+    capability_id = _require_string(capability.get("id"), "context.capability.id")
+    if capability_id != activation.get("capabilityId"):
+        raise ValueError("context capability does not match activation")
+    for key in ("stage", "kind", "activation", "workerAuthority", "networkPolicy", "repositoryScope"):
+        _require_string(capability.get(key), f"context.capability.{key}")
+    if capability.get("workerAuthority") != "proposal-only":
+        raise ValueError("context capability worker authority is invalid")
+    if isinstance(capability.get("maxDurationMinutes"), bool) or not isinstance(
+        capability.get("maxDurationMinutes"), int
     ):
-        value = capability.get(key)
-        if not isinstance(value, str) or not value:
-            raise ValueError(f"preflight response capability.{key} is invalid")
-    if capability.get("source") not in {"host", "bundled"}:
-        raise ValueError("preflight response capability source is invalid")
-    for key in ("optionalSkill", "fallbackSkill", "selectedSkill"):
-        if _RESEARCH_SKILL_NAME_RE.fullmatch(capability[key]) is None:
-            raise ValueError(f"preflight response capability.{key} is not canonical")
+        raise ValueError("context capability duration is invalid")
+    if isinstance(capability.get("maxDispatches"), bool) or not isinstance(
+        capability.get("maxDispatches"), int
+    ):
+        raise ValueError("context capability dispatch limit is invalid")
+    _require_list(capability.get("approvalRequiredFor"), "context.capability.approvalRequiredFor")
+    capability_procedure = _require_object(
+        capability.get("procedure"), "context.capability.procedure"
+    )
+    _require_string(capability_procedure.get("id"), "context.capability.procedure.id")
+    _require_string(
+        capability_procedure.get("version"), "context.capability.procedure.version"
+    )
+
+    procedure = _require_object(context.get("procedure"), "context.procedure")
+    manifest = _require_object(procedure.get("manifest"), "context.procedure.manifest")
+    if manifest.get("schemaVersion") != 1:
+        raise ValueError("context Procedure manifest schema is invalid")
+    if (
+        manifest.get("id") != capability_procedure.get("id")
+        or manifest.get("version") != capability_procedure.get("version")
+        or manifest.get("stage") != capability.get("stage")
+        or manifest.get("kind") != capability.get("kind")
+    ):
+        raise ValueError("context Procedure manifest does not match capability")
+    _require_list(manifest.get("inputs"), "context.procedure.manifest.inputs")
+    _require_list(manifest.get("outputs"), "context.procedure.manifest.outputs")
+    _require_string(procedure.get("digest"), "context.procedure.digest")
+    _require_string(procedure.get("instructions"), "context.procedure.instructions")
+    if procedure.get("digest") != activation.get("procedureDigest"):
+        raise ValueError("context Procedure digest does not match activation")
+    if procedure.get("source") not in {"project", "bundled"}:
+        raise ValueError("context Procedure source is invalid")
+
+    repository = _require_object(context.get("repository"), "context.repository")
+    _research_response_id(repository.get("id"), "rep", "context.repository.id")
+    _require_string(repository.get("path"), "context.repository.path")
+    for key in ("context", "artifacts", "allowedWritePaths", "expectedOutputs", "checks"):
+        _require_list(context.get(key), f"context.{key}")
+    for artifact in context["artifacts"]:
+        item = _require_object(artifact, "context artifact")
+        _require_object(item.get("ref"), "context artifact ref")
+        _require_string(item.get("path"), "context artifact path")
+    for key in ("allowedWritePaths", "expectedOutputs", "checks"):
+        for value in context[key]:
+            _require_string(value, f"context.{key} entry")
 
     expected_authority = {
         "readScope": "declared-context-only",
         "writeScope": "allowed-write-paths-only",
+        "network": False,
+        "externalCost": False,
+        "multipleRepositories": False,
         "canonicalResearchMutation": False,
         "proposalReview": False,
         "gitHistoryMutation": False,
+        "capabilityChaining": False,
+        "procedureLaunch": False,
+        "dispatchLaunch": False,
+        "nestedAgents": False,
+        "sandboxExpansion": False,
         "recordResult": False,
     }
-    if not isinstance(authority, dict) or any(
-        type(authority.get(key)) is not type(expected)
-        or authority.get(key) != expected
-        for key, expected in expected_authority.items()
-    ):
+    authority = _require_object(context.get("authority"), "context.authority")
+    if authority != expected_authority:
         raise ValueError("preflight response authority does not match bounded execution")
 
-    dispatch_id = _research_response_id(dispatch.get("id"), "dsp", "dispatch.id")
-    quest_id = _research_response_id(
-        dispatch.get("questId"), "qst", "dispatch.questId"
-    )
-    run_id = _research_response_id(dispatch.get("runId"), "run", "dispatch.runId")
-    if not isinstance(output, dict) or output.get("type") != "result-plus-pending-proposal":
+    output = _require_object(context.get("outputContract"), "context.outputContract")
+    if output.get("type") != "result-plus-pending-proposal":
         raise ValueError("preflight response output contract is invalid")
-    result_output = output.get("result")
-    proposal_output = output.get("proposal")
-    if not isinstance(result_output, dict) or not isinstance(proposal_output, dict):
-        raise ValueError("preflight response output identities are missing")
-    if result_output.get("dispatchId") != dispatch_id or result_output.get("runId") != run_id:
-        raise ValueError("preflight Result identity does not match the Dispatch")
     if (
-        proposal_output.get("dispatchId") != dispatch_id
-        or proposal_output.get("questId") != quest_id
-        or proposal_output.get("status") != "pending"
+        output.get("dispatchId") != actual_dispatch_id
+        or output.get("runId") != run_id
+        or output.get("questId") != quest_id
     ):
-        raise ValueError("preflight Proposal identity does not match the Dispatch")
-    return payload
+        raise ValueError("preflight output relations do not match the Dispatch")
+    result_id = _research_response_id(output.get("resultId"), "res", "output.resultId")
+    proposal_id = _research_response_id(
+        output.get("proposalId"), "prp", "output.proposalId"
+    )
+    suffix = approval_id[4:]
+    if result_id != f"res_{suffix}" or proposal_id != f"prp_{suffix}":
+        raise ValueError("preflight output IDs do not match the selected approval")
+    return context
 
 
 def _local_preflight_failure(message: str) -> dict:
-    return {
-        "code": "PREFLIGHT_EXECUTION_FAILED",
-        "message": message,
-    }
+    return {"code": "PREFLIGHT_EXECUTION_FAILED", "message": message}
 
 
 def _run_dispatch_context(
-    control_root: Path,
-    request_ref: str,
-    skill_name: str | None = None,
+    control_root: Path, dispatch_id: str
 ) -> tuple[dict | None, dict | None]:
     argv = [
         "trellis",
         "research",
         "dispatch",
         "context",
-        request_ref,
+        dispatch_id,
         "--host",
         "claude",
         "--root",
         str(control_root),
+        "--json",
     ]
-    if skill_name is not None:
-        argv.extend(["--skill-name", skill_name])
-    argv.append("--json")
     try:
         result = subprocess.run(
             argv,
@@ -262,7 +341,6 @@ def _run_dispatch_context(
         or len(result.stderr) > _RESEARCH_MAX_PROCESS_OUTPUT
     ):
         return None, _local_preflight_failure("preflight output exceeded the adapter limit")
-
     if result.returncode != 0:
         if result.stdout.strip():
             return None, _local_preflight_failure(
@@ -275,32 +353,15 @@ def _run_dispatch_context(
                 "failed preflight did not return one typed no-write error"
             )
         return None, failure
-
     if result.stderr:
         return None, _local_preflight_failure(
             "successful preflight wrote unexpected standard error"
         )
     try:
         payload = _single_json_object(result.stdout)
-        return _validate_dispatch_context_response(payload, request_ref), None
+        return _validate_dispatch_context_response(payload, dispatch_id), None
     except ValueError as error:
         return None, _local_preflight_failure(str(error))
-
-
-def _direct_optional_skill_exists(control_root: Path, optional_skill: str) -> bool:
-    if _RESEARCH_SKILL_NAME_RE.fullmatch(optional_skill) is None:
-        return False
-    candidates = [
-        control_root / ".claude" / "skills" / optional_skill / "SKILL.md",
-        Path.home() / ".claude" / "skills" / optional_skill / "SKILL.md",
-    ]
-    for candidate in candidates:
-        try:
-            if candidate.is_file() and os.access(candidate, os.R_OK):
-                return True
-        except OSError:
-            continue
-    return False
 
 
 def _build_validated_dispatch_prompt(context: dict) -> str:
@@ -318,15 +379,15 @@ VALIDATED_DISPATCH_CONTEXT_START
 {serialized}
 VALIDATED_DISPATCH_CONTEXT_END
 
-Execute the bounded worker contract. Return raw Result plus pending Proposal JSON only.
+Execute the embedded Procedure under the immutable authority ceiling. Return raw Result plus pending Proposal JSON only.
 """
 
 
 def _preflight_explicit_dispatch(
     input_data: dict, cwd: str, original_prompt: str
 ) -> tuple[str | None, dict | None]:
-    request_ref = _parse_dispatch_envelope(original_prompt)
-    if request_ref is None:
+    dispatch_id = _parse_dispatch_envelope(original_prompt)
+    if dispatch_id is None:
         return None, _local_preflight_failure(
             "the worker prompt must be exactly one canonical Research dispatch line"
         )
@@ -335,17 +396,9 @@ def _preflight_explicit_dispatch(
         return None, _local_preflight_failure(
             "the Research control-plane root could not be found"
         )
-
-    context, failure = _run_dispatch_context(control_root, request_ref)
+    context, failure = _run_dispatch_context(control_root, dispatch_id)
     if context is None:
         return None, failure
-    optional_skill = context["capability"]["optionalSkill"]
-    if _direct_optional_skill_exists(control_root, optional_skill):
-        context, failure = _run_dispatch_context(
-            control_root, request_ref, optional_skill
-        )
-        if context is None:
-            return None, failure
     return _build_validated_dispatch_prompt(context), None
 
 
@@ -354,7 +407,9 @@ def _sanitize_denial_text(value: Any, fallback: str) -> str:
         return fallback
     sanitized = " ".join(value.split())
     sanitized = "".join(
-        character for character in sanitized if ord(character) >= 32 and ord(character) != 127
+        character
+        for character in sanitized
+        if ord(character) >= 32 and ord(character) != 127
     )
     return sanitized[:_RESEARCH_MAX_MESSAGE] or fallback
 
@@ -390,8 +445,7 @@ def _emit_updated_prompt(input_data: dict, tool_input: dict, new_prompt: str) ->
 
 def _string_value(value: Any) -> str:
     if isinstance(value, str):
-        stripped = value.strip()
-        return stripped
+        return value.strip()
     return ""
 
 
@@ -435,9 +489,11 @@ def _parse_hook_input(input_data: dict) -> tuple[str, str, dict]:
     return "", "", tool_input
 
 
-
 def main() -> int:
-    if os.environ.get("TRELLIS_HOOKS") == "0" or os.environ.get("TRELLIS_DISABLE_HOOKS") == "1":
+    if (
+        os.environ.get("TRELLIS_HOOKS") == "0"
+        or os.environ.get("TRELLIS_DISABLE_HOOKS") == "1"
+    ):
         return 0
     try:
         input_data = json.load(sys.stdin)

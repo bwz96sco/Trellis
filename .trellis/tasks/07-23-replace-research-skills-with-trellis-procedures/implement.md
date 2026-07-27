@@ -26,17 +26,20 @@
 - Add bundled/project Procedure resolver and conservative project policy.
 - Keep new plane inactive until command and Context gates exist.
 
-## Step 4 — C05/C06 execution gates
+## Step 4 — C05 and C06 internal execution gates
 
 - Add activation planning, bounded authorization, explicit approval, and revocation.
-- Gate read-only Context on exact authority and embed validated Procedure.
-- Consume approval atomically with Result + Proposal.
+- Add the Dispatch-ID zero-write Context successor, exact approval gate, embedded Procedure, shared deterministic output IDs, and atomic consumption as buildable internal paths.
+- Keep legacy public Context, legacy public record-result, workers/hooks/workflow, and two-event batch mutually usable during C06 preparation.
+- Do not archive C06 or claim public acceptance before Step 5.
 
-## Step 5 — C07 host cutover
+## Step 5 — C06+C07 atomic public cutover
 
-- Cut Claude and Codex to identical normalized Procedure execution.
-- Remove Skill discovery/invocation from workers and hook.
-- Verify authority, network, repository, write-path, and no-nested-agent restrictions.
+- Narrow exception: begin C07 implementation before C06 acceptance so every public producer and consumer changes together.
+- Cut public Context, public record-result, mandatory three-event validation, Claude worker, Codex worker, shared hook, and generated Research workflow instructions in one integration group.
+- Remove request-file Context routing, `--skill-name`, `record-result --file`, Skill discovery/invocation, and random worker output IDs together.
+- Verify authority, network, repository, write-path, no-nested-agent restrictions, named host-adapter/public-lifecycle contracts for both hosts, executable spec/index contracts, generated installs, built output, and actual tarball content. Actual Claude hook subprocess is tested; Codex prose is static-contract validated; deterministic supplied-ID output is an integration oracle, not model compliance.
+- Archive C06 and C07 only after joint full verification passes. Preflight exact active/archive paths and effective hook config; require no `after_archive` hooks. Snapshot both `task.json` files and every session file pointing to either child. Archive C06 then immediately C07 with `--no-commit`; verify exact destinations and only allowed task/session deltas. Failure of either invocation or any post-success verification restores both children, both metadata files, and all captured session state before revalidation. Do not claim filesystem transactionality.
 
 ## Step 6 — C08/C09 retirement
 
@@ -56,7 +59,7 @@
 ## Global gates
 
 - Run upstream GitNexus impact before every existing symbol edit; warn and stop on HIGH/CRITICAL unapproved scope.
-- Never implement a later child before predecessor acceptance.
+- Never implement a later child before predecessor acceptance, except the narrow C06+C07 atomic integration group defined in Steps 4-5; neither child may archive before joint acceptance.
 - Never rewrite Research events or weaken zero-write Context.
 - Never modify frozen cleanup evidence, external Skill bodies, generic core exports, docs-site, or marketplace.
 - Preserve inherited dirty work. No reset, clean, stash, force push, history rewrite, automatic commit, or push.
