@@ -280,16 +280,20 @@ describe("pruneOrphanManifestKeys", () => {
     });
   });
 
-  it("keeps current Codex Research skill ownership outside cleanup inventory", () => {
-    const researchSkillPath =
-      ".agents/skills/trellis-research-writing/SKILL.md";
-    const hashes = { [researchSkillPath]: "research-hash" };
+  it("keeps historical Claude and Codex Research stage Skill ownership for retirement gates", () => {
+    const claudeSkill = ".claude/skills/trellis-research-setup/SKILL.md";
+    const codexSkill = ".agents/skills/trellis-research-writing/SKILL.md";
+    const hashes = {
+      [claudeSkill]: "claude-research-hash",
+      [codexSkill]: "codex-research-hash",
+    };
 
-    expect(CURRENT_HOST_GENERIC_CLEANUP_PATHS.has(researchSkillPath)).toBe(false);
+    expect(CURRENT_HOST_GENERIC_CLEANUP_PATHS.has(claudeSkill)).toBe(false);
+    expect(CURRENT_HOST_GENERIC_CLEANUP_PATHS.has(codexSkill)).toBe(false);
 
     const { pruned, hashes: kept } = pruneOrphanManifestKeys(
       tmpDir,
-      ["codex"],
+      ["claude-code", "codex"],
       hashes,
       { persist: false },
     );

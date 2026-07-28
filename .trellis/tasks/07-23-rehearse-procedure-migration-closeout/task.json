@@ -3,7 +3,7 @@
   "name": "rehearse-procedure-migration-closeout",
   "title": "C10 Rehearse migration and close parent integration",
   "description": "Run clean install, historical upgrade, both-host lifecycle, package, and independent integration gates before archival.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

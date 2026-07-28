@@ -32,6 +32,10 @@
  *                                    verify @mindfoldhq/trellis-core resolves
  *                                    to the exact shared version (not
  *                                    "workspace:*" or a loose range).
+ *   smoke-installed-cli              Pack Core+CLI (or use test tarball env),
+ *                                    install into a temp consumer with
+ *                                    --ignore-scripts, exercise trellis/tl,
+ *                                    and prove Skill-free host inits.
  *   verify-npm [--package all|core|cli]
  *                                    Verify the published package version and
  *                                    dist-tag are visible on the public npm
@@ -55,6 +59,7 @@ import {
   auditPackedEntries,
   buildPackedCliInventory,
   PACKED_ACTIVE_RESEARCH_ENTRIES,
+  RESEARCH_STAGE_SKILLS,
   parseTarListing,
 } from "./packed-cli-audit.js";
 
@@ -249,6 +254,240 @@ function verifyPackedCore() {
   });
 }
 
+function findSingleTarball(directory) {
+  const tarballs = fs
+    .readdirSync(directory)
+    .filter((entry) => entry.endsWith(".tgz"))
+    .sort();
+  if (tarballs.length !== 1) {
+    throw new Error(
+      `pnpm pack produced ${tarballs.length} tarballs in ${directory}; expected exactly one.`,
+    );
+  }
+  return path.join(directory, tarballs[0]);
+}
+
+function packPackage(packageDir, destinationDir) {
+  execFileSync("pnpm", ["pack", "--pack-destination", destinationDir], {
+    cwd: packageDir,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  return findSingleTarball(destinationDir);
+}
+
+function binPath(consumerDir, name) {
+  const base = path.join(consumerDir, "node_modules", ".bin", name);
+  if (process.platform === "win32") {
+    const cmd = `${base}.cmd`;
+    if (fs.existsSync(cmd)) return cmd;
+  }
+  return base;
+}
+
+function assertNoStageSkillDirs(projectRoot) {
+  for (const skill of RESEARCH_STAGE_SKILLS) {
+    const claudeSkill = path.join(
+      projectRoot,
+      ".claude",
+      "skills",
+      skill,
+      "SKILL.md",
+    );
+    const codexSkill = path.join(
+      projectRoot,
+      ".agents",
+      "skills",
+      skill,
+      "SKILL.md",
+    );
+    if (fs.existsSync(claudeSkill) || fs.existsSync(codexSkill)) {
+      throw new Error(
+        `Installed project still contains Research stage Skill path for ${skill}`,
+      );
+    }
+  }
+}
+
+/**
+ * C10: install real packed Core + CLI tarballs into a temporary consumer and
+ * prove both aliases plus fresh Skill-free host inits work without workspace links.
+ *
+ * Env overrides for tests:
+ *   TRELLIS_TEST_PACKED_CORE_TARBALL
+ *   TRELLIS_TEST_PACKED_CLI_TARBALL
+ */
+export function smokeInstalledCli() {
+  const v = checkVersions({ requireTag: false });
+  const testCore =
+    process.env.VITEST === "true"
+      ? process.env.TRELLIS_TEST_PACKED_CORE_TARBALL
+      : undefined;
+  const testCli =
+    process.env.VITEST === "true"
+      ? process.env.TRELLIS_TEST_PACKED_CLI_TARBALL
+      : undefined;
+
+  const tmp = fs.mkdtempSync(path.join(REPO_ROOT, ".pack-smoke-"));
+  try {
+    let coreTarball = testCore ? path.resolve(testCore) : null;
+    let cliTarball = testCli ? path.resolve(testCli) : null;
+
+    if (coreTarball === null || cliTarball === null) {
+      console.log(
+        `${DIM}clean-building Core and CLI before installed-package smoke...${RESET}`,
+      );
+      execFileSync("pnpm", ["run", "build"], {
+        cwd: CORE_DIR,
+        stdio: "inherit",
+      });
+      execFileSync("pnpm", ["run", "build"], {
+        cwd: CLI_DIR,
+        stdio: "inherit",
+      });
+      const packDir = path.join(tmp, "packs");
+      fs.mkdirSync(packDir, { recursive: true });
+      coreTarball = packPackage(CORE_DIR, path.join(packDir, "core"));
+      cliTarball = packPackage(CLI_DIR, path.join(packDir, "cli"));
+    }
+
+    const consumerDir = path.join(tmp, "consumer");
+    fs.mkdirSync(consumerDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(consumerDir, "package.json"),
+      JSON.stringify({ private: true, name: "trellis-install-smoke" }, null, 2) +
+        "\n",
+    );
+
+    execFileSync(
+      "npm",
+      [
+        "install",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--no-package-lock",
+        coreTarball,
+        cliTarball,
+      ],
+      { cwd: consumerDir, stdio: ["pipe", "pipe", "pipe"] },
+    );
+
+    const resolvedCliPkg = path.join(
+      consumerDir,
+      "node_modules",
+      "@mindfoldhq",
+      "trellis",
+      "package.json",
+    );
+    const resolvedCorePkg = path.join(
+      consumerDir,
+      "node_modules",
+      "@mindfoldhq",
+      "trellis-core",
+      "package.json",
+    );
+    if (!fs.existsSync(resolvedCliPkg) || !fs.existsSync(resolvedCorePkg)) {
+      throw new Error(
+        "Installed consumer is missing @mindfoldhq/trellis or @mindfoldhq/trellis-core",
+      );
+    }
+    const installedCli = readJSON(resolvedCliPkg);
+    const installedCore = readJSON(resolvedCorePkg);
+    if (installedCli.version !== v.cliVersion || installedCore.version !== v.cliVersion) {
+      throw new Error(
+        `Installed package versions drifted (cli=${installedCli.version}, core=${installedCore.version}, expected=${v.cliVersion})`,
+      );
+    }
+    // Ensure resolution is from installed packages, not workspace links.
+    const cliReal = fs.realpathSync(path.dirname(resolvedCliPkg));
+    const coreReal = fs.realpathSync(path.dirname(resolvedCorePkg));
+    if (cliReal.startsWith(CLI_DIR) || coreReal.startsWith(CORE_DIR)) {
+      throw new Error(
+        "Installed consumer resolved packages back into the monorepo workspace",
+      );
+    }
+
+    const trellisBin = binPath(consumerDir, "trellis");
+    const tlBin = binPath(consumerDir, "tl");
+    if (!fs.existsSync(trellisBin) || !fs.existsSync(tlBin)) {
+      throw new Error("Installed consumer is missing trellis/tl binaries");
+    }
+
+    const trellisHelp = execFileSync(trellisBin, ["--help"], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+      env: { ...process.env, TRELLIS_QUIET: "1" },
+    });
+    const tlHelp = execFileSync(tlBin, ["--help"], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+      env: { ...process.env, TRELLIS_QUIET: "1" },
+    });
+    if (!trellisHelp.includes("init") || !tlHelp.includes("init")) {
+      throw new Error("Installed aliases did not expose init help");
+    }
+    if (trellisHelp.replace(/\s+/g, " ") !== tlHelp.replace(/\s+/g, " ")) {
+      // Allow minor path/binary name differences only if both still document Research commands.
+      for (const help of [trellisHelp, tlHelp]) {
+        if (!help.includes("research") || !help.includes("update")) {
+          throw new Error("Installed alias help is missing Research commands");
+        }
+      }
+    }
+
+    const projectsRoot = path.join(tmp, "projects");
+    fs.mkdirSync(projectsRoot);
+    const hostConfigs = [
+      { name: "claude", flags: ["--claude"], expectClaude: true, expectCodex: false },
+      { name: "codex", flags: ["--codex"], expectClaude: false, expectCodex: true },
+      {
+        name: "dual",
+        flags: ["--claude", "--codex"],
+        expectClaude: true,
+        expectCodex: true,
+      },
+    ];
+
+    for (const config of hostConfigs) {
+      const projectDir = path.join(projectsRoot, config.name);
+      fs.mkdirSync(projectDir);
+      execFileSync(trellisBin, ["init", "--yes", ...config.flags], {
+        cwd: projectDir,
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env, TRELLIS_QUIET: "1", VITEST: "true" },
+      });
+      assertNoStageSkillDirs(projectDir);
+      if (config.expectClaude) {
+        if (
+          !fs.existsSync(
+            path.join(projectDir, ".claude", "agents", "trellis-research-worker.md"),
+          )
+        ) {
+          throw new Error(`${config.name}: missing Claude Research worker`);
+        }
+      }
+      if (config.expectCodex) {
+        if (
+          !fs.existsSync(
+            path.join(projectDir, ".codex", "agents", "trellis-research-worker.toml"),
+          )
+        ) {
+          throw new Error(`${config.name}: missing Codex Research worker`);
+        }
+      }
+      if (fs.existsSync(path.join(projectDir, ".trellis", "research"))) {
+        throw new Error(`${config.name}: unexpected eager .trellis/research creation`);
+      }
+    }
+
+    console.log(
+      `${GREEN}ok${RESET} installed-package smoke: trellis/tl help identity and Skill-free Claude/Codex/dual inits from packed tarballs.`,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 function verifyPackedCli() {
   const v = checkVersions({ requireTag: false });
   const testArchive =
@@ -396,6 +635,7 @@ async function main() {
         `  publish-plan [--json|--github]\n` +
         `  verify-packed-core\n` +
         `  verify-packed-cli\n` +
+        `  smoke-installed-cli\n` +
         `  verify-npm [--package all|core|cli]\n`,
     );
     return;
@@ -424,6 +664,10 @@ async function main() {
   }
   if (cmd === "verify-packed-cli") {
     verifyPackedCli();
+    return;
+  }
+  if (cmd === "smoke-installed-cli") {
+    smokeInstalledCli();
     return;
   }
   if (cmd === "verify-npm") {

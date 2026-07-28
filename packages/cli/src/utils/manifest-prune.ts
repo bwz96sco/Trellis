@@ -40,6 +40,7 @@ import { collectPlatformTemplates } from "../configurators/index.js";
 import { DIR_NAMES, FILE_NAMES, PATHS } from "../constants/paths.js";
 import { getAllMigrations } from "../migrations/index.js";
 import { CURRENT_HOST_GENERIC_CLEANUP_PATHS } from "../legacy/current-host-generic-cleanup.js";
+import { RESEARCH_SKILL_RETIREMENT_TARGET_PATHS } from "../legacy/research-skill-retirement.js";
 import {
   RETIRED_GENERATED_PATHS,
   RETIRED_STRUCTURED_FILES,
@@ -105,6 +106,11 @@ function buildKnownKeys(configuredPlatforms: readonly AITool[]): Set<string> {
   for (const migration of getAllMigrations()) {
     if (migration.from) known.add(toPosix(migration.from));
     if (migration.to) known.add(toPosix(migration.to));
+  }
+  // C08/C10: exact Research stage Skill targets must survive prune so uninstall
+  // can apply evidence∩migration∩ownership (or defer when authority is none).
+  for (const retirementPath of RESEARCH_SKILL_RETIREMENT_TARGET_PATHS) {
+    known.add(retirementPath);
   }
 
   return known;

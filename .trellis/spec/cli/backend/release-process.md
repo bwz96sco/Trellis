@@ -34,6 +34,7 @@ Required preflight:
 node packages/cli/scripts/release-preflight.js check-versions
 node packages/cli/scripts/release-preflight.js verify-packed-core
 node packages/cli/scripts/release-preflight.js verify-packed-cli
+node packages/cli/scripts/release-preflight.js smoke-installed-cli
 node packages/cli/scripts/release-preflight.js publish-plan
 ```
 
@@ -41,7 +42,7 @@ Official publication is CI-only through `.github/workflows/publish.yml`.
 
 ### Procedure inventory and frozen successor signatures
 
-The packed-CLI audit retains its entrypoints. C04 required inventory includes both registry-bound `procedure.json`/`PROCEDURE.md` files for all 14 Procedure IDs. C08/C09 require package-internal Research Skill retirement evidence, forbid packed stage Skill roots, and keep generation Skill-free.
+The packed-CLI audit retains its entrypoints. C04 required inventory includes both registry-bound `procedure.json`/`PROCEDURE.md` files for all 14 Procedure IDs. C08/C09 require package-internal Research Skill retirement evidence, forbid packed stage Skill roots, and keep generation Skill-free. C10 adds `smoke-installed-cli`: install packed Core+CLI into a temporary consumer with lifecycle scripts disabled, exercise both aliases, and prove Skill-free Claude/Codex/dual inits without monorepo workspace resolution.
 
 ## 3. Contracts
 
