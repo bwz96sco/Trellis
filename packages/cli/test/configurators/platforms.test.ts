@@ -9,10 +9,8 @@ import {
   getConfiguredPlatforms,
   PLATFORM_IDS,
 } from "../../src/configurators/index.js";
-import {
-  RESEARCH_PAYLOAD_PATHS,
-  RESEARCH_STAGE_SKILL_NAMES,
-} from "../../src/configurators/research-payload.js";
+import { RESEARCH_PAYLOAD_PATHS } from "../../src/configurators/research-payload.js";
+import { RESEARCH_STAGE_SKILL_NAMES } from "../../src/legacy/research-skill-retirement.js";
 import { replacePythonCommandLiterals } from "../../src/configurators/shared.js";
 import { getStatuslineHook } from "../../src/templates/claude/index.js";
 import { setWriteMode } from "../../src/utils/file-writer.js";

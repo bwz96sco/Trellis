@@ -13,10 +13,8 @@ import {
   resolveCliFlag,
 } from "../../src/configurators/index.js";
 import { LEGACY_CLEANUP_MANAGED_ROOTS } from "../../src/legacy/retired-host-cleanup.js";
-import {
-  RESEARCH_PAYLOAD_PATHS,
-  RESEARCH_STAGE_SKILL_NAMES,
-} from "../../src/configurators/research-payload.js";
+import { RESEARCH_PAYLOAD_PATHS } from "../../src/configurators/research-payload.js";
+import { RESEARCH_STAGE_SKILL_NAMES } from "../../src/legacy/research-skill-retirement.js";
 
 describe("active platform registry", () => {
   it("contains exactly Claude Code and Codex", () => {

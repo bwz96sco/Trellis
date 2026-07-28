@@ -1,28 +1,32 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
 import {
   RESEARCH_PAYLOAD_PATHS,
-  RESEARCH_STAGE_SKILL_NAMES,
   collectResearchPlatformPayload,
 } from "../../src/configurators/research-payload.js";
 import { replacePythonCommandLiterals } from "../../src/configurators/shared.js";
+import { RESEARCH_STAGE_SKILL_NAMES } from "../../src/legacy/research-skill-retirement.js";
 import { getResearchWorkerTemplate as getClaudeResearchWorkerTemplate } from "../../src/templates/claude/index.js";
 import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
-import { getResearchStageSkillTemplates } from "../../src/templates/common/index.js";
+
+const STAGE_SKILL_SOURCE_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../src/templates/common/bundled-skills",
+);
 
 describe("exact Research payload template APIs", () => {
-  it("loads exactly the nine named Research stage bundles without neighboring generic skills", () => {
-    const exact = getResearchStageSkillTemplates();
-    expect(exact.map((skill) => skill.name)).toEqual(RESEARCH_STAGE_SKILL_NAMES);
-    expect(exact.every((skill) => skill.files.some((file) => file.relativePath === "SKILL.md"))).toBe(
-      true,
-    );
-
-    expect(exact.map((skill) => skill.name)).not.toContain("trellis-meta");
+  it("has no Research stage Skill source roots after C09", () => {
+    for (const name of RESEARCH_STAGE_SKILL_NAMES) {
+      expect(
+        fs.existsSync(path.join(STAGE_SKILL_SOURCE_ROOT, name)),
+        `source root must be removed: ${name}`,
+      ).toBe(false);
+    }
   });
 
   it("loads the exact Claude and Codex Research workers", () => {
@@ -36,7 +40,6 @@ describe("exact Research payload template APIs", () => {
   });
 
   it("collects workers without generating Research stage Skill directories", () => {
-    const skills = getResearchStageSkillTemplates();
     const claude = collectResearchPlatformPayload("claude-code");
     const codex = collectResearchPlatformPayload("codex");
 
@@ -47,19 +50,10 @@ describe("exact Research payload template APIs", () => {
       replacePythonCommandLiterals(getCodexResearchWorkerTemplate().content),
     );
 
-    // C08: generation stopped; dormant source templates remain loadable for C09.
-    expect(skills).toHaveLength(RESEARCH_STAGE_SKILL_NAMES.length);
-    for (const skill of skills) {
-      for (const file of skill.files) {
-        expect(
-          claude.has(`.claude/skills/${skill.name}/${file.relativePath}`),
-        ).toBe(false);
-        expect(
-          codex.has(`.agents/skills/${skill.name}/${file.relativePath}`),
-        ).toBe(false);
-      }
+    for (const name of RESEARCH_STAGE_SKILL_NAMES) {
+      expect(claude.has(`.claude/skills/${name}/SKILL.md`)).toBe(false);
+      expect(codex.has(`.agents/skills/${name}/SKILL.md`)).toBe(false);
     }
-
     expect(
       [...claude.keys()].some((key) => key.includes("/skills/trellis-research-")),
     ).toBe(false);

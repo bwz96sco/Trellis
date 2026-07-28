@@ -41,7 +41,7 @@ Official publication is CI-only through `.github/workflows/publish.yml`.
 
 ### Procedure inventory and frozen successor signatures
 
-The packed-CLI audit retains its entrypoints. C04 required inventory includes both registry-bound `procedure.json`/`PROCEDURE.md` files for all 14 Procedure IDs. C08 adds package-internal Research Skill retirement evidence and stops generating Skills into projects, while positive packed stage Skill source inventory remains required until C09 forbids those roots.
+The packed-CLI audit retains its entrypoints. C04 required inventory includes both registry-bound `procedure.json`/`PROCEDURE.md` files for all 14 Procedure IDs. C08/C09 require package-internal Research Skill retirement evidence, forbid packed stage Skill roots, and keep generation Skill-free.
 
 ## 3. Contracts
 
@@ -76,8 +76,8 @@ The core and CLI audits remain separate; do not refactor the stable CLI inventor
 3. create a real npm tarball;
 4. list and normalize tar entries;
 5. reject absolute, traversal, or malformed tar paths;
-6. require approved Research and compatibility entries, including all 28 bundled Procedure assets and all nine current Research Skill files;
-7. reject forbidden generic entries and prefixes;
+6. require approved Research and compatibility entries, including all 28 bundled Procedure assets and Research Skill retirement evidence, and forbid packed stage Skill roots;
+7. reject forbidden generic entries and prefixes (including `bundled-skills/trellis-research-`);
 8. verify the exact packed core dependency.
 
 Both aliases execute the same built Commander parser. There is no separate `tl` command tree.

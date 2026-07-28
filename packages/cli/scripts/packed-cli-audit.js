@@ -1,5 +1,6 @@
 const PACKED_ROOT = "package/";
 
+/** Historical stage Skill names — forbidden in packed payload after C09. */
 export const RESEARCH_STAGE_SKILLS = [
   "trellis-research-audit",
   "trellis-research-computation",
@@ -237,6 +238,8 @@ const REQUIRED_RESEARCH_ENTRIES = [
   "dist/legacy/current-host-generic-cleanup.js",
   "dist/legacy/current-host-generic-cleanup.json",
   "dist/legacy/native-workflow-digests.js",
+  "dist/legacy/research-skill-retirement.js",
+  "dist/legacy/research-skill-retirement.json",
   "dist/legacy/retired-host-cleanup.js",
   "dist/legacy/retired-host-generated-paths.json",
 ];
@@ -270,6 +273,7 @@ const FORBIDDEN_GENERIC_PREFIXES = [
   "dist/templates/common/skills/",
   "dist/templates/common/bundled-skills/trellis-channel/",
   "dist/templates/common/bundled-skills/trellis-meta/",
+  "dist/templates/common/bundled-skills/trellis-research-",
   "dist/templates/common/bundled-skills/trellis-session-insight/",
   "dist/templates/common/bundled-skills/trellis-spec-bootstrap/",
   "dist/templates/codex/skills/",
@@ -300,9 +304,6 @@ function withPackedRoot(entry) {
 export function buildPackedCliInventory(migrationManifestNames) {
   const requiredEntries = [
     ...REQUIRED_RESEARCH_ENTRIES.map(withPackedRoot),
-    ...RESEARCH_STAGE_SKILLS.map((skill) =>
-      withPackedRoot(`dist/templates/common/bundled-skills/${skill}/SKILL.md`),
-    ),
     ...RESEARCH_PROCEDURE_IDS.flatMap((procedureId) =>
       ["procedure.json", "PROCEDURE.md"].map((fileName) =>
         withPackedRoot(
@@ -315,9 +316,16 @@ export function buildPackedCliInventory(migrationManifestNames) {
     ),
   ];
 
+  const forbiddenStageSkillEntries = RESEARCH_STAGE_SKILLS.map((skill) =>
+    withPackedRoot(`dist/templates/common/bundled-skills/${skill}/SKILL.md`),
+  );
+
   return {
     requiredEntries,
-    forbiddenExactEntries: FORBIDDEN_GENERIC_EXACT_ENTRIES.map(withPackedRoot),
+    forbiddenExactEntries: [
+      ...FORBIDDEN_GENERIC_EXACT_ENTRIES.map(withPackedRoot),
+      ...forbiddenStageSkillEntries,
+    ],
     forbiddenPrefixes: FORBIDDEN_GENERIC_PREFIXES.map(withPackedRoot),
   };
 }

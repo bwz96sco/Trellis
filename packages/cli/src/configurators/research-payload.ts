@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { AITool } from "../types/ai-tools.js";
-import { RESEARCH_STAGE_SKILL_NAMES } from "../templates/common/index.js";
 import {
   getResearchWorkerTemplate as getClaudeResearchWorkerTemplate,
   getSettingsTemplate as getClaudeSettingsTemplate,
@@ -20,9 +19,6 @@ import {
   resolvePlaceholders,
   type PlatformConfigureOptions,
 } from "./shared.js";
-
-/** Re-exported for tests and audits; C08 no longer generates these into projects. */
-export { RESEARCH_STAGE_SKILL_NAMES };
 
 export const RESEARCH_WORKER_NAME = "trellis-research-worker";
 
@@ -219,9 +215,9 @@ function mergeCodexConfig(template: string, existing: string | null): string {
 }
 
 /**
- * C08: Research stage Skills are no longer generated into projects.
- * Dormant source templates remain under templates/common until C09.
- * Historical installed files may only be retired via immutable evidence.
+ * C08/C09: Research stage Skills are not generated and no longer ship as
+ * package source/payload. Historical installed files may only be retired via
+ * immutable evidence.
  */
 function collectClaudePayload(
   cwd: string | undefined,

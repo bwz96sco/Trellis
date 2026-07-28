@@ -1,1 +1,4 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Packed CLI inventory must require retirement evidence and forbid stage Skill roots after C09."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Generation and source inventory contract for Skill-free hosts."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Template layout no longer includes stage Skill bundles."}
+{"file":".trellis/tasks/07-23-retire-installed-research-skills/design.md","reason":"C08 predecessor: generation stop and evidence authority before source deletion."}

@@ -3,7 +3,7 @@
   "name": "remove-skill-source-packed-payload",
   "title": "C09 Remove Skill source and packed payload",
   "description": "Remove active Skill templates and packed inventory after cleanup proof, then update executable specs and package audits.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

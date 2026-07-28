@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   proposalSchema,
@@ -18,7 +19,7 @@ import { authorizeResearchDispatch } from "../../src/commands/research/dispatch-
 import { getResearchWorkerTemplate as getClaudeResearchWorkerTemplate } from "../../src/templates/claude/index.js";
 import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
 import { getResearchDispatchContext } from "../../src/commands/research/dispatch-context.js";
-import { getResearchStageSkillTemplates } from "../../src/templates/common/index.js";
+import { RESEARCH_STAGE_SKILL_NAMES } from "../../src/legacy/research-skill-retirement.js";
 import { getSharedHookScriptsForPlatform } from "../../src/templates/shared-hooks/index.js";
 import {
   createResearchDispatchFixture,
@@ -362,71 +363,24 @@ function readFakeArgv(argvLog: string): string[][] {
 }
 
 describe("research stage-owner and worker templates", () => {
-  it("ships the nine exact stage-owner bundled skills with bounded authority", () => {
-    const bundled = new Map(
-      getResearchStageSkillTemplates().map((skill) => [skill.name, skill]),
+  it("has retired stage-owner skill names only as historical targets (C09)", () => {
+    expect([...RESEARCH_STAGE_SKILL_NAMES].sort()).toEqual(
+      Object.values(OWNER_BY_STAGE).sort(),
     );
-    expect(
-      Object.values(OWNER_BY_STAGE)
-        .filter((name) => bundled.has(name))
-        .sort(),
-    ).toEqual(Object.values(OWNER_BY_STAGE).sort());
-
-    for (const [stage, name] of Object.entries(OWNER_BY_STAGE)) {
-      const skill = bundled.get(name);
-      const content = skill?.files.find(
-        (file) => file.relativePath === "SKILL.md",
-      )?.content;
-      expect(content, `${name}/SKILL.md must exist`).toBeDefined();
-      expect(content).toContain(`stage: ${stage}`);
-      expect(content).toContain("explicit research intent or dispatch");
-      expect(content).toContain("Result");
-      expect(content).toContain("Proposal");
-      expect(content).toContain("must not append research events");
-      expect(content).toContain("must not apply or reject Proposals");
-      expect(content).toContain("must not commit Git changes");
-      expect(content).toContain("must not promote Claims");
-      expect(content).toContain(
-        "must not claim external completion without evidence",
-      );
-      expect(content).toContain(
-        "must not require Trellis in child repositories",
-      );
-      expect(content).not.toContain("Read the entire workspace");
-    }
-  });
-
-  it("keeps legacy setup inputs proposal-only and leaves source and Mempal authority untouched", () => {
-    const setup = getResearchStageSkillTemplates()
-      .find((skill) => skill.name === "trellis-research-setup")
-      ?.files.find((file) => file.relativePath === "SKILL.md")?.content;
-    expect(setup).toBeDefined();
-    for (const legacySource of [
-      "research-quest.yaml",
-      "research-events.jsonl",
-      "notes/_quest",
-      "vault-local `_quest`",
-    ]) {
-      expect(setup).toContain(legacySource);
-    }
-    expect(setup).toContain("untrusted historical inputs");
-    expect(setup).toContain("pending `Proposal`");
-    expect(setup).toContain("root-session review");
-    expect(setup).toContain(
-      "must not import, move, delete, rewrite, or canonicalize",
-    );
-    expect(setup).toContain("must not create a second YAML or JSONL authority");
-    expect(setup).toContain("must not write to Mempal automatically");
-    expect(setup).toContain("must not append research events");
-  });
-
-  it("no longer tracks stage-owner skills through platform template collectors (C08)", () => {
-    // Dormant source templates remain loadable; collectors no longer install them.
     for (const skillName of Object.values(OWNER_BY_STAGE)) {
       expect(
-        getResearchStageSkillTemplates().some((skill) => skill.name === skillName),
-      ).toBe(true);
+        fs.existsSync(
+          path.join(
+            path.dirname(fileURLToPath(import.meta.url)),
+            "../../src/templates/common/bundled-skills",
+            skillName,
+          ),
+        ),
+      ).toBe(false);
     }
+  });
+
+  it("does not generate stage-owner skills through platform template collectors", () => {
     for (const platform of PLATFORM_IDS) {
       const templates = collectPlatformTemplates(platform);
       expect(

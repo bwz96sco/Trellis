@@ -261,17 +261,32 @@ describe("packed CLI inventory audit", () => {
     },
   );
 
-  it("builds the Research inventory with all stage skills and migration manifests", () => {
+  it("builds the Research inventory with Procedures, retirement evidence, and no stage skills", () => {
     const inventory = buildPackedCliInventory([
       "0.6.7.json",
       "0.7.0-beta.0.json",
+      "0.7.0-beta.1.json",
     ]);
 
     for (const skill of RESEARCH_STAGE_SKILLS) {
-      expect(inventory.requiredEntries).toContain(
+      expect(inventory.requiredEntries).not.toContain(
+        `package/dist/templates/common/bundled-skills/${skill}/SKILL.md`,
+      );
+      expect(inventory.forbiddenExactEntries).toContain(
         `package/dist/templates/common/bundled-skills/${skill}/SKILL.md`,
       );
     }
+    expect(inventory.requiredEntries).toContain(
+      "package/dist/legacy/research-skill-retirement.json",
+    );
+    expect(inventory.requiredEntries).toContain(
+      "package/dist/legacy/research-skill-retirement.js",
+    );
+    expect(
+      inventory.forbiddenPrefixes.some((prefix) =>
+        prefix.includes("bundled-skills/trellis-research-"),
+      ),
+    ).toBe(true);
     for (const procedureId of RESEARCH_PROCEDURE_IDS) {
       expect(inventory.requiredEntries).toContain(
         `package/dist/templates/research/procedures/${procedureId}/1.0.0/procedure.json`,
@@ -285,6 +300,9 @@ describe("packed CLI inventory audit", () => {
     );
     expect(inventory.requiredEntries).toContain(
       "package/dist/migrations/manifests/0.7.0-beta.0.json",
+    );
+    expect(inventory.requiredEntries).toContain(
+      "package/dist/migrations/manifests/0.7.0-beta.1.json",
     );
   });
 });

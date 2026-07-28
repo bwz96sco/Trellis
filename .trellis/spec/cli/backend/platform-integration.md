@@ -169,12 +169,11 @@ These inventories may support exact-key manifest recognition, path-specific scru
 
 - Both current hosts keep one worker and receive **no** generated Research stage Skills.
 - Fresh Claude-only, Codex-only, and dual-host collection must emit zero `.claude/skills/trellis-research-*/**` and `.agents/skills/trellis-research-*/**` paths.
-- Dormant stage Skill **source** templates remain under `templates/common/bundled-skills/trellis-research-*` until C09; packed positive Skill inventory remains required until C09.
-- Package-internal retirement evidence (`legacy/research-skill-retirement.{json,ts}`) is never installed into user projects. With `authority=none`, deletion authority is empty (no invented hashes).
+- C09 removed stage Skill **source** templates under `templates/common/bundled-skills/trellis-research-*` and forbids those paths in packed CLI inventory.
+- Package-internal retirement evidence (`legacy/research-skill-retirement.{json,ts}`) is required in the packed package and is never installed into user projects. With `authority=none`, deletion authority is empty (no invented hashes).
 - Bundled Procedures remain exact strict pairs selected through immutable capability bindings, not broad template discovery.
 - Claude/Codex workers receive equivalent embedded-Procedure input and perform no Skill discovery/invocation.
 - Normal update preserves project policy/overrides; retirement deletes only exact pristine released historical Skill bytes under complete immutable evidence + matching migration `allowed_hashes`.
-- C09 packed/source inventory forbids active stage Skill payload and removes dormant source.
 
 ## 4. Validation & Error Matrix
 
@@ -203,7 +202,7 @@ Successor matrix additions: a fresh/update payload containing any active Researc
 
 ### C08 cases
 
-- **Good**: fresh dual-host generation writes two generic workers and bundled Procedures, with zero Research stage Skill directories; dormant source templates still exist in package source until C09.
+- **Good**: fresh dual-host generation writes two generic workers and bundled Procedures, with zero Research stage Skill directories; package source and packed tarball contain no stage Skill bundles.
 - **Base**: update preserves project policy/overrides and a modified historical Skill; uninstall defers owned stage Skills when retirement authority is `none`.
 - **Bad**: inventing `allowed_hashes` from current source, or broad directory discovery emitting Skills, or cleanup inferring ownership from a `research-*` prefix.
 
