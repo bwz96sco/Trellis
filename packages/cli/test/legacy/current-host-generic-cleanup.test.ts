@@ -92,6 +92,7 @@ function cloneSnapshot(): MutableSnapshot {
   return structuredClone(rawSnapshot);
 }
 
+/** Paths generic cleanup must never own (workers + historical stage Skills). */
 function retainedResearchPaths(host: "claude-code" | "codex"): string[] {
   if (host === "claude-code") {
     return [
@@ -107,6 +108,13 @@ function retainedResearchPaths(host: "claude-code" | "codex"): string[] {
       (stage) => `.agents/skills/trellis-research-${stage}/SKILL.md`,
     ),
   ];
+}
+
+/** C08 active generation paths: workers only (stage Skills no longer generated). */
+function activeResearchPaths(host: "claude-code" | "codex"): string[] {
+  return host === "claude-code"
+    ? [".claude/agents/trellis-research-worker.md"]
+    : [".codex/agents/trellis-research-worker.toml"];
 }
 
 function hostSnapshotPaths(partition: MutablePartition): string[] {
@@ -163,7 +171,7 @@ describe("current-host generic cleanup inventory", () => {
     ].sort();
     const active = [...collectPlatformTemplates("claude-code").keys()].sort();
     const expectedActive = [
-      ...retainedResearchPaths("claude-code"),
+      ...activeResearchPaths("claude-code"),
       ...rawSnapshot.hosts["claude-code"].transitionOpaquePaths,
       ...rawSnapshot.hosts["claude-code"].structuredPaths,
     ].sort();
@@ -171,6 +179,9 @@ describe("current-host generic cleanup inventory", () => {
     expect(historical).toHaveLength(62);
     expect(new Set(historical).size).toBe(62);
     expect(active).toEqual(expectedActive);
+    expect(
+      active.some((item) => item.includes("/skills/trellis-research-")),
+    ).toBe(false);
     expect(rawSnapshot.hosts["claude-code"].optionalOpaquePaths).toEqual([
       ".claude/hooks/statusline.py",
     ]);
@@ -183,7 +194,7 @@ describe("current-host generic cleanup inventory", () => {
     ].sort();
     const active = [...collectPlatformTemplates("codex").keys()].sort();
     const expectedActive = [
-      ...retainedResearchPaths("codex"),
+      ...activeResearchPaths("codex"),
       ...rawSnapshot.hosts.codex.transitionOpaquePaths.filter(
         (item) => item !== ".codex/hooks/session-start.py",
       ),
@@ -194,6 +205,9 @@ describe("current-host generic cleanup inventory", () => {
     expect(new Set(historical).size).toBe(63);
     expect(active).toEqual(expectedActive);
     expect(active.some((item) => item.startsWith(".codex/skills/"))).toBe(false);
+    expect(
+      active.some((item) => item.includes("/skills/trellis-research-")),
+    ).toBe(false);
   });
 
   it("keeps the frozen 30-path generic Trellis cleanup partition", () => {
@@ -331,9 +345,10 @@ describe("0.7 current-host safe-delete evidence", () => {
     }
   });
 
-  it("gives active Research ownership precedence over matching historical delete evidence", () => {
-    const activePath = ".agents/skills/trellis-research-writing/SKILL.md";
-    const content = "current Research skill\n";
+  it("gives active Research worker ownership precedence over matching historical delete evidence", () => {
+    // C08: stage Skills left the current template set; workers remain active.
+    const activePath = ".codex/agents/trellis-research-worker.toml";
+    const content = "current Research worker\n";
     const operation = {
       ...migrationManifest.migrations[0],
       from: activePath,
@@ -349,6 +364,11 @@ describe("0.7 current-host safe-delete evidence", () => {
       fs.writeFileSync(activeFile, content);
 
       expect(currentTemplatePaths.has(activePath)).toBe(true);
+      expect(
+        currentTemplatePaths.has(
+          ".agents/skills/trellis-research-writing/SKILL.md",
+        ),
+      ).toBe(false);
       expect(
         collectSafeFileDeletes(
           [operation],
@@ -377,9 +397,15 @@ describe("0.7 current-host safe-delete evidence", () => {
     expect(currentTemplatePaths.has(".agents/skills/trellis-check/SKILL.md")).toBe(
       false,
     );
-    expect(result).toEqual([
-      { item: migrationManifest.migrations[0], action: "delete" },
-    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      item: migrationManifest.migrations[0],
+      action: "delete",
+    });
+    expect(result[0].plannedContent).toEqual(expect.any(String));
+    expect(result[0].plannedHash).toBe(
+      migrationManifest.migrations[0].allowed_hashes?.[0],
+    );
   });
 
   it("classifies pristine, modified, and missing bytes without inventing evidence", () => {
@@ -390,7 +416,9 @@ describe("0.7 current-host safe-delete evidence", () => {
       [],
       new Set(),
     );
-    expect(pristine).toEqual([{ item: operation, action: "delete" }]);
+    expect(pristine).toHaveLength(1);
+    expect(pristine[0]).toMatchObject({ item: operation, action: "delete" });
+    expect(pristine[0].plannedHash).toBe(operation.allowed_hashes?.[0]);
 
     const modifiedRoot = fs.mkdtempSync(
       path.join(TEST_DIR, "cleanup-modified-"),

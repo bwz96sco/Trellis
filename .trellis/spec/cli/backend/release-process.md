@@ -41,7 +41,7 @@ Official publication is CI-only through `.github/workflows/publish.yml`.
 
 ### Procedure inventory and frozen successor signatures
 
-The packed-CLI audit retains its entrypoints. C04 required inventory includes both registry-bound `procedure.json`/`PROCEDURE.md` files for all 14 Procedure IDs. C09 later adds immutable Research Skill retirement evidence and forbids active Research Skill roots.
+The packed-CLI audit retains its entrypoints. C04 required inventory includes both registry-bound `procedure.json`/`PROCEDURE.md` files for all 14 Procedure IDs. C08 adds package-internal Research Skill retirement evidence and stops generating Skills into projects, while positive packed stage Skill source inventory remains required until C09 forbids those roots.
 
 ## 3. Contracts
 

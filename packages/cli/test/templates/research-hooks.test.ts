@@ -420,7 +420,13 @@ describe("research stage-owner and worker templates", () => {
     expect(setup).toContain("must not append research events");
   });
 
-  it("tracks every stage-owner skill through every platform template collector", () => {
+  it("no longer tracks stage-owner skills through platform template collectors (C08)", () => {
+    // Dormant source templates remain loadable; collectors no longer install them.
+    for (const skillName of Object.values(OWNER_BY_STAGE)) {
+      expect(
+        getResearchStageSkillTemplates().some((skill) => skill.name === skillName),
+      ).toBe(true);
+    }
     for (const platform of PLATFORM_IDS) {
       const templates = collectPlatformTemplates(platform);
       expect(
@@ -431,7 +437,7 @@ describe("research stage-owner and worker templates", () => {
         const paths = [...(templates?.keys() ?? [])].filter((filePath) =>
           filePath.replaceAll("\\", "/").endsWith(`/${skillName}/SKILL.md`),
         );
-        expect(paths, `${platform} must track ${skillName}`).not.toEqual([]);
+        expect(paths, `${platform} must not generate ${skillName}`).toEqual([]);
       }
     }
   });

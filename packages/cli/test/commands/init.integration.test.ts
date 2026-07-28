@@ -23,10 +23,7 @@ vi.mock("node:child_process", () => ({
 import { execSync } from "node:child_process";
 
 import { init } from "../../src/commands/init.js";
-import {
-  RESEARCH_PAYLOAD_PATHS,
-  RESEARCH_STAGE_SKILL_NAMES,
-} from "../../src/configurators/research-payload.js";
+import { RESEARCH_PAYLOAD_PATHS } from "../../src/configurators/research-payload.js";
 import { DIR_NAMES, FILE_NAMES, PATHS } from "../../src/constants/paths.js";
 import { VERSION } from "../../src/constants/version.js";
 import { computeHash } from "../../src/utils/template-hash.js";
@@ -48,18 +45,12 @@ function listFiles(root: string): string[] {
 
 const claudePayloadPaths = [
   RESEARCH_PAYLOAD_PATHS.claude.worker,
-  ...RESEARCH_STAGE_SKILL_NAMES.map(
-    (name) => `.claude/skills/${name}/SKILL.md`,
-  ),
   ...RESEARCH_PAYLOAD_PATHS.claude.hooks,
   RESEARCH_PAYLOAD_PATHS.claude.config,
 ].sort();
 
 const codexPayloadPaths = [
   RESEARCH_PAYLOAD_PATHS.codex.worker,
-  ...RESEARCH_STAGE_SKILL_NAMES.map(
-    (name) => `.agents/skills/${name}/SKILL.md`,
-  ),
   ...RESEARCH_PAYLOAD_PATHS.codex.hooks,
   ...RESEARCH_PAYLOAD_PATHS.codex.config,
 ].sort();
@@ -198,12 +189,14 @@ describe("init() integration", () => {
       FILE_NAMES.AGENTS,
       PATHS.WORKFLOW_GUIDE_FILE,
       RESEARCH_PAYLOAD_PATHS.claude.worker,
-      ".claude/skills/trellis-research-literature/SKILL.md",
     ]) {
       expect(hashes[relativePath]).toBe(
         computeHash(fs.readFileSync(path.join(tmpDir, relativePath), "utf-8")),
       );
     }
+    expect(
+      hashes[".claude/skills/trellis-research-literature/SKILL.md"],
+    ).toBeUndefined();
     expect(hashes[`${PATHS.SCRIPTS}/get_context.py`]).toBeUndefined();
     expect(hashes[".trellis/agents/research.md"]).toBeUndefined();
   });

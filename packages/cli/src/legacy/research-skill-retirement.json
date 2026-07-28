@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "normalization": "utf8-lf",
+  "authority": "none",
+  "entries": [],
+  "notes": "No published @mindfoldhq/trellis release (0.6.5-0.6.9 verified) packs the nine Research stage Skills. Deletion authority remains empty until immutable tarball reproduction proves path/hash pairs. See task research/provenance-immutable-releases.md."
+}

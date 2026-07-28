@@ -841,18 +841,19 @@ describe("update() integration", () => {
     ).toBe(true);
   });
 
-  it("does not backfill generic agents from legacy inventory", async () => {
+  it("does not backfill generic agents or retired Research stage skills", async () => {
     await setupProject();
 
     const genericAgentPath = ".trellis/agents/research.md";
     const researchSkillPath =
       ".claude/skills/trellis-research-literature/SKILL.md";
-    const expectedResearchSkill = readProjectFile(researchSkillPath);
 
     writeProjectFile(".trellis/agents/existing.md", "# Legacy agent inventory\n");
+    // C08: stage skills are no longer generated. Plant a historical skill and
+    // prove update does not re-install it from current templates.
+    writeProjectFile(researchSkillPath, "# historical stage skill\n");
     let hashes = readHashesV2(hashFilePath());
     hashes = removeHashEntry(hashes, researchSkillPath) as Record<string, string>;
-    fs.unlinkSync(projectFile(researchSkillPath));
     writeHashesV2(hashFilePath(), hashes);
 
     await update({ force: true });
@@ -861,12 +862,11 @@ describe("update() integration", () => {
     expect(readProjectFile(".trellis/agents/existing.md")).toBe(
       "# Legacy agent inventory\n",
     );
-    expect(readProjectFile(researchSkillPath)).toBe(expectedResearchSkill);
+    // Untracked historical skill is preserved (not owned by current templates).
+    expect(readProjectFile(researchSkillPath)).toBe("# historical stage skill\n");
     const updatedHashes = readHashesV2(hashFilePath());
     expect(updatedHashes[genericAgentPath]).toBeUndefined();
-    expect(updatedHashes[researchSkillPath]).toBe(
-      computeHash(expectedResearchSkill),
-    );
+    expect(updatedHashes[researchSkillPath]).toBeUndefined();
   });
 
   it("#16 config.yaml update.skip prevents file from being updated", async () => {
@@ -1569,7 +1569,6 @@ describe("update() integration", () => {
       ".codex/hooks/inject-workflow-state.py",
       ".codex/hooks.json",
       ".codex/config.toml",
-      ".agents/skills/trellis-research-writing/SKILL.md",
     ];
     const before = new Map(
       retainedPaths.map((relativePath) => [

@@ -267,6 +267,10 @@ describe("uninstall() integration", () => {
   it("#8a empty managed .agents/skills root is pruned", async () => {
     await init({ yes: true, codex: true, force: true });
     const skillsRoot = path.join(tmpDir, ".agents", "skills");
+    // C08: Codex init no longer generates stage Skills. Plant an empty managed
+    // root so uninstall can still prove confirmed-empty pruning.
+    expect(fs.existsSync(skillsRoot)).toBe(false);
+    fs.mkdirSync(skillsRoot, { recursive: true });
     expect(fs.existsSync(skillsRoot)).toBe(true);
 
     await uninstall({ yes: true });

@@ -165,13 +165,16 @@ The 0.6.7 snapshot contains exactly 1,009 globally unique safe generated paths. 
 
 These inventories may support exact-key manifest recognition, path-specific scrubbing, backup preservation, and confirmed-empty root pruning. They must not widen active types/registries, register options, detect hosts, configure output, restore templates/adapters, or claim arbitrary descendants.
 
-### Frozen successor contracts (not implemented in C01)
+### C08 generation / retirement contracts (active)
 
-- Both current hosts keep one worker but receive no generated Research Skills after C08.
-- Bundled Procedures are exact strict pairs selected through immutable capability bindings, not broad template discovery.
+- Both current hosts keep one worker and receive **no** generated Research stage Skills.
+- Fresh Claude-only, Codex-only, and dual-host collection must emit zero `.claude/skills/trellis-research-*/**` and `.agents/skills/trellis-research-*/**` paths.
+- Dormant stage Skill **source** templates remain under `templates/common/bundled-skills/trellis-research-*` until C09; packed positive Skill inventory remains required until C09.
+- Package-internal retirement evidence (`legacy/research-skill-retirement.{json,ts}`) is never installed into user projects. With `authority=none`, deletion authority is empty (no invented hashes).
+- Bundled Procedures remain exact strict pairs selected through immutable capability bindings, not broad template discovery.
 - Claude/Codex workers receive equivalent embedded-Procedure input and perform no Skill discovery/invocation.
-- Normal update preserves project policy/overrides; retirement deletes only exact pristine released historical Skill bytes under separate evidence.
-- C09 packed/source inventory forbids active `.claude/skills/trellis-research-*/**` and `.agents/skills/trellis-research-*/**` payload.
+- Normal update preserves project policy/overrides; retirement deletes only exact pristine released historical Skill bytes under complete immutable evidence + matching migration `allowed_hashes`.
+- C09 packed/source inventory forbids active stage Skill payload and removes dormant source.
 
 ## 4. Validation & Error Matrix
 
@@ -194,15 +197,15 @@ Successor matrix additions: a fresh/update payload containing any active Researc
 
 ## 5. Good / Base / Bad Cases
 
-- **Good**: dual-host generation writes exactly two bounded workers, eighteen stage-skill copies, the approved hook/config matrix, optional Claude statusline when requested, and no generic payload.
+- **Good**: dual-host generation writes exactly two bounded workers, the approved hook/config matrix, optional Claude statusline when requested, zero stage Skill directories, and no generic payload.
 - **Base**: a Claude-only repository adds Codex; only Codex payload paths are added and workflow ownership is unchanged.
 - **Bad**: scanning `templates/common`, treating `.agents/skills` as detection, copying a retired host root, registering an old host flag, or using cleanup inventory as current collection.
 
-### Frozen successor cases
+### C08 cases
 
-- **Good**: fresh dual-host generation writes two generic workers and bundled Procedures, with zero Research Skill directories.
-- **Base**: update preserves project policy/overrides and a modified historical Skill.
-- **Bad**: broad directory discovery emits Skills or cleanup infers ownership from a `research-*` prefix.
+- **Good**: fresh dual-host generation writes two generic workers and bundled Procedures, with zero Research stage Skill directories; dormant source templates still exist in package source until C09.
+- **Base**: update preserves project policy/overrides and a modified historical Skill; uninstall defers owned stage Skills when retirement authority is `none`.
+- **Bad**: inventing `allowed_hashes` from current source, or broad directory discovery emitting Skills, or cleanup inferring ownership from a `research-*` prefix.
 
 ## 6. Tests Required
 

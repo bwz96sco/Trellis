@@ -1,1 +1,16 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Owns safe-file-delete, ownership, released-hash authority, and preservation contracts for C08 cleanup."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Defines update safe deletion, update.skip, dry-run/cancel zero-write, and current-template precedence."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Defines uninstall plan/revalidate model and ownership intersection for managed paths."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Path validation, non-symlink regular files, non-recursive empty-dir cleanup, and protection rules."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Claude/Codex payload collection, Research Skill generation boundary, and C08 successor generation contract."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Template layout including dormant bundled Research stage skills retained through C08."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Packed inventory positive/negative gates; C08 still requires dormant Skill positive inventory until C09."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Workers must remain Procedure-driven; Skill generation stop must not regress worker/hook contracts."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Isolated FS, update/uninstall, packed artifact, and zero-write snapshot test patterns."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Unit/integration test conventions for legacy evidence loaders and fail-closed assertions."}
+{"file":".trellis/tasks/07-23-retire-installed-research-skills/research/provenance-immutable-releases.md","reason":"Primary planning evidence that published 0.6.5-0.6.9 lack stage Skills; deletion authority stop gate."}
+{"file":".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/design.md","reason":"Parent cleanup boundary: separate Research retirement evidence; pristine-only deletes; preserve research state."}
+{"file":".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/implement.md","reason":"Parent C08/C09 ordering and final quality gates."}
+{"file":".trellis/tasks/archive/2026-07/07-23-replace-host-execution-generic-workers/prd.md","reason":"C07 explicitly deferred generation stop and installed Skill retirement to C08/C09."}
+{"file":".trellis/tasks/archive/2026-07/07-18-extract-retired-host-cleanup-inventory/design.md","reason":"Pattern for package-internal immutable path inventory + strict loader; do not merge Research hashes into generic inventories."}
+{"file":".trellis/tasks/archive/2026-07/07-20-freeze-current-host-generic-cleanup/design.md","reason":"Pattern for hash-gated current-host cleanup separation from Research Skill retirement."}

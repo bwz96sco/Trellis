@@ -269,16 +269,21 @@ interface SafeFileDeleteClassified {
     | "skip-modified"
     | "skip-protected"
     | "skip-update-skip";
+  /** Exact content captured at classify time for pre-unlink revalidation. */
+  plannedContent?: string;
+  /** Hash of plannedContent (LF-normalized via computeHash). */
+  plannedHash?: string;
 }
 
 /**
  * Collect and classify safe-file-delete migrations
  *
  * safe-file-delete auto-executes (no --migrate needed) when:
- * - File exists
- * - Content hash matches allowed_hashes
- * - Path is not protected or in update.skip
+ * - Path is not protected
  * - Path is not owned by the current template set
+ * - Path is not in update.skip (unless bypassed)
+ * - Target is a regular non-symlink file
+ * - Content hash matches allowed_hashes
  */
 /** @internal Exported for testing only */
 export function collectSafeFileDeletes(
@@ -309,14 +314,6 @@ export function collectSafeFileDeletes(
       continue;
     }
 
-    const fullPath = path.join(cwd, item.from);
-
-    // Check: file exists?
-    if (!fs.existsSync(fullPath)) {
-      results.push({ item, action: "skip-missing" });
-      continue;
-    }
-
     // Check: update.skip? (can be bypassed for breaking releases)
     if (
       !bypassUpdateSkip &&
@@ -337,11 +334,24 @@ export function collectSafeFileDeletes(
       continue;
     }
 
+    const fullPath = path.join(cwd, item.from);
+
     try {
+      const stat = fs.lstatSync(fullPath);
+      if (stat.isSymbolicLink() || !stat.isFile()) {
+        results.push({ item, action: "skip-modified" });
+        continue;
+      }
+
       const content = fs.readFileSync(fullPath, "utf-8");
       const fileHash = computeHash(content);
       if (item.allowed_hashes.includes(fileHash)) {
-        results.push({ item, action: "delete" });
+        results.push({
+          item,
+          action: "delete",
+          plannedContent: content,
+          plannedHash: fileHash,
+        });
       } else {
         results.push({ item, action: "skip-modified" });
       }
@@ -399,7 +409,10 @@ function printSafeFileDeleteSummary(
 }
 
 /**
- * Execute safe-file-delete items (delete files + clean up empty dirs)
+ * Execute safe-file-delete items (delete files + clean up empty dirs).
+ * Revalidates path protection, regular non-symlink type, planned bytes, and
+ * allowed_hashes membership immediately before unlink. Ownership is removed
+ * only after a successful delete.
  */
 function executeSafeFileDeletes(
   classified: SafeFileDeleteClassified[],
@@ -409,15 +422,42 @@ function executeSafeFileDeletes(
   let deleted = 0;
 
   for (const c of toDelete) {
-    if (isProtectedResearchPath(c.item.from)) continue;
+    if (isProtectedPath(c.item.from)) continue;
+    if (
+      c.plannedContent === undefined ||
+      c.plannedHash === undefined ||
+      !c.item.allowed_hashes ||
+      c.item.allowed_hashes.length === 0
+    ) {
+      continue;
+    }
+
     const fullPath = path.join(cwd, c.item.from);
     try {
+      const stat = fs.lstatSync(fullPath);
+      if (stat.isSymbolicLink() || !stat.isFile()) {
+        continue;
+      }
+
+      const currentContent = fs.readFileSync(fullPath, "utf-8");
+      if (currentContent !== c.plannedContent) {
+        continue;
+      }
+
+      const currentHash = computeHash(currentContent);
+      if (
+        currentHash !== c.plannedHash ||
+        !c.item.allowed_hashes.includes(currentHash)
+      ) {
+        continue;
+      }
+
       fs.unlinkSync(fullPath);
       removeHash(cwd, c.item.from);
       cleanupEmptyDirs(cwd, path.dirname(c.item.from));
       deleted++;
     } catch {
-      // File may have been removed between classify and execute
+      // File may have been removed or mutated between classify and execute
     }
   }
 

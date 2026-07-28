@@ -48,7 +48,44 @@ import {
   RETIRED_STRUCTURED_FILES,
   type RetiredStructuredFile,
 } from "../legacy/retired-host-cleanup.js";
+import {
+  RESEARCH_SKILL_RETIREMENT_TARGET_PATHS,
+  getResearchSkillRetirementHashMap,
+  hasResearchSkillRetirementAuthority,
+} from "../legacy/research-skill-retirement.js";
+import { getAllMigrations } from "../migrations/index.js";
 import type { TemplateHashes } from "../types/migration.js";
+
+const RESEARCH_STAGE_SKILL_TARGET_SET = new Set<string>(
+  RESEARCH_SKILL_RETIREMENT_TARGET_PATHS,
+);
+
+/**
+ * C08: Research stage Skill paths require evidence ∩ migration ∩ ownership.
+ * With authority=none this preserves historical skills rather than inventing deletes.
+ */
+function mayUninstallResearchStageSkill(
+  posixPath: string,
+  currentHash: string,
+): boolean {
+  if (!RESEARCH_STAGE_SKILL_TARGET_SET.has(posixPath)) {
+    return true;
+  }
+  if (!hasResearchSkillRetirementAuthority(posixPath)) {
+    return false;
+  }
+  const evidenceHashes = getResearchSkillRetirementHashMap().get(posixPath);
+  if (!evidenceHashes?.includes(currentHash)) {
+    return false;
+  }
+  const migration = getAllMigrations().find(
+    (item) =>
+      item.type === "safe-file-delete" &&
+      item.from === posixPath &&
+      item.allowed_hashes?.includes(currentHash),
+  );
+  return migration !== undefined;
+}
 
 export interface UninstallOptions {
   yes?: boolean;
@@ -184,6 +221,11 @@ interface UninstallPlan {
   unchanged: string[];
   missing: string[];
   unknown: string[];
+  /**
+   * Owned Research stage Skill paths preserved for lack of retirement
+   * evidence. Ownership is retained so a later install of evidence can retry.
+   */
+  researchSkillDeferred: { posixPath: string; hash: string }[];
 }
 
 function buildPlan(
@@ -210,6 +252,7 @@ function buildPlan(
     unchanged: [],
     missing: [],
     unknown,
+    researchSkillDeferred: [],
   };
 
   for (const [posixPath, hash] of Object.entries(hashes)) {
@@ -266,7 +309,12 @@ function buildPlan(
         continue;
       }
       const currentContent = fs.readFileSync(absPath, "utf-8");
-      if (computeHash(currentContent) === hash) {
+      const currentHash = computeHash(currentContent);
+      if (currentHash === hash) {
+        if (!mayUninstallResearchStageSkill(posixPath, currentHash)) {
+          plan.researchSkillDeferred.push({ posixPath, hash });
+          continue;
+        }
         plan.deletions.push({
           posixPath,
           absPath,
@@ -321,6 +369,12 @@ function renderPlan(plan: UninstallPlan): void {
   renderGroup("Modified and preserved", plan.modified, "!", chalk.yellow);
   renderGroup("Malformed and preserved", plan.malformed, "?", chalk.yellow);
   renderGroup("Unchanged and preserved", plan.unchanged, "=", chalk.gray);
+  renderGroup(
+    "Research stage Skills deferred (no immutable retirement authority)",
+    plan.researchSkillDeferred.map((item) => item.posixPath),
+    "!",
+    chalk.yellow,
+  );
   renderGroup("Missing", plan.missing, "○", chalk.gray);
   renderGroup("Unknown ownership released", plan.unknown, "○", chalk.gray);
 }
@@ -404,6 +458,11 @@ function executePlan(cwd: string, plan: UninstallPlan): UninstallSummary {
   const retained: TemplateHashes = {};
   const deletedDirCandidates = new Set<string>();
 
+  // Capture deferred Research stage Skill ownership first.
+  for (const deferred of plan.researchSkillDeferred) {
+    retained[deferred.posixPath] = deferred.hash;
+  }
+
   for (const mod of plan.modifications) {
     try {
       const currentContent = fs.readFileSync(mod.absPath, "utf-8");
@@ -437,8 +496,8 @@ function executePlan(cwd: string, plan: UninstallPlan): UninstallSummary {
     }
   }
 
-  // All non-action outcomes intentionally release ownership. Only failed
-  // delete/write operations remain so a later uninstall can retry them.
+  // All other non-action outcomes intentionally release ownership. Failed
+  // delete/write ops and deferred Research stage Skills remain for retry.
   saveHashes(cwd, retained);
 
   for (const dirPosix of deletedDirCandidates) {

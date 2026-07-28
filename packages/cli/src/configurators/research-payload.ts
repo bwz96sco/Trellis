@@ -1,11 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { AI_TOOLS, type AITool } from "../types/ai-tools.js";
-import {
-  RESEARCH_STAGE_SKILL_NAMES,
-  getResearchStageSkillTemplates,
-} from "../templates/common/index.js";
+import type { AITool } from "../types/ai-tools.js";
+import { RESEARCH_STAGE_SKILL_NAMES } from "../templates/common/index.js";
 import {
   getResearchWorkerTemplate as getClaudeResearchWorkerTemplate,
   getSettingsTemplate as getClaudeSettingsTemplate,
@@ -21,10 +18,10 @@ import { ensureDir, writeFile } from "../utils/file-writer.js";
 import {
   replacePythonCommandLiterals,
   resolvePlaceholders,
-  resolvePlaceholdersNeutral,
   type PlatformConfigureOptions,
 } from "./shared.js";
 
+/** Re-exported for tests and audits; C08 no longer generates these into projects. */
 export { RESEARCH_STAGE_SKILL_NAMES };
 
 export const RESEARCH_WORKER_NAME = "trellis-research-worker";
@@ -221,29 +218,16 @@ function mergeCodexConfig(template: string, existing: string | null): string {
   return `${template.trimEnd()}\n\n${existing}`;
 }
 
-function collectResearchSkills(platformId: AITool): Map<string, string> {
-  const files = new Map<string, string>();
-  const root =
-    platformId === "claude-code" ? ".claude/skills" : ".agents/skills";
-  const ctx = AI_TOOLS[platformId].templateContext;
-
-  for (const skill of getResearchStageSkillTemplates()) {
-    for (const file of skill.files) {
-      const content =
-        platformId === "codex"
-          ? resolvePlaceholdersNeutral(file.content, ctx)
-          : resolvePlaceholders(file.content, ctx);
-      files.set(`${root}/${skill.name}/${file.relativePath}`, content);
-    }
-  }
-  return files;
-}
-
+/**
+ * C08: Research stage Skills are no longer generated into projects.
+ * Dormant source templates remain under templates/common until C09.
+ * Historical installed files may only be retired via immutable evidence.
+ */
 function collectClaudePayload(
   cwd: string | undefined,
   options: PlatformConfigureOptions | undefined,
 ): Map<string, string> {
-  const files = collectResearchSkills("claude-code");
+  const files = new Map<string, string>();
   const worker = getClaudeResearchWorkerTemplate();
   files.set(RESEARCH_PAYLOAD_PATHS.claude.worker, worker.content);
 
@@ -268,7 +252,7 @@ function collectClaudePayload(
 }
 
 function collectCodexPayload(cwd: string | undefined): Map<string, string> {
-  const files = collectResearchSkills("codex");
+  const files = new Map<string, string>();
   const worker = getCodexResearchWorkerTemplate();
   files.set(RESEARCH_PAYLOAD_PATHS.codex.worker, worker.content);
 

@@ -20,10 +20,7 @@ vi.mock("node:child_process", () => ({
 }));
 
 import { init } from "../../src/commands/init.js";
-import {
-  RESEARCH_PAYLOAD_PATHS,
-  RESEARCH_STAGE_SKILL_NAMES,
-} from "../../src/configurators/research-payload.js";
+import { RESEARCH_PAYLOAD_PATHS } from "../../src/configurators/research-payload.js";
 import { replacePythonCommandLiterals } from "../../src/configurators/shared.js";
 import { PATHS } from "../../src/constants/paths.js";
 import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
@@ -60,18 +57,12 @@ function snapshotFiles(root: string): Map<string, string> {
 
 const claudePayloadPaths = [
   RESEARCH_PAYLOAD_PATHS.claude.worker,
-  ...RESEARCH_STAGE_SKILL_NAMES.map(
-    (name) => `.claude/skills/${name}/SKILL.md`,
-  ),
   ...RESEARCH_PAYLOAD_PATHS.claude.hooks,
   RESEARCH_PAYLOAD_PATHS.claude.config,
 ].sort();
 
 const codexPayloadPaths = [
   RESEARCH_PAYLOAD_PATHS.codex.worker,
-  ...RESEARCH_STAGE_SKILL_NAMES.map(
-    (name) => `.agents/skills/${name}/SKILL.md`,
-  ),
   ...RESEARCH_PAYLOAD_PATHS.codex.hooks,
   ...RESEARCH_PAYLOAD_PATHS.codex.config,
 ].sort();

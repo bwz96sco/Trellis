@@ -50,9 +50,18 @@ CURRENT_HOST_GENERIC_CLEANUP_PATHS     exactly 137 paths
 RETIRED_GENERATED_PATHS                exactly 1,009 paths across 17 retired hosts
 ```
 
-### Frozen successor signatures (not implemented in C01)
+### C08 Research Skill retirement signatures (active)
 
-Dedicated Research Skill retirement evidence records an exact historical path, released package/version provenance, immutable released source/tar entry, normalization rule, and reproduced SHA-256. It is separate from migration inventory membership and from the frozen generic cleanup snapshots.
+Dedicated package-internal Research Skill retirement evidence:
+
+```text
+packages/cli/src/legacy/research-skill-retirement.json
+packages/cli/src/legacy/research-skill-retirement.ts
+```
+
+Records schema version, `normalization: utf8-lf`, `authority: none | complete`, and (when complete) exact historical path, released package/version provenance, immutable tar entry, rendering profile, and sorted unique lowercase SHA-256 digests. It is separate from migration inventory membership and from the frozen generic cleanup snapshots. Evidence is never installed into user projects.
+
+Forward migration `0.7.0-beta.1` reserves the Research Skill `safe-file-delete` slot. While `authority=none`, that manifest must contain zero Research stage Skill deletes. Agreement tests fail closed if evidence and migrations disagree.
 
 ## 3. Contracts
 

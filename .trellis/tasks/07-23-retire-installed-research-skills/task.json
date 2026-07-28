@@ -3,7 +3,7 @@
   "name": "retire-installed-research-skills",
   "title": "C08 Stop generation and safely retire installed Research Skills",
   "description": "Stop Research Skill generation and hash-gate removal of only pristine Trellis-owned installed Skill files.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

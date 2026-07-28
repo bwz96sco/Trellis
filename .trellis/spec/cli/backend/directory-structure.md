@@ -48,7 +48,7 @@ packages/cli/src/
 ├── templates/
 │   ├── claude/                   # exact Research worker/settings/statusline
 │   ├── codex/                    # exact Research worker/hooks/config
-│   ├── common/bundled-skills/    # exactly nine Research stage skills
+│   ├── common/bundled-skills/    # nine dormant Research stage skills (C08; removed in C09)
 │   ├── shared-hooks/             # approved Research hook matrix
 │   ├── trellis/                  # Research config/gitignore/workflow
 │   └── markdown/agents.md        # marker-managed AGENTS.md block

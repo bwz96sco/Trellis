@@ -1,0 +1,8 @@
+{
+  "version": "0.7.0-beta.1",
+  "description": "Research stage Skill retirement migration (empty until immutable provenance proves path/hash pairs).",
+  "breaking": false,
+  "recommendMigrate": false,
+  "changelog": "Reserves the forward migration slot for proven-pristine Research stage Skill safe-file-delete items. Authority is empty while published multi-host releases lack stage Skills; generation stop is owned by the Research payload collector.",
+  "migrations": []
+}

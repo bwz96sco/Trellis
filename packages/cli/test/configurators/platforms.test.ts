@@ -36,18 +36,12 @@ function listFiles(root: string): string[] {
 
 const claudePaths = [
   RESEARCH_PAYLOAD_PATHS.claude.worker,
-  ...RESEARCH_STAGE_SKILL_NAMES.map(
-    (name) => `.claude/skills/${name}/SKILL.md`,
-  ),
   ...RESEARCH_PAYLOAD_PATHS.claude.hooks,
   RESEARCH_PAYLOAD_PATHS.claude.config,
 ].sort();
 
 const codexPaths = [
   RESEARCH_PAYLOAD_PATHS.codex.worker,
-  ...RESEARCH_STAGE_SKILL_NAMES.map(
-    (name) => `.agents/skills/${name}/SKILL.md`,
-  ),
   ...RESEARCH_PAYLOAD_PATHS.codex.hooks,
   ...RESEARCH_PAYLOAD_PATHS.codex.config,
 ].sort();
@@ -101,12 +95,13 @@ describe("configurePlatform", () => {
     setWriteMode("ask");
   });
 
-  it("configures both retained hosts", async () => {
+  it("configures both retained hosts without generating stage skills", async () => {
     await configurePlatform("claude-code", tmpDir);
     await configurePlatform("codex", tmpDir);
     expect(fs.existsSync(path.join(tmpDir, ".claude"))).toBe(true);
     expect(fs.existsSync(path.join(tmpDir, ".codex"))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, ".agents", "skills"))).toBe(false);
+    expect(fs.existsSync(path.join(tmpDir, ".claude", "skills"))).toBe(false);
   });
 
   it("exposes exact Research-only path allowlists", () => {
@@ -138,7 +133,7 @@ describe("configurePlatform", () => {
     }
   });
 
-  it("writes only the bounded Codex worker, stage skills, hook, and config", async () => {
+  it("writes only the bounded Codex worker, hook, and config without stage skills", async () => {
     await configurePlatform("codex", tmpDir);
 
     expect(listFiles(tmpDir)).toEqual(codexPaths);
@@ -149,6 +144,11 @@ describe("configurePlatform", () => {
       false,
     );
     expect(fs.existsSync(path.join(tmpDir, ".codex/skills"))).toBe(false);
+    for (const name of RESEARCH_STAGE_SKILL_NAMES) {
+      expect(
+        fs.existsSync(path.join(tmpDir, ".agents/skills", name, "SKILL.md")),
+      ).toBe(false);
+    }
   });
 
   it("keeps Claude statusline opt-in byte-stable", async () => {

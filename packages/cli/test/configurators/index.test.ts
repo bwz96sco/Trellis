@@ -13,7 +13,10 @@ import {
   resolveCliFlag,
 } from "../../src/configurators/index.js";
 import { LEGACY_CLEANUP_MANAGED_ROOTS } from "../../src/legacy/retired-host-cleanup.js";
-import { RESEARCH_STAGE_SKILL_NAMES } from "../../src/configurators/research-payload.js";
+import {
+  RESEARCH_PAYLOAD_PATHS,
+  RESEARCH_STAGE_SKILL_NAMES,
+} from "../../src/configurators/research-payload.js";
 
 describe("active platform registry", () => {
   it("contains exactly Claude Code and Codex", () => {
@@ -100,14 +103,16 @@ describe("collectPlatformTemplates", () => {
     }
   });
 
-  it("tracks exactly the Research stage skills under retained roots", () => {
+  it("no longer tracks Research stage skills in generated payloads (C08)", () => {
     const claude = collectPlatformTemplates("claude-code");
     const codex = collectPlatformTemplates("codex");
 
     for (const skillName of RESEARCH_STAGE_SKILL_NAMES) {
-      expect(claude?.has(`.claude/skills/${skillName}/SKILL.md`)).toBe(true);
-      expect(codex?.has(`.agents/skills/${skillName}/SKILL.md`)).toBe(true);
+      expect(claude?.has(`.claude/skills/${skillName}/SKILL.md`)).toBe(false);
+      expect(codex?.has(`.agents/skills/${skillName}/SKILL.md`)).toBe(false);
     }
+    expect(claude?.has(RESEARCH_PAYLOAD_PATHS.claude.worker)).toBe(true);
+    expect(codex?.has(RESEARCH_PAYLOAD_PATHS.codex.worker)).toBe(true);
     expect(claude?.has(".claude/skills/trellis-meta/SKILL.md")).toBe(false);
     expect(codex?.has(".agents/skills/trellis-meta/SKILL.md")).toBe(false);
   });

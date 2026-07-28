@@ -9,15 +9,10 @@ import {
   RESEARCH_STAGE_SKILL_NAMES,
   collectResearchPlatformPayload,
 } from "../../src/configurators/research-payload.js";
-import {
-  replacePythonCommandLiterals,
-  resolvePlaceholders,
-  resolvePlaceholdersNeutral,
-} from "../../src/configurators/shared.js";
+import { replacePythonCommandLiterals } from "../../src/configurators/shared.js";
 import { getResearchWorkerTemplate as getClaudeResearchWorkerTemplate } from "../../src/templates/claude/index.js";
 import { getResearchWorkerTemplate as getCodexResearchWorkerTemplate } from "../../src/templates/codex/index.js";
 import { getResearchStageSkillTemplates } from "../../src/templates/common/index.js";
-import { AI_TOOLS } from "../../src/types/ai-tools.js";
 
 describe("exact Research payload template APIs", () => {
   it("loads exactly the nine named Research stage bundles without neighboring generic skills", () => {
@@ -40,7 +35,7 @@ describe("exact Research payload template APIs", () => {
     expect(codex.content.length).toBeGreaterThan(0);
   });
 
-  it("renders exact stage bundles and workers byte-identically in collected payloads", () => {
+  it("collects workers without generating Research stage Skill directories", () => {
     const skills = getResearchStageSkillTemplates();
     const claude = collectResearchPlatformPayload("claude-code");
     const codex = collectResearchPlatformPayload("codex");
@@ -52,20 +47,25 @@ describe("exact Research payload template APIs", () => {
       replacePythonCommandLiterals(getCodexResearchWorkerTemplate().content),
     );
 
+    // C08: generation stopped; dormant source templates remain loadable for C09.
+    expect(skills).toHaveLength(RESEARCH_STAGE_SKILL_NAMES.length);
     for (const skill of skills) {
       for (const file of skill.files) {
-        expect(claude.get(`.claude/skills/${skill.name}/${file.relativePath}`)).toBe(
-          replacePythonCommandLiterals(
-            resolvePlaceholders(file.content, AI_TOOLS["claude-code"].templateContext),
-          ),
-        );
-        expect(codex.get(`.agents/skills/${skill.name}/${file.relativePath}`)).toBe(
-          replacePythonCommandLiterals(
-            resolvePlaceholdersNeutral(file.content, AI_TOOLS.codex.templateContext),
-          ),
-        );
+        expect(
+          claude.has(`.claude/skills/${skill.name}/${file.relativePath}`),
+        ).toBe(false);
+        expect(
+          codex.has(`.agents/skills/${skill.name}/${file.relativePath}`),
+        ).toBe(false);
       }
     }
+
+    expect(
+      [...claude.keys()].some((key) => key.includes("/skills/trellis-research-")),
+    ).toBe(false);
+    expect(
+      [...codex.keys()].some((key) => key.includes("/skills/trellis-research-")),
+    ).toBe(false);
   });
 
   it("keeps malformed structured host files byte-identical while collecting exact assets", () => {
