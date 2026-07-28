@@ -529,8 +529,9 @@ describe("uninstall() integration", () => {
     expect(fs.readFileSync(settingsPath, "utf-8")).toBe(
       '{"model":"edited while confirming"}\n',
     );
-    expect(loadHashes(tmpDir)).not.toHaveProperty(opaquePath);
-    expect(loadHashes(tmpDir)).not.toHaveProperty(".claude/settings.json");
+    // Concurrent modification aborts deletion and retains ownership for retry.
+    expect(loadHashes(tmpDir)).toHaveProperty(opaquePath);
+    expect(loadHashes(tmpDir)).toHaveProperty(".claude/settings.json");
   });
 
   it("#12b files removed after planning are treated as missing", async () => {
@@ -554,6 +555,7 @@ describe("uninstall() integration", () => {
     await uninstall({});
 
     expect(fs.existsSync(opaqueAbs)).toBe(false);
+    // Already-missing planned deletes release ownership (file is gone).
     expect(loadHashes(tmpDir)).not.toHaveProperty(opaquePath);
   });
 

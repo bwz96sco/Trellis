@@ -402,9 +402,16 @@ describe("0.7 current-host safe-delete evidence", () => {
       item: migrationManifest.migrations[0],
       action: "delete",
     });
-    expect(result[0].plannedContent).toEqual(expect.any(String));
+    expect(Buffer.isBuffer(result[0].plannedBytes)).toBe(true);
     expect(result[0].plannedHash).toBe(
       migrationManifest.migrations[0].allowed_hashes?.[0],
+    );
+    expect(result[0].identity).toEqual(
+      expect.objectContaining({
+        dev: expect.any(Number),
+        ino: expect.any(Number),
+        size: expect.any(Number),
+      }),
     );
   });
 

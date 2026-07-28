@@ -27,9 +27,20 @@ import {
   removeHash,
   renameHash,
   computeHash,
+  computeRawHash,
 } from "../utils/template-hash.js";
 import { compareVersions } from "../utils/compare-versions.js";
 import { toPosix } from "../utils/posix.js";
+import {
+  pathStillMatchesIdentity,
+  readValidatedDeleteTarget,
+  resolveSafeRegularFile,
+} from "../utils/safe-delete-path.js";
+import {
+  getAuthorizedResearchSkillDeletes,
+  isResearchSkillRetirementTargetPath,
+  researchSafeFileDeleteAuthorized,
+} from "../legacy/research-skill-retirement.js";
 import { setupProxy } from "../utils/proxy.js";
 // Import templates for comparison
 import {
@@ -269,10 +280,17 @@ interface SafeFileDeleteClassified {
     | "skip-modified"
     | "skip-protected"
     | "skip-update-skip";
-  /** Exact content captured at classify time for pre-unlink revalidation. */
-  plannedContent?: string;
-  /** Hash of plannedContent (LF-normalized via computeHash). */
+  /** Exact bytes captured at classify time for pre-unlink revalidation. */
+  plannedBytes?: Buffer;
+  /**
+   * Hash of plannedBytes: raw SHA-256 for Research retirement paths,
+   * LF-normalized computeHash for other safe-file-deletes.
+   */
   plannedHash?: string;
+  /** Inode identity captured at classify time. */
+  identity?: { dev: number; ino: number; size: number };
+  /** Research retirement uses raw-byte hashing. */
+  rawHashMode?: boolean;
 }
 
 /**
@@ -281,9 +299,11 @@ interface SafeFileDeleteClassified {
  * safe-file-delete auto-executes (no --migrate needed) when:
  * - Path is not protected
  * - Path is not owned by the current template set
- * - Path is not in update.skip (unless bypassed)
+ * - Path is not in update.skip (Research paths never bypass skip)
+ * - No symlink components on the relative path
  * - Target is a regular non-symlink file
  * - Content hash matches allowed_hashes
+ * - Research paths additionally require evidence↔migration agreement
  */
 /** @internal Exported for testing only */
 export function collectSafeFileDeletes(
@@ -297,6 +317,8 @@ export function collectSafeFileDeletes(
    * protected paths sitting next to the new architecture forever). The hash
    * check in `allowed_hashes` is still the ultimate safety net — user-modified
    * files still stay put with a "skip-modified" warning.
+   *
+   * Research stage Skill retirement paths never honor this bypass.
    */
   bypassUpdateSkip = false,
 ): SafeFileDeleteClassified[] {
@@ -305,6 +327,10 @@ export function collectSafeFileDeletes(
   const safeDeletes = migrations.filter(
     (m) => m.type === "safe-file-delete" && !currentTemplatePaths.has(m.from),
   );
+  // Fail closed: only evidence-authorized Research paths may delete, and only
+  // when migration allowed_hashes exactly equal evidence hashes.
+  const authorizedResearchDeletes =
+    getAuthorizedResearchSkillDeletes(migrations);
   const results: SafeFileDeleteClassified[] = [];
 
   for (const item of safeDeletes) {
@@ -314,9 +340,12 @@ export function collectSafeFileDeletes(
       continue;
     }
 
-    // Check: update.skip? (can be bypassed for breaking releases)
+    const isResearchTarget = isResearchSkillRetirementTargetPath(item.from);
+
+    // Research retirement never inherits breaking update.skip bypass.
+    const honorSkip = isResearchTarget || !bypassUpdateSkip;
     if (
-      !bypassUpdateSkip &&
+      honorSkip &&
       skipPaths.some(
         (skip) =>
           item.from === skip ||
@@ -327,37 +356,57 @@ export function collectSafeFileDeletes(
       continue;
     }
 
-    // Check: hash matches allowed_hashes?
     if (!item.allowed_hashes || item.allowed_hashes.length === 0) {
-      // No allowed hashes defined — skip for safety
       results.push({ item, action: "skip-modified" });
       continue;
     }
 
-    const fullPath = path.join(cwd, item.from);
-
-    try {
-      const stat = fs.lstatSync(fullPath);
-      if (stat.isSymbolicLink() || !stat.isFile()) {
+    if (isResearchTarget) {
+      if (!researchSafeFileDeleteAuthorized(item, authorizedResearchDeletes)) {
         results.push({ item, action: "skip-modified" });
         continue;
       }
-
-      const content = fs.readFileSync(fullPath, "utf-8");
-      const fileHash = computeHash(content);
-      if (item.allowed_hashes.includes(fileHash)) {
-        results.push({
-          item,
-          action: "delete",
-          plannedContent: content,
-          plannedHash: fileHash,
-        });
-      } else {
-        results.push({ item, action: "skip-modified" });
-      }
-    } catch {
-      results.push({ item, action: "skip-missing" });
     }
+
+    const resolved = resolveSafeRegularFile(cwd, item.from);
+    if (!resolved.ok) {
+      results.push({
+        item,
+        action:
+          resolved.reason === "missing" ? "skip-missing" : "skip-modified",
+      });
+      continue;
+    }
+
+    const validated = readValidatedDeleteTarget(
+      resolved.absPath,
+      resolved.stat,
+    );
+    if (!validated) {
+      results.push({ item, action: "skip-modified" });
+      continue;
+    }
+
+    const fileHash = isResearchTarget
+      ? computeRawHash(validated.bytes)
+      : computeHash(validated.bytes.toString("utf-8"));
+    if (!item.allowed_hashes.includes(fileHash)) {
+      results.push({ item, action: "skip-modified" });
+      continue;
+    }
+
+    results.push({
+      item,
+      action: "delete",
+      plannedBytes: validated.bytes,
+      plannedHash: fileHash,
+      identity: {
+        dev: validated.dev,
+        ino: validated.ino,
+        size: validated.size,
+      },
+      rawHashMode: isResearchTarget,
+    });
   }
 
   return results;
@@ -410,9 +459,9 @@ function printSafeFileDeleteSummary(
 
 /**
  * Execute safe-file-delete items (delete files + clean up empty dirs).
- * Revalidates path protection, regular non-symlink type, planned bytes, and
- * allowed_hashes membership immediately before unlink. Ownership is removed
- * only after a successful delete.
+ * Revalidates path protection, symlink-free ancestry, inode identity, exact
+ * planned bytes, and allowed_hashes membership immediately before unlink.
+ * Ownership is removed only after a successful delete.
  */
 function executeSafeFileDeletes(
   classified: SafeFileDeleteClassified[],
@@ -424,27 +473,36 @@ function executeSafeFileDeletes(
   for (const c of toDelete) {
     if (isProtectedPath(c.item.from)) continue;
     if (
-      c.plannedContent === undefined ||
+      c.plannedBytes === undefined ||
       c.plannedHash === undefined ||
+      c.identity === undefined ||
       !c.item.allowed_hashes ||
       c.item.allowed_hashes.length === 0
     ) {
       continue;
     }
 
-    const fullPath = path.join(cwd, c.item.from);
     try {
-      const stat = fs.lstatSync(fullPath);
-      if (stat.isSymbolicLink() || !stat.isFile()) {
+      const resolved = resolveSafeRegularFile(cwd, c.item.from);
+      if (!resolved.ok) continue;
+
+      const validated = readValidatedDeleteTarget(
+        resolved.absPath,
+        resolved.stat,
+      );
+      if (!validated) continue;
+      if (
+        validated.dev !== c.identity.dev ||
+        validated.ino !== c.identity.ino ||
+        validated.size !== c.identity.size
+      ) {
         continue;
       }
+      if (!validated.bytes.equals(c.plannedBytes)) continue;
 
-      const currentContent = fs.readFileSync(fullPath, "utf-8");
-      if (currentContent !== c.plannedContent) {
-        continue;
-      }
-
-      const currentHash = computeHash(currentContent);
+      const currentHash = c.rawHashMode
+        ? computeRawHash(validated.bytes)
+        : computeHash(validated.bytes.toString("utf-8"));
       if (
         currentHash !== c.plannedHash ||
         !c.item.allowed_hashes.includes(currentHash)
@@ -452,7 +510,12 @@ function executeSafeFileDeletes(
         continue;
       }
 
-      fs.unlinkSync(fullPath);
+      // Last-moment replace check: refuse unlink if the path was swapped.
+      if (!pathStillMatchesIdentity(resolved.absPath, c.identity)) {
+        continue;
+      }
+
+      fs.unlinkSync(resolved.absPath);
       removeHash(cwd, c.item.from);
       cleanupEmptyDirs(cwd, path.dirname(c.item.from));
       deleted++;

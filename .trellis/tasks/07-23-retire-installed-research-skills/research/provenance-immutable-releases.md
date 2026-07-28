@@ -1,8 +1,8 @@
 # C08 Provenance — Immutable release scan (planning)
 
-**Date:** 2026-07-27  
-**Method:** primary npm registry metadata via `npm view` + verified tarball download (SHA-1) + `tar -tzf` listing  
-**Package under scan:** `@mindfoldhq/trellis`  
+**Date:** 2026-07-27
+**Method:** primary npm registry metadata via `npm view` + verified tarball download (SHA-1) + `tar -tzf` listing
+**Package under scan:** `@mindfoldhq/trellis`
 **Purpose:** establish whether any published release can authorize deletion hashes for the nine Research stage Skills.
 
 ## Registry summary

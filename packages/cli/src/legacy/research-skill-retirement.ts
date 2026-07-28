@@ -15,7 +15,8 @@ import type snapshotJson from "./research-skill-retirement.json";
 
 export type ResearchSkillRetirementHost = "claude" | "codex";
 
-export type ResearchSkillRetirementAuthority = "none" | "complete";
+/** none: zero deletes; partial: 1-17 proven paths; complete: all 18 targets. */
+export type ResearchSkillRetirementAuthority = "none" | "partial" | "complete";
 
 export interface ResearchSkillRetirementArtifact {
   readonly packageName: "@mindfoldhq/trellis";
@@ -31,13 +32,14 @@ export interface ResearchSkillRetirementEntry {
   readonly path: string;
   readonly sourceTarEntry: string;
   readonly renderingProfile: string;
+  /** Sorted unique lowercase raw-byte SHA-256 digests. */
   readonly sha256: readonly string[];
   readonly artifacts: readonly ResearchSkillRetirementArtifact[];
 }
 
 export interface ResearchSkillRetirementSnapshot {
   readonly schemaVersion: 1;
-  readonly normalization: "utf8-lf";
+  readonly normalization: "raw-sha256";
   readonly authority: ResearchSkillRetirementAuthority;
   readonly entries: readonly ResearchSkillRetirementEntry[];
   readonly notes?: string;
@@ -66,6 +68,7 @@ export const RESEARCH_SKILL_RETIREMENT_TARGET_PATHS = [
 ] as const;
 
 const EXPECTED_COMPLETE_COUNT = RESEARCH_SKILL_RETIREMENT_TARGET_PATHS.length;
+const TARGET_SET = new Set<string>(RESEARCH_SKILL_RETIREMENT_TARGET_PATHS);
 
 const loadJson = createRequire(import.meta.url);
 const rawSnapshot: unknown = loadJson(
@@ -157,14 +160,23 @@ function assertArtifact(
   }
   if (
     typeof value.integritySha512 !== "string" ||
-    !value.integritySha512.startsWith("sha512-")
+    !/^sha512-[A-Za-z0-9+/]+=*$/.test(value.integritySha512)
   ) {
-    throw new Error(`${label}.integritySha512 must start with sha512-`);
+    throw new Error(
+      `${label}.integritySha512 must be a sha512-<base64> integrity string`,
+    );
+  }
+  const version = value.version as string;
+  const tarballUrl = value.tarballUrl as string;
+  if (!tarballUrl.includes(`/trellis-${version}.tgz`)) {
+    throw new Error(
+      `${label}.tarballUrl must include package version filename trellis-${version}.tgz`,
+    );
   }
   return {
     packageName: "@mindfoldhq/trellis",
-    version: value.version as string,
-    tarballUrl: value.tarballUrl as string,
+    version,
+    tarballUrl,
     shasumSha1: value.shasumSha1 as string,
     integritySha512: value.integritySha512 as string,
   };
@@ -188,6 +200,11 @@ function assertEntry(
     );
   }
   const entryPath = assertExactSafePath(value.path, `entries[${index}].path`);
+  if (!TARGET_SET.has(entryPath)) {
+    throw new Error(
+      `entries[${index}].path is not a Research stage Skill target: ${entryPath}`,
+    );
+  }
   if (!entryPath.startsWith(`${root}/`)) {
     throw new Error(
       `entries[${index}].path must start with host root ${root}: ${entryPath}`,
@@ -205,10 +222,12 @@ function assertEntry(
   }
   if (
     typeof value.sourceTarEntry !== "string" ||
-    value.sourceTarEntry.length === 0
+    value.sourceTarEntry.length === 0 ||
+    value.sourceTarEntry.includes("\0") ||
+    value.sourceTarEntry.includes("\\")
   ) {
     throw new Error(
-      `entries[${index}].sourceTarEntry must be a non-empty string`,
+      `entries[${index}].sourceTarEntry must be a non-empty safe tar path`,
     );
   }
   if (
@@ -237,6 +256,15 @@ function assertEntry(
   };
 }
 
+function hashesEqual(
+  left: readonly string[] | undefined,
+  right: readonly string[],
+): boolean {
+  const a = [...(left ?? [])].sort();
+  const b = [...right].sort();
+  return a.length === b.length && a.every((hash, index) => hash === b[index]);
+}
+
 export function loadResearchSkillRetirementSnapshot(
   value: unknown = rawSnapshot,
 ): ResearchSkillRetirementSnapshot {
@@ -246,12 +274,18 @@ export function loadResearchSkillRetirementSnapshot(
   if (value.schemaVersion !== 1) {
     throw new Error("Unsupported research skill retirement schemaVersion");
   }
-  if (value.normalization !== "utf8-lf") {
-    throw new Error("Unsupported research skill retirement normalization");
-  }
-  if (value.authority !== "none" && value.authority !== "complete") {
+  if (value.normalization !== "raw-sha256") {
     throw new Error(
-      "Research skill retirement authority must be none or complete",
+      "Unsupported research skill retirement normalization (expected raw-sha256)",
+    );
+  }
+  if (
+    value.authority !== "none" &&
+    value.authority !== "partial" &&
+    value.authority !== "complete"
+  ) {
+    throw new Error(
+      "Research skill retirement authority must be none, partial, or complete",
     );
   }
   if (!Array.isArray(value.entries)) {
@@ -266,37 +300,46 @@ export function loadResearchSkillRetirementSnapshot(
     }
     return {
       schemaVersion: 1,
-      normalization: "utf8-lf",
+      normalization: "raw-sha256",
       authority: "none",
       entries: [],
       notes: typeof value.notes === "string" ? value.notes : undefined,
     };
   }
 
-  if (value.entries.length !== EXPECTED_COMPLETE_COUNT) {
-    throw new Error(
-      `authority=complete requires exactly ${EXPECTED_COMPLETE_COUNT} entries, found ${value.entries.length}`,
-    );
-  }
-
   const entries = value.entries.map((entry, index) =>
     assertEntry(entry, index),
   );
   const paths = entries.map((entry) => entry.path).sort();
-  const expected = [...RESEARCH_SKILL_RETIREMENT_TARGET_PATHS].sort();
-  if (
-    new Set(paths).size !== paths.length ||
-    paths.some((entryPath, index) => entryPath !== expected[index])
-  ) {
-    throw new Error(
-      "authority=complete entries must cover exactly the 18 target SKILL.md paths",
-    );
+  if (new Set(paths).size !== paths.length) {
+    throw new Error("Research skill retirement entries must have unique paths");
+  }
+
+  if (value.authority === "complete") {
+    if (entries.length !== EXPECTED_COMPLETE_COUNT) {
+      throw new Error(
+        `authority=complete requires exactly ${EXPECTED_COMPLETE_COUNT} entries, found ${entries.length}`,
+      );
+    }
+    const expected = [...RESEARCH_SKILL_RETIREMENT_TARGET_PATHS].sort();
+    if (paths.some((entryPath, index) => entryPath !== expected[index])) {
+      throw new Error(
+        "authority=complete entries must cover exactly the 18 target SKILL.md paths",
+      );
+    }
+  } else {
+    // partial
+    if (entries.length < 1 || entries.length >= EXPECTED_COMPLETE_COUNT) {
+      throw new Error(
+        `authority=partial requires 1..${EXPECTED_COMPLETE_COUNT - 1} entries, found ${entries.length}`,
+      );
+    }
   }
 
   return {
     schemaVersion: 1,
-    normalization: "utf8-lf",
-    authority: "complete",
+    normalization: "raw-sha256",
+    authority: value.authority,
     entries,
     notes: typeof value.notes === "string" ? value.notes : undefined,
   };
@@ -313,22 +356,20 @@ export const RESEARCH_SKILL_RETIREMENT: ResearchSkillRetirementSnapshot =
     notes: snapshot.notes,
   });
 
-/** Paths with deletion hashes when authority is complete; empty when none. */
+/** Paths with deletion hashes under current evidence; empty when none. */
 export const RESEARCH_SKILL_RETIREMENT_PATHS: ReadonlySet<string> = new Set(
   RESEARCH_SKILL_RETIREMENT.entries.map((entry) => entry.path),
 );
 
-/** Map path -> sorted allowed SHA-256 hashes for migration agreement. */
-export function getResearchSkillRetirementHashMap(): ReadonlyMap<
-  string,
-  readonly string[]
-> {
-  return new Map(
-    RESEARCH_SKILL_RETIREMENT.entries.map((entry) => [
-      entry.path,
-      entry.sha256,
-    ]),
-  );
+export function isResearchSkillRetirementTargetPath(filePath: string): boolean {
+  return TARGET_SET.has(filePath);
+}
+
+/** Map path -> sorted allowed raw SHA-256 hashes for migration agreement. */
+export function getResearchSkillRetirementHashMap(
+  evidence: ResearchSkillRetirementSnapshot = RESEARCH_SKILL_RETIREMENT,
+): ReadonlyMap<string, readonly string[]> {
+  return new Map(evidence.entries.map((entry) => [entry.path, entry.sha256]));
 }
 
 /**
@@ -344,8 +385,8 @@ export function hasResearchSkillRetirementAuthority(filePath: string): boolean {
  * safe-file-delete items for Research stage Skill paths.
  *
  * - authority=none: no migration may claim Research target path deletes
- * - authority=complete: each evidence path has exactly one matching
- *   safe-file-delete with identical sorted allowed_hashes
+ * - authority=partial|complete: each evidence path has exactly one matching
+ *   safe-file-delete with identical sorted allowed_hashes; no extra research deletes
  */
 export function assertResearchSkillRetirementAgreesWithMigrations(
   migrations: readonly {
@@ -355,9 +396,8 @@ export function assertResearchSkillRetirementAgreesWithMigrations(
   }[],
   evidence: ResearchSkillRetirementSnapshot = RESEARCH_SKILL_RETIREMENT,
 ): void {
-  const targetSet = new Set<string>(RESEARCH_SKILL_RETIREMENT_TARGET_PATHS);
   const researchDeletes = migrations.filter(
-    (item) => item.type === "safe-file-delete" && targetSet.has(item.from),
+    (item) => item.type === "safe-file-delete" && TARGET_SET.has(item.from),
   );
 
   if (evidence.authority === "none") {
@@ -374,11 +414,21 @@ export function assertResearchSkillRetirementAgreesWithMigrations(
     throw new Error("Duplicate Research stage Skill safe-file-delete paths");
   }
 
-  const evidenceMap = new Map(
-    evidence.entries.map((entry) => [entry.path, entry.sha256]),
-  );
-  if (evidenceMap.size !== EXPECTED_COMPLETE_COUNT) {
+  const evidenceMap = getResearchSkillRetirementHashMap(evidence);
+  if (evidenceMap.size !== evidence.entries.length) {
+    throw new Error("Evidence path map drifted from entries");
+  }
+  if (
+    evidence.authority === "complete" &&
+    evidenceMap.size !== EXPECTED_COMPLETE_COUNT
+  ) {
     throw new Error("Complete evidence must contain 18 paths");
+  }
+  if (
+    evidence.authority === "partial" &&
+    (evidenceMap.size < 1 || evidenceMap.size >= EXPECTED_COMPLETE_COUNT)
+  ) {
+    throw new Error("Partial evidence must contain 1..17 paths");
   }
 
   for (const [entryPath, hashes] of evidenceMap) {
@@ -386,12 +436,7 @@ export function assertResearchSkillRetirementAgreesWithMigrations(
     if (!migration) {
       throw new Error(`Missing safe-file-delete migration for ${entryPath}`);
     }
-    const allowed = [...(migration.allowed_hashes ?? [])].sort();
-    const expected = [...hashes].sort();
-    if (
-      allowed.length !== expected.length ||
-      allowed.some((hash, index) => hash !== expected[index])
-    ) {
+    if (!hashesEqual(migration.allowed_hashes, hashes)) {
       throw new Error(
         `allowed_hashes disagree with retirement evidence for ${entryPath}`,
       );
@@ -405,4 +450,43 @@ export function assertResearchSkillRetirementAgreesWithMigrations(
       );
     }
   }
+}
+
+/**
+ * Returns the authorized Research Skill delete map after fail-closed agreement.
+ * On any disagreement or authority=none, returns an empty map (zero research deletes).
+ */
+export function getAuthorizedResearchSkillDeletes(
+  migrations: readonly {
+    type: string;
+    from: string;
+    allowed_hashes?: readonly string[];
+  }[],
+  evidence: ResearchSkillRetirementSnapshot = RESEARCH_SKILL_RETIREMENT,
+): ReadonlyMap<string, readonly string[]> {
+  try {
+    assertResearchSkillRetirementAgreesWithMigrations(migrations, evidence);
+  } catch {
+    return new Map();
+  }
+  return getResearchSkillRetirementHashMap(evidence);
+}
+
+/**
+ * Whether a migration item may delete a Research stage Skill path: path is
+ * authorized, and allowed_hashes exactly equal evidence hashes (set equality).
+ */
+export function researchSafeFileDeleteAuthorized(
+  item: {
+    type: string;
+    from: string;
+    allowed_hashes?: readonly string[];
+  },
+  authorized: ReadonlyMap<string, readonly string[]>,
+): boolean {
+  if (item.type !== "safe-file-delete") return false;
+  if (!isResearchSkillRetirementTargetPath(item.from)) return true;
+  const expected = authorized.get(item.from);
+  if (!expected) return false;
+  return hashesEqual(item.allowed_hashes, expected);
 }

@@ -47,6 +47,14 @@ export function computeHash(content: string): string {
 }
 
 /**
+ * Compute SHA256 over exact bytes with no line-ending or encoding normalization.
+ * Used for Research Skill retirement evidence and destructive hash gates.
+ */
+export function computeRawHash(bytes: Buffer | Uint8Array): string {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+/**
  * Get path to the hashes file
  */
 function getHashesPath(cwd: string): string {

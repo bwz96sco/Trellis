@@ -12,6 +12,7 @@ import inquirer from "inquirer";
 import { DIR_NAMES, FILE_NAMES } from "../constants/paths.js";
 import {
   computeHash,
+  computeRawHash,
   readTemplateHashesStatus,
   saveHashes,
 } from "../utils/template-hash.js";
@@ -34,6 +35,11 @@ import {
 } from "../utils/cwd-guard.js";
 import { isProtectedResearchPath } from "../utils/protected-paths.js";
 import {
+  pathStillMatchesIdentity,
+  readValidatedDeleteTarget,
+  resolveSafeRegularFile,
+} from "../utils/safe-delete-path.js";
+import {
   scrubHooksJson,
   scrubOpencodePackageJson,
   scrubPiSettings,
@@ -49,42 +55,45 @@ import {
   type RetiredStructuredFile,
 } from "../legacy/retired-host-cleanup.js";
 import {
-  RESEARCH_SKILL_RETIREMENT_TARGET_PATHS,
-  getResearchSkillRetirementHashMap,
-  hasResearchSkillRetirementAuthority,
+  getAuthorizedResearchSkillDeletes,
+  isResearchSkillRetirementTargetPath,
 } from "../legacy/research-skill-retirement.js";
 import { getAllMigrations } from "../migrations/index.js";
 import type { TemplateHashes } from "../types/migration.js";
 
-const RESEARCH_STAGE_SKILL_TARGET_SET = new Set<string>(
-  RESEARCH_SKILL_RETIREMENT_TARGET_PATHS,
-);
-
 /**
- * C08: Research stage Skill paths require evidence ∩ migration ∩ ownership.
- * With authority=none this preserves historical skills rather than inventing deletes.
+ * C08: Research stage Skill paths require evidence ∩ migration ∩ ownership
+ * with exact allowed_hashes set equality (not mere membership of one hash).
+ * With authority=none or agreement failure, preserve historical skills.
  */
 function mayUninstallResearchStageSkill(
   posixPath: string,
-  currentHash: string,
+  currentRawHash: string,
+  authorized: ReadonlyMap<string, readonly string[]>,
 ): boolean {
-  if (!RESEARCH_STAGE_SKILL_TARGET_SET.has(posixPath)) {
+  if (!isResearchSkillRetirementTargetPath(posixPath)) {
     return true;
   }
-  if (!hasResearchSkillRetirementAuthority(posixPath)) {
+  const expected = authorized.get(posixPath);
+  if (!expected || expected.length === 0) {
     return false;
   }
-  const evidenceHashes = getResearchSkillRetirementHashMap().get(posixPath);
-  if (!evidenceHashes?.includes(currentHash)) {
+  if (!expected.includes(currentRawHash)) {
     return false;
   }
-  const migration = getAllMigrations().find(
-    (item) =>
-      item.type === "safe-file-delete" &&
-      item.from === posixPath &&
-      item.allowed_hashes?.includes(currentHash),
-  );
-  return migration !== undefined;
+  // Exact set equality already enforced when building `authorized`. Require a
+  // unique matching migration with the same hash set.
+  const matches = getAllMigrations().filter((item) => {
+    if (item.type !== "safe-file-delete" || item.from !== posixPath) {
+      return false;
+    }
+    const allowed = item.allowed_hashes ?? [];
+    if (allowed.length !== expected.length) {
+      return false;
+    }
+    return [...allowed].sort().every((hash, i) => hash === expected[i]);
+  });
+  return matches.length === 1;
 }
 
 export interface UninstallOptions {
@@ -200,7 +209,10 @@ interface PlannedDeletion {
   posixPath: string;
   absPath: string;
   hash: string;
-  expectedContent: string;
+  expectedBytes: Buffer;
+  identity: { dev: number; ino: number; size: number };
+  /** Research stage Skills use raw-byte hash comparison. */
+  rawHashMode: boolean;
 }
 
 interface PlannedModification {
@@ -243,6 +255,9 @@ function buildPlan(
       ...LEGACY_TRELLIS_HOOK_COMMAND_PATHS,
     ]),
   ];
+  // Fail closed: Research deletes only after evidence↔migration agreement.
+  const authorizedResearchDeletes =
+    getAuthorizedResearchSkillDeletes(getAllMigrations());
   const plan: UninstallPlan = {
     deletions: [],
     modifications: [],
@@ -283,11 +298,30 @@ function buildPlan(
       } else if (result.outcome === "unchanged") {
         plan.unchanged.push(posixPath);
       } else if (result.fullyEmpty) {
+        const resolved = resolveSafeRegularFile(cwd, posixPath);
+        if (!resolved.ok) {
+          plan.modified.push(posixPath);
+          continue;
+        }
+        const validated = readValidatedDeleteTarget(
+          resolved.absPath,
+          resolved.stat,
+        );
+        if (!validated) {
+          plan.modified.push(posixPath);
+          continue;
+        }
         plan.deletions.push({
           posixPath,
-          absPath,
+          absPath: resolved.absPath,
           hash,
-          expectedContent: content,
+          expectedBytes: validated.bytes,
+          identity: {
+            dev: validated.dev,
+            ino: validated.ino,
+            size: validated.size,
+          },
+          rawHashMode: false,
         });
       } else {
         plan.modifications.push({
@@ -303,27 +337,67 @@ function buildPlan(
     }
 
     try {
-      const stat = fs.lstatSync(absPath);
-      if (!stat.isFile()) {
+      const resolved = resolveSafeRegularFile(cwd, posixPath);
+      if (!resolved.ok) {
+        if (resolved.reason === "missing") {
+          plan.missing.push(posixPath);
+        } else {
+          plan.modified.push(posixPath);
+        }
+        continue;
+      }
+      const validated = readValidatedDeleteTarget(
+        resolved.absPath,
+        resolved.stat,
+      );
+      if (!validated) {
         plan.modified.push(posixPath);
         continue;
       }
-      const currentContent = fs.readFileSync(absPath, "utf-8");
-      const currentHash = computeHash(currentContent);
-      if (currentHash === hash) {
-        if (!mayUninstallResearchStageSkill(posixPath, currentHash)) {
+
+      const isResearch = isResearchSkillRetirementTargetPath(posixPath);
+      const currentHash = isResearch
+        ? computeRawHash(validated.bytes)
+        : computeHash(validated.bytes.toString("utf-8"));
+      // Ownership hash for non-research paths is still LF-normalized computeHash.
+      // Research paths compare ownership using the stored manifest hash (historical
+      // installs used computeHash); require both ownership match and raw-hash
+      // retirement authority for research deletes.
+      const ownershipMatches = isResearch
+        ? computeHash(validated.bytes.toString("utf-8")) === hash ||
+          currentHash === hash
+        : currentHash === hash;
+
+      if (!ownershipMatches) {
+        plan.modified.push(posixPath);
+        continue;
+      }
+
+      if (isResearch) {
+        if (
+          !mayUninstallResearchStageSkill(
+            posixPath,
+            currentHash,
+            authorizedResearchDeletes,
+          )
+        ) {
           plan.researchSkillDeferred.push({ posixPath, hash });
           continue;
         }
-        plan.deletions.push({
-          posixPath,
-          absPath,
-          hash,
-          expectedContent: currentContent,
-        });
-      } else {
-        plan.modified.push(posixPath);
       }
+
+      plan.deletions.push({
+        posixPath,
+        absPath: resolved.absPath,
+        hash,
+        expectedBytes: validated.bytes,
+        identity: {
+          dev: validated.dev,
+          ino: validated.ino,
+          size: validated.size,
+        },
+        rawHashMode: isResearch,
+      });
     } catch {
       plan.modified.push(posixPath);
     }
@@ -467,6 +541,9 @@ function executePlan(cwd: string, plan: UninstallPlan): UninstallSummary {
     try {
       const currentContent = fs.readFileSync(mod.absPath, "utf-8");
       if (currentContent !== mod.originalContent) {
+        // Concurrent mutation: keep ownership so a later uninstall can retry.
+        retained[mod.posixPath] = mod.hash;
+        failedOperations += 1;
         continue;
       }
       writeFileAtomic(mod.absPath, mod.result.content);
@@ -480,13 +557,42 @@ function executePlan(cwd: string, plan: UninstallPlan): UninstallSummary {
 
   for (const del of plan.deletions) {
     try {
-      const stat = fs.lstatSync(del.absPath);
-      if (!stat.isFile()) continue;
-      const currentContent = fs.readFileSync(del.absPath, "utf-8");
-      if (currentContent !== del.expectedContent) {
+      const resolved = resolveSafeRegularFile(cwd, del.posixPath);
+      if (!resolved.ok) {
+        if (resolved.reason === "missing") {
+          // File already gone: drop ownership without counting a failed op.
+          continue;
+        }
+        // Symlink/unsafe/non-regular: preserve ownership for retry.
+        retained[del.posixPath] = del.hash;
+        failedOperations += 1;
         continue;
       }
-      fs.unlinkSync(del.absPath);
+
+      const validated = readValidatedDeleteTarget(
+        resolved.absPath,
+        resolved.stat,
+      );
+      const identityMatches =
+        validated !== null &&
+        validated.dev === del.identity.dev &&
+        validated.ino === del.identity.ino &&
+        validated.size === del.identity.size &&
+        validated.bytes.equals(del.expectedBytes);
+      if (!identityMatches) {
+        // Concurrent mutation or replacement: keep ownership, do not unlink.
+        retained[del.posixPath] = del.hash;
+        failedOperations += 1;
+        continue;
+      }
+
+      if (!pathStillMatchesIdentity(resolved.absPath, del.identity)) {
+        retained[del.posixPath] = del.hash;
+        failedOperations += 1;
+        continue;
+      }
+
+      fs.unlinkSync(resolved.absPath);
       deletedFiles += 1;
       deletedDirCandidates.add(path.posix.dirname(del.posixPath));
     } catch (error) {
