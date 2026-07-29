@@ -25,10 +25,11 @@
     "07-28-pilot-ideation-evaluation-workflow-fidelity",
     "07-28-prepare-optional-live-research-workflow-trials",
     "07-28-synthesize-research-workflow-migration-target",
-    "07-28-review-research-workflow-evaluation-gate"
+    "07-28-review-research-workflow-evaluation-gate",
+    "07-29-close-phase1-fidelity-pass-gate"
   ],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "Phase-1 PASS on evaluation-contract-v1.2.0; pin 57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
   "meta": {}
 }

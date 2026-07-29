@@ -1,0 +1,260 @@
+{
+  "evaluation_contract_version": "evaluation-contract-v1.2.0",
+  "reconciled_at": "2026-07-29T18:00:00Z",
+  "reviewer": "F08-independent-counter-review-v1.2",
+  "verdict": "pass",
+  "target_digest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "package_coverage": {
+    "claimed": "16/16",
+    "verified_package_list": [
+      "research-review-case",
+      "research-review-campaign",
+      "research-literature",
+      "research-ideation",
+      "research-idea-evaluation",
+      "research-project-setup",
+      "research-experiment",
+      "research-experiment-campaign",
+      "research-computation",
+      "research-figure",
+      "research-slides",
+      "research-survey",
+      "research-writing",
+      "research-theory",
+      "research-quest",
+      "research-quest-admin"
+    ],
+    "package_count": 16,
+    "unresolved_user_owners": 0,
+    "mapping_status": "all_packages_have_intended_target",
+    "behavioral_depth_status": "honest_split",
+    "notes": "Package slot mapping complete. Pilot/quest high-confidence depth present; non-pilot is medium slot-mapped with Phase-2 extraction named. Acceptable for planning freeze."
+  },
+  "behavior_inventory": {
+    "claimed_behavior_count": 32,
+    "counted": {
+      "PKG": 16,
+      "IMP_IDEA": 10,
+      "CTRL": 1,
+      "COMP": 3,
+      "HOST_or_LIVE_retire": 2,
+      "total": 32
+    },
+    "disposition_counts_verified": {
+      "improve": 10,
+      "preserve": 4,
+      "retire": 2,
+      "translate": 16,
+      "notes": "preserve = quest + COMP-001/002/003; retire = HOST-skill-packaging + LIVE-TRIALS-PLANNING; translate includes 15 worker PKG (all except quest) + CTRL-selection-to-proposal"
+    },
+    "confidence_split_pkg": {
+      "high": [
+        "research-ideation",
+        "research-idea-evaluation",
+        "research-quest",
+        "research-quest-admin"
+      ],
+      "medium": [
+        "research-review-case",
+        "research-review-campaign",
+        "research-literature",
+        "research-project-setup",
+        "research-experiment",
+        "research-experiment-campaign",
+        "research-computation",
+        "research-figure",
+        "research-slides",
+        "research-survey",
+        "research-writing",
+        "research-theory"
+      ]
+    }
+  },
+  "composition": {
+    "required": 3,
+    "recorded": [
+      {
+        "id": "COMP-001",
+        "parent": "research-experiment-campaign",
+        "child": "research-experiment",
+        "fixture": "DFT-COMP-001",
+        "in_matrix": true
+      },
+      {
+        "id": "COMP-002",
+        "parent": "research-review-campaign",
+        "child": "research-review-case",
+        "fixture": "DFT-COMP-002",
+        "in_matrix": true
+      },
+      {
+        "id": "COMP-003",
+        "parent": "research-slides",
+        "child": "personal-slides",
+        "bounded": true,
+        "import_private_impl": false,
+        "fixture": "DFT-COMP-003",
+        "in_matrix": true
+      }
+    ],
+    "ideation_evaluation_classification": "handoff_not_composition",
+    "ctrl_fixture": {
+      "id": "DFT-ctrl-proposal-only",
+      "in_matrix": true
+    },
+    "host_fixture": {
+      "id": "DFT-no-skill-payload",
+      "in_matrix": true
+    },
+    "status": "pass"
+  },
+  "quest_boundary": {
+    "read_only": "research-quest",
+    "write_capable": "research-quest-admin",
+    "quest_disposition": "preserve",
+    "admin_disposition": "translate",
+    "status": "pass"
+  },
+  "optional_workflows": {
+    "research-figure": {
+      "default_stage_capability": false,
+      "activation": "explicit",
+      "status": "mapped_optional"
+    },
+    "research-slides": {
+      "default_stage_capability": false,
+      "activation": "explicit",
+      "status": "mapped_optional"
+    },
+    "research-survey": {
+      "default_stage_capability": false,
+      "activation": "explicit",
+      "status": "mapped_optional"
+    }
+  },
+  "durable_outputs_reconciliation": {
+    "status": "pass_with_residual",
+    "v1_1_issues_closed": [
+      "research-review-case F02 runtime samples restored",
+      "research-project-setup runtime artifacts restored",
+      "references/* reclassed to methodology_support",
+      "SKILL.md reclassed to host_packaging waived-retire"
+    ],
+    "classes_present": [
+      "durable_runtime",
+      "methodology_support",
+      "host_packaging"
+    ],
+    "ledger_status_values_observed": [
+      "mapped",
+      "waived-retire"
+    ],
+    "unmapped_count": 0,
+    "residual_issues": [
+      {
+        "id": "NB-IO-DUAL-BASENAME",
+        "severity": "low",
+        "detail": "Some pack-root basenames remain methodology-like under durable_runtime while parallel references/* are methodology_support."
+      }
+    ]
+  },
+  "terminal_states_reconciliation": {
+    "status": "pass_with_residual",
+    "pattern": "asserted_vs_unasserted_per_package",
+    "v1_1_universal_stamp": "removed",
+    "specialized_examples": [
+      "research-idea-evaluation: selected/rejected/blocked",
+      "research-quest: resume-success/blocked-missing-state",
+      "research-quest-admin: applied/blocked/rejected"
+    ],
+    "residual_issues": [
+      {
+        "id": "NB-TERMINAL-SOURCE-CITE",
+        "severity": "low",
+        "detail": "No per-terminal source citation field; some medium-confidence asserted labels may need Phase-2 tightening."
+      }
+    ]
+  },
+  "dft_reconciliation": {
+    "status": "pass",
+    "case_count": 229,
+    "critical_count": 212,
+    "v1_1_case_count": 256,
+    "applicability_policy": "not_listed_equals_inapplicable",
+    "coverage_rule": "Every preserve/translate phase2_fixture_id is in this matrix; families are applicability-filtered.",
+    "checks": {
+      "empty_stage_packages_lack_ordered_stage_dft": true,
+      "stage_progression_fixtures_materialized": true,
+      "comp_ctrl_host_fixtures_present": true,
+      "sampled_phase2_fixture_ids_in_matrix": true
+    },
+    "packages_without_ordered_stage_progression": [
+      "research-review-case",
+      "research-review-campaign",
+      "research-project-setup",
+      "research-experiment-campaign",
+      "research-computation",
+      "research-quest",
+      "research-quest-admin"
+    ],
+    "packages_with_ordered_stage_progression": [
+      "research-literature",
+      "research-ideation",
+      "research-idea-evaluation",
+      "research-experiment",
+      "research-figure",
+      "research-slides",
+      "research-survey",
+      "research-writing",
+      "research-theory"
+    ],
+    "orphaned_stage_dft_refs_v1_1": "closed",
+    "missing_comp_ctrl_fixtures_v1_1": "closed"
+  },
+  "stage_contracts": {
+    "status": "acceptable_for_planning",
+    "contract_status": "id-and-ref-only",
+    "tracking": "IMP-STAGE-FIELD-DEPTH",
+    "notes": "IDs, source_ref, next_stage, DFT ids present; field bodies deferred by design."
+  },
+  "improve_register": {
+    "path": "phase2-improve-register-v1.2.json",
+    "items": [
+      "IMP-IDEA-VALIDATORS",
+      "IMP-THIN-PROCEDURE-BODIES",
+      "IMP-STAGE-FIELD-DEPTH",
+      "IMP-NON-PILOT-BEHAVIOR-DEPTH"
+    ],
+    "status": "pass"
+  },
+  "waivers": {
+    "live_planning": {
+      "id": "WVR-LIVE-PLANNING-OK",
+      "status": "pass"
+    }
+  },
+  "procedure_support_pack": {
+    "two_file_sufficiency_claimed": false,
+    "status": "left_open",
+    "requirement": "instruction-only OR digest-bound support pack OR trusted runtime contracts; no undigested siblings"
+  },
+  "privacy": {
+    "private_skill_bodies_in_tracked_freeze": false,
+    "import_private_impl_comp003": false,
+    "status": "pass"
+  },
+  "hard_gates_rubric_alignment": {
+    "every_durable_output_mapped_or_waived": "pass_for_planning",
+    "no_private_source_leakage": "pass",
+    "no_unapproved_unresolved_critical_behavior": "pass",
+    "explicit_bounded_composition": "pass",
+    "explicit_null_partial_blocked_failed_inconclusive": "pass_via_asserted_unasserted_split",
+    "notes": "Rubric disposition_evidence_rule dual-evidence depth is not claimed complete for medium non-pilot translate rows; honesty of confidence/depth labels prevents false readiness claim."
+  },
+  "blk_closure": {
+    "BLK-DURABLE-IO": "closed_for_planning",
+    "BLK-TERMINAL-VOCAB": "closed_for_planning",
+    "BLK-DFT-ADEQUACY": "closed",
+    "BLK-BEHAVIOR-DEPTH": "closed_for_planning"
+  }
+}

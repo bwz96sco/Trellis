@@ -3,7 +3,7 @@
   "name": "replace-research-skills-with-trellis-procedures",
   "title": "Replace Research Skills with Trellis-owned Procedures",
   "description": "Replace external and bundled Research Skill execution with Trellis-owned capability policy, versioned Procedures, canonical activation and approval gates, and generic Claude/Codex workers.",
-  "status": "planning",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "claude",
   "assignee": "claude",
   "createdAt": "2026-07-23",
-  "completedAt": null,
+  "completedAt": "2026-07-29",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -32,6 +32,6 @@
   ],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": " | Infrastructure parent closed. Control plane + skill retirement path complete for Phase-2 methodology planning base. code\u2248C01-C10 on variant/research-workflow through b445d424/d32c723e/4bf5d898 line",
   "meta": {}
 }

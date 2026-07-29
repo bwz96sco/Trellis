@@ -1,9 +1,21 @@
 {
-  "evaluation_contract_version": "evaluation-contract-v1.0.0",
-  "target_sha256": "0b09883b5233141be16ca2939f0c73a5c481523e130d61360e5580cd5849c33b",
-  "verdict": "conditional",
-  "generated_at": "2026-07-29T02:02:12Z",
+  "evaluation_contract_version": "evaluation-contract-v1.2.0",
+  "target_sha256": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "verdict": "pass",
+  "generated_at": "2026-07-29T07:39:43Z",
   "artifacts": [
+    {
+      "task": "07-28-evaluate-research-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/research/evaluation-index.json",
+      "sha256": "783886c5093d762f633935b886ce140d39da7f4e3a211dec52e861a2fbe5149b",
+      "bytes": 14625
+    },
+    {
+      "task": "07-28-evaluate-research-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/research/predecessor-gate-verdict.md",
+      "sha256": "da5f8dd1041e932c6455b7ccc667ed4d28bd75fb38715e481354be44f2feb7a6",
+      "bytes": 2120
+    },
     {
       "task": "07-28-freeze-research-workflow-evaluation-contract",
       "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/evaluation-charter.md",
@@ -281,16 +293,214 @@
       "bytes": 534
     },
     {
-      "task": "07-28-evaluate-research-workflow-fidelity",
-      "path": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/research/evaluation-index.json",
-      "sha256": "296dca1cd3bd8023fdb332cc0c2d130058c6580eae070ff062f76f1ab3b11fc2",
-      "bytes": 14051
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/_meta.json",
+      "sha256": "00e2e1e30ba14787536e64034a748b68e733ca1af1453b8a55f74a16a8ec9780",
+      "bytes": 216
     },
     {
-      "task": "07-28-evaluate-research-workflow-fidelity",
-      "path": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/research/predecessor-gate-verdict.md",
-      "sha256": "289a10ca741b65eae8ec04b5f9912cd6d5d48d33213a79cd7ed5dd91e99a0d4e",
-      "bytes": 1698
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/blk-remediation-report.md",
+      "sha256": "3a625b6e2a157e90be274b15858f5dadb75bae335c98d6aea2db99f49dae9c88",
+      "bytes": 385
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/counter-review-findings-v1.2.json",
+      "sha256": "319d77b5a82830c1573201b91bc47279d3326d4f56632ff5df158ab372e52340",
+      "bytes": 14746
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/counter-review-findings.json",
+      "sha256": "1f456130d47a66b7f93c6ab0c8de8377c076950215da3a590ae9cdcf48694d88",
+      "bytes": 12447
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/counter-review-v1.2.md",
+      "sha256": "0d7530d04460bd42643a72c333be0c7101f4325e743b5d1d455394ce08083ea1",
+      "bytes": 7704
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/counter-review.md",
+      "sha256": "d7b3aaa5dffe6ef03b5c610bf22a756472aabe1cf6676c9625f270ce07130e31",
+      "bytes": 9677
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/coverage-reconciliation-v1.2.json",
+      "sha256": "d1af52f20f46f84fbb81b7806ccd0820c0dab8c2986a62a6a60b9576beffed98",
+      "bytes": 8268
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/coverage-reconciliation.json",
+      "sha256": "7412d9b7bd70796c3ba1e7c6e9bd5e914046804e85aab8480b9b2c80dc08cc21",
+      "bytes": 8886
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/differential-test-matrix-v1.2.csv",
+      "sha256": "25068b920448fa70e50fa9b4a73a8a5fa959421fb365ddb7426b31cd0dacf223",
+      "bytes": 27716
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/differential-test-matrix-v1.2.json",
+      "sha256": "b4d9a6d46920e56ef1092b32d1e1a8fad8d85b98f6bbda7109eec9bd580e4834",
+      "bytes": 68305
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/differential-test-matrix.csv",
+      "sha256": "91ccf0f0689c54f61a0cccec7365e0e8cc25b09a0ddc26a5e732b546d61ae101",
+      "bytes": 35933
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/differential-test-matrix.json",
+      "sha256": "f0c655ef34be000118af14875cee292f11b23faeb3a61ea2bbb4240e2d858e6e",
+      "bytes": 70031
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/evaluation-contract-v1.1.0.md",
+      "sha256": "38be8d3646a33d73841cebdbfa6c7fd8f42968fa86a880bff1c9924a08388c5a",
+      "bytes": 1051
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/evaluation-contract-v1.2.0.md",
+      "sha256": "a6e7382eb274d9ce4d9e3afe23fa5a9810d61ed1b2d9d39c0b0b50b15f591f1a",
+      "bytes": 304
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/frozen-migration-target-v1.1.json",
+      "sha256": "a8d49c8a87e7688fda67ede73c7b04cb92a88eebda4d650c61309da025209a78",
+      "bytes": 47424
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/frozen-migration-target-v1.1.sha256",
+      "sha256": "e7f30558e6ab30209869656b812c7795e069a891d9745ca224d9ccfc8c13c49a",
+      "bytes": 100
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/frozen-migration-target-v1.2.json",
+      "sha256": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "bytes": 57558
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/frozen-migration-target-v1.2.sha256",
+      "sha256": "19a78cd04a5cfabde66390615f600e573c5e0234e59ffadc697233808f5590cd",
+      "bytes": 100
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/gate-recommendation-v2.md",
+      "sha256": "35d8605ed9af538c3b4e37bec581417870a895f9eb0db757f9f0982036f8fcf0",
+      "bytes": 4801
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/gate-recommendation-v3.md",
+      "sha256": "9596c36173956676f74da3cb66990888a5e47d4042ea045522fa816e3c3fb670",
+      "bytes": 5386
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/io-mapping-ledger-v1.2.csv",
+      "sha256": "b2a20152f961d566fb2b5e36ec7911bf56b5042d7695374746ce19baf5204999",
+      "bytes": 49358
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/live-trial-planning-waiver.md",
+      "sha256": "51f0f8483f80d3b14a7507e33d202cb194288d7b39f83f61f28628bfe73bf90a",
+      "bytes": 828
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/migration-decision-ledger-v1.1.json",
+      "sha256": "d64513afae4a184015ec4b8735ca23850b2e865746023327f194b54c5e04ce1c",
+      "bytes": 43927
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/normalized-workflow-inventory-v1.2.json",
+      "sha256": "ed1ed07252861da7ef39c9803ad0fc5894721da5a8585267deafd3e6df20873c",
+      "bytes": 262462
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/normalized-workflow-inventory.csv",
+      "sha256": "27c8bc5b424e434c2a5cc1bdeaa82370524aebbafd7b414c6e40ed089e3c9490",
+      "bytes": 1682
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/normalized-workflow-inventory.json",
+      "sha256": "5d91e5f69a720dab98795a5c7f02c90279da8e174a10ab8f8a9c6c24d5d4ae34",
+      "bytes": 164747
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/owner-disposition-decisions.md",
+      "sha256": "f5d008d8f46c96c385e962034fe482a1ab57be2464fc4386178293f07a8fca78",
+      "bytes": 1034
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/phase-2-differential-handoff-v1.1.md",
+      "sha256": "77df1b79afac5dd6ebde65bd35954e8b1d9d7645f189270c326bc85a0c01f205",
+      "bytes": 1365
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/phase-2-differential-handoff-v1.2.md",
+      "sha256": "1ee44146b3a628486e1af9e92f58e9ba471e7b5912753be17a3870defedd984c",
+      "bytes": 266
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/phase2-improve-register-v1.2.json",
+      "sha256": "7a03293726e9543b5ac49740d2cf3a815c5f75213b06722f0592af6c89f2720b",
+      "bytes": 826
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/phase2-improve-register.json",
+      "sha256": "c3c0bc2c5e593b03a9c620d328f95450a99ca8aa5a4891ac619cb187609c2f22",
+      "bytes": 1813
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/procedure-support-pack-requirement.md",
+      "sha256": "9bd341c871fe19748e7131fbe2b941dd7c8ca43896a06dce076c3f6b491e14cd",
+      "bytes": 901
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/source-defect-register-v1.1.json",
+      "sha256": "adc45e1ddb2c00521f0cd149198a7666993dc69f56ddb70641a117d59be98cc0",
+      "bytes": 536
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/synthesis-report-v1.1.md",
+      "sha256": "35fb8b7b00eb597212b9a3ec80d9ac6181ba941289737648cb7fb8382174b208",
+      "bytes": 420
+    },
+    {
+      "task": "07-29-close-phase1-fidelity-pass-gate",
+      "path": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/research/waiver-register-v1.1.json",
+      "sha256": "cf845a0aa0cfe537cc144da44a337227f2e55c9b700c5e355c45c2cd9462235e",
+      "bytes": 509
     }
   ]
 }

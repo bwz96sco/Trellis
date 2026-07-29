@@ -3,7 +3,7 @@
   "name": "retire-installed-research-skills",
   "title": "C08 Stop generation and safely retire installed Research Skills",
   "description": "Stop Research Skill generation and hash-gate removal of only pristine Trellis-owned installed Skill files.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "claude",
   "assignee": "claude",
   "createdAt": "2026-07-23",
-  "completedAt": null,
+  "completedAt": "2026-07-29",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -21,6 +21,6 @@
   "children": [],
   "parent": "07-23-replace-research-skills-with-trellis-procedures",
   "relatedFiles": [],
-  "notes": "",
+  "notes": " | C08 complete: skill generation stop + fail-closed retirement evidence. Closed for Phase-2 readiness. code\u224868d0a353 + b445d424",
   "meta": {}
 }

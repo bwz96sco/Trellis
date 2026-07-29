@@ -1,0 +1,22 @@
+{
+  "defects": [
+    {
+      "defect_id": "DEF-THIN-PROCEDURE-IDEATION",
+      "class": "trellis_gap",
+      "summary": "Thin idea-*-v1 Procedure bodies",
+      "disposition_impact": "improve",
+      "evidence_refs": [
+        "RUN-PILOT-SUITE"
+      ]
+    },
+    {
+      "defect_id": "DEF-PARTIAL-PROSE-CASES",
+      "class": "source_validator_coverage_gap",
+      "summary": "Partial prose for diversity/novelty edges",
+      "disposition_impact": "improve",
+      "evidence_refs": [
+        "IMP-IDEA-VALIDATORS"
+      ]
+    }
+  ]
+}

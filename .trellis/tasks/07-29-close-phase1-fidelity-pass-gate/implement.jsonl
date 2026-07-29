@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/prd.md", "reason": "Parent gate rules"}
+{"file": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/frozen-migration-target-v1.json", "reason": "Historical v1 target"}
+{"file": ".trellis/tasks/07-29-close-phase1-fidelity-pass-gate/prd.md", "reason": "F08 requirements"}
+{"file": ".trellis/spec/core/backend/research-state.md", "reason": "Authority translation"}
+{"file": ".trellis/spec/cli/backend/research-worker-hooks.md", "reason": "Worker proposal-only"}
