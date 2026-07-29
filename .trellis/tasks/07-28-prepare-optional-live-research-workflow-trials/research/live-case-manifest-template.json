@@ -1,7 +1,0 @@
-{
-  "cases": [],
-  "holdout_policy": "synthetic-or-approved-holdouts",
-  "blinding": "opaque-condition-labels",
-  "compare_to": "source-workflow-control",
-  "not_compare_to": "migrated-procedures-phase-1"
-}

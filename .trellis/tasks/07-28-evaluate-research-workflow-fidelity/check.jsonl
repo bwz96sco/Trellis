@@ -1,8 +1,0 @@
-{"file": ".trellis/spec/core/backend/research-state.md", "reason": "Check evaluation never authorizes worker canonical mutation or schema changes."}
-{"file": ".trellis/spec/cli/backend/commands-research.md", "reason": "Check no command-surface production edits during evaluation family."}
-{"file": ".trellis/spec/cli/backend/research-worker-hooks.md", "reason": "Check worker/hook contracts remain untouched; translation recorded only in evaluation artifacts."}
-{"file": ".trellis/spec/cli/backend/quality-guidelines.md", "reason": "Check surgical scope, dirty-path preservation, independent review gates."}
-{"file": ".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/prd.md", "reason": "Check C01–C10 tree not renumbered, absorbed, or modified."}
-{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/prd.md", "reason": "Check parent acceptance criteria, privacy, hard gates, out-of-scope."}
-{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/design.md", "reason": "Check disposition model and evidence ID scheme used consistently by children."}
-{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/implement.md", "reason": "Check sequencing stop gates and authorization boundaries honored."}
