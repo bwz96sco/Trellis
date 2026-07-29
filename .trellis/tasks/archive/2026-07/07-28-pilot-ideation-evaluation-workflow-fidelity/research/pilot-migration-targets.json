@@ -1,0 +1,73 @@
+{
+  "evaluation_contract_version": "evaluation-contract-v1.0.0",
+  "couple": [
+    "research-ideation",
+    "research-idea-evaluation"
+  ],
+  "targets": [
+    {
+      "behavior": "stages-01-04-generation",
+      "disposition": "preserve",
+      "evidence": [
+        "SRC-IDEATION",
+        "VAL-UNIT-SUITE"
+      ]
+    },
+    {
+      "behavior": "stages-05-07-evaluation",
+      "disposition": "preserve",
+      "evidence": [
+        "SRC-EVAL",
+        "VAL-UNIT-SUITE"
+      ]
+    },
+    {
+      "behavior": "shared-pack-root-contract",
+      "disposition": "translate",
+      "evidence": [
+        "SRC-CONTRACT",
+        "VAL-UNIT-SUITE"
+      ]
+    },
+    {
+      "behavior": "selected-blocked-closure",
+      "disposition": "preserve",
+      "evidence": [
+        "VAL-UNIT-SUITE",
+        "SRC-EVAL"
+      ]
+    },
+    {
+      "behavior": "select-as-canonical-mutation",
+      "disposition": "translate",
+      "evidence": [
+        "SRC-EVAL",
+        "TRELLIS-WORKER"
+      ]
+    },
+    {
+      "behavior": "method-flaw-audit",
+      "disposition": "preserve",
+      "evidence": [
+        "VAL-METHOD-FLAW",
+        "SRC-EVAL"
+      ]
+    },
+    {
+      "behavior": "thin-procedure-bodies",
+      "disposition": "improve",
+      "evidence": [
+        "RUN-PILOT-SUITE",
+        "SRC-GAP"
+      ]
+    },
+    {
+      "behavior": "host-skill-packaging",
+      "disposition": "retire",
+      "evidence": [
+        "SRC-HOST",
+        "C01-C10"
+      ]
+    }
+  ]
+}

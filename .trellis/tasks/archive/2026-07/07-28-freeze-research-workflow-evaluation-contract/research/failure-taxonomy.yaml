@@ -1,0 +1,17 @@
+# Failure taxonomy — evaluation-contract-v1.0.0
+
+version: evaluation-contract-v1.0.0
+classes:
+  source_workflow_defect:
+    description: Methodology or contract defect in private research-* packages.
+    examples: [false_accept, false_reject, missing_closure_state, authority_bleed, silent_success]
+  source_validator_defect:
+    description: Validator/code enforcement defect, nondeterminism, or fixture mutation.
+    examples: [nondeterminism, mutates_inputs, prose_only_critical_rule, ambiguous_diagnostics]
+  evaluation_infrastructure:
+    description: Harness, environment, budget, provider, or reviewer process failure.
+    examples: [provider_outage, budget_exhausted, sandbox_failure, reviewer_disagreement]
+mislabel_rules:
+  - never_label_provider_outage_as_source_defect
+  - never_label_budget_exhaustion_as_source_defect
+  - never_label_reviewer_disagreement_as_source_defect

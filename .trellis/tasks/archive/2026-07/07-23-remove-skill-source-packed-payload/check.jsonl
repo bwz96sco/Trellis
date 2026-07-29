@@ -1,0 +1,4 @@
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Check packed positive retirement evidence and negative stage Skill inventory."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check no stage Skill generation or source roots remain."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Check directory contract matches emptied common skill layout."}
+{"file":".trellis/tasks/07-23-remove-skill-source-packed-payload/prd.md","reason":"Check C09 acceptance criteria."}

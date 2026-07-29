@@ -1,0 +1,16 @@
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Check evidence-backed safe-file-delete only; no prefix ownership; published manifests immutable; Research evidence separate from generic 137/1009 inventories."}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Check classify-before-write, update.skip honor, current-template precedence, pre-unlink revalidation, dry-run/cancel zero-write."}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Check uninstall triple intersection evidence∩migration∩ownership; untracked/modified/symlink preservation."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check path safety rejects, lstat regular non-symlink only, non-recursive rmdir, research-state protection."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check fresh hosts generate zero stage Skills while workers/hooks/Procedures remain; C08 dormant source retained."}
+{"file":".trellis/spec/cli/backend/directory-structure.md","reason":"Check nine dormant source skill roots remain until C09; no premature source deletion."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Check packed positive inventory still requires dormant stage Skills through C08; retirement evidence package-internal."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check worker/hook Procedure contract unchanged by generation stop and cleanup."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check every no-write claim uses complete snapshots; race and concurrent mutation cases covered."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check fail-closed loader/agreement tests and deterministic hash assertions."}
+{"file":".trellis/tasks/07-23-retire-installed-research-skills/research/provenance-immutable-releases.md","reason":"Check deletion authority was not invented without immutable reproduction; stop gate honored for unproven paths."}
+{"file":".trellis/tasks/07-23-retire-installed-research-skills/prd.md","reason":"Check all product/provenance/safety acceptance criteria and non-goals."}
+{"file":".trellis/tasks/07-23-retire-installed-research-skills/design.md","reason":"Check trust boundaries, evidence schema, migration version selection, update/uninstall matrix."}
+{"file":".trellis/tasks/07-23-retire-installed-research-skills/implement.md","reason":"Check ordered stages, impact gates, rollback points, and C09 non-start rule."}
+{"file":".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/prd.md","reason":"Check parent requirement that historical cleanup deletes only exact pristine Trellis-owned Research Skill bytes."}
+{"file":".trellis/tasks/archive/2026-07/07-23-replace-host-execution-generic-workers/prd.md","reason":"Check C07 non-goal boundary was respected: no source/packed Skill deletion stolen into C08."}

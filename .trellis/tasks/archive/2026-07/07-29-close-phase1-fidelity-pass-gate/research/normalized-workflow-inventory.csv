@@ -1,0 +1,17 @@
+package,stage,procedure,capability,disposition,stage_count,dft_count,default_stage_capability,mapping_status
+research-review-case,audit,review-case-v1,research.audit.case,translate,0,14,True,mapped
+research-review-campaign,audit,review-campaign-v1,research.audit.campaign,translate,0,14,False,mapped
+research-literature,literature,literature-review-v1,research.literature.review,translate,7,14,True,mapped
+research-ideation,ideation,idea-generation-v1,research.ideation.generate,translate,4,24,True,mapped
+research-idea-evaluation,ideation,idea-evaluation-v1,research.ideation.evaluate,translate,4,24,False,mapped
+research-project-setup,setup,project-setup-v1,research.setup.project,translate,0,14,True,mapped
+research-experiment,experiment,experiment-round-v1,research.experiment.round,translate,7,20,True,mapped
+research-experiment-campaign,experiment,experiment-campaign-v1,research.experiment.campaign,translate,0,20,False,mapped
+research-computation,computation,computation-case-v1,research.computation.case,translate,0,14,True,mapped
+research-figure,writing,figure-v1,research.writing.figure,translate,6,14,False,mapped
+research-slides,writing,slides-v1,research.writing.slides,translate,5,14,False,mapped
+research-survey,literature,survey-v1,research.literature.survey,translate,6,14,False,mapped
+research-writing,writing,writing-case-v1,research.writing.case,translate,8,14,True,mapped
+research-theory,theory,theory-case-v1,research.theory.case,translate,7,14,True,mapped
+research-quest,framing,quest-framing-v1,research.framing.quest,preserve,0,14,False,mapped
+research-quest-admin,framing,quest-admin-v1,research.framing.admin,translate,0,14,False,mapped

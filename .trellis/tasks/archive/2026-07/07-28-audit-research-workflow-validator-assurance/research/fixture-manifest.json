@@ -1,0 +1,596 @@
+{
+  "evaluation_contract_version": "evaluation-contract-v1.0.0",
+  "source_commit": "9a02a533f5f3ecfd0c0789a01588fc492d321d6c",
+  "fixture_root": "evals/research-skills/fixtures",
+  "entry_count": 98,
+  "entries": [
+    {
+      "path": "evals/research-skills/fixtures/boundary-api-docs/PROMPT.md",
+      "sha256": "bddbece51a98c4aa49df5e8cab3bcc8c8de08d3af129faaf7f1047b1978a1519",
+      "bytes": 116,
+      "fixture_case": "boundary-api-docs"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-blog-copyedit/PROMPT.md",
+      "sha256": "4557f49bb155b6c8b06a76026220ebb46ab9747a7e756122653c98f2c5c2ca7a",
+      "bytes": 129,
+      "fixture_case": "boundary-blog-copyedit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-code-review/PATCH.md",
+      "sha256": "a356f457f1c5cf936dc71da5b4ac51cb63a66dc0298d09c068ed1db87038b15c",
+      "bytes": 345,
+      "fixture_case": "boundary-code-review"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-code-review/PROMPT.md",
+      "sha256": "c366b01c2693283593bfcbf76694723f76403237801768c4a7f10daea7825e6c",
+      "bytes": 241,
+      "fixture_case": "boundary-code-review"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-experiment-reformat/FINAL_CHECKLIST.md",
+      "sha256": "3d7b97230b094f5a7ebeb29734af39b1786315cfed32a28349a7acabfa31a219",
+      "bytes": 293,
+      "fixture_case": "boundary-experiment-reformat"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-experiment-reformat/PROMPT.md",
+      "sha256": "12a3f97ebbbffaa1647b8aca4b6150817488eedf805dadd05553f5534fb77135",
+      "bytes": 279,
+      "fixture_case": "boundary-experiment-reformat"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-figure-spec-format/FIXED_SPEC.md",
+      "sha256": "d014b9e782c183ab35ece28ed70946fb4008fc08d8513b8fc028488c9a9d6854",
+      "bytes": 150,
+      "fixture_case": "boundary-figure-spec-format"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-figure-spec-format/PROMPT.md",
+      "sha256": "1fb82fb92f6d2fc9d313f867a1ac53757f2c62e2ca203214ae632facb9522bb9",
+      "bytes": 306,
+      "fixture_case": "boundary-figure-spec-format"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-generic-status-extract/PROMPT.md",
+      "sha256": "9d85da60cc16ab648414ff4c90446e34055804793725ef5bd03a76b0741e1d5e",
+      "bytes": 314,
+      "fixture_case": "boundary-generic-status-extract"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-generic-status-extract/STATUS.md",
+      "sha256": "d7cbebec7187249484a6e1591c2b0049bb3f17eda21350652b740bb301fe42a0",
+      "bytes": 182,
+      "fixture_case": "boundary-generic-status-extract"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-project-tree-format/FIXED_LAYOUT.md",
+      "sha256": "2186a2d1a046a0bca0c08ab177a68aa311844d4eb0811d331a49c5f97b87eebb",
+      "bytes": 179,
+      "fixture_case": "boundary-project-tree-format"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-project-tree-format/PROMPT.md",
+      "sha256": "801a26eb8823e66fea5c32ce2ece46aba1ff38b92159e1c47bed552710f92bb6",
+      "bytes": 321,
+      "fixture_case": "boundary-project-tree-format"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-risk-gate/PROMPT.md",
+      "sha256": "7f2a67f608bbf3715d808f8c222faa9bbb9056424a92ebb2f01433fd91afc5c5",
+      "bytes": 134,
+      "fixture_case": "boundary-risk-gate"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-slides-outline-format/FIXED_OUTLINE.md",
+      "sha256": "316b89d3db11afe93992fb289f5e235d378db31c4b932977f7ebbb26b0ab6d92",
+      "bytes": 57,
+      "fixture_case": "boundary-slides-outline-format"
+    },
+    {
+      "path": "evals/research-skills/fixtures/boundary-slides-outline-format/PROMPT.md",
+      "sha256": "4d538e09b59c79763941a9601648cdd1d53e5fa39467f47c3395e16048d94d39",
+      "bytes": 304,
+      "fixture_case": "boundary-slides-outline-format"
+    },
+    {
+      "path": "evals/research-skills/fixtures/citation-support-audit/PAPER.md",
+      "sha256": "003df3d292e56add2e683b4f3473d899e5ddf404db4cd30ca193a2f3ade4a094",
+      "bytes": 100,
+      "fixture_case": "citation-support-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/citation-support-audit/PROMPT.md",
+      "sha256": "6c91ea81f8ac63ca26ed537a74611cce82babc1dcd5aac2cb2f4bdc0e84b7cfc",
+      "bytes": 460,
+      "fixture_case": "citation-support-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/citation-support-audit/SOURCES.md",
+      "sha256": "6f60a5129f86c3b73e12c9309d0777bb0eddff07b22da3814ce72cb025a2f19e",
+      "bytes": 215,
+      "fixture_case": "citation-support-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/computation-bounded/PROMPT.md",
+      "sha256": "ab795d30b454a6f2341e6aae26d335670511c05586ead9818f5254d0f834cf4e",
+      "bytes": 216,
+      "fixture_case": "computation-bounded"
+    },
+    {
+      "path": "evals/research-skills/fixtures/computation-bounded/VALUES.csv",
+      "sha256": "8c3d1ffa0a14167421c26e65103fbf1af1a735b7f19c9defd31c76d2d7902321",
+      "bytes": 27,
+      "fixture_case": "computation-bounded"
+    },
+    {
+      "path": "evals/research-skills/fixtures/computation-convergence-audit/CONTRACT.md",
+      "sha256": "e732034b4c4c49a235b8a1ee160f8e219488d00d02dccf3d228f79ba37eb221d",
+      "bytes": 425,
+      "fixture_case": "computation-convergence-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/computation-convergence-audit/PROMPT.md",
+      "sha256": "b9a30abe084a1d029cb15253165eef5b9f9926f08aa16978ded3b6b5bb0abbaa",
+      "bytes": 479,
+      "fixture_case": "computation-convergence-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/computation-convergence-audit/SERIES.csv",
+      "sha256": "4774f8b867257d673bf78adb4da351cb3898106267d1aaebedc453cc293335cd",
+      "bytes": 93,
+      "fixture_case": "computation-convergence-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/campaign_data/camp-a/MANIFEST.md",
+      "sha256": "d208f09b47227569ee21fe90658e7fbe48072965348f19a8c5f41def1faf3b13",
+      "bytes": 156,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/campaign_data/camp-a/README.md",
+      "sha256": "91c6ffa9c3d984dee7b8496de14882f1a3dc75f3ebb3418d6ed729220c8ac464",
+      "bytes": 102,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/campaign_data/camp-b/MANIFEST.md",
+      "sha256": "1a94e70eaf3d449de3ec93cee3c01ef35da6a4063bcec244cb1f826f7fbc701c",
+      "bytes": 157,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/campaign_data/camp-b/README.md",
+      "sha256": "7422b70249a6c1978b74105033591e5a67ab21ea39edfab43376ecdf68099b7a",
+      "bytes": 102,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/campaigns/camp-a.yaml",
+      "sha256": "a32f7a1a0347513fb6e072b7035bdc0c5bbfc902f32238f4914036c0a7e18f50",
+      "bytes": 402,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/campaigns/camp-b.yaml",
+      "sha256": "ecb24bdf7b154f0aefed3b9cd72e4bf01dd0d4f424f32fea3cd2a5f826b1dea5",
+      "bytes": 403,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/experiment_registry.yaml",
+      "sha256": "7f10f5f8d2a5cf44d798bca12b49b165830346b19b3105652258d73911cc6a6a",
+      "bytes": 369,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/01_experiment_contract.md",
+      "sha256": "140cb755b9324417120b92a905949f3bac30e0b1e94e29314e84207f43221c3f",
+      "bytes": 370,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/02_baseline_contract.md",
+      "sha256": "3dd453c54e2c2cd9247d2e6994934000ed9e8c6af496e4b96bfed305bb8643e6",
+      "bytes": 780,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/03_run_plan.md",
+      "sha256": "d3ac8fa443c1b6038a29ab0a226ecf0e8206dd49b8ce8db5f8152f42b07731dc",
+      "bytes": 1110,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/claim_update.md",
+      "sha256": "949d86926d3370dcf78ac337c8a521d33d1e2b97b083527ac0b5c75a32533f74",
+      "bytes": 779,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/execution_log.md",
+      "sha256": "333789c1cbddb8b7ec6679a302d0178250845131b4c32673d287b45846c250b7",
+      "bytes": 759,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/results_ledger.csv",
+      "sha256": "ab286edf6d784b7ea20910ead0bf2484575db48448f8ee31de13e0c0c72f50be",
+      "bytes": 154,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-a/run_matrix.yaml",
+      "sha256": "c7db9488f1cd9842816eca5c2be9b60337e656a3c0a6478e9397996e2c5cd97d",
+      "bytes": 527,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/01_experiment_contract.md",
+      "sha256": "140cb755b9324417120b92a905949f3bac30e0b1e94e29314e84207f43221c3f",
+      "bytes": 370,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/02_baseline_contract.md",
+      "sha256": "3dd453c54e2c2cd9247d2e6994934000ed9e8c6af496e4b96bfed305bb8643e6",
+      "bytes": 780,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/03_run_plan.md",
+      "sha256": "d3ac8fa443c1b6038a29ab0a226ecf0e8206dd49b8ce8db5f8152f42b07731dc",
+      "bytes": 1110,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/claim_update.md",
+      "sha256": "949d86926d3370dcf78ac337c8a521d33d1e2b97b083527ac0b5c75a32533f74",
+      "bytes": 779,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/execution_log.md",
+      "sha256": "333789c1cbddb8b7ec6679a302d0178250845131b4c32673d287b45846c250b7",
+      "bytes": 759,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/results_ledger.csv",
+      "sha256": "ab286edf6d784b7ea20910ead0bf2484575db48448f8ee31de13e0c0c72f50be",
+      "bytes": 154,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/packs/pack-b/run_matrix.yaml",
+      "sha256": "c7db9488f1cd9842816eca5c2be9b60337e656a3c0a6478e9397996e2c5cd97d",
+      "bytes": 527,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-campaign-valid/plans/campaign_queue.yaml",
+      "sha256": "5103dc2787fe3a942cb1ce351bb9ac91ee4ea18846d04cbaa079b38f45f7cb41",
+      "bytes": 941,
+      "fixture_case": "experiment-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-plan/PROJECT.md",
+      "sha256": "93f055019e697a83713f9584b76acded9afd2dce259a766c79930b6481788961",
+      "bytes": 460,
+      "fixture_case": "experiment-plan"
+    },
+    {
+      "path": "evals/research-skills/fixtures/experiment-plan/PROMPT.md",
+      "sha256": "fe5c0f9ca04c2510ad1099e69b7f5096d15b914eb09be3e72d587d4418226d4a",
+      "bytes": 618,
+      "fixture_case": "experiment-plan"
+    },
+    {
+      "path": "evals/research-skills/fixtures/figure-fixed-csv/CLAIM.md",
+      "sha256": "f05fc229e5d7c81a805c9b32a5ed83b64fc232c99b5f7dd1c5a9c98a6a2fe33c",
+      "bytes": 100,
+      "fixture_case": "figure-fixed-csv"
+    },
+    {
+      "path": "evals/research-skills/fixtures/figure-fixed-csv/PROMPT.md",
+      "sha256": "e9fb72278072c0469820732b304bd5f4d8c8f93d0be3355f9aac483b1b7e516d",
+      "bytes": 184,
+      "fixture_case": "figure-fixed-csv"
+    },
+    {
+      "path": "evals/research-skills/fixtures/figure-fixed-csv/RESULTS.csv",
+      "sha256": "9830219674517e79d19f29c186f9afe35b72f14fb48c5211cc50b09690c4ae56",
+      "bytes": 129,
+      "fixture_case": "figure-fixed-csv"
+    },
+    {
+      "path": "evals/research-skills/fixtures/ideation-generate-falsifiable/PRIOR_MAP.md",
+      "sha256": "a9ed167ef8e5a1a6517810d203f4b70d9791a356f8ed68a89a00220f7955cf74",
+      "bytes": 883,
+      "fixture_case": "ideation-generate-falsifiable"
+    },
+    {
+      "path": "evals/research-skills/fixtures/ideation-generate-falsifiable/PROMPT.md",
+      "sha256": "6495858417f142c55edfbea3c9acdec370288f9bc0e36c0969cce5dccf417e09",
+      "bytes": 439,
+      "fixture_case": "ideation-generate-falsifiable"
+    },
+    {
+      "path": "evals/research-skills/fixtures/ideation-shortlist/PAPER_POOL.md",
+      "sha256": "b396c3f5c4823cbc83b248aecce0ad7128713b2859772d2f330d33a7ce144900",
+      "bytes": 938,
+      "fixture_case": "ideation-shortlist"
+    },
+    {
+      "path": "evals/research-skills/fixtures/ideation-shortlist/PROMPT.md",
+      "sha256": "e2c7658dd23b846e3a2313e3c3b6c6f7b1fd106acc675777751a6f87b848966d",
+      "bytes": 317,
+      "fixture_case": "ideation-shortlist"
+    },
+    {
+      "path": "evals/research-skills/fixtures/literature-one-paper/PAPER.md",
+      "sha256": "6c78219da40da82275c028c95e3fef1f01e74120bab8688f058248b5240f3ed7",
+      "bytes": 424,
+      "fixture_case": "literature-one-paper"
+    },
+    {
+      "path": "evals/research-skills/fixtures/literature-one-paper/PROMPT.md",
+      "sha256": "05f97c5d2f0cfa7cb7c42e274d00f6574c9d93d207863b2db09ea375a74bd310",
+      "bytes": 222,
+      "fixture_case": "literature-one-paper"
+    },
+    {
+      "path": "evals/research-skills/fixtures/literature-prior-map/PROMPT.md",
+      "sha256": "fc4fba55a728256ab5187b841eeba3e3693938b1b7428bc58e081f25fbe290ca",
+      "bytes": 398,
+      "fixture_case": "literature-prior-map"
+    },
+    {
+      "path": "evals/research-skills/fixtures/literature-prior-map/SOURCES.md",
+      "sha256": "6cdb5ed279ed12c56016a2f2d19d69524b6111c0e1568c995439e4e66feb4520",
+      "bytes": 1053,
+      "fixture_case": "literature-prior-map"
+    },
+    {
+      "path": "evals/research-skills/fixtures/project-setup-diagnosis/PROMPT.md",
+      "sha256": "36930987646097fd94f92109260b8709547ead9febe8c246bb8a859ff4cd19dd",
+      "bytes": 578,
+      "fixture_case": "project-setup-diagnosis"
+    },
+    {
+      "path": "evals/research-skills/fixtures/project-setup-diagnosis/STATE.md",
+      "sha256": "a975b6e98e6bbe90e5a1b15ba9b09ca088c6c2d2d7d4410a95f6d26be7ed2737",
+      "bytes": 317,
+      "fixture_case": "project-setup-diagnosis"
+    },
+    {
+      "path": "evals/research-skills/fixtures/quest-resume/PROMPT.md",
+      "sha256": "68febf0a2ce9ad817ed18b069849bb0c912d2c5829377dede0d0003b967b1633",
+      "bytes": 426,
+      "fixture_case": "quest-resume"
+    },
+    {
+      "path": "evals/research-skills/fixtures/quest-resume/research-quest.yaml",
+      "sha256": "af268b53ddf284580970694c6086138bbfa3ef17fbc2f1c75c3a1b852c9a176a",
+      "bytes": 360,
+      "fixture_case": "quest-resume"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/REVIEW_CAMPAIGN_STATUS.md",
+      "sha256": "4e116d4805512e2a68e5ce371747a4c822664c94b89a23c230561d7f659a7297",
+      "bytes": 599,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/REVIEW_CASE_STATUS.md",
+      "sha256": "05e843449740be7c257c5871e2a0478c822d266673fc10a03dfd6ce94cddfdb8",
+      "bytes": 368,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/artifact-manifest.json",
+      "sha256": "aa963aba29999bd732b1e19826a1555a937d5a624752765958280607ef98860f",
+      "bytes": 124,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/claims-ledger.json",
+      "sha256": "f18be9f2bd0a4554757afd7ebf6963912ef5e69df2d34db00e4007fd97fada28",
+      "bytes": 141,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/findings/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/memos/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/review-case.yaml",
+      "sha256": "88d3727686ac548067ea5835dae81ddfcc6487f41d7167cff12f81bfbc8559d5",
+      "bytes": 302,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-a/review-events.jsonl",
+      "sha256": "7d694bc00b028820149400685eaa7138b41ace83f0d66d55ccd5e8220bab1da3",
+      "bytes": 101,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/REVIEW_CASE_STATUS.md",
+      "sha256": "0a7569c96cfbb927d3117212427acfbaa79340fc76f0f152a2327623a6fa6add",
+      "bytes": 368,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/artifact-manifest.json",
+      "sha256": "dc034423e0a3a955389721cc93296062619c09bbfe53aae4dab8af3dbd8666ce",
+      "bytes": 124,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/claims-ledger.json",
+      "sha256": "8b87c980926ed267cc070240c46a45fa6ad9c6dcbe74f3ee8c9f9f2355fbab10",
+      "bytes": 141,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/findings/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/memos/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/review-case.yaml",
+      "sha256": "a788c2609f09bac3d348581a5d363bf300a917935c92a528fe53ada496983ea1",
+      "bytes": 302,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/cases/paper-b/review-events.jsonl",
+      "sha256": "645e26176f02d13e19c4f68f9dc6e2c21fcb4fca2670e3f2aa9b35f46bba3e16",
+      "bytes": 101,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-campaign-valid/review-campaign.yaml",
+      "sha256": "d3affefa16784946f79cc55b00dad3296c5208d0ddb9449c48c121dcafcdbbe7",
+      "bytes": 744,
+      "fixture_case": "review-campaign-valid"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-multidimension/MANUSCRIPT.md",
+      "sha256": "3c55bd1030019a1dc8fdffc6fb06852a87bdc3d870b339306f1b9e24241c9a33",
+      "bytes": 317,
+      "fixture_case": "review-multidimension"
+    },
+    {
+      "path": "evals/research-skills/fixtures/review-multidimension/PROMPT.md",
+      "sha256": "dd18203d11fc330180538d2b2d5c0eaa74f1c254da2034e40b765c5a5b145028",
+      "bytes": 194,
+      "fixture_case": "review-multidimension"
+    },
+    {
+      "path": "evals/research-skills/fixtures/slides-compact-route/PAPER.md",
+      "sha256": "c23865c6ad9cf0ed3650f367674622d84246ea69de52eb02e867547b33d0a32c",
+      "bytes": 303,
+      "fixture_case": "slides-compact-route"
+    },
+    {
+      "path": "evals/research-skills/fixtures/slides-compact-route/PROMPT.md",
+      "sha256": "23cc9ad1ac28b2677660e9f6feb087deffbb867982cc9ff1ae7e3508f2ceb692",
+      "bytes": 161,
+      "fixture_case": "slides-compact-route"
+    },
+    {
+      "path": "evals/research-skills/fixtures/theory-proof-audit/PROMPT.md",
+      "sha256": "ab881404a42a9ed1c063e4056755eb9ab5223a204d1c3b47bc464256e960b06b",
+      "bytes": 238,
+      "fixture_case": "theory-proof-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/theory-proof-audit/PROOF.md",
+      "sha256": "561e7532c5159d3a8628f2e144b9bb5a71b8deed02c3ebf231eaaf00fab1061a",
+      "bytes": 187,
+      "fixture_case": "theory-proof-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/theory-research-proof-audit/PROMPT.md",
+      "sha256": "a0ee1401c3e6d5b72834ca1bfbdbe4e96a8f02b67244f9c94171c565eea83919",
+      "bytes": 439,
+      "fixture_case": "theory-research-proof-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/theory-research-proof-audit/THEOREM.md",
+      "sha256": "728c5de0b25eb830c13a1e2ae65121e566fb818f88efca4aebe9c62ae0db7fd8",
+      "bytes": 543,
+      "fixture_case": "theory-research-proof-audit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/literature-bypass-context.md",
+      "sha256": "d389bcf29293cb17209f0d911d2eb0428c3d0f87a69279101a2d2648424ea5e4",
+      "bytes": 54,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/literature-positive-context.md",
+      "sha256": "d497ea261892e113e0075d28645ed2656f08bb76a0318dab521c36f99357027f",
+      "bytes": 507,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/replays.json",
+      "sha256": "b916c293066724101c59e2652407f199976742d6d53567f61a2eee431e62cd0c",
+      "bytes": 2148,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/theory-bypass-context.md",
+      "sha256": "4611e027b231dbcdfdc8e3e9bf054bde1a87d02dc6dd23a9495bc2b0bde5357c",
+      "bytes": 102,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/theory-positive-context.md",
+      "sha256": "6fd48f3fe432be8e9ec5381de1df8eba02b0fc35fc514a1775a796b0d82c3727",
+      "bytes": 937,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/writing-bypass-context.md",
+      "sha256": "695dcf76dcfd00a109a2a0d86108bcaac8b01e353e65b10bc7fcbd500dddfb35",
+      "bytes": 79,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/v5-semantic-replay/writing-positive-context.md",
+      "sha256": "ea9ef0d325958a751035c9d1d8449c29075d6385d311590af43f22398107cb65",
+      "bytes": 249,
+      "fixture_case": "v5-semantic-replay"
+    },
+    {
+      "path": "evals/research-skills/fixtures/writing-evidence-revision/DRAFT.md",
+      "sha256": "e8e092b1a6fc2008904d8127e60d0235962c5f6a9bc0ee158239ac87a215ae11",
+      "bytes": 308,
+      "fixture_case": "writing-evidence-revision"
+    },
+    {
+      "path": "evals/research-skills/fixtures/writing-evidence-revision/EVIDENCE.md",
+      "sha256": "b7785715a6aac209c0afc9a656cdadd94b8137a69779fe8b1c92c5c5b76839c9",
+      "bytes": 446,
+      "fixture_case": "writing-evidence-revision"
+    },
+    {
+      "path": "evals/research-skills/fixtures/writing-evidence-revision/PROMPT.md",
+      "sha256": "d39e7c1c7ca47fac6c44755008042cf0c37949ae6288158e5452ddeb4dae6401",
+      "bytes": 355,
+      "fixture_case": "writing-evidence-revision"
+    },
+    {
+      "path": "evals/research-skills/fixtures/writing-micro-edit/MANUSCRIPT.md",
+      "sha256": "09f931694268f2bd9c8845ddecde119ec6107d713adcba6e90ec5c76b511a35e",
+      "bytes": 238,
+      "fixture_case": "writing-micro-edit"
+    },
+    {
+      "path": "evals/research-skills/fixtures/writing-micro-edit/PROMPT.md",
+      "sha256": "9d9d1c29d43f268f3f39e907b6b77c27cd4c5643aea35f9422256b61ab208796",
+      "bytes": 237,
+      "fixture_case": "writing-micro-edit"
+    }
+  ]
+}

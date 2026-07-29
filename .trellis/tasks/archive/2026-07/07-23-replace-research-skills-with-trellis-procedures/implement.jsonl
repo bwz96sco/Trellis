@@ -1,0 +1,10 @@
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Defines canonical ledger, strict schemas, reducer, projections, rebuild, locking, Dispatch aggregates, and root mutation authority."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Defines current Research command signatures, Dispatch lifecycle, compatibility flags, and validation behavior."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Defines supported Claude/Codex platform payload and execution boundaries."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Defines Dispatch worker/hook authority and read-only context injection constraints."}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Defines ownership evidence, hash-gated cleanup, preservation, and historical upgrade contracts."}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Defines packed-core and packed-CLI publication gates and package inventory proof."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Defines isolated filesystem, subprocess, packed artifact, update, and uninstall integration test patterns."}
+{"file":".trellis/tasks/07-18-research-only-claude-codex-migration/prd.md","reason":"Provides prior Research-only product boundaries and deferred release work that this new parent must preserve."}
+{"file":".trellis/tasks/archive/2026-07/07-18-freeze-research-compatibility-contracts/design.md","reason":"Provides frozen schema-v1, Dispatch metadata, authority, and compatibility decisions."}
+{"file":".trellis/tasks/archive/2026-07/07-18-retire-generic-product-surfaces/design.md","reason":"Provides frozen cleanup ownership and retained generic core compatibility boundaries."}
