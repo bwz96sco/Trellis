@@ -1,0 +1,7 @@
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/prd.md", "reason": "Check parent hard gates and no-production-edit contract."}
+{"file": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/prd.md", "reason": "Check child acceptance criteria and out-of-scope."}
+{"file": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/design.md", "reason": "Check deliverable list and privacy rules."}
+{"file": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/implement.md", "reason": "Check predecessor gates and stop conditions."}
+{"file": ".trellis/spec/cli/backend/quality-guidelines.md", "reason": "Check surgical scope and dirty-path preservation."}
+{"file": ".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/prd.md", "reason": "Check C01–C10 remains untouched."}
+{"file": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/prd.md", "reason": "Check frozen target and waiver gates before pass."}

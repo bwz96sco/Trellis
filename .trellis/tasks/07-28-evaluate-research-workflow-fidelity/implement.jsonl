@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/core/backend/research-state.md", "reason": "Canonical research state, root mutation authority, Result/Proposal boundaries for translation invariants."}
+{"file": ".trellis/spec/cli/backend/commands-research.md", "reason": "Dispatch, activation, approval, Context, recording commands compared to source workflow authority."}
+{"file": ".trellis/spec/cli/backend/research-worker-hooks.md", "reason": "Worker false authority ceiling; no Skill discovery; Proposal-only worker output."}
+{"file": "packages/core/src/research/stage-capabilities.ts", "reason": "Current capability registry including research.ideation.generate/evaluate and Procedure bindings."}
+{"file": "packages/cli/src/templates/research/procedures/idea-generation-v1/1.0.0/PROCEDURE.md", "reason": "Thin generation Procedure body — primary fidelity gap surface."}
+{"file": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/1.0.0/PROCEDURE.md", "reason": "Thin evaluation Procedure body — primary fidelity gap surface."}
+{"file": ".trellis/tasks/07-23-replace-research-skills-with-trellis-procedures/prd.md", "reason": "C01–C10 infrastructure parent boundary; must remain separate and unmodified."}
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/prd.md", "reason": "This parent requirements, rubric, hard gates, child order."}
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/design.md", "reason": "Evidence model, privacy, disposition, sequencing design."}

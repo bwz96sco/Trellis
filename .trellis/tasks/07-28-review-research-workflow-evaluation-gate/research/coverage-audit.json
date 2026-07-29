@@ -1,0 +1,9 @@
+{
+  "packages": "16/16",
+  "composition_edges": 3,
+  "behaviors": 29,
+  "unresolved_behaviors": 3,
+  "waivers": 4,
+  "every_unresolved_has_waiver": true,
+  "preserve_translate_dual_evidence": true
+}

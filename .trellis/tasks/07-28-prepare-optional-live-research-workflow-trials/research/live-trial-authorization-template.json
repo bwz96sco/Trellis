@@ -1,0 +1,14 @@
+{
+  "provider": null,
+  "model_id": null,
+  "allow_private_source_transmission": false,
+  "retention_policy": null,
+  "network_allowed": false,
+  "cost_ceiling_usd": null,
+  "call_budget": null,
+  "retries": 0,
+  "storage_location": null,
+  "approver": null,
+  "expires_at": null,
+  "confirmed": false
+}

@@ -1,0 +1,48 @@
+{
+  "waivers": [
+    {
+      "waiver_id": "WVR-UNMAPPED-research-figure",
+      "behavior_id": "PKG-research-figure",
+      "rationale": "No current Trellis Procedure mapping; block methodology migration for this package until owner maps or retires",
+      "fidelity_impact": "high-if-silently-omitted",
+      "safety_impact": "medium",
+      "compensating_control": "Must remain unresolved or receive explicit retire/preserve decision before phase-2 includes package",
+      "owner": "user",
+      "approver": "user",
+      "review_trigger": "before phase-2 methodology implementation planning"
+    },
+    {
+      "waiver_id": "WVR-UNMAPPED-research-slides",
+      "behavior_id": "PKG-research-slides",
+      "rationale": "No current Trellis Procedure mapping; block methodology migration for this package until owner maps or retires",
+      "fidelity_impact": "high-if-silently-omitted",
+      "safety_impact": "medium",
+      "compensating_control": "Must remain unresolved or receive explicit retire/preserve decision before phase-2 includes package",
+      "owner": "user",
+      "approver": "user",
+      "review_trigger": "before phase-2 methodology implementation planning"
+    },
+    {
+      "waiver_id": "WVR-UNMAPPED-research-survey",
+      "behavior_id": "PKG-research-survey",
+      "rationale": "No current Trellis Procedure mapping; block methodology migration for this package until owner maps or retires",
+      "fidelity_impact": "high-if-silently-omitted",
+      "safety_impact": "medium",
+      "compensating_control": "Must remain unresolved or receive explicit retire/preserve decision before phase-2 includes package",
+      "owner": "user",
+      "approver": "user",
+      "review_trigger": "before phase-2 methodology implementation planning"
+    },
+    {
+      "waiver_id": "WVR-LIVE-NOT-RUN",
+      "behavior_id": "LIVE-TRIALS",
+      "rationale": "Live model trials not authorized; evaluation uses deterministic suite only",
+      "fidelity_impact": "medium",
+      "safety_impact": "low",
+      "compensating_control": "F03/F04 deterministic validators + unit tests; F05 protocol ready",
+      "owner": "evaluation",
+      "approver": "user-implicit-by-implement-without-live-auth",
+      "review_trigger": "if live auth granted later"
+    }
+  ]
+}

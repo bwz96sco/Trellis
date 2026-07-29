@@ -1,0 +1,17 @@
+package,activation,stage_count,reference_count,script_count,mutation_authority,trellis_procedure,trellis_capability,preliminary_disposition,disposition_reason,network_assumption
+research-review-case,explicit-user-invoke,0,18,1,stage-artifact-write,review-case-v1,research.audit.case,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-review-campaign,explicit-user-invoke,0,1,1,stage-artifact-write,review-campaign-v1,research.audit.campaign,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-literature,explicit-user-invoke,20,15,1,stage-artifact-write,literature-scan-v1|literature-review-v1,research.literature.scan|review,translate,Capability/Procedure slot exists; methodology depth unknown until scored,may-use-declared-tools
+research-ideation,explicit-user-invoke,15,19,3,artifact-pack-write,idea-generation-v1,research.ideation.generate,translate,Thin Procedure shell; full methodology not in Trellis PROCEDURE.md,may-use-declared-tools
+research-idea-evaluation,explicit-user-invoke,19,20,1,artifact-pack-write,idea-evaluation-v1,research.ideation.evaluate,translate,Thin Procedure shell; full methodology not in Trellis PROCEDURE.md,may-use-declared-tools
+research-project-setup,explicit-user-invoke,6,2,1,stage-artifact-write,project-setup-v1,research.setup.project,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-experiment,explicit-user-invoke,9,21,1,experiment-artifact-write,experiment-round-v1,research.experiment.round,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-experiment-campaign,explicit-user-invoke,0,2,1,experiment-artifact-write,experiment-campaign-v1,research.experiment.campaign,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-computation,explicit-user-invoke,13,6,1,stage-artifact-write,computation-case-v1,research.computation.case,translate,Capability/Procedure slot exists; methodology depth unknown until scored,may-use-declared-tools
+research-figure,explicit-user-invoke,13,8,1,stage-artifact-write,,,unresolved,No matching Trellis Procedure in current inventory,unknown
+research-slides,explicit-user-invoke,13,6,1,stage-artifact-write,,,unresolved,No matching Trellis Procedure in current inventory,unknown
+research-survey,explicit-user-invoke,13,7,1,stage-artifact-write,,,unresolved,No matching Trellis Procedure in current inventory,unknown
+research-writing,explicit-user-invoke,20,29,1,stage-artifact-write,writing-case-v1,research.writing.case,translate,Capability/Procedure slot exists; methodology depth unknown until scored,may-use-declared-tools
+research-theory,explicit-user-invoke,20,9,1,stage-artifact-write,theory-case-v1,research.theory.case,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-quest,read-only-resume,0,0,1,forbidden,quest-framing-v1,research.framing.quest,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown
+research-quest-admin,explicit-user-invoke,0,3,1,quest-state-write,quest-admin-v1,research.framing.admin,translate,Capability/Procedure slot exists; methodology depth unknown until scored,unknown

@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "required": [
+    "call_id",
+    "condition_label",
+    "model_id",
+    "started_at",
+    "terminal_outcome",
+    "prompt_sha256",
+    "output_sha256"
+  ],
+  "properties": {
+    "call_id": {
+      "type": "string"
+    },
+    "condition_label": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "terminal_outcome": {
+      "type": "string"
+    },
+    "prompt_sha256": {
+      "type": "string"
+    },
+    "output_sha256": {
+      "type": "string"
+    },
+    "cost_usd": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "private_store_ref": {
+      "type": "string"
+    }
+  }
+}

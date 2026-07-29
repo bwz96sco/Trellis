@@ -1,0 +1,11 @@
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/prd.md", "reason": "Parent goal, rubric, hard gates, sequencing, privacy boundaries."}
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/design.md", "reason": "Evidence IDs, disposition model, separation from C01–C10."}
+{"file": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/prd.md", "reason": "This child requirements and acceptance criteria."}
+{"file": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/design.md", "reason": "This child technical design and outputs."}
+{"file": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/implement.md", "reason": "Ordered steps, stop gates, authorization boundary."}
+{"file": ".trellis/spec/core/backend/research-state.md", "reason": "Root mutation and Result/Proposal authority for translation notes."}
+{"file": ".trellis/spec/cli/backend/commands-research.md", "reason": "Dispatch/Context/recording surfaces used as Trellis comparison targets."}
+{"file": ".trellis/spec/cli/backend/research-worker-hooks.md", "reason": "Worker false authority ceiling preserved during evaluation."}
+{"file": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/prd.md", "reason": "Frozen target and waiver completeness requirements."}
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/prd.md", "reason": "Parent gate verdict rules."}
+{"file": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/design.md", "reason": "Parent deliverables after F07."}

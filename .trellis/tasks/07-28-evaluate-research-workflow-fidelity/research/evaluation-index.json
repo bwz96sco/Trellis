@@ -1,0 +1,296 @@
+{
+  "evaluation_contract_version": "evaluation-contract-v1.0.0",
+  "target_sha256": "0b09883b5233141be16ca2939f0c73a5c481523e130d61360e5580cd5849c33b",
+  "verdict": "conditional",
+  "generated_at": "2026-07-29T02:02:12Z",
+  "artifacts": [
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/evaluation-charter.md",
+      "sha256": "c3f7c70f78f674476152fefafca98e377f33e5988064d3c300e1468b6df45b3c",
+      "bytes": 1696
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/evaluation-rubric.yaml",
+      "sha256": "57e4189b37c73acf43e025a56e85d3a022b87434deb66535dcc2acaee7b09ac7",
+      "bytes": 1743
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/evidence-privacy-policy.md",
+      "sha256": "4ff52aa6c8fa83b7051d446b163d551a3211943b45e96595eddd17aabc134630",
+      "bytes": 1511
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/evidence-reference-schema.json",
+      "sha256": "c8e899f5eabcec701c8e3bdf1558f04256d11c9ac5c203903c9c59a587b0eedf",
+      "bytes": 1179
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/failure-taxonomy.yaml",
+      "sha256": "3645ac65ae11571a7f679918352ad0dff7594e93a909d3158caca877224339ac",
+      "bytes": 889
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/reviewer-and-blinding-protocol.md",
+      "sha256": "acf6ff472ffe4823b927ba7e1ec3d7af3532ed41de7147588efb45cc8198e9d6",
+      "bytes": 1057
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/source-baseline.json",
+      "sha256": "07dd6327bf2a2250ca0158545eaeb7e90d01a676044522cc17f9728686983f5c",
+      "bytes": 15647
+    },
+    {
+      "task": "07-28-freeze-research-workflow-evaluation-contract",
+      "path": ".trellis/tasks/07-28-freeze-research-workflow-evaluation-contract/research/source-file-manifest.json",
+      "sha256": "ae6ae61644906eb294c6b926306d7206bdc5b7f592cac74a1d5b953297ac8100",
+      "bytes": 112379
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/authority-map.csv",
+      "sha256": "faa6ef6c44d100fd4f254d9b938be84e076bc61507cdd3241491918c3bab1df3",
+      "bytes": 1924
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/composition-graph.json",
+      "sha256": "9a248fa10e48c8096df5a7663129200cd0b65d278f32c1f66416b1dc0632159e",
+      "bytes": 11446
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/package-registry-snapshot.json",
+      "sha256": "ad02b0c212cbe1c74b0736c9115736d0d9b3bc8d927a609626107389fa91f27d",
+      "bytes": 2464
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/source-io-ledger.csv",
+      "sha256": "2d8277b4bed91924a965bafe7f3c5588e515b7a1777e66e7c8949a5c09af8cca",
+      "bytes": 43096
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/static-inventory-findings.md",
+      "sha256": "690e93cf2bce605abda163a141abf5e327fa99fba2d08326304d606b74463fcb",
+      "bytes": 2441
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/workflow-contract-matrix.csv",
+      "sha256": "ee499f96bd2f4556ab8e197d1d4d3b8f6a97e6b8eac7b75317d22b53e02aa637",
+      "bytes": 3327
+    },
+    {
+      "task": "07-28-inventory-research-workflow-contracts",
+      "path": ".trellis/tasks/07-28-inventory-research-workflow-contracts/research/workflow-contract-matrix.json",
+      "sha256": "6d6a6d203431a308042f577e680bcd58bb9dfc8e04c76784140182cb31ac601e",
+      "bytes": 47765
+    },
+    {
+      "task": "07-28-audit-research-workflow-validator-assurance",
+      "path": ".trellis/tasks/07-28-audit-research-workflow-validator-assurance/research/deterministic-run-ledger.jsonl",
+      "sha256": "6355d4cd389ef987ed6ad688babc4ec9b0d35720d8336c0e66b25a69169d580a",
+      "bytes": 2528
+    },
+    {
+      "task": "07-28-audit-research-workflow-validator-assurance",
+      "path": ".trellis/tasks/07-28-audit-research-workflow-validator-assurance/research/fixture-manifest.json",
+      "sha256": "eb708b7f785af46dc402a0039bb902106e1e07fbdce13939234129b1b42e7a90",
+      "bytes": 25262
+    },
+    {
+      "task": "07-28-audit-research-workflow-validator-assurance",
+      "path": ".trellis/tasks/07-28-audit-research-workflow-validator-assurance/research/mutation-catalog.json",
+      "sha256": "dc66f18d05bfa19241c993ecccf3bdb691c5d0454654b13a08ba8b2e9d630045",
+      "bytes": 1006
+    },
+    {
+      "task": "07-28-audit-research-workflow-validator-assurance",
+      "path": ".trellis/tasks/07-28-audit-research-workflow-validator-assurance/research/validator-assurance-report.md",
+      "sha256": "2ac65442ab164763545b2086e3567ce59ec1c1fd34cf04293b3798005e948fc2",
+      "bytes": 1793
+    },
+    {
+      "task": "07-28-audit-research-workflow-validator-assurance",
+      "path": ".trellis/tasks/07-28-audit-research-workflow-validator-assurance/research/validator-inventory.csv",
+      "sha256": "d4ae0edada746224428b8bd2e0ac6eeb7280a9c2f525789ce4af6631cc21f7bb",
+      "bytes": 4464
+    },
+    {
+      "task": "07-28-audit-research-workflow-validator-assurance",
+      "path": ".trellis/tasks/07-28-audit-research-workflow-validator-assurance/research/validator-inventory.json",
+      "sha256": "3af86c466b613fa5e6cd7a49c172d13ecccf0051a29552a118de5154d63a59f8",
+      "bytes": 6687
+    },
+    {
+      "task": "07-28-pilot-ideation-evaluation-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-pilot-ideation-evaluation-workflow-fidelity/research/pilot-contract.md",
+      "sha256": "3229caf4b9382a10609934c07b69a28f145e702e903bb4f3d1d779c8cc9bd1c2",
+      "bytes": 1640
+    },
+    {
+      "task": "07-28-pilot-ideation-evaluation-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-pilot-ideation-evaluation-workflow-fidelity/research/pilot-findings.md",
+      "sha256": "67395a8500ec2d22cd2195979769c4399dac58be8a2c46e012dd571d2113738c",
+      "bytes": 949
+    },
+    {
+      "task": "07-28-pilot-ideation-evaluation-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-pilot-ideation-evaluation-workflow-fidelity/research/pilot-fixture-manifest.json",
+      "sha256": "32fcc3b74d3f817a7627dd1e7f1de065497a520e175dd9f0a0f76315f4c4a7c2",
+      "bytes": 1969
+    },
+    {
+      "task": "07-28-pilot-ideation-evaluation-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-pilot-ideation-evaluation-workflow-fidelity/research/pilot-migration-targets.json",
+      "sha256": "9e27d41ad25ccb53c9614494f1ece8ca7850e3918fab7f7aed4ea46afed90771",
+      "bytes": 1470
+    },
+    {
+      "task": "07-28-pilot-ideation-evaluation-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-pilot-ideation-evaluation-workflow-fidelity/research/pilot-run-ledger.jsonl",
+      "sha256": "bd0d8ebf8395caf6247e1251081fa3d58656e9c82d6c8b08b6bff555c9286823",
+      "bytes": 3730
+    },
+    {
+      "task": "07-28-pilot-ideation-evaluation-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-pilot-ideation-evaluation-workflow-fidelity/research/pilot-scorecard.json",
+      "sha256": "56bdcf1af29484fc59b6034467a98dd783acab0a6be7a57e9fc8b6c86ff6b768",
+      "bytes": 5229
+    },
+    {
+      "task": "07-28-prepare-optional-live-research-workflow-trials",
+      "path": ".trellis/tasks/07-28-prepare-optional-live-research-workflow-trials/research/blind-review-packet-schema.json",
+      "sha256": "95eb077d1e9ce1bf695fe28e37b66512860a9dd79fcae382ec7c55ff5a6c26b9",
+      "bytes": 392
+    },
+    {
+      "task": "07-28-prepare-optional-live-research-workflow-trials",
+      "path": ".trellis/tasks/07-28-prepare-optional-live-research-workflow-trials/research/call-ledger-schema.json",
+      "sha256": "c35a26f6e78b6f4acf5136b86d228aef9f82e8a183b13696dcd4d1f7d7d2988c",
+      "bytes": 704
+    },
+    {
+      "task": "07-28-prepare-optional-live-research-workflow-trials",
+      "path": ".trellis/tasks/07-28-prepare-optional-live-research-workflow-trials/research/live-case-manifest-template.json",
+      "sha256": "0983cc8acad4ef28fc78a33e27c9eed3e2f3af40f6180dd5b47281934a5e48d2",
+      "bytes": 207
+    },
+    {
+      "task": "07-28-prepare-optional-live-research-workflow-trials",
+      "path": ".trellis/tasks/07-28-prepare-optional-live-research-workflow-trials/research/live-trial-authorization-template.json",
+      "sha256": "f4cb638e24792ea6cac0f70e198b3cdadfb7bcd34c3b6f71fd4f948f12467fa5",
+      "bytes": 304
+    },
+    {
+      "task": "07-28-prepare-optional-live-research-workflow-trials",
+      "path": ".trellis/tasks/07-28-prepare-optional-live-research-workflow-trials/research/live-trial-not-run-decision.md",
+      "sha256": "50c0e26e30f928aaf3a48a7a103c8324c75abd90f05234f18356f671f3299996",
+      "bytes": 525
+    },
+    {
+      "task": "07-28-prepare-optional-live-research-workflow-trials",
+      "path": ".trellis/tasks/07-28-prepare-optional-live-research-workflow-trials/research/live-trial-protocol.md",
+      "sha256": "5a9bab6234c8705e1840e2bacee19c398751e8af7d01d25c4da9f35c7667ec57",
+      "bytes": 964
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/frozen-migration-target-v1.json",
+      "sha256": "0b09883b5233141be16ca2939f0c73a5c481523e130d61360e5580cd5849c33b",
+      "bytes": 34480
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/frozen-migration-target-v1.sha256",
+      "sha256": "438d2c8fc090f827ce405144f68325354fcd50e3201311cbb223610fbfaa2e68",
+      "bytes": 98
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/migration-decision-ledger.csv",
+      "sha256": "7ad579c5281ea8fb292b1800cf5cc467206a8e4ff7836dc4a0b9197dabbec4fd",
+      "bytes": 4258
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/migration-decision-ledger.json",
+      "sha256": "1e4cc4b2cde90c73369d41e6dbfec69255b370ea11e9d029b79cfee5e7603c73",
+      "bytes": 32039
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/phase-2-differential-handoff.md",
+      "sha256": "f3c10991c111571cb0b025ed93e77f8be138a84c4e6ef46192a9bcc5b3e4a445",
+      "bytes": 1256
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/source-defect-register.json",
+      "sha256": "1a27edbcec708dec4782973633e0da2e68475daa415ce9013aca887e0bdf79ea",
+      "bytes": 714
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/synthesis-report.md",
+      "sha256": "f8849cb7e576de6caee611f87400bb19cc577910a1d0f71f238c67c62837caef",
+      "bytes": 1443
+    },
+    {
+      "task": "07-28-synthesize-research-workflow-migration-target",
+      "path": ".trellis/tasks/07-28-synthesize-research-workflow-migration-target/research/waiver-register.json",
+      "sha256": "687f8eb4ca07d61325b86c5435c4d12309c39a120b05d470c3f73677ca0f6a60",
+      "bytes": 2277
+    },
+    {
+      "task": "07-28-review-research-workflow-evaluation-gate",
+      "path": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/research/coverage-audit.json",
+      "sha256": "01cf57df25ad0f5e0cffb6783ccf00f26a8a6829a13d677ccb14f609052e716b",
+      "bytes": 199
+    },
+    {
+      "task": "07-28-review-research-workflow-evaluation-gate",
+      "path": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/research/evidence-integrity-audit.md",
+      "sha256": "f384ed578d198b9cf05682d8fc821322b2d809e1b6dcc1a358a139e4fef33721",
+      "bytes": 635
+    },
+    {
+      "task": "07-28-review-research-workflow-evaluation-gate",
+      "path": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/research/gate-recommendation.md",
+      "sha256": "8c17084f3c947806321d2ea9074cf215675b6535f0c58fe2fe34a831163350f3",
+      "bytes": 1183
+    },
+    {
+      "task": "07-28-review-research-workflow-evaluation-gate",
+      "path": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/research/independent-review.md",
+      "sha256": "b80a3f9fd5ca733fd148fff3d8a4765d9ae9e93e69e7ca78a4ccc026ee6cbeb1",
+      "bytes": 935
+    },
+    {
+      "task": "07-28-review-research-workflow-evaluation-gate",
+      "path": ".trellis/tasks/07-28-review-research-workflow-evaluation-gate/research/privacy-audit.md",
+      "sha256": "e73a15a3dd9c912d079e6a628a217c431b720f8bb0a0593fb5aea518f487bad7",
+      "bytes": 534
+    },
+    {
+      "task": "07-28-evaluate-research-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/research/evaluation-index.json",
+      "sha256": "296dca1cd3bd8023fdb332cc0c2d130058c6580eae070ff062f76f1ab3b11fc2",
+      "bytes": 14051
+    },
+    {
+      "task": "07-28-evaluate-research-workflow-fidelity",
+      "path": ".trellis/tasks/07-28-evaluate-research-workflow-fidelity/research/predecessor-gate-verdict.md",
+      "sha256": "289a10ca741b65eae8ec04b5f9912cd6d5d48d33213a79cd7ed5dd91e99a0d4e",
+      "bytes": 1698
+    }
+  ]
+}

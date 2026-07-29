@@ -1,0 +1,73 @@
+{
+  "evaluation_contract_version": "evaluation-contract-v1.0.0",
+  "source_commit": "9a02a533f5f3ecfd0c0789a01588fc492d321d6c",
+  "trellis_commit": "b445d4245b81afa14006c864229811c227e12e71",
+  "inventoried_at": "2026-07-29T01:56:44Z",
+  "package_count": 16,
+  "packages": [
+    "research-review-case",
+    "research-review-campaign",
+    "research-literature",
+    "research-ideation",
+    "research-idea-evaluation",
+    "research-project-setup",
+    "research-experiment",
+    "research-experiment-campaign",
+    "research-computation",
+    "research-figure",
+    "research-slides",
+    "research-survey",
+    "research-writing",
+    "research-theory",
+    "research-quest",
+    "research-quest-admin"
+  ],
+  "coverage": "16/16",
+  "composition_edges": [
+    {
+      "id": "COMP-001",
+      "type": "composition",
+      "parent": "research-experiment-campaign",
+      "child": "research-experiment",
+      "contract_ref": "skills/research-experiment-campaign/../research-experiment/references/campaign-round-contract.md",
+      "notes": "Source-frozen bounded internal composition edge",
+      "evidence": "VAL-COMPOSITION-SRC-TEST"
+    },
+    {
+      "id": "COMP-002",
+      "type": "composition",
+      "parent": "research-review-campaign",
+      "child": "research-review-case",
+      "contract_ref": "skills/research-review-campaign/../research-review-case/references/campaign-case-contract.md",
+      "notes": "Source-frozen bounded internal composition edge",
+      "evidence": "VAL-COMPOSITION-SRC-TEST"
+    },
+    {
+      "id": "COMP-003",
+      "type": "composition",
+      "parent": "research-slides",
+      "child": "personal-slides",
+      "contract_ref": "skills/research-slides/../personal-slides/references/research-handoff-contract.md",
+      "notes": "Source-frozen bounded internal composition edge (child may be outside research-* registry)",
+      "evidence": "VAL-COMPOSITION-SRC-TEST"
+    }
+  ],
+  "quest_boundary": {
+    "read_only": "research-quest",
+    "write_capable": "research-quest-admin",
+    "preserved": true
+  },
+  "special_handoffs": [
+    {
+      "id": "HAND-IDEA-EVAL",
+      "type": "handoff",
+      "members": [
+        "research-ideation",
+        "research-idea-evaluation"
+      ],
+      "shared_contract": "scripts/research_idea_artifact_contract.py",
+      "notes": "Coupled pack ownership split 01-04 / 05-07; not one of the three composition edges"
+    }
+  ],
+  "composition_corrected_at": "2026-07-29T01:58:10Z"
+}

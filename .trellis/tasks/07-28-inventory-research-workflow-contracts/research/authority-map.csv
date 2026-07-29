@@ -1,0 +1,17 @@
+package,read_write,project_owner,evaluator_role,mutation_authority,canonical_quest_mutation,evidence_id
+research-review-case,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-REVIEW-CASE-001
+research-review-campaign,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-REVIEW-CAMPAIGN-002
+research-literature,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-LITERATURE-003
+research-ideation,read-write-artifacts,user/root,skill-worker,artifact-pack-write,forbidden,SRC-IDEATION-004
+research-idea-evaluation,read-write-artifacts,user/root,skill-worker,artifact-pack-write,forbidden,SRC-IDEA-EVALUATION-005
+research-project-setup,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-PROJECT-SETUP-006
+research-experiment,read-write-artifacts,user/root,skill-worker,experiment-artifact-write,forbidden,SRC-EXPERIMENT-007
+research-experiment-campaign,read-write-artifacts,user/root,skill-worker,experiment-artifact-write,forbidden,SRC-EXPERIMENT-CAMPAIGN-008
+research-computation,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-COMPUTATION-009
+research-figure,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-FIGURE-010
+research-slides,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-SLIDES-011
+research-survey,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-SURVEY-012
+research-writing,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-WRITING-013
+research-theory,read-write-artifacts,user/root,skill-worker,stage-artifact-write,forbidden,SRC-THEORY-014
+research-quest,read-only,user/root,skill-worker,forbidden,forbidden,SRC-QUEST-015
+research-quest-admin,read-write-artifacts,user/root,skill-worker,quest-state-write,allowed,SRC-QUEST-ADMIN-016

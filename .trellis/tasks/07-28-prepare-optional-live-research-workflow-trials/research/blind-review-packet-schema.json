@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "required": [
+    "review_id",
+    "condition_label",
+    "scores",
+    "blinded"
+  ],
+  "properties": {
+    "review_id": {
+      "type": "string"
+    },
+    "condition_label": {
+      "type": "string"
+    },
+    "scores": {
+      "type": "object"
+    },
+    "blinded": {
+      "type": "boolean"
+    },
+    "notes_aggregate_only": {
+      "type": "string"
+    }
+  }
+}
