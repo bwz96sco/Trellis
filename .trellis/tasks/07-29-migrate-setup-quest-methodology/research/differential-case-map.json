@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-06",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 21,
+  "criticalCount": 18,
+  "packages": [
+    "research-project-setup",
+    "research-quest",
+    "research-quest-admin"
+  ],
+  "cases": [
+    {
+      "id": "DFT-project-setup-required-vs-optional-artifacts",
+      "package": "research-project-setup",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-project-setup-missing-critical-evidence",
+      "package": "research-project-setup",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-project-setup-provenance-stable-id-drift",
+      "package": "research-project-setup",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-project-setup-forbidden-mutation",
+      "package": "research-project-setup",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-project-setup-invalid-handoff",
+      "package": "research-project-setup",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-project-setup-outcome-blocked",
+      "package": "research-project-setup",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-project-setup-outcome-success",
+      "package": "research-project-setup",
+      "family": "outcome-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted success"
+    },
+    {
+      "id": "DFT-quest-required-vs-optional-artifacts",
+      "package": "research-quest",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-quest-missing-critical-evidence",
+      "package": "research-quest",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-quest-provenance-stable-id-drift",
+      "package": "research-quest",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-quest-forbidden-mutation",
+      "package": "research-quest",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-quest-invalid-handoff",
+      "package": "research-quest",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-quest-outcome-resume-success",
+      "package": "research-quest",
+      "family": "outcome-resume-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted resume-success"
+    },
+    {
+      "id": "DFT-quest-admin-required-vs-optional-artifacts",
+      "package": "research-quest-admin",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-quest-admin-missing-critical-evidence",
+      "package": "research-quest-admin",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-quest-admin-provenance-stable-id-drift",
+      "package": "research-quest-admin",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-quest-admin-forbidden-mutation",
+      "package": "research-quest-admin",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-quest-admin-invalid-handoff",
+      "package": "research-quest-admin",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-quest-admin-outcome-blocked",
+      "package": "research-quest-admin",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-quest-admin-outcome-applied",
+      "package": "research-quest-admin",
+      "family": "outcome-applied",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted applied"
+    },
+    {
+      "id": "DFT-quest-admin-outcome-rejected",
+      "package": "research-quest-admin",
+      "family": "outcome-rejected",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted rejected"
+    }
+  ]
+}

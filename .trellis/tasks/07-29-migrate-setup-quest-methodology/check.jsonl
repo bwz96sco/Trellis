@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/07-29-migrate-setup-quest-methodology/research/planning-context.md","reason":"Task-local authoritative pins, evidence citations, ownership inputs, privacy, and authorization boundary."}
+{"file":".trellis/tasks/07-29-migrate-setup-quest-methodology/research/differential-case-map.json","reason":"Exact task-local frozen case ownership, criticality, and observable expectations."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify contained reads, project override behavior, preservation, and zero-write failures."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify exact deterministic vectors, compatibility fixtures, and test ownership."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Verify real filesystem, subprocess, clean-build, and packed-tarball evidence."}

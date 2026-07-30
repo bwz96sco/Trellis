@@ -1,0 +1,15 @@
+{
+  "procedureId": "quest-framing-v1",
+  "version": "2.0.0",
+  "checkpoints": [
+    "01-frame",
+    "02-decision-target"
+  ],
+  "terminalStates": [
+    "success",
+    "blocked",
+    "failed",
+    "partial"
+  ],
+  "proposalOnly": true
+}
