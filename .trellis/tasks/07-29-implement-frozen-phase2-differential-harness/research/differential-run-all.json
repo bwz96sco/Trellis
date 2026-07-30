@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "mode": "all",
+  "status": "pass",
+  "frozen": {
+    "total": 229,
+    "unique": 229,
+    "passed": 229,
+    "failed": 0,
+    "unexecuted": 0
+  },
+  "expansion": {
+    "total": 38,
+    "unique": 38,
+    "passed": 38,
+    "failed": 0,
+    "unexecuted": 0
+  },
+  "completeness": {
+    "ok": true,
+    "errors": [],
+    "criticalCount": 229
+  },
+  "allocation": {
+    "frozenAllocationSha256": "3888775804fa81b5ebe61ed948af00b3806e832fbc5b0d2901ae651f981311fc",
+    "expansionAllocationSha256": "d70c0fbe3a23860b3113acfd87419a512da95d61c1cd5c5cfa8f9f4b8d09715a",
+    "expectedFrozen": 229,
+    "expectedFrozenCritical": 212,
+    "expectedExpansion": 38
+  },
+  "failures": []
+}
