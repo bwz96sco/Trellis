@@ -1,0 +1,485 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-05",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 47,
+  "criticalCount": 47,
+  "packages": [
+    "research-idea-evaluation",
+    "research-ideation"
+  ],
+  "cases": [
+    {
+      "id": "DFT-ideation-ordered-stage-progression",
+      "package": "research-ideation",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-ideation-required-vs-optional-artifacts",
+      "package": "research-ideation",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-ideation-missing-critical-evidence",
+      "package": "research-ideation",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-ideation-provenance-stable-id-drift",
+      "package": "research-ideation",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-ideation-forbidden-mutation",
+      "package": "research-ideation",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-ideation-invalid-handoff",
+      "package": "research-ideation",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-ideation-outcome-blocked",
+      "package": "research-ideation",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-ideation-outcome-selected",
+      "package": "research-ideation",
+      "family": "outcome-selected",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted selected"
+    },
+    {
+      "id": "DFT-ideation-closure-exclusivity",
+      "package": "research-ideation",
+      "family": "closure-exclusivity",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "exclusive closure"
+    },
+    {
+      "id": "DFT-ideation-stage-01-progression",
+      "package": "research-ideation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-frame",
+      "stage_id": "01-frame"
+    },
+    {
+      "id": "DFT-ideation-stage-02-progression",
+      "package": "research-ideation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-prior-map",
+      "stage_id": "02-prior-map"
+    },
+    {
+      "id": "DFT-ideation-stage-03-progression",
+      "package": "research-ideation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-gap-map",
+      "stage_id": "03-gap-map"
+    },
+    {
+      "id": "DFT-ideation-stage-04-progression",
+      "package": "research-ideation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-generate",
+      "stage_id": "04-generate"
+    },
+    {
+      "id": "DFT-ideation-improve-candidate-mechanism-diversity",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "candidate-mechanism-diversity"
+    },
+    {
+      "id": "DFT-ideation-improve-candidate-identity-continuity",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "candidate-identity-continuity"
+    },
+    {
+      "id": "DFT-ideation-improve-closest-prior-evidence",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "closest-prior-evidence"
+    },
+    {
+      "id": "DFT-ideation-improve-full-method-overlap",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "full-method-overlap"
+    },
+    {
+      "id": "DFT-ideation-improve-qualifying-vs-non-qualifying-novelty-delta",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "qualifying-vs-non-qualifying-novelty-delta"
+    },
+    {
+      "id": "DFT-ideation-improve-independent-method-flaw-audit",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "independent-method-flaw-audit"
+    },
+    {
+      "id": "DFT-ideation-improve-matched-controls",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "matched-controls"
+    },
+    {
+      "id": "DFT-ideation-improve-falsifiers-and-kill-conditions",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "falsifiers-and-kill-conditions"
+    },
+    {
+      "id": "DFT-ideation-improve-project-pivot-confirmation",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "project-pivot-confirmation"
+    },
+    {
+      "id": "DFT-ideation-improve-exactly-one-selected-or-blocked-closure",
+      "package": "research-ideation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "exactly-one-selected-or-blocked-closure"
+    },
+    {
+      "id": "DFT-idea-evaluation-ordered-stage-progression",
+      "package": "research-idea-evaluation",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-idea-evaluation-required-vs-optional-artifacts",
+      "package": "research-idea-evaluation",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-idea-evaluation-missing-critical-evidence",
+      "package": "research-idea-evaluation",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-idea-evaluation-provenance-stable-id-drift",
+      "package": "research-idea-evaluation",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-idea-evaluation-forbidden-mutation",
+      "package": "research-idea-evaluation",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-idea-evaluation-invalid-handoff",
+      "package": "research-idea-evaluation",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-idea-evaluation-outcome-blocked",
+      "package": "research-idea-evaluation",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-idea-evaluation-outcome-selected",
+      "package": "research-idea-evaluation",
+      "family": "outcome-selected",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted selected"
+    },
+    {
+      "id": "DFT-idea-evaluation-outcome-rejected",
+      "package": "research-idea-evaluation",
+      "family": "outcome-rejected",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted rejected"
+    },
+    {
+      "id": "DFT-idea-evaluation-closure-exclusivity",
+      "package": "research-idea-evaluation",
+      "family": "closure-exclusivity",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "exclusive closure"
+    },
+    {
+      "id": "DFT-idea-evaluation-stage-05-progression",
+      "package": "research-idea-evaluation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-novelty-check",
+      "stage_id": "05-novelty-check"
+    },
+    {
+      "id": "DFT-idea-evaluation-stage-05b-progression",
+      "package": "research-idea-evaluation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05b-method-flaw-audit",
+      "stage_id": "05b-method-flaw-audit"
+    },
+    {
+      "id": "DFT-idea-evaluation-stage-06-progression",
+      "package": "research-idea-evaluation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-select",
+      "stage_id": "06-select"
+    },
+    {
+      "id": "DFT-idea-evaluation-stage-07-progression",
+      "package": "research-idea-evaluation",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "07-handoff",
+      "stage_id": "07-handoff"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-candidate-mechanism-diversity",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "candidate-mechanism-diversity"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-candidate-identity-continuity",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "candidate-identity-continuity"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-closest-prior-evidence",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "closest-prior-evidence"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-full-method-overlap",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "full-method-overlap"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-qualifying-vs-non-qualifying-novelty-delta",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "qualifying-vs-non-qualifying-novelty-delta"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-independent-method-flaw-audit",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "independent-method-flaw-audit"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-matched-controls",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "matched-controls"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-falsifiers-and-kill-conditions",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "falsifiers-and-kill-conditions"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-project-pivot-confirmation",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "project-pivot-confirmation"
+    },
+    {
+      "id": "DFT-idea-evaluation-improve-exactly-one-selected-or-blocked-closure",
+      "package": "research-idea-evaluation",
+      "family": "improve-validator-requirement",
+      "expected": "fail-closed-when-enforced",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "IMP-IDEA",
+      "phase2_status": "improve-required",
+      "description": "exactly-one-selected-or-blocked-closure"
+    }
+  ]
+}

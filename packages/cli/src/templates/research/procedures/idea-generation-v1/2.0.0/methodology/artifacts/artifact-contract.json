@@ -1,0 +1,17 @@
+{
+  "procedureId": "idea-generation-v1",
+  "version": "2.0.0",
+  "checkpoints": [
+    "01-objective",
+    "02-prior",
+    "03-gap",
+    "04-candidates"
+  ],
+  "terminalStates": [
+    "success",
+    "blocked",
+    "failed",
+    "partial"
+  ],
+  "proposalOnly": true
+}

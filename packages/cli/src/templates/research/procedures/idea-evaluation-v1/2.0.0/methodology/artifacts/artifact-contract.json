@@ -1,0 +1,17 @@
+{
+  "procedureId": "idea-evaluation-v1",
+  "version": "2.0.0",
+  "checkpoints": [
+    "05-novelty",
+    "05b-method-flaw",
+    "06-select",
+    "07-handoff"
+  ],
+  "terminalStates": [
+    "success",
+    "blocked",
+    "failed",
+    "partial"
+  ],
+  "proposalOnly": true
+}
