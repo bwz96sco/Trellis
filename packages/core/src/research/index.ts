@@ -123,11 +123,28 @@ export type {
   ResearchAutomaticIneligibilityReason,
   ResearchCapabilityPolicyV1,
   ResearchEffectiveAuthority,
+  ResearchProcedureIdentityMode,
   ResearchProcedureManifest,
   ResearchProcedurePolicyErrorCode,
   ResearchProcedureSource,
   ResearchProjectPolicyV1,
 } from "./procedure-policy.js";
+
+export {
+  PROCEDURE_DIGEST_DOMAIN_V2,
+  SupportPackError,
+  buildSupportPackInventory,
+  computeResearchProcedureDigestV2,
+  parseSupportPackManifest,
+  serializeSupportPackInventoryForDigest,
+  serializeSupportPackManifest,
+} from "./procedure-support-pack.js";
+export type {
+  SupportPackEntry,
+  SupportPackInventoryItem,
+  SupportPackManifest,
+  SupportPackRole,
+} from "./procedure-support-pack.js";
 
 export {
   workspaceSchema,

@@ -4,10 +4,14 @@ import path from "node:path";
 import {
   ResearchCapabilityResolutionError,
   ResearchProcedurePolicyError,
+  SupportPackError,
+  buildSupportPackInventory,
   evaluateResearchAutomaticEligibility,
   getResearchCapabilityDefinition,
   parseResearchProcedure,
+  parseSupportPackManifest,
   resolveResearchEffectiveAuthority,
+  serializeSupportPackManifest,
   type ParsedResearchProcedure,
   type ResearchAutomaticEligibility,
   type ResearchEffectiveAuthority,
@@ -277,13 +281,142 @@ function readProcedureBytes(
   };
 }
 
+export type ResearchProcedureResolveMode =
+  | "registry-current"
+  | "activation-recorded";
+
+function readContainedRelativeFile(
+  selection: ProcedureDirectorySelection,
+  relativePath: string,
+): Uint8Array {
+  if (
+    relativePath.length === 0 ||
+    relativePath.includes("\0") ||
+    relativePath.includes("\\") ||
+    path.isAbsolute(relativePath) ||
+    relativePath.split("/").some((s) => s === "" || s === "." || s === "..")
+  ) {
+    throw new Error(`Support-pack path is unsafe: ${relativePath}`);
+  }
+  const filePath = path.join(
+    selection.path,
+    "methodology",
+    ...relativePath.split("/"),
+  );
+  const beforeLink = fs.lstatSync(filePath);
+  if (beforeLink.isSymbolicLink() || !beforeLink.isFile()) {
+    throw new Error(
+      `Support-pack entry must be a non-symlink file: ${relativePath}`,
+    );
+  }
+  const canonicalFile = fs.realpathSync(filePath);
+  const methodologyRoot = path.join(selection.canonicalPath, "methodology");
+  if (
+    !canonicalFile.startsWith(methodologyRoot + path.sep) &&
+    canonicalFile !== methodologyRoot
+  ) {
+    throw new Error(
+      `Support-pack entry escapes methodology root: ${relativePath}`,
+    );
+  }
+  const bytes = new Uint8Array(fs.readFileSync(filePath));
+  const after = fs.lstatSync(filePath);
+  if (
+    after.isSymbolicLink() ||
+    !after.isFile() ||
+    after.size !== beforeLink.size ||
+    after.mtimeMs !== beforeLink.mtimeMs
+  ) {
+    throw new Error(
+      `Support-pack entry changed while reading: ${relativePath}`,
+    );
+  }
+  return bytes;
+}
+
+function tryLoadSupportPack(
+  selection: ProcedureDirectorySelection,
+  procedureId: string,
+  procedureVersion: string,
+):
+  | {
+      readonly packJsonBytes: Uint8Array;
+      readonly inventoryItems: ReturnType<typeof buildSupportPackInventory>;
+    }
+  | undefined {
+  const packPath = path.join(selection.path, "methodology", "pack.json");
+  if (!fs.existsSync(packPath)) return undefined;
+  validateDirectorySelection(selection);
+  const packLink = fs.lstatSync(packPath);
+  if (packLink.isSymbolicLink() || !packLink.isFile()) {
+    throw new Error("methodology/pack.json must be a non-symlink regular file");
+  }
+  const packBytes = new Uint8Array(fs.readFileSync(packPath));
+  let manifest;
+  try {
+    manifest = parseSupportPackManifest({
+      packJsonBytes: packBytes,
+      procedureId,
+      procedureVersion,
+    });
+  } catch (error) {
+    if (error instanceof SupportPackError) throw error;
+    throw error;
+  }
+  const canonicalPack = serializeSupportPackManifest(manifest);
+  const canonicalPackBytes = new TextEncoder().encode(canonicalPack);
+  // Allow non-canonical on-disk JSON only after re-parse of canonical form
+  const canonicalManifest = parseSupportPackManifest({
+    packJsonBytes: canonicalPackBytes,
+    procedureId,
+    procedureVersion,
+  });
+  const files: Record<string, Uint8Array> = {};
+  for (const entry of canonicalManifest.entries) {
+    files[entry.path] = readContainedRelativeFile(selection, entry.path);
+  }
+  validateDirectorySelection(selection);
+  const inventoryItems = buildSupportPackInventory({
+    manifest: canonicalManifest,
+    files,
+  });
+  return { packJsonBytes: canonicalPackBytes, inventoryItems };
+}
+
 function parseSelectedProcedure(
   capabilityId: string,
   source: "project" | "bundled",
   selection: ProcedureDirectorySelection,
+  mode: ResearchProcedureResolveMode = "registry-current",
+  recordedVersion?: string,
 ): ParsedResearchProcedure {
   const bytes = readProcedureBytes(selection);
-  return parseResearchProcedure({ capabilityId, source, ...bytes });
+  // Peek procedure version from JSON without full parse for pack binding
+  const peek = JSON.parse(new TextDecoder().decode(bytes.manifestBytes)) as {
+    id?: string;
+    version?: string;
+  };
+  const procedureId = typeof peek.id === "string" ? peek.id : "";
+  const procedureVersion =
+    recordedVersion ?? (typeof peek.version === "string" ? peek.version : "");
+  const supportPack = tryLoadSupportPack(
+    selection,
+    procedureId,
+    procedureVersion,
+  );
+  return parseResearchProcedure({
+    capabilityId,
+    source,
+    ...bytes,
+    identityMode:
+      mode === "activation-recorded"
+        ? "recorded-version"
+        : "capability-current",
+    ...(mode === "activation-recorded" && recordedVersion !== undefined
+      ? { recordedVersion }
+      : {}),
+    ...(supportPack !== undefined ? { supportPack } : {}),
+  });
 }
 
 function mapResolutionError(
@@ -302,6 +435,13 @@ function mapResolutionError(
 export async function resolveResearchProcedure(input: {
   readonly root: string;
   readonly capabilityId: string;
+  /**
+   * registry-current (default): resolve capability.procedure.id@version from registry.
+   * activation-recorded: resolve the exact recorded Procedure id/version for historical activations.
+   */
+  readonly mode?: ResearchProcedureResolveMode;
+  readonly procedureId?: string;
+  readonly procedureVersion?: string;
 }): Promise<ParsedResearchProcedure> {
   const capability = getResearchCapabilityDefinition(input.capabilityId);
   if (capability === undefined) {
@@ -311,12 +451,37 @@ export async function resolveResearchProcedure(input: {
     );
   }
 
+  const mode = input.mode ?? "registry-current";
+  const procedureId =
+    mode === "activation-recorded"
+      ? (input.procedureId ?? capability.procedure.id)
+      : capability.procedure.id;
+  const procedureVersion =
+    mode === "activation-recorded"
+      ? (input.procedureVersion ?? capability.procedure.version)
+      : capability.procedure.version;
+
+  if (mode === "activation-recorded") {
+    if (!input.procedureId || !input.procedureVersion) {
+      throw new ResearchProcedureResolutionError(
+        "INVALID_BUNDLED_PROCEDURE",
+        "activation-recorded mode requires procedureId and procedureVersion",
+      );
+    }
+    if (input.procedureId !== capability.procedure.id) {
+      throw new ResearchProcedureResolutionError(
+        "INVALID_BUNDLED_PROCEDURE",
+        "Recorded Procedure id does not match capability binding",
+      );
+    }
+  }
+
   const projectSegments = [
     ".trellis",
     "research",
     "procedures",
-    capability.procedure.id,
-    capability.procedure.version,
+    procedureId,
+    procedureVersion,
   ];
   let project: ReturnType<typeof inspectDirectoryPath>;
   try {
@@ -330,6 +495,8 @@ export async function resolveResearchProcedure(input: {
         capability.id,
         "project",
         project.selection,
+        mode,
+        procedureVersion,
       );
     } catch (error) {
       mapResolutionError("INVALID_PROJECT_PROCEDURE", capability.id, error);
@@ -339,13 +506,19 @@ export async function resolveResearchProcedure(input: {
   try {
     const bundledRoot = getBundledResearchProcedureRoot();
     const bundled = inspectDirectoryPath(bundledRoot, [
-      capability.procedure.id,
-      capability.procedure.version,
+      procedureId,
+      procedureVersion,
     ]);
     if (bundled.status === "absent") {
       throw new Error("Bundled Procedure directory is absent");
     }
-    return parseSelectedProcedure(capability.id, "bundled", bundled.selection);
+    return parseSelectedProcedure(
+      capability.id,
+      "bundled",
+      bundled.selection,
+      mode,
+      procedureVersion,
+    );
   } catch (error) {
     mapResolutionError("INVALID_BUNDLED_PROCEDURE", capability.id, error);
   }

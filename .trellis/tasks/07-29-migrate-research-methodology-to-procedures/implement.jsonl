@@ -1,0 +1,9 @@
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/planning-context.md","reason":"Task-local authoritative pins, evidence citations, ownership inputs, privacy, and authorization boundary."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/path-ownership-map.md","reason":"Exact Phase-2 production, test, specification, and task-research ownership boundaries."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json","reason":"Exact 229-case implementation allocation with one owner per frozen ID."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/phase2-expansion-case-allocation.json","reason":"Exact additional Phase-2 field-depth, composition, provenance, cutover, and rollback case ownership outside the frozen 229."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/independent-review-remediation.md","reason":"Adversarial-review findings, remediations, and residual gates."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Core Research state, Procedure, digest, activation, approval, and compatibility contracts."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"CLI Procedure resolution, Dispatch, Context, Result, Proposal, and authority contracts."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Generic worker and hook authority boundaries that methodology Context must preserve."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Contained reads, project override, zero-write, and package filesystem safety rules."}

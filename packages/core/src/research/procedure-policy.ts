@@ -2,6 +2,10 @@ import { createHash } from "node:crypto";
 
 import { stableResearchJson } from "./projections.js";
 import {
+  computeResearchProcedureDigestV2,
+  type SupportPackInventoryItem,
+} from "./procedure-support-pack.js";
+import {
   ResearchCapabilityResolutionError,
   getResearchCapabilityDefinition,
   type DispatchableQuestStage,
@@ -106,6 +110,10 @@ export interface ResearchProjectPolicyV1 {
   >;
 }
 
+export type ResearchProcedureIdentityMode =
+  | "capability-current"
+  | "recorded-version";
+
 export interface ParsedResearchProcedure {
   readonly capability: ResearchCapabilityDefinition;
   readonly source: ResearchProcedureSource;
@@ -113,6 +121,8 @@ export interface ParsedResearchProcedure {
   readonly canonicalManifestJson: string;
   readonly instructions: string;
   readonly digest: string;
+  /** Present only when a methodology support pack was bound into a v2 digest. */
+  readonly digestDomain?: "v1" | "v2";
 }
 
 export interface ParsedResearchProjectPolicy {
@@ -309,6 +319,8 @@ function parseManifest(
   parsed: unknown,
   capability: ResearchCapabilityDefinition,
   source: ResearchProcedureSource,
+  identityMode: ResearchProcedureIdentityMode = "capability-current",
+  recordedVersion?: string,
 ): ResearchProcedureManifest {
   const value = plainObject(
     parsed,
@@ -335,11 +347,26 @@ function parseManifest(
   if (value.kind !== capability.kind) {
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure kind does not match capability");
   }
-  if (value.id !== capability.procedure.id || version !== capability.procedure.version) {
+  if (value.id !== capability.procedure.id) {
     fail(
       "INVALID_RESEARCH_PROCEDURE",
       "Procedure identity does not match capability binding",
     );
+  }
+  if (identityMode === "capability-current") {
+    if (version !== capability.procedure.version) {
+      fail(
+        "INVALID_RESEARCH_PROCEDURE",
+        "Procedure identity does not match capability binding",
+      );
+    }
+  } else {
+    if (recordedVersion === undefined || version !== recordedVersion) {
+      fail(
+        "INVALID_RESEARCH_PROCEDURE",
+        "Procedure version does not match recorded activation version",
+      );
+    }
   }
   if (value.networkPolicy !== "forbidden" && value.networkPolicy !== "declared-only") {
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure networkPolicy is invalid");
@@ -399,9 +426,16 @@ function parseManifest(
       "Project Procedure replaces",
       "INVALID_RESEARCH_PROCEDURE",
     );
+    // Project overrides must declare which bundled identity they replace.
+    // In capability-current mode this is the registry binding; in recorded-version
+    // mode it is the recorded package version being revalidated.
+    const expectedReplaceVersion =
+      identityMode === "capability-current"
+        ? capability.procedure.version
+        : recordedVersion!;
     if (
       replacement.id !== capability.procedure.id ||
-      replacement.version !== capability.procedure.version
+      replacement.version !== expectedReplaceVersion
     ) {
       fail(
         "INVALID_RESEARCH_PROCEDURE",
@@ -410,7 +444,7 @@ function parseManifest(
     }
     replaces = Object.freeze({
       id: capability.procedure.id,
-      version: capability.procedure.version,
+      version: expectedReplaceVersion,
     });
   } else if (value.replaces !== undefined) {
     fail("INVALID_RESEARCH_PROCEDURE", "Bundled Procedure must omit replaces");
@@ -502,8 +536,28 @@ export function parseResearchProcedure(input: {
   readonly source: ResearchProcedureSource;
   readonly manifestBytes: Uint8Array;
   readonly instructionBytes: Uint8Array;
+  readonly identityMode?: ResearchProcedureIdentityMode;
+  readonly recordedVersion?: string;
+  /**
+   * When present, Procedure digest uses the v2 domain binding support-pack
+   * inventory. Omit for schema-v1 packages (default).
+   */
+  readonly supportPack?: {
+    readonly packJsonBytes: Uint8Array;
+    readonly inventoryItems: readonly SupportPackInventoryItem[];
+  };
 }): ParsedResearchProcedure {
   const capability = registeredCapability(input.capabilityId);
+  const identityMode = input.identityMode ?? "capability-current";
+  if (
+    identityMode === "recorded-version" &&
+    (input.recordedVersion === undefined || input.recordedVersion.length === 0)
+  ) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "recordedVersion is required for recorded-version identity mode",
+    );
+  }
   const manifestBytes = new Uint8Array(input.manifestBytes);
   const instructionBytes = new Uint8Array(input.instructionBytes);
   let parsed: unknown;
@@ -512,7 +566,13 @@ export function parseResearchProcedure(input: {
   } catch (error) {
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure manifest JSON is invalid", error);
   }
-  const manifest = parseManifest(parsed, capability, input.source);
+  const manifest = parseManifest(
+    parsed,
+    capability,
+    input.source,
+    identityMode,
+    input.recordedVersion,
+  );
   const canonicalManifestJson = serializeManifest(manifest);
   const canonicalManifestBytes = TEXT_ENCODER.encode(canonicalManifestJson);
   if (!sameBytes(manifestBytes, canonicalManifestBytes)) {
@@ -533,10 +593,22 @@ export function parseResearchProcedure(input: {
   if (instructions.includes("\0")) {
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure instructions contain NUL");
   }
-  const digest = computeResearchProcedureDigest({
-    canonicalManifestBytes,
-    instructionBytes,
-  });
+  let digest: string;
+  let digestDomain: "v1" | "v2" = "v1";
+  if (input.supportPack !== undefined) {
+    digest = computeResearchProcedureDigestV2({
+      canonicalManifestBytes,
+      instructionBytes,
+      packJsonBytes: input.supportPack.packJsonBytes,
+      inventoryItems: input.supportPack.inventoryItems,
+    });
+    digestDomain = "v2";
+  } else {
+    digest = computeResearchProcedureDigest({
+      canonicalManifestBytes,
+      instructionBytes,
+    });
+  }
   return Object.freeze({
     capability,
     source: input.source,
@@ -544,6 +616,7 @@ export function parseResearchProcedure(input: {
     canonicalManifestJson,
     instructions,
     digest,
+    digestDomain,
   });
 }
 

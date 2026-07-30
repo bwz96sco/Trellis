@@ -1,0 +1,12 @@
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/planning-context.md","reason":"Verify authoritative pins, privacy limits, and the planning-only authorization boundary."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/path-ownership-map.md","reason":"Check disjoint family paths, sole central cutover ownership, public barrel ownership, and explicit composition and historical-resolution ownership."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json","reason":"Check exactly 229 unique frozen IDs, exact criticality totals, and one implementation owner per case."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/phase2-expansion-case-allocation.json","reason":"Check additional Phase-2 cases are separately counted, uniquely owned, and never double-counted into the frozen 229."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/independent-review-remediation.md","reason":"Check every adversarial-review finding is closed or explicitly carried as a gate."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check event replay, state authority, Procedure binding, and compatibility behavior."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check observable CLI, activation, Context, Result, Proposal, and Decision contracts."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check host parity and Proposal-only worker authority."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check support-pack and project-override fail-closed and zero-write safety."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check generated generic host adapters and cross-host integration boundaries."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check exact deterministic vectors, compatibility fixtures, and test ownership."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check real filesystem, subprocess, clean-build, and packed-tarball assurance."}

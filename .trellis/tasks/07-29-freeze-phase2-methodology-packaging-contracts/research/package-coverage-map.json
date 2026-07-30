@@ -1,0 +1,198 @@
+{
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "packageCount": 16,
+  "packages": [
+    {
+      "package": "research-review-case",
+      "implementationOwner": {
+        "child": "P2-10",
+        "task": "07-29-migrate-review-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "review-case-v1",
+      "capability": "research.audit.case",
+      "stageCount": 0,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-review-campaign",
+      "implementationOwner": {
+        "child": "P2-10",
+        "task": "07-29-migrate-review-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "review-campaign-v1",
+      "capability": "research.audit.campaign",
+      "stageCount": 0,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-literature",
+      "implementationOwner": {
+        "child": "P2-07",
+        "task": "07-29-migrate-literature-survey-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "literature-review-v1",
+      "capability": "research.literature.review",
+      "stageCount": 7,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-ideation",
+      "implementationOwner": {
+        "child": "P2-05",
+        "task": "07-29-migrate-ideation-evaluation-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "idea-generation-v1",
+      "capability": "research.ideation.generate",
+      "stageCount": 4,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-idea-evaluation",
+      "implementationOwner": {
+        "child": "P2-05",
+        "task": "07-29-migrate-ideation-evaluation-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "idea-evaluation-v1",
+      "capability": "research.ideation.evaluate",
+      "stageCount": 4,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-project-setup",
+      "implementationOwner": {
+        "child": "P2-06",
+        "task": "07-29-migrate-setup-quest-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "project-setup-v1",
+      "capability": "research.setup.project",
+      "stageCount": 0,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-experiment",
+      "implementationOwner": {
+        "child": "P2-08",
+        "task": "07-29-migrate-experiment-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "experiment-round-v1",
+      "capability": "research.experiment.round",
+      "stageCount": 7,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-experiment-campaign",
+      "implementationOwner": {
+        "child": "P2-08",
+        "task": "07-29-migrate-experiment-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "experiment-campaign-v1",
+      "capability": "research.experiment.campaign",
+      "stageCount": 0,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-computation",
+      "implementationOwner": {
+        "child": "P2-09",
+        "task": "07-29-migrate-computation-theory-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "computation-case-v1",
+      "capability": "research.computation.case",
+      "stageCount": 0,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-figure",
+      "implementationOwner": {
+        "child": "P2-11",
+        "task": "07-29-migrate-writing-figure-slides-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "figure-v1",
+      "capability": "research.writing.figure",
+      "stageCount": 6,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-slides",
+      "implementationOwner": {
+        "child": "P2-11",
+        "task": "07-29-migrate-writing-figure-slides-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "slides-v1",
+      "capability": "research.writing.slides",
+      "stageCount": 5,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-survey",
+      "implementationOwner": {
+        "child": "P2-07",
+        "task": "07-29-migrate-literature-survey-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "survey-v1",
+      "capability": "research.literature.survey",
+      "stageCount": 6,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-writing",
+      "implementationOwner": {
+        "child": "P2-11",
+        "task": "07-29-migrate-writing-figure-slides-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "writing-case-v1",
+      "capability": "research.writing.case",
+      "stageCount": 8,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-theory",
+      "implementationOwner": {
+        "child": "P2-09",
+        "task": "07-29-migrate-computation-theory-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "theory-case-v1",
+      "capability": "research.theory.case",
+      "stageCount": 7,
+      "defaultStageCapability": true
+    },
+    {
+      "package": "research-quest",
+      "implementationOwner": {
+        "child": "P2-06",
+        "task": "07-29-migrate-setup-quest-methodology"
+      },
+      "disposition": "preserve",
+      "procedure": "quest-framing-v1",
+      "capability": "research.framing.quest",
+      "stageCount": 0,
+      "defaultStageCapability": false
+    },
+    {
+      "package": "research-quest-admin",
+      "implementationOwner": {
+        "child": "P2-06",
+        "task": "07-29-migrate-setup-quest-methodology"
+      },
+      "disposition": "translate",
+      "procedure": "quest-admin-v1",
+      "capability": "research.framing.admin",
+      "stageCount": 0,
+      "defaultStageCapability": false
+    }
+  ]
+}

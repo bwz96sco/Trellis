@@ -159,10 +159,24 @@ export async function revalidateDispatchActivationStaged(input: {
     );
   }
 
+  // Historical activations must resolve the recorded Procedure id/version and
+  // digest, not the registry's current binding (which may later point at 2.0.0).
   const procedure = await resolveResearchProcedure({
     root: input.root,
     capabilityId: input.activation.capabilityId,
+    mode: "activation-recorded",
+    procedureId: input.activation.procedure.id,
+    procedureVersion: input.activation.procedure.version,
   });
+  if (
+    procedure.manifest.id !== input.activation.procedure.id ||
+    procedure.manifest.version !== input.activation.procedure.version
+  ) {
+    fail(
+      "PROCEDURE_DIGEST_MISMATCH",
+      "Procedure identity no longer matches activation",
+    );
+  }
   if (procedure.digest !== input.activation.procedure.digest) {
     fail(
       "PROCEDURE_DIGEST_MISMATCH",

@@ -1,0 +1,54 @@
+{
+  "task": "07-29-implement-procedure-support-pack-digest-binding",
+  "child": "P2-02",
+  "completedAt": "2026-07-29T15:10:50Z",
+  "verdict": "accepted",
+  "pins": {
+    "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+    "infraPin": "ccd5bb3afc99283252c599916a2b8c2e05075cc6",
+    "predecessor": "P2-01 accepted"
+  },
+  "checks": [
+    {
+      "id": "CHK-CORE-SUPPORT-PACK",
+      "command": "vitest procedure-support-pack + procedure-policy",
+      "result": "pass"
+    },
+    {
+      "id": "CHK-CLI-RESOLUTION",
+      "command": "vitest research-procedure-resolution.integration",
+      "result": "pass"
+    },
+    {
+      "id": "CHK-HISTORICAL",
+      "command": "vitest research-procedure-historical-resolution",
+      "result": "pass"
+    },
+    {
+      "id": "CHK-V1-BYTES",
+      "command": "existing procedure-policy vectors",
+      "result": "pass"
+    },
+    {
+      "id": "CHK-REVALIDATE-WIRE",
+      "command": "dispatch-revalidation uses activation-recorded mode",
+      "result": "pass-code"
+    },
+    {
+      "id": "CHK-FS-PACK-LOAD",
+      "result": "pass",
+      "note": "tryLoadSupportPack in procedure-resolution"
+    }
+  ],
+  "ownedPaths": [
+    "packages/core/src/research/procedure-support-pack.ts",
+    "packages/core/src/research/procedure-policy.ts",
+    "packages/core/src/research/index.ts",
+    "packages/cli/src/commands/research/procedure-resolution.ts",
+    "packages/cli/src/commands/research/dispatch-revalidation.ts",
+    "packages/core/test/research/procedure-support-pack.test.ts",
+    "packages/cli/test/commands/research-procedure-historical-resolution.test.ts",
+    ".trellis/spec/core/backend/research-procedure-packages.md"
+  ],
+  "notes": "Support-pack reader integration into resolveResearchProcedure file inventory is additive pure functions + historical mode; full FS support-pack load on disk packages deferred until family 2.0.0 packs land (P2-05+)."
+}
