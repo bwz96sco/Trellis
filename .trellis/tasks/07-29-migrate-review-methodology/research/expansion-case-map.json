@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-10",
+  "relationshipToFrozenMatrix": "additional-not-part-of-229",
+  "cases": [
+    {"id":"EXP-REVIEW-CASE-INITIAL-WRITER","assertion":"Review-case is the sole initial writer of its case artifact; campaign consumes an immutable digest-bound result reference."},
+    {"id":"EXP-REVIEW-CASE-IMMUTABLE-CONFLICT","assertion":"Campaign attempts to rewrite immutable case fields or duplicate a case ID with different bytes fail closed."},
+    {"id":"EXP-REVIEW-CAMPAIGN-CONTAINED-INPUT","assertion":"Root materializes authorized child case evidence into contained Context inputs; support packs never traverse sibling parent paths."},
+    {"id":"EXP-COMP-002-AUTHORIZED-CAMPAIGN-CASE","assertion":"A valid root-authorized campaign-to-case execution produces bound child evidence and aggregate input."},
+    {"id":"EXP-COMP-002-CHILD-FAILURE-CANCEL","assertion":"Child failure or cancellation remains visible, stops forbidden follow-on work, and cannot become campaign success."},
+    {"id":"EXP-COMP-002-ROLLBACK-EVIDENCE","assertion":"Rejected or cancelled composition emits deterministic rollback evidence and preserves prior canonical records."}
+  ]
+}

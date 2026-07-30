@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-10",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 15,
+  "criticalCount": 14,
+  "packages": [
+    "research-review-campaign",
+    "research-review-campaign->research-review-case",
+    "research-review-case"
+  ],
+  "cases": [
+    {
+      "id": "DFT-review-case-required-vs-optional-artifacts",
+      "package": "research-review-case",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-review-case-missing-critical-evidence",
+      "package": "research-review-case",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-review-case-provenance-stable-id-drift",
+      "package": "research-review-case",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-review-case-forbidden-mutation",
+      "package": "research-review-case",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-review-case-invalid-handoff",
+      "package": "research-review-case",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-review-case-outcome-blocked",
+      "package": "research-review-case",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-review-case-outcome-partial",
+      "package": "research-review-case",
+      "family": "outcome-partial",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted partial"
+    },
+    {
+      "id": "DFT-review-campaign-required-vs-optional-artifacts",
+      "package": "research-review-campaign",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-review-campaign-missing-critical-evidence",
+      "package": "research-review-campaign",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-review-campaign-provenance-stable-id-drift",
+      "package": "research-review-campaign",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-review-campaign-forbidden-mutation",
+      "package": "research-review-campaign",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-review-campaign-invalid-handoff",
+      "package": "research-review-campaign",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-review-campaign-invalid-composition-chaining",
+      "package": "research-review-campaign",
+      "family": "invalid-composition-chaining",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "composition parent"
+    },
+    {
+      "id": "DFT-review-campaign-outcome-blocked",
+      "package": "research-review-campaign",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-COMP-002",
+      "package": "research-review-campaign->research-review-case",
+      "family": "composition",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "COMP-002"
+    }
+  ]
+}
