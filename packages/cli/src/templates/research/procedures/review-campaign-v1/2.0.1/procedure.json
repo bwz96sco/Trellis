@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"review-campaign-v1","version":"2.0.1","stage":"audit","kind":"workflow","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"forbidden","repositoryScope":"multiple","maxDurationMinutes":60,"maxDispatches":4,"packageSchemaVersion":2}

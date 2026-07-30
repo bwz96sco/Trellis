@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"survey-v1","version":"2.0.1","stage":"literature","kind":"workflow","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"forbidden","repositoryScope":"single","maxDurationMinutes":45,"maxDispatches":2,"packageSchemaVersion":2}

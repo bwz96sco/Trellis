@@ -1,0 +1,1 @@
+{"procedureId":"slides-v1","version":"2.0.1","checkpoints":["01-talk-contract","02-outline","03-production","04-notes","05-audit"],"orderedStages":["01-talk-contract","02-outline","03-production","04-notes","05-audit"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

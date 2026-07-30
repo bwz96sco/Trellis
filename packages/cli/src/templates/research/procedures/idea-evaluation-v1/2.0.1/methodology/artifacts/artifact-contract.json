@@ -1,0 +1,1 @@
+{"procedureId":"idea-evaluation-v1","version":"2.0.1","checkpoints":["05-novelty-check","05b-method-flaw-audit","06-select","07-handoff"],"orderedStages":["05-novelty-check","05b-method-flaw-audit","06-select","07-handoff"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

@@ -1,0 +1,1 @@
+{"procedureId":"review-case-v1","version":"2.0.1","checkpoints":["01-intake","02-findings","03-status"],"orderedStages":["01-intake","02-findings","03-status"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

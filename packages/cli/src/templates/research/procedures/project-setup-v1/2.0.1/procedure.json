@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"project-setup-v1","version":"2.0.1","stage":"setup","kind":"workflow","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"forbidden","repositoryScope":"single","maxDurationMinutes":15,"maxDispatches":1,"packageSchemaVersion":2}

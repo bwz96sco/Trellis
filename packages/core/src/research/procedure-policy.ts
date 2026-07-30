@@ -41,8 +41,19 @@ const MANIFEST_KEYS = [
   "maxDurationMinutes",
   "maxDispatches",
   "replaces",
+  "packageSchemaVersion",
 ] as const;
-const REQUIRED_MANIFEST_KEYS = MANIFEST_KEYS.slice(0, 9);
+const REQUIRED_MANIFEST_KEYS = [
+  "schemaVersion",
+  "id",
+  "version",
+  "stage",
+  "kind",
+  "inputs",
+  "outputs",
+  "networkPolicy",
+  "repositoryScope",
+] as const;
 const DEFAULT_POLICY_KEYS = [
   "automaticEnabled",
   "maxDurationMinutes",
@@ -80,6 +91,8 @@ export interface ResearchProcedureManifest {
   readonly maxDurationMinutes?: number;
   readonly maxDispatches?: number;
   readonly replaces?: Readonly<{ id: string; version: string }>;
+  /** Explicit package schema discriminator (2 for methodology support packs). */
+  readonly packageSchemaVersion?: 1 | 2;
 }
 
 export interface ResearchCapabilityPolicyV1 {
@@ -463,6 +476,17 @@ function parseManifest(
     fail("INVALID_RESEARCH_PROCEDURE", "Bundled Procedure must omit replaces");
   }
 
+  let packageSchemaVersion: 1 | 2 | undefined;
+  if (value.packageSchemaVersion !== undefined) {
+    if (value.packageSchemaVersion !== 1 && value.packageSchemaVersion !== 2) {
+      fail(
+        "INVALID_RESEARCH_PROCEDURE",
+        "packageSchemaVersion must be 1 or 2 when present",
+      );
+    }
+    packageSchemaVersion = value.packageSchemaVersion;
+  }
+
   return Object.freeze({
     schemaVersion: 1,
     id: value.id,
@@ -476,6 +500,7 @@ function parseManifest(
     ...(maxDurationMinutes === undefined ? {} : { maxDurationMinutes }),
     ...(maxDispatches === undefined ? {} : { maxDispatches }),
     ...(replaces === undefined ? {} : { replaces }),
+    ...(packageSchemaVersion === undefined ? {} : { packageSchemaVersion }),
   });
 }
 
@@ -504,6 +529,9 @@ function serializeManifest(manifest: ResearchProcedureManifest): string {
             version: manifest.replaces.version,
           },
         }),
+    ...(manifest.packageSchemaVersion === undefined
+      ? {}
+      : { packageSchemaVersion: manifest.packageSchemaVersion }),
   })}\n`;
 }
 

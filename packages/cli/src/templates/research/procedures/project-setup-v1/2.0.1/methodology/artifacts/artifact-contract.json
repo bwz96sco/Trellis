@@ -1,0 +1,1 @@
+{"procedureId":"project-setup-v1","version":"2.0.1","checkpoints":["01-scope","02-workspace","03-constraints"],"orderedStages":["01-scope","02-workspace","03-constraints"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

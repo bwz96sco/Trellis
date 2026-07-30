@@ -1,0 +1,1 @@
+{"procedureId":"survey-v1","version":"2.0.1","checkpoints":["01-rq-brief","02-corpus","03-taxonomy","04-synthesis","05-adversarial","06-output"],"orderedStages":["01-rq-brief","02-corpus","03-taxonomy","04-synthesis","05-adversarial","06-output"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}
