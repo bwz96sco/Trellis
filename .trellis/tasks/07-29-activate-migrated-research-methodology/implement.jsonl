@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/07-29-activate-migrated-research-methodology/research/planning-context.md","reason":"Task-local authoritative pins, evidence citations, ownership inputs, privacy, and authorization boundary."}
+{"file":".trellis/tasks/07-29-activate-migrated-research-methodology/research/differential-case-map.json","reason":"Exact task-local frozen case ownership, criticality, and observable expectations."}
+{"file":".trellis/tasks/07-29-activate-migrated-research-methodology/research/expansion-case-map.json","reason":"Exact literature default-route, optional registration, cutover-manifest, and rollback expansion cases."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Core Research state, Procedure, digest, activation, approval, and replay contracts."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"CLI Procedure, Dispatch, Context, Result, Proposal, and Decision contracts."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Generated worker/hook and package lifecycle integration contract."}

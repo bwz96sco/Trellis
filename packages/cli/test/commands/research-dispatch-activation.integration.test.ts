@@ -205,7 +205,7 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
           campaignId: fixture.ids.campaignId,
           repositoryId: fixture.ids.repositoryId,
           ownerSkill: "concurrent-winner",
-          capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.literature,
+          capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.framing,
           objective: "Canonical concurrent winner",
           acceptanceCriteria: [],
           allowedWritePaths: [],
@@ -225,7 +225,7 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
       campaignId: fixture.ids.campaignId,
       repositoryId: fixture.ids.repositoryId,
       ownerSkill: "losing-candidate",
-      capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.literature,
+      capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.framing,
       objective: "Losing candidate",
       acceptanceCriteria: [],
       allowedWritePaths: [],
@@ -573,7 +573,7 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
           campaignId: prepareCampaignId,
           repositoryId: prepareFixture.ids.repositoryId,
           ownerSkill: "inactive-prepare",
-          capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.literature,
+          capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.framing,
           objective: "Reject inactive Quest prepare",
           acceptanceCriteria: [],
           allowedWritePaths: [],
@@ -646,7 +646,7 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
         planResearchActivation({
           root: planFixture.root,
           dispatchId: planDispatchId,
-          capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.literature,
+          capabilityId: RESEARCH_DEFAULT_CAPABILITY_BY_STAGE.framing,
         }),
     });
 

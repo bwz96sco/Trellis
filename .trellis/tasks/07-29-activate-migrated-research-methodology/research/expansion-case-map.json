@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-12",
+  "relationshipToFrozenMatrix": "additional-not-part-of-229",
+  "cases": [
+    {"id":"EXP-CUTOVER-LITERATURE-REVIEW-DEFAULT","assertion":"Cutover intentionally makes the frozen v1.2 literature-review capability automatic/default and makes scan non-default unless a reviewed v1.3+ contract supersedes it."},
+    {"id":"EXP-CUTOVER-OPTIONAL-CAPABILITIES-NONDEFAULT","assertion":"Figure, slides, and survey are registered explicit/non-default."},
+    {"id":"EXP-CUTOVER-MANIFEST-COMPLETE","assertion":"The cutover manifest enumerates every capability, stage route, Procedure ID/version/digest, validator binding, packed path, previous binding, cutover state, and rollback target."},
+    {"id":"EXP-CUTOVER-PREACTIVATION-ATOMIC-REVERT","assertion":"Before a new activation, reverting the registry/inventory boundary restores the complete previous binding set atomically."},
+    {"id":"EXP-CUTOVER-POSTACTIVATION-REGISTRY-ROLLBACK","assertion":"After a new activation, a reviewed registry rollback changes only future selection; recorded activations keep their original ID/version/digest and remain replayable."},
+    {"id":"EXP-CUTOVER-HISTORICAL-ACTIVATION-UNCHANGED","assertion":"Switching or rolling back current bindings never changes historical activation bytes or authority."}
+  ]
+}

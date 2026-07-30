@@ -14,36 +14,41 @@ const capability = RESEARCH_CAPABILITY_REGISTRY.find(
 )!;
 
 describe("historical Procedure resolution", () => {
-  it("activation-recorded resolves recorded version even if registry current differs", async () => {
-    // Registry currently binds idea-generation-v1@1.0.0. Simulate a future current
-    // binding by resolving recorded 1.0.0 explicitly while proving registry-current
-    // still works for the same package.
+  it("activation-recorded resolves recorded 1.0.0 while registry current is 2.0.0", async () => {
     const current = await resolveResearchProcedure({
       root: os.tmpdir(),
       capabilityId: capability.id,
       mode: "registry-current",
     });
-    expect(current.manifest.version).toBe(capability.procedure.version);
-    expect(current.digestDomain ?? "v1").toBe("v1");
+    expect(current.manifest.version).toBe("2.0.0");
+    expect(capability.procedure.version).toBe("2.0.0");
+    expect(current.digestDomain).toBe("v2");
 
     const recorded = await resolveResearchProcedure({
       root: os.tmpdir(),
       capabilityId: capability.id,
       mode: "activation-recorded",
       procedureId: capability.procedure.id,
-      procedureVersion: capability.procedure.version,
+      procedureVersion: "1.0.0",
     });
     expect(recorded.manifest.id).toBe(capability.procedure.id);
-    expect(recorded.manifest.version).toBe(capability.procedure.version);
-    expect(recorded.digest).toBe(current.digest);
+    expect(recorded.manifest.version).toBe("1.0.0");
+    expect(recorded.digestDomain ?? "v1").toBe("v1");
+    expect(recorded.digest).not.toBe(current.digest);
 
-    // Bundled package bytes still exist for the recorded version path
-    const bundled = path.join(
+    const historical = path.join(
       getBundledResearchProcedureRoot(),
       capability.procedure.id,
-      capability.procedure.version,
+      "1.0.0",
       "procedure.json",
     );
-    expect(fs.existsSync(bundled)).toBe(true);
+    const live = path.join(
+      getBundledResearchProcedureRoot(),
+      capability.procedure.id,
+      "2.0.0",
+      "procedure.json",
+    );
+    expect(fs.existsSync(historical)).toBe(true);
+    expect(fs.existsSync(live)).toBe(true);
   });
 });

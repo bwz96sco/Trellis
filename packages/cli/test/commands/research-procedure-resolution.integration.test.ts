@@ -62,7 +62,7 @@ const BUNDLED_PROCEDURE_DIGESTS: Readonly<Record<string, string>> = {
 function projectDirectory(
   root: string,
   procedureId: string,
-  version = "1.0.0",
+  version: string,
 ): string {
   return path.join(
     root,
@@ -74,20 +74,32 @@ function projectDirectory(
   );
 }
 
+function capabilityById(id: string) {
+  const capability = RESEARCH_CAPABILITY_REGISTRY.find((c) => c.id === id);
+  if (capability === undefined) {
+    throw new Error(`missing capability ${id}`);
+  }
+  return capability;
+}
+
 async function writeValidProjectOverride(
   root: string,
-  capabilityIndex: number,
+  capabilityId = "research.experiment.round",
 ): Promise<{
   readonly directory: string;
   readonly manifestPath: string;
   readonly instructionPath: string;
 }> {
-  const capability = RESEARCH_CAPABILITY_REGISTRY[capabilityIndex];
+  const capability = capabilityById(capabilityId);
   const bundled = await resolveResearchProcedure({
     root,
     capabilityId: capability.id,
   });
-  const directory = projectDirectory(root, capability.procedure.id);
+  const directory = projectDirectory(
+    root,
+    capability.procedure.id,
+    capability.procedure.version,
+  );
   const manifestPath = path.join(directory, "procedure.json");
   const instructionPath = path.join(directory, "PROCEDURE.md");
   fs.mkdirSync(directory, { recursive: true });
@@ -271,21 +283,23 @@ describe("Research Procedure filesystem resolution", () => {
 
       expect(resolved).toMatchObject({
         source: "bundled",
-        digest:
-          "sha256:b0a008e2974210f137fa1d61808efc114e3cea0247d9b124c5c297cf8b61f74f",
-        manifest: { id: "computation-case-v1" },
+        manifest: { id: "computation-case-v1", version: "2.0.0" },
       });
+      expect(resolved.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+      expect(resolved.digest).not.toBe(
+        BUNDLED_PROCEDURE_DIGESTS["computation-case-v1"],
+      );
     },
     60_000,
   );
 
   it("uses a valid project override and ignores unnamed siblings", async () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
+    const capability = capabilityById("research.experiment.round");
     const bundled = await resolveResearchProcedure({
       root,
       capabilityId: capability.id,
     });
-    const directory = projectDirectory(root, capability.procedure.id);
+    const directory = projectDirectory(root, capability.procedure.id, capability.procedure.version);
     fs.mkdirSync(directory, { recursive: true });
     const manifest = {
       ...bundled.manifest,
@@ -314,8 +328,8 @@ describe("Research Procedure filesystem resolution", () => {
   it.each(["regular", "non-regular"] as const)(
     "ignores concurrent unnamed %s sibling creation and removal",
     async (siblingType) => {
-      const capability = RESEARCH_CAPABILITY_REGISTRY[9];
-      const paths = await writeValidProjectOverride(root, 9);
+      const capability = capabilityById("research.experiment.round");
+      const paths = await writeValidProjectOverride(root);
       const baseline = await resolveResearchProcedure({
         root,
         capabilityId: capability.id,
@@ -358,7 +372,7 @@ describe("Research Procedure filesystem resolution", () => {
 
   it("fails closed for every present-invalid project candidate", async () => {
     const capability = RESEARCH_CAPABILITY_REGISTRY[1];
-    const directory = projectDirectory(root, capability.procedure.id);
+    const directory = projectDirectory(root, capability.procedure.id, capability.procedure.version);
     fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(path.join(directory, "PROCEDURE.md"), "partial");
 
@@ -383,7 +397,7 @@ describe("Research Procedure filesystem resolution", () => {
 
   it("rejects malformed override bytes without bundled fallback", async () => {
     const capability = RESEARCH_CAPABILITY_REGISTRY[2];
-    const directory = projectDirectory(root, capability.procedure.id);
+    const directory = projectDirectory(root, capability.procedure.id, capability.procedure.version);
     fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(path.join(directory, "procedure.json"), encoder.encode("{}\n"));
     fs.writeFileSync(path.join(directory, "PROCEDURE.md"), "invalid override");
@@ -400,8 +414,8 @@ describe("Research Procedure filesystem resolution", () => {
   it.each(["procedure.json", "PROCEDURE.md"] as const)(
     "rejects a symlinked %s without bundled fallback",
     async (fileName) => {
-      const capability = RESEARCH_CAPABILITY_REGISTRY[9];
-      const paths = await writeValidProjectOverride(root, 9);
+      const capability = capabilityById("research.experiment.round");
+      const paths = await writeValidProjectOverride(root);
       const selectedPath = path.join(paths.directory, fileName);
       const outsidePath = path.join(root, `outside-${fileName}`);
       fs.writeFileSync(outsidePath, fs.readFileSync(selectedPath));
@@ -417,8 +431,8 @@ describe("Research Procedure filesystem resolution", () => {
   it.each(["procedure.json", "PROCEDURE.md"] as const)(
     "rejects a non-regular %s without bundled fallback",
     async (fileName) => {
-      const capability = RESEARCH_CAPABILITY_REGISTRY[9];
-      const paths = await writeValidProjectOverride(root, 9);
+      const capability = capabilityById("research.experiment.round");
+      const paths = await writeValidProjectOverride(root);
       const selectedPath = path.join(paths.directory, fileName);
       fs.rmSync(selectedPath);
       fs.mkdirSync(selectedPath);
@@ -434,8 +448,8 @@ describe("Research Procedure filesystem resolution", () => {
   it.each(["procedure.json", "PROCEDURE.md"] as const)(
     "maps an unreadable %s to the selected-source error",
     async (fileName) => {
-      const capability = RESEARCH_CAPABILITY_REGISTRY[9];
-      const paths = await writeValidProjectOverride(root, 9);
+      const capability = capabilityById("research.experiment.round");
+      const paths = await writeValidProjectOverride(root);
       const selectedPath = path.join(paths.directory, fileName);
       const originalRead = fs.readFileSync.bind(fs);
       vi.spyOn(fs, "readFileSync").mockImplementation(((
@@ -457,8 +471,8 @@ describe("Research Procedure filesystem resolution", () => {
   );
 
   it("rejects a manifest changed after its stable read but before the pair completes", async () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
-    const paths = await writeValidProjectOverride(root, 9);
+    const capability = capabilityById("research.experiment.round");
+    const paths = await writeValidProjectOverride(root);
     const originalRead = fs.readFileSync.bind(fs);
     let changed = false;
     vi.spyOn(fs, "readFileSync").mockImplementation(((
@@ -487,8 +501,8 @@ describe("Research Procedure filesystem resolution", () => {
   });
 
   it("rejects ancestor replacement between the two named-file reads", async () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
-    const paths = await writeValidProjectOverride(root, 9);
+    const capability = capabilityById("research.experiment.round");
+    const paths = await writeValidProjectOverride(root);
     const originalRead = fs.readFileSync.bind(fs);
     let replaced = false;
     vi.spyOn(fs, "readFileSync").mockImplementation(((

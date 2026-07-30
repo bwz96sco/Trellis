@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-12",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 2,
+  "criticalCount": 1,
+  "packages": [
+    "*"
+  ],
+  "cases": [
+    {
+      "id": "DFT-ctrl-proposal-only",
+      "package": "*",
+      "family": "authority-translate",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "Proposal translation"
+    },
+    {
+      "id": "DFT-no-skill-payload",
+      "package": "*",
+      "family": "host-retire",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "host retire"
+    }
+  ]
+}

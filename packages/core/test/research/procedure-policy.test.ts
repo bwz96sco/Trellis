@@ -17,6 +17,12 @@ import {
 } from "../../src/research/index.js";
 
 const encoder = new TextEncoder();
+const byId = (id: string) => {
+  const found = RESEARCH_CAPABILITY_REGISTRY.find((c) => c.id === id);
+  if (!found) throw new Error(`missing capability ${id}`);
+  return found;
+};
+
 const COMMON_INPUTS = [
   "dispatch",
   "repository",
@@ -104,7 +110,7 @@ describe("Research Procedure contracts", () => {
     ["extra LF", (text: string) => `${text}\n`],
     ["missing LF", (text: string) => text.slice(0, -1)],
   ])("rejects non-canonical %s manifest bytes", (_label, transform) => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[1];
+    const capability = byId("research.framing.quest");
     expect(() =>
       parseResearchProcedure({
         capabilityId: capability.id,
@@ -126,7 +132,7 @@ describe("Research Procedure contracts", () => {
     "networkPolicy",
     "repositoryScope",
   ])("rejects a manifest missing required key %s", (key) => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
+    const capability = byId("research.experiment.round");
     const manifest = Object.fromEntries(
       Object.entries(
         JSON.parse(manifestJson(capability)) as Record<string, unknown>,
@@ -148,7 +154,7 @@ describe("Research Procedure contracts", () => {
     ["invalid stage", { stage: "audit" }],
     ["invalid kind", { kind: "workflow" }],
   ])("rejects %s", (_label, overrides) => {
-    expect(() => parseBundled(RESEARCH_CAPABILITY_REGISTRY[9], overrides)).toThrow(
+    expect(() => parseBundled(byId("research.experiment.round"), overrides)).toThrow(
       ResearchProcedurePolicyError,
     );
   });
@@ -161,20 +167,20 @@ describe("Research Procedure contracts", () => {
     ["leading-zero numeric prerelease identifier", "1.0.0-alpha.01"],
   ])("rejects SemVer with %s", (_label, version) => {
     expect(() =>
-      parseBundled(RESEARCH_CAPABILITY_REGISTRY[9], { version }),
+      parseBundled(byId("research.experiment.round"), { version }),
     ).toThrow(ResearchProcedurePolicyError);
   });
 
   it("accepts valid prerelease grammar before enforcing registry identity", () => {
     expect(() =>
-      parseBundled(RESEARCH_CAPABILITY_REGISTRY[9], {
+      parseBundled(byId("research.experiment.round"), {
         version: "1.0.0-alpha.1",
       }),
     ).toThrow(/identity does not match capability binding/);
   });
 
   it("requires exact project replacement identity", () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
+    const capability = byId("research.experiment.round");
     const parsed = parseResearchProcedure({
       capabilityId: capability.id,
       source: "project",
@@ -201,7 +207,7 @@ describe("Research Procedure contracts", () => {
   });
 
   it("matches fixed digest vectors for replacement, omitted limits, and array order", () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
+    const capability = byId("research.experiment.round");
     const replacement = parseResearchProcedure({
       capabilityId: capability.id,
       source: "project",
@@ -216,7 +222,7 @@ describe("Research Procedure contracts", () => {
       instructionBytes: encoder.encode("project instructions"),
     });
     expect(replacement.digest).toBe(
-      "sha256:d7ed70074e08291d2d21cf23be1258cca6fa0be0d89c35171ecd7e2145707cf2",
+      "sha256:915c27eef9e3c13b61e505cfda2f00f95a14ce2bf26a3ba7213c382604cf2ce4",
     );
 
     const omittedLimits = parseBundled(
@@ -227,7 +233,7 @@ describe("Research Procedure contracts", () => {
     expect(omittedLimits.manifest).not.toHaveProperty("maxDurationMinutes");
     expect(omittedLimits.manifest).not.toHaveProperty("maxDispatches");
     expect(omittedLimits.digest).toBe(
-      "sha256:3a45cc5d235ce717707eb6472f789b25f481c32fbf7218b79e64d5b8af9dcfa5",
+      "sha256:74cc55057c7b280e521161828116d896f969929610740c37561ab214ae83a40b",
     );
 
     const originalOrder = parseBundled(capability, {}, "array order\n");
@@ -239,15 +245,15 @@ describe("Research Procedure contracts", () => {
       "array order\n",
     );
     expect(originalOrder.digest).toBe(
-      "sha256:ca4361b9ab17773364ccd6a631437db4927aa78185bbc4db251b36bc1a2e4910",
+      "sha256:20add8fef5ab74e43563934cee91beb3c316d6afa686ef304465c0a5372e5f12",
     );
     expect(reorderedInputs.digest).toBe(
-      "sha256:053dfd55cf239828c833a237e9f23aad36fa425f6731eb5972ce7f927f10c2da",
+      "sha256:a328521b0316bf8d9f02c9088bc520827ef9d1431c38cc2c87c85ef921da8a6d",
     );
   });
 
   it("rejects identity, array, limit, and authority widening", () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[1];
+    const capability = byId("research.framing.quest");
     for (const overrides of [
       { id: "other-v1" },
       { version: "v1.0.0" },
@@ -266,7 +272,7 @@ describe("Research Procedure contracts", () => {
   });
 
   it("hashes exact manifest framing and instruction bytes", () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[9];
+    const capability = byId("research.experiment.round");
     const manifest = encoder.encode(manifestJson(capability));
     const instructions = encoder.encode("Unicode π\r\n");
     const expected = createHash("sha256")
@@ -290,7 +296,7 @@ describe("Research Procedure contracts", () => {
   });
 
   it("rejects invalid instruction bytes", () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[1];
+    const capability = byId("research.framing.quest");
     for (const instructionBytes of [
       new Uint8Array(),
       Uint8Array.from([0xef, 0xbb, 0xbf, 0x78]),
@@ -501,7 +507,7 @@ describe("Research project policy and effective authority", () => {
 
     const review = resolveResearchEffectiveAuthority({
       capabilityId: "research.literature.review",
-      procedure: parseBundled(RESEARCH_CAPABILITY_REGISTRY[4]),
+      procedure: parseBundled(byId("research.literature.review")),
       policy,
     });
     expect(review).toMatchObject({
@@ -512,14 +518,14 @@ describe("Research project policy and effective authority", () => {
     });
     const writing = resolveResearchEffectiveAuthority({
       capabilityId: "research.writing.case",
-      procedure: parseBundled(RESEARCH_CAPABILITY_REGISTRY[13]),
+      procedure: parseBundled(byId("research.writing.case")),
       policy,
     });
     expect(writing.enabled).toBe(false);
   });
 
   it("inherits registry ceilings when Procedure limits are omitted", () => {
-    const capability = RESEARCH_CAPABILITY_REGISTRY[4];
+    const capability = byId("research.literature.review");
     const procedure = parseBundled(capability, {
       maxDurationMinutes: undefined,
       maxDispatches: undefined,
@@ -551,7 +557,7 @@ describe("Research project policy and effective authority", () => {
   });
 
   it("returns every automatic ineligibility reason in stable order", () => {
-    const procedure = parseBundled(RESEARCH_CAPABILITY_REGISTRY[0]);
+    const procedure = parseBundled(byId("research.setup.project"));
     const policy = parseResearchProjectPolicy(
       encoder.encode(CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON),
     );
@@ -609,7 +615,7 @@ describe("Research project policy and effective authority", () => {
         },
       }),
     );
-    const bounded = parseBundled(RESEARCH_CAPABILITY_REGISTRY[9]);
+    const bounded = parseBundled(byId("research.experiment.round"));
     expect(
       evaluateResearchAutomaticEligibility(
         resolveResearchEffectiveAuthority({

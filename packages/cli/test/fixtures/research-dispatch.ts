@@ -146,8 +146,10 @@ export async function createResearchDispatchFixture(
     repositoryIds:
       options.associateRepository === false ? [] : [registered.repository.id],
   });
-  const requestedStage = options.stage ?? "literature";
-  const prepareStage = requestedStage === "complete" ? "literature" : requestedStage;
+  // Default to framing: bounded automatic-eligible stage. Literature stage
+  // default is review (workflow) after P2-12 and requires explicit approval.
+  const requestedStage = options.stage ?? "framing";
+  const prepareStage = requestedStage === "complete" ? "framing" : requestedStage;
   await setResearchQuestStage({
     root,
     questId,
