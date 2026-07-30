@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 2,
+  "cutoverId": "phase2-methodology-cutover-v1-repair",
+  "createdAt": "2026-07-30T07:40:05Z",
+  "status": "candidate-blocked-on-packed-lifecycle-authorization",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "futureSelectionStill": "1.0.0",
+  "candidateVersion": "2.0.1",
+  "notes": [
+    "Wave-5 candidate table only. Live registry remains CURRENT=1.0.0.",
+    "Do not claim active cutover until packed lifecycle auth + final activation approval.",
+    "Literature default in candidate table is review (frozen v1.2); live remains scan until activation."
+  ],
+  "rollback": {
+    "preActivation": "keep CURRENT=1.0.0 and 14-cap live routing",
+    "postActivationFutureOnly": "revert CURRENT to 1.0.0; retain recorded 2.0.1 activations by id/version/digest"
+  },
+  "aggregates": {
+    "frozenCasesPassed": 229,
+    "expansionCasesPassed": 38,
+    "evidence": ".trellis/tasks/07-29-implement-frozen-phase2-differential-harness/research/differential-run-all.json"
+  },
+  "candidates": [
+    {
+      "capabilityId": "research.audit.campaign",
+      "stage": "audit",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "review-campaign-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "c123cff9cf1f63a981fb33f643f87a103155ad60bc8cfe4ef439b687398768c8",
+      "packJsonSha256": "722272f754be1ab4aae9904264b511854c2fb70ec779890df065ad66e535eeda",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.audit.case",
+      "stage": "audit",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "review-case-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "9c883bcd27505bcdb4085d40fde06eb1082cb35494c1102253f0b5071034e6cf",
+      "packJsonSha256": "ba1a9b21654766b9d2044d11ea6d5d03e6ca7d8e5caa1af56e83fd3ba604a258",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.computation.case",
+      "stage": "computation",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "computation-case-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "e630ac1c977546a9feeb078246eab63493a7ad8173e0be2e1f706d935d95eb03",
+      "packJsonSha256": "baf1e6729314eb4af6ed9b9bfe55ca963569c70ba4de583bea2416910e185933",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.experiment.campaign",
+      "stage": "experiment",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "experiment-campaign-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "89529bac6cc5b825244c4fc3bb56d1f15d27fcda5704af2124511c4a28a62109",
+      "packJsonSha256": "9b1dd055a066decf2cceff4cbb901a25a890f90c07e6ae85a343be014602bde1",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.experiment.round",
+      "stage": "experiment",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "experiment-round-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "df0f98c2ac188c329127caffccd911728822546a9336d700fe477a9e9d3db50b",
+      "packJsonSha256": "472cf13270804b394c43a9a4e7aaa3dcc2b4d19fc6ecf19cb75d0a5fe1040a71",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.framing.admin",
+      "stage": "framing",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "quest-admin-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "0521dda769d382f15e3b03d9b0c751ec75aab05f91980ede57a41a6dd124e9e0",
+      "packJsonSha256": "967312fe444b06ebe349176d9dfc0a575c37f489ccac77f6e1cb16da051215f2",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.framing.quest",
+      "stage": "framing",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "quest-framing-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "3193691e1870f7563ebddc999865f6883c5a3c3fd44372c395dc7a2bbefdacf9",
+      "packJsonSha256": "b48e5ee3a80a92e29f9f9203b7e7219410f4df168394901f352ab7361a17b0bd",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.ideation.evaluate",
+      "stage": "ideation",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "idea-evaluation-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "9e0210d63ef21080feb6b2e79c01ebc4ac78ba7e662a384ba45408a0301039ab",
+      "packJsonSha256": "a53ff8f143f44d4174257e85a488c2da4d8eee27bc271e8220c3c1fb41819156",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.ideation.generate",
+      "stage": "ideation",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "idea-generation-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "2b57c1adb9bd9086b385482ee44d2eef0b829b637039189d47ca2bb04fb71038",
+      "packJsonSha256": "4ab7a0069aa812a065896fa8da9cff08093f930e8b4628ecd711788f1fadc762",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.literature.review",
+      "stage": "literature",
+      "kind": "workflow",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "literature-review-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "d074f321a101dad43a3096311a1ca3278f9c383831f8aaabd9199b5a62858f31",
+      "packJsonSha256": "1305e5a4ac440615387761c17056c4f41dc5dc419c141f945027740458eca405",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.literature.scan",
+      "stage": "literature",
+      "kind": "bounded",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "literature-scan-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "b4879dbfa33c427cb54ad3e8a18a84c9e7e8687b144e9afd910c838be97a54af",
+      "packJsonSha256": "0837760e77ce88975446d66f8ac814a3386dbf29b757a1a0dec34b6fb8da9560",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.literature.survey",
+      "stage": "literature",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "survey-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "1ecd8d1b294b1e6bb42bbc8f8082b3585767245919a0c324230c563d8d195fcb",
+      "packJsonSha256": "e8bc5177e270a1c8293bf0fbd4efdc59a6fce6b3906746bab36b5e5dca01f8f0",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.setup.project",
+      "stage": "setup",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": true,
+      "procedureId": "project-setup-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "2adf472e9f32ea0f3e9bcdfeb4eb6bdaec20e674d3da8c1bec50c15cb9388aa2",
+      "packJsonSha256": "4ead442a9c46ff657909af1ee40ceb08ce346228942f26004a1225dc98439d01",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.theory.case",
+      "stage": "theory",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "theory-case-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "72be3f002047b6d24e272eedba87d7c981390c732c9701071ad769a5b9eb366d",
+      "packJsonSha256": "a0bbc4d3446238cc1a310821d98b1972be88401f27bb95de28821e0b44fb07d9",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.writing.case",
+      "stage": "writing",
+      "kind": "bounded",
+      "activation": "automatic",
+      "defaultForStage": true,
+      "procedureId": "writing-case-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "b5d3f6c07ed521c113c2015eb28ae47e56c201af945fd6a9fac50e7da2577047",
+      "packJsonSha256": "811dd2b36550da0a7a07dfe398fb79623af565674ef1f8cc1f1c092226a32d2d",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.writing.figure",
+      "stage": "writing",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "figure-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "76aa8e8fe947318fe0b54e74e0a0b9341fd9a6a047fb997d7e8e237f2a0c1ab2",
+      "packJsonSha256": "84dbba13949695be6aa692f425d7ea32b17a0040df4f717c089cde3104043e31",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    },
+    {
+      "capabilityId": "research.writing.slides",
+      "stage": "writing",
+      "kind": "workflow",
+      "activation": "explicit",
+      "defaultForStage": false,
+      "procedureId": "slides-v1",
+      "procedureVersion": "2.0.1",
+      "procedureJsonSha256": "bff5b16b5ca167496a7bf859d2b27647fe6118aecdd5f46b7bd25c2818eec128",
+      "packJsonSha256": "77d3a680ddc89aeb5dadcb6712f286b4b04046b0296a263cbc4c55e514fb3b0f",
+      "previousBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "live until activation"
+      },
+      "state": "candidate-ready-pending-packed-lifecycle-auth"
+    }
+  ],
+  "procedurePacks201": [
+    {
+      "id": "computation-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/procedure.json",
+      "sha256": "e630ac1c977546a9feeb078246eab63493a7ad8173e0be2e1f706d935d95eb03",
+      "packJsonSha256": "baf1e6729314eb4af6ed9b9bfe55ca963569c70ba4de583bea2416910e185933"
+    },
+    {
+      "id": "experiment-campaign-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/procedure.json",
+      "sha256": "89529bac6cc5b825244c4fc3bb56d1f15d27fcda5704af2124511c4a28a62109",
+      "packJsonSha256": "9b1dd055a066decf2cceff4cbb901a25a890f90c07e6ae85a343be014602bde1"
+    },
+    {
+      "id": "experiment-round-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/procedure.json",
+      "sha256": "df0f98c2ac188c329127caffccd911728822546a9336d700fe477a9e9d3db50b",
+      "packJsonSha256": "472cf13270804b394c43a9a4e7aaa3dcc2b4d19fc6ecf19cb75d0a5fe1040a71"
+    },
+    {
+      "id": "figure-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/procedure.json",
+      "sha256": "76aa8e8fe947318fe0b54e74e0a0b9341fd9a6a047fb997d7e8e237f2a0c1ab2",
+      "packJsonSha256": "84dbba13949695be6aa692f425d7ea32b17a0040df4f717c089cde3104043e31"
+    },
+    {
+      "id": "idea-evaluation-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/procedure.json",
+      "sha256": "9e0210d63ef21080feb6b2e79c01ebc4ac78ba7e662a384ba45408a0301039ab",
+      "packJsonSha256": "a53ff8f143f44d4174257e85a488c2da4d8eee27bc271e8220c3c1fb41819156"
+    },
+    {
+      "id": "idea-generation-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/procedure.json",
+      "sha256": "2b57c1adb9bd9086b385482ee44d2eef0b829b637039189d47ca2bb04fb71038",
+      "packJsonSha256": "4ab7a0069aa812a065896fa8da9cff08093f930e8b4628ecd711788f1fadc762"
+    },
+    {
+      "id": "literature-review-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/procedure.json",
+      "sha256": "d074f321a101dad43a3096311a1ca3278f9c383831f8aaabd9199b5a62858f31",
+      "packJsonSha256": "1305e5a4ac440615387761c17056c4f41dc5dc419c141f945027740458eca405"
+    },
+    {
+      "id": "literature-scan-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/procedure.json",
+      "sha256": "b4879dbfa33c427cb54ad3e8a18a84c9e7e8687b144e9afd910c838be97a54af",
+      "packJsonSha256": "0837760e77ce88975446d66f8ac814a3386dbf29b757a1a0dec34b6fb8da9560"
+    },
+    {
+      "id": "project-setup-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/procedure.json",
+      "sha256": "2adf472e9f32ea0f3e9bcdfeb4eb6bdaec20e674d3da8c1bec50c15cb9388aa2",
+      "packJsonSha256": "4ead442a9c46ff657909af1ee40ceb08ce346228942f26004a1225dc98439d01"
+    },
+    {
+      "id": "quest-admin-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/procedure.json",
+      "sha256": "0521dda769d382f15e3b03d9b0c751ec75aab05f91980ede57a41a6dd124e9e0",
+      "packJsonSha256": "967312fe444b06ebe349176d9dfc0a575c37f489ccac77f6e1cb16da051215f2"
+    },
+    {
+      "id": "quest-framing-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/procedure.json",
+      "sha256": "3193691e1870f7563ebddc999865f6883c5a3c3fd44372c395dc7a2bbefdacf9",
+      "packJsonSha256": "b48e5ee3a80a92e29f9f9203b7e7219410f4df168394901f352ab7361a17b0bd"
+    },
+    {
+      "id": "review-campaign-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/procedure.json",
+      "sha256": "c123cff9cf1f63a981fb33f643f87a103155ad60bc8cfe4ef439b687398768c8",
+      "packJsonSha256": "722272f754be1ab4aae9904264b511854c2fb70ec779890df065ad66e535eeda"
+    },
+    {
+      "id": "review-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/procedure.json",
+      "sha256": "9c883bcd27505bcdb4085d40fde06eb1082cb35494c1102253f0b5071034e6cf",
+      "packJsonSha256": "ba1a9b21654766b9d2044d11ea6d5d03e6ca7d8e5caa1af56e83fd3ba604a258"
+    },
+    {
+      "id": "slides-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/procedure.json",
+      "sha256": "bff5b16b5ca167496a7bf859d2b27647fe6118aecdd5f46b7bd25c2818eec128",
+      "packJsonSha256": "77d3a680ddc89aeb5dadcb6712f286b4b04046b0296a263cbc4c55e514fb3b0f"
+    },
+    {
+      "id": "survey-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/procedure.json",
+      "sha256": "1ecd8d1b294b1e6bb42bbc8f8082b3585767245919a0c324230c563d8d195fcb",
+      "packJsonSha256": "e8bc5177e270a1c8293bf0fbd4efdc59a6fce6b3906746bab36b5e5dca01f8f0"
+    },
+    {
+      "id": "theory-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/procedure.json",
+      "sha256": "72be3f002047b6d24e272eedba87d7c981390c732c9701071ad769a5b9eb366d",
+      "packJsonSha256": "a0bbc4d3446238cc1a310821d98b1972be88401f27bb95de28821e0b44fb07d9"
+    },
+    {
+      "id": "writing-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/procedure.json",
+      "sha256": "b5d3f6c07ed521c113c2015eb28ae47e56c201af945fd6a9fac50e7da2577047",
+      "packJsonSha256": "811dd2b36550da0a7a07dfe398fb79623af565674ef1f8cc1f1c092226a32d2d"
+    }
+  ]
+}

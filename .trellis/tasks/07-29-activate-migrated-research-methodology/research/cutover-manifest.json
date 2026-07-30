@@ -1,41 +1,9 @@
 {
   "schemaVersion": 1,
   "cutoverId": "phase2-methodology-cutover-v1",
-  "createdAt": "2026-07-30T02:40:00Z",
-  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
-  "registryCurrentVersionBefore": "2.0.0",
-  "registryCurrentVersionAfter": "1.0.0",
-  "status": "blocked-remediating",
-  "supersedes": {
-    "commit": "fe56c9c2",
-    "priorStatus": "cutover-applied",
-    "reason": "Cutover applied before frozen methodology, executable cases, packaging, rollback, evidence-ledger, and independent-assurance gates passed."
-  },
-  "futureSelection": {
-    "registryCurrentVersion": "1.0.0",
-    "liveCapabilityCount": 14,
-    "literatureDefault": "research.literature.scan",
-    "optionalCapabilitiesRegistered": false
-  },
-  "retainedDormantPackages": [
-    "computation-case-v1",
-    "experiment-campaign-v1",
-    "experiment-round-v1",
-    "figure-v1",
-    "idea-evaluation-v1",
-    "idea-generation-v1",
-    "literature-review-v1",
-    "literature-scan-v1",
-    "project-setup-v1",
-    "quest-admin-v1",
-    "quest-framing-v1",
-    "review-campaign-v1",
-    "review-case-v1",
-    "slides-v1",
-    "survey-v1",
-    "theory-case-v1",
-    "writing-case-v1"
-  ],
-  "repairTargetVersion": "2.0.1",
-  "notes": "Wave-0 containment: new activations select Procedure 1.0.0. All 2.0.0 package trees retained for repair and historical replay. Do not claim cutover-applied or candidate-ready."
+  "status": "blocked-remediating-candidate-table-present",
+  "futureSelection": "1.0.0",
+  "candidateManifest": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest.json",
+  "candidateManifestSha256": "ab4d55447c76a4005eabb6214aace27499d10152583700c7c5c21fbae43e008f",
+  "notes": "Wave-0 containment holds. Wave-5 candidate 2.0.1 table recorded; packed lifecycle and final activation require separate authorization."
 }
