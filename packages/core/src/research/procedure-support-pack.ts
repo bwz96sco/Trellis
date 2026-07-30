@@ -38,6 +38,8 @@ export type SupportPackRole =
   | "validators"
   | "other";
 
+export type SupportPackWorkerVisibility = "worker-visible" | "root-only";
+
 export interface SupportPackEntry {
   readonly path: string;
   readonly role: SupportPackRole;
@@ -46,12 +48,20 @@ export interface SupportPackEntry {
   readonly provenanceId: string;
   readonly sha256: string;
   readonly maxBytes: number;
+  /** Defaults to worker-visible when omitted (immutable 2.0.0 fixtures). */
+  readonly workerVisibility: SupportPackWorkerVisibility;
 }
 
 export interface SupportPackManifest {
   readonly schemaVersion: 1;
   readonly procedureId: string;
   readonly procedureVersion: string;
+  /**
+   * Frozen methodology contract identity. Optional on retained 2.0.0 fixtures;
+   * required for repaired 2.0.1+ packs.
+   */
+  readonly methodologyContractVersion?: string;
+  readonly methodologyContractDigest?: string;
   readonly entries: readonly SupportPackEntry[];
 }
 
@@ -63,6 +73,7 @@ export interface SupportPackInventoryItem {
   readonly provenanceId: string;
   readonly sha256: string;
   readonly byteLength: number;
+  readonly workerVisibility: SupportPackWorkerVisibility;
   readonly bytes: Uint8Array;
 }
 
@@ -129,6 +140,20 @@ export function parseSupportPackManifest(input: {
     fail("Support-pack pack.json is invalid JSON", error);
   }
   const value = plainObject(parsed, "Support-pack pack.json");
+  // Closed object: reject unknown top-level keys.
+  const allowedTop = new Set([
+    "schemaVersion",
+    "procedureId",
+    "procedureVersion",
+    "methodologyContractVersion",
+    "methodologyContractDigest",
+    "entries",
+  ]);
+  for (const key of Object.keys(value)) {
+    if (!allowedTop.has(key)) {
+      fail(`Support-pack pack.json has unknown field '${key}'`);
+    }
+  }
   if (value.schemaVersion !== 1) {
     fail("Support-pack schemaVersion must be 1");
   }
@@ -138,13 +163,51 @@ export function parseSupportPackManifest(input: {
   if (value.procedureVersion !== input.procedureVersion) {
     fail("Support-pack procedureVersion does not match Procedure version");
   }
+  let methodologyContractVersion: string | undefined;
+  let methodologyContractDigest: string | undefined;
+  if (value.methodologyContractVersion !== undefined) {
+    if (
+      typeof value.methodologyContractVersion !== "string" ||
+      value.methodologyContractVersion.length === 0
+    ) {
+      fail("Support-pack methodologyContractVersion must be a non-empty string");
+    }
+    methodologyContractVersion = value.methodologyContractVersion;
+  }
+  if (value.methodologyContractDigest !== undefined) {
+    if (
+      typeof value.methodologyContractDigest !== "string" ||
+      !value.methodologyContractDigest.startsWith("sha256:") ||
+      !isLowerHexSha256(value.methodologyContractDigest.slice("sha256:".length))
+    ) {
+      fail(
+        "Support-pack methodologyContractDigest must be sha256:<64 lowercase hex>",
+      );
+    }
+    methodologyContractDigest = value.methodologyContractDigest;
+  }
   if (!Array.isArray(value.entries)) {
     fail("Support-pack entries must be an array");
   }
   const seen = new Set<string>();
   const entries: SupportPackEntry[] = [];
+  const allowedEntry = new Set([
+    "path",
+    "role",
+    "mediaType",
+    "contractVersion",
+    "provenanceId",
+    "sha256",
+    "maxBytes",
+    "workerVisibility",
+  ]);
   for (const raw of value.entries) {
     const entry = plainObject(raw, "Support-pack entry");
+    for (const key of Object.keys(entry)) {
+      if (!allowedEntry.has(key)) {
+        fail(`Support-pack entry has unknown field '${key}'`);
+      }
+    }
     const path = normalizeRelativePath(String(entry.path ?? ""));
     if (seen.has(path)) fail(`Duplicate support-pack path: ${path}`);
     seen.add(path);
@@ -177,6 +240,16 @@ export function parseSupportPackManifest(input: {
     ) {
       fail(`Support-pack maxBytes must be a positive integer for ${path}`);
     }
+    let workerVisibility: SupportPackWorkerVisibility = "worker-visible";
+    if (entry.workerVisibility !== undefined) {
+      if (
+        entry.workerVisibility !== "worker-visible" &&
+        entry.workerVisibility !== "root-only"
+      ) {
+        fail(`Support-pack workerVisibility invalid for ${path}`);
+      }
+      workerVisibility = entry.workerVisibility;
+    }
     entries.push(
       Object.freeze({
         path,
@@ -186,6 +259,7 @@ export function parseSupportPackManifest(input: {
         provenanceId: entry.provenanceId,
         sha256: entry.sha256,
         maxBytes: entry.maxBytes,
+        workerVisibility,
       }),
     );
   }
@@ -194,6 +268,12 @@ export function parseSupportPackManifest(input: {
     schemaVersion: 1,
     procedureId: input.procedureId,
     procedureVersion: input.procedureVersion,
+    ...(methodologyContractVersion !== undefined
+      ? { methodologyContractVersion }
+      : {}),
+    ...(methodologyContractDigest !== undefined
+      ? { methodologyContractDigest }
+      : {}),
     entries: Object.freeze(entries),
   });
 }
@@ -242,6 +322,7 @@ export function buildSupportPackInventory(input: {
         provenanceId: entry.provenanceId,
         sha256: entry.sha256,
         byteLength: bytes.byteLength,
+        workerVisibility: entry.workerVisibility,
         bytes,
       }),
     );
@@ -263,6 +344,7 @@ export function serializeSupportPackInventoryForDigest(
     provenanceId: item.provenanceId,
     sha256: item.sha256,
     byteLength: item.byteLength,
+    workerVisibility: item.workerVisibility,
   }));
   return `${JSON.stringify(rows)}\n`;
 }
@@ -320,19 +402,58 @@ export function serializeSupportPackManifest(
 ): string {
   const entries = [...manifest.entries]
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
-    .map((e) => ({
-      path: e.path,
-      role: e.role,
-      mediaType: e.mediaType,
-      contractVersion: e.contractVersion,
-      provenanceId: e.provenanceId,
-      sha256: e.sha256,
-      maxBytes: e.maxBytes,
-    }));
-  return `${JSON.stringify({
+    .map((e) => {
+      const row: Record<string, unknown> = {
+        path: e.path,
+        role: e.role,
+        mediaType: e.mediaType,
+        contractVersion: e.contractVersion,
+        provenanceId: e.provenanceId,
+        sha256: e.sha256,
+        maxBytes: e.maxBytes,
+      };
+      // Omit default worker-visible so retained 2.0.0 pack.json bytes stay valid.
+      if (e.workerVisibility !== "worker-visible") {
+        row.workerVisibility = e.workerVisibility;
+      }
+      return row;
+    });
+  const body: Record<string, unknown> = {
     schemaVersion: 1,
     procedureId: manifest.procedureId,
     procedureVersion: manifest.procedureVersion,
-    entries,
-  })}\n`;
+  };
+  if (manifest.methodologyContractVersion !== undefined) {
+    body.methodologyContractVersion = manifest.methodologyContractVersion;
+  }
+  if (manifest.methodologyContractDigest !== undefined) {
+    body.methodologyContractDigest = manifest.methodologyContractDigest;
+  }
+  body.entries = entries;
+  return `${JSON.stringify(body)}\n`;
+}
+
+/**
+ * Wave-1 package schema discriminator.
+ * - Explicit packageSchemaVersion on procedure.json is preferred.
+ * - Retained immutable 2.0.0 fixtures without the field are treated as schema-v2
+ *   when their Procedure version is exactly "2.0.0" (not inferred from pack presence).
+ * - Repaired packages must use packageSchemaVersion: 2 and version 2.0.1+.
+ */
+export function resolveProcedurePackageSchemaVersion(input: {
+  readonly packageSchemaVersion?: unknown;
+  readonly procedureVersion: string;
+}): 1 | 2 {
+  if (input.packageSchemaVersion === 1) return 1;
+  if (input.packageSchemaVersion === 2) return 2;
+  if (input.packageSchemaVersion !== undefined) {
+    fail("packageSchemaVersion must be 1 or 2 when present");
+  }
+  if (input.procedureVersion === "2.0.0") return 2;
+  if (/^2\./.test(input.procedureVersion) && input.procedureVersion !== "2.0.0") {
+    fail(
+      "Procedure packages with version 2.x other than immutable 2.0.0 must set packageSchemaVersion: 2",
+    );
+  }
+  return 1;
 }

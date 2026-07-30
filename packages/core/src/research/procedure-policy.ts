@@ -4,6 +4,7 @@ import { stableResearchJson } from "./projections.js";
 import {
   computeResearchProcedureDigestV2,
   type SupportPackInventoryItem,
+  type SupportPackManifest,
 } from "./procedure-support-pack.js";
 import {
   ResearchCapabilityResolutionError,
@@ -123,6 +124,18 @@ export interface ParsedResearchProcedure {
   readonly digest: string;
   /** Present only when a methodology support pack was bound into a v2 digest. */
   readonly digestDomain?: "v1" | "v2";
+  /** Procedure package schema discriminator used for digest/support-pack rules. */
+  readonly packageSchemaVersion: 1 | 2;
+  /**
+   * Retained support-pack views for schema-v2 packages (not discarded after digest).
+   * Root-only entries remain in inventory; worker-visible view filters them.
+   */
+  readonly supportPack?: Readonly<{
+    readonly manifest: SupportPackManifest;
+    readonly packJsonBytes: Uint8Array;
+    readonly inventoryItems: readonly SupportPackInventoryItem[];
+    readonly workerVisibleInventory: readonly SupportPackInventoryItem[];
+  }>;
 }
 
 export interface ParsedResearchProjectPolicy {
@@ -542,7 +555,9 @@ export function parseResearchProcedure(input: {
    * When present, Procedure digest uses the v2 domain binding support-pack
    * inventory. Omit for schema-v1 packages (default).
    */
+  readonly packageSchemaVersion?: 1 | 2;
   readonly supportPack?: {
+    readonly manifest: SupportPackManifest;
     readonly packJsonBytes: Uint8Array;
     readonly inventoryItems: readonly SupportPackInventoryItem[];
   };
@@ -573,6 +588,19 @@ export function parseResearchProcedure(input: {
     identityMode,
     input.recordedVersion,
   );
+  const packageSchemaVersion = input.packageSchemaVersion ?? 1;
+  if (packageSchemaVersion === 2 && input.supportPack === undefined) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Schema-v2 Procedure packages require a methodology support pack",
+    );
+  }
+  if (packageSchemaVersion === 1 && input.supportPack !== undefined) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Schema-v1 Procedure packages must not bind a methodology support pack",
+    );
+  }
   const canonicalManifestJson = serializeManifest(manifest);
   const canonicalManifestBytes = TEXT_ENCODER.encode(canonicalManifestJson);
   if (!sameBytes(manifestBytes, canonicalManifestBytes)) {
@@ -595,6 +623,9 @@ export function parseResearchProcedure(input: {
   }
   let digest: string;
   let digestDomain: "v1" | "v2" = "v1";
+  let supportPack:
+    | ParsedResearchProcedure["supportPack"]
+    | undefined;
   if (input.supportPack !== undefined) {
     digest = computeResearchProcedureDigestV2({
       canonicalManifestBytes,
@@ -603,6 +634,17 @@ export function parseResearchProcedure(input: {
       inventoryItems: input.supportPack.inventoryItems,
     });
     digestDomain = "v2";
+    const workerVisibleInventory = Object.freeze(
+      input.supportPack.inventoryItems.filter(
+        (item) => item.workerVisibility === "worker-visible",
+      ),
+    );
+    supportPack = Object.freeze({
+      manifest: input.supportPack.manifest,
+      packJsonBytes: new Uint8Array(input.supportPack.packJsonBytes),
+      inventoryItems: input.supportPack.inventoryItems,
+      workerVisibleInventory,
+    });
   } else {
     digest = computeResearchProcedureDigest({
       canonicalManifestBytes,
@@ -617,6 +659,8 @@ export function parseResearchProcedure(input: {
     instructions,
     digest,
     digestDomain,
+    packageSchemaVersion,
+    ...(supportPack !== undefined ? { supportPack } : {}),
   });
 }
 

@@ -101,12 +101,16 @@ describe("procedure support pack", () => {
       instructionBytes: encoder.encode("# Procedure\n"),
       identityMode: "recorded-version",
       recordedVersion: "2.0.0",
+      packageSchemaVersion: 2,
       supportPack: {
+        manifest: pack,
         packJsonBytes: encoder.encode(serializeSupportPackManifest(pack)),
         inventoryItems: inventory,
       },
     });
     expect(parsed.digestDomain).toBe("v2");
+    expect(parsed.packageSchemaVersion).toBe(2);
+    expect(parsed.supportPack?.inventoryItems).toHaveLength(2);
     expect(parsed.digest.startsWith("sha256:")).toBe(true);
 
     const v1 = computeResearchProcedureDigest({

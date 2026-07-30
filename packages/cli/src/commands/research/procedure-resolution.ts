@@ -10,6 +10,7 @@ import {
   getResearchCapabilityDefinition,
   parseResearchProcedure,
   parseSupportPackManifest,
+  resolveProcedurePackageSchemaVersion,
   resolveResearchEffectiveAuthority,
   serializeSupportPackManifest,
   type ParsedResearchProcedure,
@@ -334,24 +335,46 @@ function readContainedRelativeFile(
   return bytes;
 }
 
-function tryLoadSupportPack(
+function loadRequiredSupportPack(
   selection: ProcedureDirectorySelection,
   procedureId: string,
   procedureVersion: string,
-):
-  | {
-      readonly packJsonBytes: Uint8Array;
-      readonly inventoryItems: ReturnType<typeof buildSupportPackInventory>;
-    }
-  | undefined {
-  const packPath = path.join(selection.path, "methodology", "pack.json");
-  if (!fs.existsSync(packPath)) return undefined;
+): {
+  readonly manifest: ReturnType<typeof parseSupportPackManifest>;
+  readonly packJsonBytes: Uint8Array;
+  readonly inventoryItems: ReturnType<typeof buildSupportPackInventory>;
+} {
+  const methodologyDir = path.join(selection.path, "methodology");
+  if (!fs.existsSync(methodologyDir)) {
+    throw new Error(
+      "Schema-v2 Procedure package requires methodology/ directory",
+    );
+  }
+  const methodologyStat = fs.lstatSync(methodologyDir);
+  if (methodologyStat.isSymbolicLink() || !methodologyStat.isDirectory()) {
+    throw new Error("methodology/ must be a non-symlink directory");
+  }
+  const packPath = path.join(methodologyDir, "pack.json");
+  if (!fs.existsSync(packPath)) {
+    throw new Error(
+      "Schema-v2 Procedure package requires methodology/pack.json",
+    );
+  }
   validateDirectorySelection(selection);
   const packLink = fs.lstatSync(packPath);
   if (packLink.isSymbolicLink() || !packLink.isFile()) {
     throw new Error("methodology/pack.json must be a non-symlink regular file");
   }
   const packBytes = new Uint8Array(fs.readFileSync(packPath));
+  const afterPack = fs.lstatSync(packPath);
+  if (
+    afterPack.isSymbolicLink() ||
+    !afterPack.isFile() ||
+    afterPack.size !== packLink.size ||
+    afterPack.mtimeMs !== packLink.mtimeMs
+  ) {
+    throw new Error("methodology/pack.json changed while reading");
+  }
   let manifest;
   try {
     manifest = parseSupportPackManifest({
@@ -363,24 +386,40 @@ function tryLoadSupportPack(
     if (error instanceof SupportPackError) throw error;
     throw error;
   }
+  // Require canonical on-disk pack.json bytes (no silent re-serialization).
   const canonicalPack = serializeSupportPackManifest(manifest);
   const canonicalPackBytes = new TextEncoder().encode(canonicalPack);
-  // Allow non-canonical on-disk JSON only after re-parse of canonical form
-  const canonicalManifest = parseSupportPackManifest({
-    packJsonBytes: canonicalPackBytes,
-    procedureId,
-    procedureVersion,
-  });
+  if (
+    packBytes.length !== canonicalPackBytes.length ||
+    !packBytes.every((b, i) => b === canonicalPackBytes[i])
+  ) {
+    throw new Error(
+      "methodology/pack.json bytes are not canonical; rewrite to stable serialization",
+    );
+  }
   const files: Record<string, Uint8Array> = {};
-  for (const entry of canonicalManifest.entries) {
+  for (const entry of manifest.entries) {
     files[entry.path] = readContainedRelativeFile(selection, entry.path);
   }
   validateDirectorySelection(selection);
   const inventoryItems = buildSupportPackInventory({
-    manifest: canonicalManifest,
+    manifest,
     files,
   });
-  return { packJsonBytes: canonicalPackBytes, inventoryItems };
+  return {
+    manifest,
+    packJsonBytes: packBytes,
+    inventoryItems,
+  };
+}
+
+function assertNoSupportPack(selection: ProcedureDirectorySelection): void {
+  const packPath = path.join(selection.path, "methodology", "pack.json");
+  if (fs.existsSync(packPath)) {
+    throw new Error(
+      "Schema-v1 Procedure package must not include methodology/pack.json",
+    );
+  }
 }
 
 function parseSelectedProcedure(
@@ -391,23 +430,46 @@ function parseSelectedProcedure(
   recordedVersion?: string,
 ): ParsedResearchProcedure {
   const bytes = readProcedureBytes(selection);
-  // Peek procedure version from JSON without full parse for pack binding
+  // Peek procedure identity without full policy parse for pack binding.
   const peek = JSON.parse(new TextDecoder().decode(bytes.manifestBytes)) as {
     id?: string;
     version?: string;
+    packageSchemaVersion?: unknown;
   };
   const procedureId = typeof peek.id === "string" ? peek.id : "";
   const procedureVersion =
     recordedVersion ?? (typeof peek.version === "string" ? peek.version : "");
-  const supportPack = tryLoadSupportPack(
-    selection,
-    procedureId,
+  const packageSchemaVersion = resolveProcedurePackageSchemaVersion({
+    packageSchemaVersion: peek.packageSchemaVersion,
     procedureVersion,
-  );
+  });
+  if (packageSchemaVersion === 2) {
+    const supportPack = loadRequiredSupportPack(
+      selection,
+      procedureId,
+      procedureVersion,
+    );
+    return parseResearchProcedure({
+      capabilityId,
+      source,
+      ...bytes,
+      packageSchemaVersion: 2,
+      identityMode:
+        mode === "activation-recorded"
+          ? "recorded-version"
+          : "capability-current",
+      ...(mode === "activation-recorded" && recordedVersion !== undefined
+        ? { recordedVersion }
+        : {}),
+      supportPack,
+    });
+  }
+  assertNoSupportPack(selection);
   return parseResearchProcedure({
     capabilityId,
     source,
     ...bytes,
+    packageSchemaVersion: 1,
     identityMode:
       mode === "activation-recorded"
         ? "recorded-version"
@@ -415,7 +477,6 @@ function parseSelectedProcedure(
     ...(mode === "activation-recorded" && recordedVersion !== undefined
       ? { recordedVersion }
       : {}),
-    ...(supportPack !== undefined ? { supportPack } : {}),
   });
 }
 

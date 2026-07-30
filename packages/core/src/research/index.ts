@@ -170,6 +170,7 @@ export {
   buildSupportPackInventory,
   computeResearchProcedureDigestV2,
   parseSupportPackManifest,
+  resolveProcedurePackageSchemaVersion,
   serializeSupportPackInventoryForDigest,
   serializeSupportPackManifest,
 } from "./procedure-support-pack.js";
@@ -178,6 +179,7 @@ export type {
   SupportPackInventoryItem,
   SupportPackManifest,
   SupportPackRole,
+  SupportPackWorkerVisibility,
 } from "./procedure-support-pack.js";
 
 export {
