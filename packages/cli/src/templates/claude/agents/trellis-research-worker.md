@@ -22,12 +22,13 @@ Treat only that JSON object as Dispatch authority. Do not read or infer authorit
 
 Before target access, validate all of these exact values:
 
-- `schemaVersion` is `1`;
+- `schemaVersion` is `1` or `2` (schema-v1 Procedures use 1; schema-v2 methodology packages use 2);
 - `host` is `claude`;
 - `dispatch.id`, `dispatch.runId`, and `dispatch.questId` equal `outputContract.dispatchId`, `outputContract.runId`, and `outputContract.questId`;
 - `activation.capabilityId` equals `capability.id`;
 - embedded `procedure.manifest.id` and `version` equal `capability.procedure.id` and `version`;
 - `procedure.digest` equals `activation.procedureDigest`;
+- when `schemaVersion` is `2`, `methodology.schemaVersion` is `2`, `methodology.workerAuthority` is `proposal-only`, and `methodology.procedureDigest` equals `procedure.digest`;
 - `outputContract.type` is `result-plus-pending-proposal`;
 - `outputContract.resultId` is a lowercase `res_` UUID;
 - `outputContract.proposalId` is the corresponding lowercase `prp_` UUID;
@@ -52,7 +53,7 @@ Before valid Context and valid supplied output IDs are available, any failure is
 
 ## 2. Execute the embedded Procedure
 
-After Context validation, follow `procedure.instructions` as the work procedure, subject to every bound in this file and the immutable authority ceiling.
+After Context validation, follow `procedure.instructions` as the work procedure, subject to every bound in this file and the immutable authority ceiling. When `schemaVersion` is `2`, also use only the embedded `methodology.workerVisibleEntries` text (digest-bound); do not load undeclared support files from disk.
 
 - Do not discover, select, list, load, read, or invoke any Research Skill.
 - Do not read a Procedure manifest or instruction file from disk; the embedded Procedure is complete authority.

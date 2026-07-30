@@ -60,13 +60,14 @@ A successful Context process must have zero exit status, exactly one JSON object
 
 Validate normalized `context` before target access:
 
-- `schemaVersion` is `1`;
+- `schemaVersion` is `1` or `2` (schema-v1 Procedures use 1; schema-v2 methodology packages use 2);
 - `host` is `codex`;
 - `dispatch.id` equals the captured Dispatch ID;
 - `dispatch.id`, `runId`, and `questId` equal `outputContract.dispatchId`, `runId`, and `questId`;
 - `activation.capabilityId` equals `capability.id`;
 - embedded `procedure.manifest.id` and `version` equal `capability.procedure.id` and `version`;
 - `procedure.digest` equals `activation.procedureDigest`;
+- when `schemaVersion` is `2`, `methodology.schemaVersion` is `2`, `methodology.workerAuthority` is `proposal-only`, and `methodology.procedureDigest` equals `procedure.digest`;
 - `approval.id` is an `apr_` UUID;
 - `outputContract.type` is `result-plus-pending-proposal`;
 - `outputContract.resultId` is the corresponding `res_` UUID;
@@ -99,7 +100,7 @@ Do not include absolute paths, target data, or invented Dispatch, approval, Resu
 
 ## 4. Execute the embedded Procedure only
 
-After successful Context validation, use only `context.procedure.instructions` as the work procedure, subject to this immutable authority ceiling.
+After successful Context validation, use only `context.procedure.instructions` as the work procedure, subject to this immutable authority ceiling. When `context.schemaVersion` is `2`, also use only embedded `context.methodology.workerVisibleEntries` (digest-bound); do not load undeclared support files from disk.
 
 - Never discover, select, list, read, or invoke a Research Skill.
 - Never read a Procedure file from disk.

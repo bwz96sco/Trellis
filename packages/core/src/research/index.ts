@@ -114,6 +114,9 @@ export type {
   MethodologyArtifactContract,
   MethodologyArtifactInstance,
   MethodologyArtifactValidationResult,
+  MethodologyArtifactErrorCode,
+  MethodologyCardinality,
+  MethodologyRequiredness,
 } from "./methodology-artifacts.js";
 
 export {
@@ -130,12 +133,20 @@ export type {
 export { buildMethodologyReport } from "./methodology-reports.js";
 export type { MethodologyDeterministicReport } from "./methodology-reports.js";
 
+export { buildWorkerMethodologyProjectionV2 } from "./methodology-worker-context.js";
+export type {
+  WorkerMethodologyProjectionV2,
+  WorkerVisibleSupportEntry,
+} from "./methodology-worker-context.js";
+
 export {
   FROZEN_COMPOSITION_EDGES,
+  getFrozenCompositionEdge,
   validateRootCompositionDescriptor,
 } from "./composition.js";
 export type {
   CompositionEdgeId,
+  CompositionValidationCode,
   FrozenCompositionEdge,
   RootCompositionDescriptor,
 } from "./composition.js";

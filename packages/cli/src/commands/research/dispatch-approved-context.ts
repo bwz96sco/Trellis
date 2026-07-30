@@ -1,4 +1,5 @@
 import {
+  buildWorkerMethodologyProjectionV2,
   parseResearchExecutionHost,
   readResearchState,
   resolveResearchCapability,
@@ -18,6 +19,7 @@ import {
   type ResearchProcedureManifest,
   type ResultId,
   type RunId,
+  type WorkerMethodologyProjectionV2,
 } from "@mindfoldhq/trellis-core/research";
 
 import { resolveResearchRoot, type ResearchRootOptions } from "./common.js";
@@ -41,6 +43,23 @@ export interface ResolveApprovedResearchDispatchContextOptions extends ResearchR
   readonly host: ResearchExecutionHost;
   readonly now?: Date;
 }
+
+const WORKER_AUTHORITY_CEILING = {
+  readScope: "declared-context-only",
+  writeScope: "allowed-write-paths-only",
+  network: false,
+  externalCost: false,
+  multipleRepositories: false,
+  canonicalResearchMutation: false,
+  proposalReview: false,
+  gitHistoryMutation: false,
+  capabilityChaining: false,
+  procedureLaunch: false,
+  dispatchLaunch: false,
+  nestedAgents: false,
+  sandboxExpansion: false,
+  recordResult: false,
+} as const;
 
 export interface NormalizedResearchWorkerInputV1 {
   readonly schemaVersion: 1;
@@ -79,22 +98,7 @@ export interface NormalizedResearchWorkerInputV1 {
   readonly allowedWritePaths: readonly string[];
   readonly expectedOutputs: readonly string[];
   readonly checks: readonly string[];
-  readonly authority: Readonly<{
-    readScope: "declared-context-only";
-    writeScope: "allowed-write-paths-only";
-    network: false;
-    externalCost: false;
-    multipleRepositories: false;
-    canonicalResearchMutation: false;
-    proposalReview: false;
-    gitHistoryMutation: false;
-    capabilityChaining: false;
-    procedureLaunch: false;
-    dispatchLaunch: false;
-    nestedAgents: false;
-    sandboxExpansion: false;
-    recordResult: false;
-  }>;
+  readonly authority: typeof WORKER_AUTHORITY_CEILING;
   readonly outputContract: Readonly<{
     type: "result-plus-pending-proposal";
     dispatchId: DispatchId;
@@ -105,12 +109,29 @@ export interface NormalizedResearchWorkerInputV1 {
   }>;
 }
 
+/**
+ * Context schema v2 for schema-v2 Procedure packages.
+ * Keeps the v1 key surface for host parity and adds a worker-visible
+ * methodology projection only (no root-only secrets or composition authority).
+ */
+export interface NormalizedResearchWorkerInputV2 extends Omit<
+  NormalizedResearchWorkerInputV1,
+  "schemaVersion"
+> {
+  readonly schemaVersion: 2;
+  readonly methodology: WorkerMethodologyProjectionV2;
+}
+
+export type NormalizedResearchWorkerInput =
+  | NormalizedResearchWorkerInputV1
+  | NormalizedResearchWorkerInputV2;
+
 export interface ApprovedResearchDispatchContextResult {
   readonly command: "research dispatch context";
   readonly valid: true;
   readonly ledgerHead: number;
   readonly warnings: readonly ResearchDispatchContextWarning[];
-  readonly context: NormalizedResearchWorkerInputV1;
+  readonly context: NormalizedResearchWorkerInput;
 }
 
 function fail(
@@ -425,7 +446,7 @@ function normalizedContext(input: {
   readonly candidate: StagedDispatchRevalidation;
   readonly resultId: ResultId;
   readonly proposalId: ProposalId;
-}): NormalizedResearchWorkerInputV1 {
+}): NormalizedResearchWorkerInput {
   const artifacts = input.candidate.scope.artifacts.map((resolved) => {
     const ref = input.dispatch.context
       .map((entry) => entry.artifact)
@@ -438,8 +459,7 @@ function normalizedContext(input: {
     }
     return { ref, path: resolved.resolvedPath };
   });
-  return deepFreeze({
-    schemaVersion: 1,
+  const base = {
     host: input.host,
     dispatch: input.dispatch,
     activation: {
@@ -474,30 +494,42 @@ function normalizedContext(input: {
     ),
     expectedOutputs: input.dispatch.expectedOutputs,
     checks: input.dispatch.checks,
-    authority: {
-      readScope: "declared-context-only",
-      writeScope: "allowed-write-paths-only",
-      network: false,
-      externalCost: false,
-      multipleRepositories: false,
-      canonicalResearchMutation: false,
-      proposalReview: false,
-      gitHistoryMutation: false,
-      capabilityChaining: false,
-      procedureLaunch: false,
-      dispatchLaunch: false,
-      nestedAgents: false,
-      sandboxExpansion: false,
-      recordResult: false,
-    },
+    authority: { ...WORKER_AUTHORITY_CEILING },
     outputContract: {
-      type: "result-plus-pending-proposal",
+      type: "result-plus-pending-proposal" as const,
       dispatchId: input.dispatch.id,
       runId: input.dispatch.runId,
       questId: input.dispatch.questId,
       resultId: input.resultId,
       proposalId: input.proposalId,
     },
+  };
+
+  // Schema-v2 Procedures get Context v2 with worker-visible methodology only.
+  if (input.candidate.procedure.packageSchemaVersion === 2) {
+    try {
+      const methodology = buildWorkerMethodologyProjectionV2(
+        input.candidate.procedure,
+      );
+      return deepFreeze({
+        schemaVersion: 2 as const,
+        ...base,
+        methodology,
+      });
+    } catch (error) {
+      fail(
+        "PROCEDURE_DIGEST_MISMATCH",
+        error instanceof Error
+          ? error.message
+          : "Failed to project schema-v2 methodology into Context",
+        error,
+      );
+    }
+  }
+
+  return deepFreeze({
+    schemaVersion: 1 as const,
+    ...base,
   });
 }
 
