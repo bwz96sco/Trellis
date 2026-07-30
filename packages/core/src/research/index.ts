@@ -90,6 +90,7 @@ export type { ResearchPaths } from "./paths.js";
 export {
   RESEARCH_CAPABILITY_REGISTRY,
   RESEARCH_DEFAULT_CAPABILITY_BY_STAGE,
+  RESEARCH_PROCEDURE_CURRENT_VERSION,
   RESEARCH_EXECUTION_HOSTS,
   ResearchCapabilityResolutionError,
   getResearchCapabilityDefinition,
@@ -105,6 +106,39 @@ export type {
   ResearchCapabilityResolutionErrorCode,
   ResearchExecutionHost,
 } from "./stage-capabilities.js";
+
+export {
+  validateMethodologyArtifacts,
+} from "./methodology-artifacts.js";
+export type {
+  MethodologyArtifactContract,
+  MethodologyArtifactInstance,
+  MethodologyArtifactValidationResult,
+} from "./methodology-artifacts.js";
+
+export {
+  listTrustedMethodologyValidatorIds,
+  runMethodologyValidators,
+} from "./methodology-validators.js";
+export type {
+  MethodologyValidationContext,
+  MethodologyValidationReport,
+  MethodologyValidatorDescriptor,
+  MethodologyValidatorFinding,
+} from "./methodology-validators.js";
+
+export { buildMethodologyReport } from "./methodology-reports.js";
+export type { MethodologyDeterministicReport } from "./methodology-reports.js";
+
+export {
+  FROZEN_COMPOSITION_EDGES,
+  validateRootCompositionDescriptor,
+} from "./composition.js";
+export type {
+  CompositionEdgeId,
+  FrozenCompositionEdge,
+  RootCompositionDescriptor,
+} from "./composition.js";
 
 export {
   CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON,

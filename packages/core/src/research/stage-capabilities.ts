@@ -18,6 +18,8 @@ export type ResearchCapabilityId =
   | "research.audit.case"
   | "research.audit.campaign"
   | "research.writing.case";
+// P2-12 cutover registers optional capabilities:
+// research.literature.survey, research.writing.figure, research.writing.slides
 
 export type ResearchCapabilityKind = "bounded" | "workflow" | "advisory";
 export type ResearchActivationMode = "automatic" | "explicit";
@@ -77,11 +79,24 @@ interface CapabilityDefinitionInput {
   readonly kind: "bounded" | "workflow";
   readonly activation: ResearchActivationMode;
   readonly procedureId: string;
+  /**
+   * Procedure package version. Phase-2 cutover uses 2.0.0 methodology packs;
+   * 1.0.0 remains on disk for historical activation revalidation.
+   */
+  readonly procedureVersion?: string;
   readonly networkPolicy: "forbidden" | "declared-only";
   readonly repositoryScope: "single" | "multiple";
   readonly maxDurationMinutes: number;
   readonly maxDispatches: number;
 }
+
+/**
+ * Registry current Procedure package version.
+ * Phase-2 ships dormant 2.0.0 methodology packs alongside 1.0.0.
+ * P2-12 cutover flips this constant to "2.0.0" with cutover manifest evidence.
+ * New optional capabilities (survey/figure/slides) pin procedureVersion explicitly to 2.0.0.
+ */
+export const RESEARCH_PROCEDURE_CURRENT_VERSION = "1.0.0";
 
 function defineCapability(
   input: CapabilityDefinitionInput,
@@ -91,7 +106,10 @@ function defineCapability(
     stage: input.stage,
     kind: input.kind,
     activation: input.activation,
-    procedure: Object.freeze({ id: input.procedureId, version: "1.0.0" }),
+    procedure: Object.freeze({
+      id: input.procedureId,
+      version: input.procedureVersion ?? RESEARCH_PROCEDURE_CURRENT_VERSION,
+    }),
     workerAuthority: "proposal-only",
     networkPolicy: input.networkPolicy,
     repositoryScope: input.repositoryScope,
@@ -138,6 +156,9 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDurationMinutes: 15,
     maxDispatches: 1,
   }),
+  // Live route until P2-12 cutover: scan remains automatic/default.
+  // Frozen v1.2 cutover (P2-12 only) flips default to literature.review and
+  // makes scan non-default; survey/figure/slides register then.
   defineCapability({
     id: "research.literature.scan",
     stage: "literature",

@@ -59,14 +59,18 @@ const BUNDLED_PROCEDURE_DIGESTS: Readonly<Record<string, string>> = {
     "sha256:d562ebb4881cd461b97dce3faeb9feca947a34e0e261f7b62bd90a27fa176bda",
 };
 
-function projectDirectory(root: string, procedureId: string): string {
+function projectDirectory(
+  root: string,
+  procedureId: string,
+  version = "1.0.0",
+): string {
   return path.join(
     root,
     ".trellis",
     "research",
     "procedures",
     procedureId,
-    "1.0.0",
+    version,
   );
 }
 
@@ -126,13 +130,21 @@ describe("Research Procedure filesystem resolution", () => {
       });
       expect(procedure.source).toBe("bundled");
       expect(procedure.manifest.id).toBe(capability.procedure.id);
-      expect(procedure.digest).toBe(
-        BUNDLED_PROCEDURE_DIGESTS[capability.procedure.id],
-      );
-      const actualHeadings = [...procedure.instructions.matchAll(/^## (.+)$/gm)].map(
-        (match) => match[1],
-      );
-      expect(actualHeadings).toEqual(headings);
+      expect(procedure.manifest.version).toBe(capability.procedure.version);
+      expect(procedure.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+      if (capability.procedure.version === "1.0.0") {
+        expect(procedure.digest).toBe(
+          BUNDLED_PROCEDURE_DIGESTS[capability.procedure.id],
+        );
+        const actualHeadings = [
+          ...procedure.instructions.matchAll(/^## (.+)$/gm),
+        ].map((match) => match[1]);
+        expect(actualHeadings).toEqual(headings);
+      } else {
+        // Methodology packs (2.0.0) use Trellis-native section structure + support pack.
+        expect(procedure.digestDomain).toBe("v2");
+        expect(procedure.instructions).toMatch(/methodology|Proposal-only/i);
+      }
       expect(procedure.instructions).not.toMatch(/skill discovery|selectedSkill/i);
     }
   });

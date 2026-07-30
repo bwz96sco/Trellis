@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-03",
+  "relationshipToFrozenMatrix": "additional-not-part-of-229",
+  "cases": [
+    {"id":"EXP-COMP-GENERIC-AUTHORIZED-CHILD","assertion":"A root-authorized exact parent/edge/target/digest binding permits one bounded child or adapter execution."},
+    {"id":"EXP-COMP-GENERIC-WRONG-EDGE","assertion":"A descriptor for another frozen edge fails before launch and writes no canonical record."},
+    {"id":"EXP-COMP-GENERIC-WRONG-PARENT","assertion":"Parent Dispatch or Activation mismatch fails closed."},
+    {"id":"EXP-COMP-GENERIC-WRONG-PROCEDURE-DIGEST","assertion":"Procedure, policy, or request digest mismatch fails closed."},
+    {"id":"EXP-COMP-GENERIC-MISSING-ROOT-AUTHORIZATION","assertion":"Missing root authorization evidence fails closed."},
+    {"id":"EXP-COMP-GENERIC-MAX-CHILD-OVERFLOW","assertion":"Canonical child count at or above the maximum rejects another launch."},
+    {"id":"EXP-COMP-GENERIC-NON-TRANSITIVE","assertion":"A composed child cannot chain another composition relation."},
+    {"id":"EXP-COMP-GENERIC-WORKER-LAUNCH-FORBIDDEN","assertion":"Worker-originated child Dispatch or adapter launch is rejected."},
+    {"id":"EXP-COMP-GENERIC-CANCELLATION","assertion":"Cancellation records deterministic terminal evidence and no success result."},
+    {"id":"EXP-COMP-GENERIC-CHILD-FAILURE","assertion":"Child failure is visible to the parent and cannot become success."},
+    {"id":"EXP-COMP-GENERIC-ADAPTER-UNAVAILABLE","assertion":"Unavailable bounded adapter yields blocked or partial evidence, not success."},
+    {"id":"EXP-COMP-GENERIC-ZERO-WRITE-ROLLBACK","assertion":"Rejected composition preserves byte-identical canonical state."}
+  ]
+}
