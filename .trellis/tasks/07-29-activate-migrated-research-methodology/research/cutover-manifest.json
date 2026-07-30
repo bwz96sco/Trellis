@@ -1,123 +1,41 @@
 {
   "schemaVersion": 1,
   "cutoverId": "phase2-methodology-cutover-v1",
-  "createdAt": "2026-07-30T01:54:00Z",
+  "createdAt": "2026-07-30T02:40:00Z",
   "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
-  "registryCurrentVersionBefore": "1.0.0",
-  "registryCurrentVersionAfter": "2.0.0",
-  "status": "cutover-applied",
-  "literatureDefault": "research.literature.review",
-  "literatureScan": "research.literature.scan",
-  "literatureScanActivation": "explicit-non-default",
-  "optionalCapabilities": [
-    "research.literature.survey",
-    "research.writing.figure",
-    "research.writing.slides"
+  "registryCurrentVersionBefore": "2.0.0",
+  "registryCurrentVersionAfter": "1.0.0",
+  "status": "blocked-remediating",
+  "supersedes": {
+    "commit": "fe56c9c2",
+    "priorStatus": "cutover-applied",
+    "reason": "Cutover applied before frozen methodology, executable cases, packaging, rollback, evidence-ledger, and independent-assurance gates passed."
+  },
+  "futureSelection": {
+    "registryCurrentVersion": "1.0.0",
+    "liveCapabilityCount": 14,
+    "literatureDefault": "research.literature.scan",
+    "optionalCapabilitiesRegistered": false
+  },
+  "retainedDormantPackages": [
+    "computation-case-v1",
+    "experiment-campaign-v1",
+    "experiment-round-v1",
+    "figure-v1",
+    "idea-evaluation-v1",
+    "idea-generation-v1",
+    "literature-review-v1",
+    "literature-scan-v1",
+    "project-setup-v1",
+    "quest-admin-v1",
+    "quest-framing-v1",
+    "review-campaign-v1",
+    "review-case-v1",
+    "slides-v1",
+    "survey-v1",
+    "theory-case-v1",
+    "writing-case-v1"
   ],
-  "literatureApprovalNote": "review is stage default with registry activation automatic; kind=workflow and multi-repo/network bounds keep automatic approval grant ineligible without widening authority (operator interactive approval).",
-  "procedurePacks": [
-    {
-      "id": "computation-case-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/procedure.json",
-      "sha256": "ddfd39d414c525937a3b1e7b3f2f40f4d8f91af4845a315a307877d81f226093"
-    },
-    {
-      "id": "experiment-campaign-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/procedure.json",
-      "sha256": "1369610285a7f09c60321cccbc4348646d5efb9db381630e05d4458f3f14107e"
-    },
-    {
-      "id": "experiment-round-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/procedure.json",
-      "sha256": "af9dabc0ebe6a11866583ca0c9fcc7bd14d8b2bf4ec5e2751594b5419c6ad769"
-    },
-    {
-      "id": "figure-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/procedure.json",
-      "sha256": "346aa34f4186f9875052683d27eb5a7a4892311ddd695cedd8129ac8a7e6feeb"
-    },
-    {
-      "id": "idea-evaluation-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/procedure.json",
-      "sha256": "e5f7302cfd98776192d0d26f12369bcffd4cf3d473c8408e8b71f6e98ebb11cc"
-    },
-    {
-      "id": "idea-generation-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/procedure.json",
-      "sha256": "b76be7da7ac783fd64cbce1ddd199a5146d9c4dbd0c9f01516e19ccf8c5268db"
-    },
-    {
-      "id": "literature-review-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/procedure.json",
-      "sha256": "61329f712868f534d89ffe3efad9da54a53aba9e9b30f8f9348bfceda28fe9cf"
-    },
-    {
-      "id": "literature-scan-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/procedure.json",
-      "sha256": "cd18777532c0b4815e498b3c53b20d3d9227ea7d82eab0a004c52be5066ab05d"
-    },
-    {
-      "id": "project-setup-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/procedure.json",
-      "sha256": "5fb58c9c09fbe8a9019c448f3aaf4c9e74aa1f2ae9440bc22f4b9c1024e0c0b6"
-    },
-    {
-      "id": "quest-admin-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/procedure.json",
-      "sha256": "e93634228ac475ea145278bda24e1d872e8848bc27929ef0b83803e30e7d18df"
-    },
-    {
-      "id": "quest-framing-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/procedure.json",
-      "sha256": "a1202f62dca7ff7933ed63ee010c0fd8396de0f3fa872238d2276f552584c16f"
-    },
-    {
-      "id": "review-campaign-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/procedure.json",
-      "sha256": "d17d6e5fdb9a9e1b6d7f502a0c4e38c2172237d7c6c76b681e611dd5cc0bc681"
-    },
-    {
-      "id": "review-case-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/procedure.json",
-      "sha256": "0836bade024f2c616179d16167c6a82674fbb4600613ff365f8b34a3d21b4c8c"
-    },
-    {
-      "id": "slides-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/procedure.json",
-      "sha256": "e1aa4500ca4b6f52f9e708ad9d35520b09e14e14312dc1a0c77f18a3a8e83a54"
-    },
-    {
-      "id": "survey-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/procedure.json",
-      "sha256": "f4b9e62a8640b12a4ea8fe291e04d9c3c488231c0464f41b841250207bb54d69"
-    },
-    {
-      "id": "theory-case-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/procedure.json",
-      "sha256": "c1908f84d5884742d3d8a46e8b067736cb8a3288213ab70c66f75cc51524910d"
-    },
-    {
-      "id": "writing-case-v1",
-      "version": "2.0.0",
-      "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/procedure.json",
-      "sha256": "c6ca0887979d3f6cad5c58f9a27baa8681b666594b8a5d81e492d9783aebd5bd"
-    }
-  ],
-  "notes": "P2-12 flipped RESEARCH_PROCEDURE_CURRENT_VERSION to 2.0.0, registered optional survey/figure/slides, and applied frozen v1.2 literature default route. Historical 1.0.0 packs remain for activation-recorded revalidation."
+  "repairTargetVersion": "2.0.1",
+  "notes": "Wave-0 containment: new activations select Procedure 1.0.0. All 2.0.0 package trees retained for repair and historical replay. Do not claim cutover-applied or candidate-ready."
 }

@@ -3,7 +3,7 @@
   "name": "activate-migrated-research-methodology",
   "title": "Activate migrated Research methodology atomically",
   "description": "Perform the sole registry/version cutover after all dormant methodology families and frozen cases pass.",
-  "status": "planning",
+  "status": "blocked-remediating",
   "dev_type": null,
   "scope": null,
   "package": "core",
@@ -22,5 +22,7 @@
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
   "notes": "",
-  "meta": {}
+  "meta": {},
+  "repairNote": "fe56c9c2 retained unaccepted cutover; Wave-0 restored v1 future selection",
+  "updatedAt": "2026-07-30T06:17:11Z"
 }

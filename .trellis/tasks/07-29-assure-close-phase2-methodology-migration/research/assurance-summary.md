@@ -1,16 +1,16 @@
 # P2-13 assurance summary
 
-## Status: conditional-progress (parent not closed)
+## Status: blocked-pre-assurance
 
-### Completed this session
+### Historical evidence retained (do not delete)
 
-- P2-03..P2-11 methodology runtime + dormant packs committed
-- P2-12 cutover applied: CURRENT=2.0.0, literature default=review, optional caps registered
-- Full test suite green (core 558, CLI 922)
-- Assurance allowlist artifacts emitted under this task research/
+- Commit `20468cc4` same-identity conditional recommendation remains historical **failed** independence evidence.
+- Commit `fe56c9c2` remains retained **unaccepted** cutover attempt.
 
-### Open
+### Wave-0 containment (2026-07-30)
 
-- 229/38 differential execution still plan-only
-- Packed lifecycle audit not fully executed this session
-- Parent acceptance deferred per acceptance-recommendation.md
+- Future selection restored to Procedure **1.0.0** (14 live capabilities).
+- Literature default restored to `research.literature.scan`.
+- All 2.0.0 package trees retained dormant for repair/replay.
+- Repair packages will issue as **2.0.1**; final activation requires separate approval.
+- Distinct P2-13 reviewer still required before parent close.

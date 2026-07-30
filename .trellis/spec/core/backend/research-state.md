@@ -281,23 +281,20 @@ and registry array order are not capability authority.
 
 | Stage | Capability ID | Kind | Activation | Procedure | Network | Repositories | Limits |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `setup` | `research.setup.project` | workflow | explicit | `project-setup-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `framing` | `research.framing.quest` | bounded | automatic | `quest-framing-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `framing` | `research.framing.admin` | workflow | explicit | `quest-admin-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `literature` | `research.literature.review` | workflow | automatic | `literature-review-v1@2.0.0` | declared-only | multiple | 60 / 4 |
-| `literature` | `research.literature.scan` | bounded | explicit | `literature-scan-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `literature` | `research.literature.survey` | workflow | explicit | `survey-v1@2.0.0` | forbidden | single | 45 / 2 |
-| `ideation` | `research.ideation.generate` | bounded | automatic | `idea-generation-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `ideation` | `research.ideation.evaluate` | workflow | explicit | `idea-evaluation-v1@2.0.0` | forbidden | single | 30 / 2 |
-| `experiment` | `research.experiment.round` | bounded | automatic | `experiment-round-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `experiment` | `research.experiment.campaign` | workflow | explicit | `experiment-campaign-v1@2.0.0` | declared-only | multiple | 120 / 8 |
-| `computation` | `research.computation.case` | bounded | automatic | `computation-case-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `theory` | `research.theory.case` | bounded | automatic | `theory-case-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `audit` | `research.audit.case` | bounded | automatic | `review-case-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `audit` | `research.audit.campaign` | workflow | explicit | `review-campaign-v1@2.0.0` | forbidden | multiple | 60 / 4 |
-| `writing` | `research.writing.case` | bounded | automatic | `writing-case-v1@2.0.0` | forbidden | single | 15 / 1 |
-| `writing` | `research.writing.figure` | workflow | explicit | `figure-v1@2.0.0` | forbidden | single | 30 / 2 |
-| `writing` | `research.writing.slides` | workflow | explicit | `slides-v1@2.0.0` | forbidden | single | 30 / 2 |
+| `setup` | `research.setup.project` | workflow | explicit | `project-setup-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `framing` | `research.framing.quest` | bounded | automatic | `quest-framing-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `framing` | `research.framing.admin` | workflow | explicit | `quest-admin-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `literature` | `research.literature.scan` | bounded | automatic | `literature-scan-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `literature` | `research.literature.review` | workflow | explicit | `literature-review-v1@1.0.0` | declared-only | multiple | 60 / 4 |
+| `ideation` | `research.ideation.generate` | bounded | automatic | `idea-generation-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `ideation` | `research.ideation.evaluate` | workflow | explicit | `idea-evaluation-v1@1.0.0` | forbidden | single | 30 / 2 |
+| `experiment` | `research.experiment.round` | bounded | automatic | `experiment-round-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `experiment` | `research.experiment.campaign` | workflow | explicit | `experiment-campaign-v1@1.0.0` | declared-only | multiple | 120 / 8 |
+| `computation` | `research.computation.case` | bounded | automatic | `computation-case-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `theory` | `research.theory.case` | bounded | automatic | `theory-case-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `audit` | `research.audit.case` | bounded | automatic | `review-case-v1@1.0.0` | forbidden | single | 15 / 1 |
+| `audit` | `research.audit.campaign` | workflow | explicit | `review-campaign-v1@1.0.0` | forbidden | multiple | 60 / 4 |
+| `writing` | `research.writing.case` | bounded | automatic | `writing-case-v1@1.0.0` | forbidden | single | 15 / 1 |
 
 There is no `complete` or initial `advisory` entry. Every definition uses
 `workerAuthority: "proposal-only"`. Bounded approval requirements are ordered
@@ -309,7 +306,7 @@ The explicit default map is:
 ```text
 setup -> research.setup.project
 framing -> research.framing.quest
-literature -> research.literature.review
+literature -> research.literature.scan
 ideation -> research.ideation.generate
 experiment -> research.experiment.round
 computation -> research.computation.case

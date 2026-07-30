@@ -283,12 +283,9 @@ describe("Research Procedure filesystem resolution", () => {
 
       expect(resolved).toMatchObject({
         source: "bundled",
-        manifest: { id: "computation-case-v1", version: "2.0.0" },
+        digest: BUNDLED_PROCEDURE_DIGESTS["computation-case-v1"],
+        manifest: { id: "computation-case-v1", version: "1.0.0" },
       });
-      expect(resolved.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
-      expect(resolved.digest).not.toBe(
-        BUNDLED_PROCEDURE_DIGESTS["computation-case-v1"],
-      );
     },
     60_000,
   );

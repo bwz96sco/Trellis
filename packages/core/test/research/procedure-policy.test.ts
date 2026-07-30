@@ -222,7 +222,7 @@ describe("Research Procedure contracts", () => {
       instructionBytes: encoder.encode("project instructions"),
     });
     expect(replacement.digest).toBe(
-      "sha256:915c27eef9e3c13b61e505cfda2f00f95a14ce2bf26a3ba7213c382604cf2ce4",
+      "sha256:ab67a473b7ef910ad0a2fd9fc784f0af81b7515f5d8b852114f8660c996b64ad",
     );
 
     const omittedLimits = parseBundled(
@@ -233,7 +233,7 @@ describe("Research Procedure contracts", () => {
     expect(omittedLimits.manifest).not.toHaveProperty("maxDurationMinutes");
     expect(omittedLimits.manifest).not.toHaveProperty("maxDispatches");
     expect(omittedLimits.digest).toBe(
-      "sha256:74cc55057c7b280e521161828116d896f969929610740c37561ab214ae83a40b",
+      "sha256:7b04e5a275fe534782cc7cfe6c94d7a8e863dc1e4801bf5ef5777b0273da9357",
     );
 
     const originalOrder = parseBundled(capability, {}, "array order\n");
@@ -245,10 +245,10 @@ describe("Research Procedure contracts", () => {
       "array order\n",
     );
     expect(originalOrder.digest).toBe(
-      "sha256:20add8fef5ab74e43563934cee91beb3c316d6afa686ef304465c0a5372e5f12",
+      "sha256:40934ed244fbb0fc09983f7a7605c8466c419737787de295ad4e143418fc57d3",
     );
     expect(reorderedInputs.digest).toBe(
-      "sha256:a328521b0316bf8d9f02c9088bc520827ef9d1431c38cc2c87c85ef921da8a6d",
+      "sha256:18803db3bdf31b3eeece64cb2b4a266c9d387a6b15a6b19cd77c4a02af7d96f0",
     );
   });
 

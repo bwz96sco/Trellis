@@ -3,7 +3,7 @@
   "name": "assure-close-phase2-methodology-migration",
   "title": "Assure and close Phase-2 methodology migration",
   "description": "Independently verify coverage, authority, compatibility, packaging, rollback, and parent acceptance without production edits.",
-  "status": "in_progress",
+  "status": "blocked-pre-assurance",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -22,5 +22,7 @@
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
   "notes": "Partial assurance; full close pending registry 2.0.0 cutover + independent review",
-  "meta": {}
+  "meta": {},
+  "repairNote": "20468cc4 retained as historical failed/conditional same-identity evidence; await complete inputs + distinct reviewer",
+  "updatedAt": "2026-07-30T06:17:11Z"
 }

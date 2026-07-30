@@ -36,5 +36,7 @@
   "parent": null,
   "relatedFiles": [],
   "notes": "Phase-2 execution started. P2-01 accepted. P2-02 core support-pack/digest/historical resolution landed (partial: on-disk pack inventory load at family packaging). No commit authorized yet.",
-  "meta": {}
+  "meta": {},
+  "repairNote": "Repair-in-place after unaccepted fe56c9c2 cutover; Wave-0 contained future selection to 1.0.0. Do not archive Phase-2 tasks during repair.",
+  "updatedAt": "2026-07-30T06:17:32Z"
 }

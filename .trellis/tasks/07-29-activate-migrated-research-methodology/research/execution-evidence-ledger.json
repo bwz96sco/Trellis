@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-12",
+  "wave": 0,
+  "sourceCommitBefore": "20468cc43c7522c23b1e743c6995564d5e00b2bc",
+  "checks": [
+    {
+      "id": "wave0-core-unit",
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis-core",
+        "exec",
+        "vitest",
+        "run",
+        "test/research/stage-capabilities.test.ts",
+        "test/research/procedure-policy.test.ts",
+        "test/compatibility/package-exports.test.ts"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "expected": "pass",
+      "actual": "pass",
+      "exitCode": 0,
+      "notes": "95 tests; CURRENT=1.0.0; registry length 14"
+    },
+    {
+      "id": "wave0-historical-and-resolution",
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis",
+        "exec",
+        "vitest",
+        "run",
+        "test/commands/research-procedure-historical-resolution.test.ts",
+        "test/commands/research-procedure-resolution.integration.test.ts"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "expected": "pass",
+      "actual": "pass",
+      "exitCode": 0,
+      "notes": "Reverse historical vector: registry-current v1; activation-recorded v2 still resolves"
+    }
+  ],
+  "dirtyPathAudit": {
+    "excludedFromStaging": ["AGENTS.md", "CLAUDE.md", "docs-site", "marketplace"],
+    "unrelatedResearchState": "not modified"
+  }
+}

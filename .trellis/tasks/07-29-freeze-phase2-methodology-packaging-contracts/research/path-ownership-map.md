@@ -177,3 +177,15 @@ P2-12 integrates reviewed family modules and packs but must route family-body de
 - Existing `packages/core/src/research/types.ts`, `schema.ts`, `events.ts`, and `reducer.ts` remain excluded unless P2-01 proves the composition contract cannot be safely bound through existing canonical Dispatch/Activation/Proposal records and a separately reviewed state-migration amendment assigns them.
 - Existing Procedure `1.0.0` directories are read-only compatibility fixtures for all children.
 - The private source repository is read-only evidence and never a Trellis path owner.
+
+## Repair amendment (Wave-0)
+
+Effective during repair-in-place after unaccepted cutover `fe56c9c2`:
+
+- Existing `*/1.0.0/` and `*/2.0.0/` Procedure package directories are **immutable** compatibility/evidence fixtures.
+- Repaired methodology packages MUST be issued as `*/2.0.1/` under the same procedure ID.
+- Live registry future selection remains `1.0.0` until a separately approved binding-only activation.
+- Optional procedure trees (`survey-v1`, `figure-v1`, `slides-v1`) stay off live routing until that activation; their dormant `2.0.0` bytes remain on disk; repaired content ships as `2.0.1`.
+- New central package path pattern owned by family children P2-05..P2-11: `packages/cli/src/templates/research/procedures/<procedure-id>/2.0.1/**`
+- P2-12 owns registry binding/cutover of `2.0.1` only after candidate readiness; does not mutate `1.0.0`/`2.0.0` bytes.
+
