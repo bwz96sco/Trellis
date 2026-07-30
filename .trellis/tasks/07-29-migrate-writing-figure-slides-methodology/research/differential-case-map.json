@@ -1,0 +1,485 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-11",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 50,
+  "criticalCount": 46,
+  "packages": [
+    "research-figure",
+    "research-slides",
+    "research-slides->personal-slides",
+    "research-writing"
+  ],
+  "cases": [
+    {
+      "id": "DFT-figure-ordered-stage-progression",
+      "package": "research-figure",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-figure-required-vs-optional-artifacts",
+      "package": "research-figure",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-figure-missing-critical-evidence",
+      "package": "research-figure",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-figure-provenance-stable-id-drift",
+      "package": "research-figure",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-figure-forbidden-mutation",
+      "package": "research-figure",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-figure-invalid-handoff",
+      "package": "research-figure",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-figure-outcome-blocked",
+      "package": "research-figure",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-figure-outcome-failed",
+      "package": "research-figure",
+      "family": "outcome-failed",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted failed"
+    },
+    {
+      "id": "DFT-figure-outcome-success",
+      "package": "research-figure",
+      "family": "outcome-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted success"
+    },
+    {
+      "id": "DFT-figure-external-integration-unavailable",
+      "package": "research-figure",
+      "family": "external-integration-unavailable",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "external integrations"
+    },
+    {
+      "id": "DFT-figure-stage-01-progression",
+      "package": "research-figure",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-figure-contract",
+      "stage_id": "01-figure-contract"
+    },
+    {
+      "id": "DFT-figure-stage-02-progression",
+      "package": "research-figure",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-display-routing",
+      "stage_id": "02-display-routing"
+    },
+    {
+      "id": "DFT-figure-stage-03-progression",
+      "package": "research-figure",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-data-plot",
+      "stage_id": "03-data-plot"
+    },
+    {
+      "id": "DFT-figure-stage-04-progression",
+      "package": "research-figure",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-diagram-and-illustration",
+      "stage_id": "04-diagram-and-illustration"
+    },
+    {
+      "id": "DFT-figure-stage-05-progression",
+      "package": "research-figure",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-polish-audit",
+      "stage_id": "05-polish-audit"
+    },
+    {
+      "id": "DFT-figure-stage-06-progression",
+      "package": "research-figure",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-writing-integration",
+      "stage_id": "06-writing-integration"
+    },
+    {
+      "id": "DFT-slides-ordered-stage-progression",
+      "package": "research-slides",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-slides-required-vs-optional-artifacts",
+      "package": "research-slides",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-slides-missing-critical-evidence",
+      "package": "research-slides",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-slides-provenance-stable-id-drift",
+      "package": "research-slides",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-slides-forbidden-mutation",
+      "package": "research-slides",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-slides-invalid-handoff",
+      "package": "research-slides",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-slides-invalid-composition-chaining",
+      "package": "research-slides",
+      "family": "invalid-composition-chaining",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "composition parent"
+    },
+    {
+      "id": "DFT-slides-outcome-blocked",
+      "package": "research-slides",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-slides-outcome-failed",
+      "package": "research-slides",
+      "family": "outcome-failed",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted failed"
+    },
+    {
+      "id": "DFT-slides-outcome-success",
+      "package": "research-slides",
+      "family": "outcome-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted success"
+    },
+    {
+      "id": "DFT-slides-external-integration-unavailable",
+      "package": "research-slides",
+      "family": "external-integration-unavailable",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "external integrations"
+    },
+    {
+      "id": "DFT-slides-stage-01-progression",
+      "package": "research-slides",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-talk-contract",
+      "stage_id": "01-talk-contract"
+    },
+    {
+      "id": "DFT-slides-stage-02-progression",
+      "package": "research-slides",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-story-outline",
+      "stage_id": "02-story-outline"
+    },
+    {
+      "id": "DFT-slides-stage-03-progression",
+      "package": "research-slides",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-production-route",
+      "stage_id": "03-production-route"
+    },
+    {
+      "id": "DFT-slides-stage-04-progression",
+      "package": "research-slides",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-notes-script",
+      "stage_id": "04-notes-script"
+    },
+    {
+      "id": "DFT-slides-stage-05-progression",
+      "package": "research-slides",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-audit-handoff",
+      "stage_id": "05-audit-handoff"
+    },
+    {
+      "id": "DFT-writing-ordered-stage-progression",
+      "package": "research-writing",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-writing-required-vs-optional-artifacts",
+      "package": "research-writing",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-writing-missing-critical-evidence",
+      "package": "research-writing",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-writing-provenance-stable-id-drift",
+      "package": "research-writing",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-writing-forbidden-mutation",
+      "package": "research-writing",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-writing-invalid-handoff",
+      "package": "research-writing",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-writing-outcome-blocked",
+      "package": "research-writing",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-writing-outcome-null",
+      "package": "research-writing",
+      "family": "outcome-null",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted null"
+    },
+    {
+      "id": "DFT-writing-outcome-success",
+      "package": "research-writing",
+      "family": "outcome-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted success"
+    },
+    {
+      "id": "DFT-writing-stage-01-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-writing-contract",
+      "stage_id": "01-writing-contract"
+    },
+    {
+      "id": "DFT-writing-stage-02-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-paper-outline",
+      "stage_id": "02-paper-outline"
+    },
+    {
+      "id": "DFT-writing-stage-03-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-claim-evidence-map",
+      "stage_id": "03-claim-evidence-map"
+    },
+    {
+      "id": "DFT-writing-stage-04-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-display-plan",
+      "stage_id": "04-display-plan"
+    },
+    {
+      "id": "DFT-writing-stage-05-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-section-drafting",
+      "stage_id": "05-section-drafting"
+    },
+    {
+      "id": "DFT-writing-stage-06-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-build-compile",
+      "stage_id": "06-build-compile"
+    },
+    {
+      "id": "DFT-writing-stage-07-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "07-audit-review",
+      "stage_id": "07-audit-review"
+    },
+    {
+      "id": "DFT-writing-stage-08-progression",
+      "package": "research-writing",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "08-rebuttal-handoff",
+      "stage_id": "08-rebuttal-handoff"
+    },
+    {
+      "id": "DFT-COMP-003",
+      "package": "research-slides->personal-slides",
+      "family": "composition",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "COMP-003"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "procedureId": "slides-v1",
+  "version": "2.0.0",
+  "checkpoints": [
+    "01-talk-contract",
+    "02-outline",
+    "03-production",
+    "04-notes",
+    "05-audit"
+  ],
+  "terminalStates": [
+    "success",
+    "blocked",
+    "failed",
+    "partial"
+  ],
+  "proposalOnly": true
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-11",
+  "relationshipToFrozenMatrix": "additional-not-part-of-229",
+  "cases": [
+    {"id":"EXP-WRITING-FIGURE-PROVENANCE","assertion":"A valid writing artifact transfers sender, receiver, artifact ID, digest, and provenance into figure inputs."},
+    {"id":"EXP-WRITING-FIGURE-WRONG-SENDER","assertion":"An unbound sender or receiver identity fails before figure generation."},
+    {"id":"EXP-WRITING-FIGURE-MISSING-ARTIFACT","assertion":"Missing required upstream artifact or digest fails closed."},
+    {"id":"EXP-FIGURE-SLIDES-PROVENANCE","assertion":"Slides preserve figure and upstream evidence identity and digest without provenance collapse."},
+    {"id":"EXP-COMP-003-AUTHORIZED-ADAPTER","assertion":"Root executes only the authorized bounded personal-slides adapter and binds its result evidence."},
+    {"id":"EXP-COMP-003-ADAPTER-UNAVAILABLE","assertion":"Unavailable adapter produces blocked or partial degradation, never success."},
+    {"id":"EXP-COMP-003-AUTHORITY-NONTRANSFER","assertion":"Adapter receives no Research approval, mutation, Dispatch-launch, nested-agent, or chaining authority."}
+  ]
+}
