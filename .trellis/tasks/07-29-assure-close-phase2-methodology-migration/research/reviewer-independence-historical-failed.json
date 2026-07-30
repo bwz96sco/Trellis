@@ -4,5 +4,5 @@
   "p2_13_reviewer": "ZhangBowen <bwz96sco@outlook.com>",
   "independent": false,
   "status": "fail-closed-equal-identity",
-  "note": "Cannot claim independent assurance with same git identity. Implementation complete; parent close requires distinct reviewer."
+  "note": "Mechanical git identity comparison only; does not prove organizational independence."
 }

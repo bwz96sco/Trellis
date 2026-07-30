@@ -13,12 +13,14 @@ export const RESEARCH_STAGE_SKILLS = [
   "trellis-research-writing",
 ];
 
+/** Live + historical procedure package IDs (14 core + 3 optional visuals). */
 export const RESEARCH_PROCEDURE_IDS = [
   "project-setup-v1",
   "quest-framing-v1",
   "quest-admin-v1",
   "literature-scan-v1",
   "literature-review-v1",
+  "survey-v1",
   "idea-generation-v1",
   "idea-evaluation-v1",
   "experiment-round-v1",
@@ -28,7 +30,19 @@ export const RESEARCH_PROCEDURE_IDS = [
   "review-case-v1",
   "review-campaign-v1",
   "writing-case-v1",
+  "figure-v1",
+  "slides-v1",
 ];
+
+/** Versions that must ship for historical replay / candidate repair. */
+export const RESEARCH_PROCEDURE_VERSIONS = ["1.0.0", "2.0.0", "2.0.1"];
+
+/** Optional procedures exist only from 2.0.0+ (no 1.0.0 fixture). */
+export const RESEARCH_OPTIONAL_PROCEDURE_IDS = new Set([
+  "survey-v1",
+  "figure-v1",
+  "slides-v1",
+]);
 
 export const PACKED_ACTIVE_RESEARCH_ENTRIES = {
   command: "package/dist/commands/research/index.js",
@@ -301,16 +315,41 @@ function withPackedRoot(entry) {
   return `${PACKED_ROOT}${entry}`;
 }
 
+function procedureVersionRequired(procedureId, version) {
+  if (RESEARCH_OPTIONAL_PROCEDURE_IDS.has(procedureId) && version === "1.0.0") {
+    return false;
+  }
+  return true;
+}
+
+function methodologyPackEntries(procedureId, version) {
+  // schema-v1 two-file packages; schema-v2 methodology support packs
+  if (version === "1.0.0") return [];
+  return [
+    `dist/templates/research/procedures/${procedureId}/${version}/methodology/pack.json`,
+    `dist/templates/research/procedures/${procedureId}/${version}/methodology/artifacts/artifact-contract.json`,
+    `dist/templates/research/procedures/${procedureId}/${version}/methodology/instructions/checkpoints.md`,
+    `dist/templates/research/procedures/${procedureId}/${version}/methodology/validators/validators.json`,
+  ];
+}
+
 export function buildPackedCliInventory(migrationManifestNames) {
+  const procedureEntries = RESEARCH_PROCEDURE_IDS.flatMap((procedureId) =>
+    RESEARCH_PROCEDURE_VERSIONS.flatMap((version) => {
+      if (!procedureVersionRequired(procedureId, version)) return [];
+      const base = [
+        `dist/templates/research/procedures/${procedureId}/${version}/procedure.json`,
+        `dist/templates/research/procedures/${procedureId}/${version}/PROCEDURE.md`,
+      ];
+      return [...base, ...methodologyPackEntries(procedureId, version)].map(
+        withPackedRoot,
+      );
+    }),
+  );
+
   const requiredEntries = [
     ...REQUIRED_RESEARCH_ENTRIES.map(withPackedRoot),
-    ...RESEARCH_PROCEDURE_IDS.flatMap((procedureId) =>
-      ["procedure.json", "PROCEDURE.md"].map((fileName) =>
-        withPackedRoot(
-          `dist/templates/research/procedures/${procedureId}/1.0.0/${fileName}`,
-        ),
-      ),
-    ),
+    ...procedureEntries,
     ...migrationManifestNames.map((name) =>
       withPackedRoot(`dist/migrations/manifests/${name}`),
     ),

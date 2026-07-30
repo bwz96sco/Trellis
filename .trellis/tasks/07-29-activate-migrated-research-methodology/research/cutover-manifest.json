@@ -1,9 +1,136 @@
 {
-  "schemaVersion": 1,
-  "cutoverId": "phase2-methodology-cutover-v1",
-  "status": "blocked-remediating-candidate-table-present",
-  "futureSelection": "1.0.0",
-  "candidateManifest": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest.json",
-  "candidateManifestSha256": "ab4d55447c76a4005eabb6214aace27499d10152583700c7c5c21fbae43e008f",
-  "notes": "Wave-0 containment holds. Wave-5 candidate 2.0.1 table recorded; packed lifecycle and final activation require separate authorization."
+  "schemaVersion": 2,
+  "cutoverId": "phase2-methodology-cutover-v1-repair-activation",
+  "createdAt": "2026-07-30T07:58:39Z",
+  "status": "active",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "registryCurrentVersionBefore": "1.0.0",
+  "registryCurrentVersionAfter": "2.0.1",
+  "literatureDefault": "research.literature.review",
+  "literatureScan": "explicit-non-default",
+  "optionalCapabilities": [
+    "research.literature.survey",
+    "research.writing.figure",
+    "research.writing.slides"
+  ],
+  "liveCapabilityCount": 17,
+  "aggregates": {
+    "frozenCasesPassed": 229,
+    "expansionCasesPassed": 38,
+    "evidence": ".trellis/tasks/07-29-implement-frozen-phase2-differential-harness/research/differential-run-all.json"
+  },
+  "rollback": {
+    "preActivation": "restore CURRENT=1.0.0, 14 caps, literature.scan default (Wave-0 state)",
+    "postActivationFutureOnly": "set CURRENT back to 1.0.0; historical activations keep recorded 2.0.1 id/version/digest",
+    "disableEventClaimed": false
+  },
+  "packedLifecycle": {
+    "status": "inventory-extended-local-only",
+    "note": "packed-cli-audit requires 1.0.0/2.0.0/2.0.1 entries; real tarball create/install not run (plan authorization checkpoint for network pack)."
+  },
+  "procedurePacks201": [
+    {
+      "id": "computation-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/procedure.json",
+      "sha256": "e630ac1c977546a9feeb078246eab63493a7ad8173e0be2e1f706d935d95eb03"
+    },
+    {
+      "id": "experiment-campaign-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/procedure.json",
+      "sha256": "89529bac6cc5b825244c4fc3bb56d1f15d27fcda5704af2124511c4a28a62109"
+    },
+    {
+      "id": "experiment-round-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/procedure.json",
+      "sha256": "df0f98c2ac188c329127caffccd911728822546a9336d700fe477a9e9d3db50b"
+    },
+    {
+      "id": "figure-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/procedure.json",
+      "sha256": "76aa8e8fe947318fe0b54e74e0a0b9341fd9a6a047fb997d7e8e237f2a0c1ab2"
+    },
+    {
+      "id": "idea-evaluation-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/procedure.json",
+      "sha256": "9e0210d63ef21080feb6b2e79c01ebc4ac78ba7e662a384ba45408a0301039ab"
+    },
+    {
+      "id": "idea-generation-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/procedure.json",
+      "sha256": "2b57c1adb9bd9086b385482ee44d2eef0b829b637039189d47ca2bb04fb71038"
+    },
+    {
+      "id": "literature-review-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/procedure.json",
+      "sha256": "d074f321a101dad43a3096311a1ca3278f9c383831f8aaabd9199b5a62858f31"
+    },
+    {
+      "id": "literature-scan-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/procedure.json",
+      "sha256": "b4879dbfa33c427cb54ad3e8a18a84c9e7e8687b144e9afd910c838be97a54af"
+    },
+    {
+      "id": "project-setup-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/procedure.json",
+      "sha256": "2adf472e9f32ea0f3e9bcdfeb4eb6bdaec20e674d3da8c1bec50c15cb9388aa2"
+    },
+    {
+      "id": "quest-admin-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/procedure.json",
+      "sha256": "0521dda769d382f15e3b03d9b0c751ec75aab05f91980ede57a41a6dd124e9e0"
+    },
+    {
+      "id": "quest-framing-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/procedure.json",
+      "sha256": "3193691e1870f7563ebddc999865f6883c5a3c3fd44372c395dc7a2bbefdacf9"
+    },
+    {
+      "id": "review-campaign-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/procedure.json",
+      "sha256": "c123cff9cf1f63a981fb33f643f87a103155ad60bc8cfe4ef439b687398768c8"
+    },
+    {
+      "id": "review-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/procedure.json",
+      "sha256": "9c883bcd27505bcdb4085d40fde06eb1082cb35494c1102253f0b5071034e6cf"
+    },
+    {
+      "id": "slides-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/procedure.json",
+      "sha256": "bff5b16b5ca167496a7bf859d2b27647fe6118aecdd5f46b7bd25c2818eec128"
+    },
+    {
+      "id": "survey-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/procedure.json",
+      "sha256": "1ecd8d1b294b1e6bb42bbc8f8082b3585767245919a0c324230c563d8d195fcb"
+    },
+    {
+      "id": "theory-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/procedure.json",
+      "sha256": "72be3f002047b6d24e272eedba87d7c981390c732c9701071ad769a5b9eb366d"
+    },
+    {
+      "id": "writing-case-v1",
+      "version": "2.0.1",
+      "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/procedure.json",
+      "sha256": "b5d3f6c07ed521c113c2015eb28ae47e56c201af945fd6a9fac50e7da2577047"
+    }
+  ],
+  "notes": "Wave-6 binding-only activation of repaired 2.0.1 methodology packs. Procedure bodies for 1.0.0/2.0.0 remain immutable."
 }

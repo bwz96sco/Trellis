@@ -288,12 +288,26 @@ describe("packed CLI inventory audit", () => {
       ),
     ).toBe(true);
     for (const procedureId of RESEARCH_PROCEDURE_IDS) {
-      expect(inventory.requiredEntries).toContain(
-        `package/dist/templates/research/procedures/${procedureId}/1.0.0/procedure.json`,
-      );
-      expect(inventory.requiredEntries).toContain(
-        `package/dist/templates/research/procedures/${procedureId}/1.0.0/PROCEDURE.md`,
-      );
+      const optional =
+        procedureId === "survey-v1" ||
+        procedureId === "figure-v1" ||
+        procedureId === "slides-v1";
+      if (!optional) {
+        expect(inventory.requiredEntries).toContain(
+          `package/dist/templates/research/procedures/${procedureId}/1.0.0/procedure.json`,
+        );
+        expect(inventory.requiredEntries).toContain(
+          `package/dist/templates/research/procedures/${procedureId}/1.0.0/PROCEDURE.md`,
+        );
+      }
+      for (const version of ["2.0.0", "2.0.1"] as const) {
+        expect(inventory.requiredEntries).toContain(
+          `package/dist/templates/research/procedures/${procedureId}/${version}/procedure.json`,
+        );
+        expect(inventory.requiredEntries).toContain(
+          `package/dist/templates/research/procedures/${procedureId}/${version}/methodology/pack.json`,
+        );
+      }
     }
     expect(inventory.requiredEntries).toContain(
       "package/dist/migrations/manifests/0.6.7.json",

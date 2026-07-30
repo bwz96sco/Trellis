@@ -103,17 +103,49 @@ async function writeValidProjectOverride(
   const manifestPath = path.join(directory, "procedure.json");
   const instructionPath = path.join(directory, "PROCEDURE.md");
   fs.mkdirSync(directory, { recursive: true });
-  fs.writeFileSync(
-    manifestPath,
-    `${JSON.stringify({
-      ...bundled.manifest,
-      replaces: {
-        id: capability.procedure.id,
-        version: capability.procedure.version,
-      },
-    })}\n`,
-  );
+  // Match procedure-policy serializeManifest key order (incl. packageSchemaVersion last).
+  const projectManifest = {
+    schemaVersion: bundled.manifest.schemaVersion,
+    id: bundled.manifest.id,
+    version: bundled.manifest.version,
+    stage: bundled.manifest.stage,
+    kind: bundled.manifest.kind,
+    inputs: bundled.manifest.inputs,
+    outputs: bundled.manifest.outputs,
+    networkPolicy: bundled.manifest.networkPolicy,
+    repositoryScope: bundled.manifest.repositoryScope,
+    ...(bundled.manifest.maxDurationMinutes === undefined
+      ? {}
+      : { maxDurationMinutes: bundled.manifest.maxDurationMinutes }),
+    ...(bundled.manifest.maxDispatches === undefined
+      ? {}
+      : { maxDispatches: bundled.manifest.maxDispatches }),
+    replaces: {
+      id: capability.procedure.id,
+      version: capability.procedure.version,
+    },
+    ...(bundled.manifest.packageSchemaVersion === undefined
+      ? {}
+      : { packageSchemaVersion: bundled.manifest.packageSchemaVersion }),
+  };
+  fs.writeFileSync(manifestPath, `${JSON.stringify(projectManifest)}\n`);
   fs.writeFileSync(instructionPath, "# Project override\n");
+  // Schema-v2 packages require a full methodology support pack for project overrides.
+  if (bundled.packageSchemaVersion === 2 && bundled.supportPack) {
+    const methodologyDir = path.join(directory, "methodology");
+    fs.mkdirSync(path.join(methodologyDir, "artifacts"), { recursive: true });
+    fs.mkdirSync(path.join(methodologyDir, "instructions"), { recursive: true });
+    fs.mkdirSync(path.join(methodologyDir, "validators"), { recursive: true });
+    fs.writeFileSync(
+      path.join(methodologyDir, "pack.json"),
+      Buffer.from(bundled.supportPack.packJsonBytes),
+    );
+    for (const item of bundled.supportPack.inventoryItems) {
+      const target = path.join(methodologyDir, ...item.path.split("/"));
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, Buffer.from(item.bytes));
+    }
+  }
   return { directory, manifestPath, instructionPath };
 }
 
@@ -283,9 +315,13 @@ describe("Research Procedure filesystem resolution", () => {
 
       expect(resolved).toMatchObject({
         source: "bundled",
-        digest: BUNDLED_PROCEDURE_DIGESTS["computation-case-v1"],
-        manifest: { id: "computation-case-v1", version: "1.0.0" },
+        manifest: { id: "computation-case-v1", version: "2.0.1" },
       });
+      expect(resolved.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+      expect(resolved.digestDomain).toBe("v2");
+      expect(resolved.digest).not.toBe(
+        BUNDLED_PROCEDURE_DIGESTS["computation-case-v1"],
+      );
     },
     60_000,
   );
@@ -296,22 +332,9 @@ describe("Research Procedure filesystem resolution", () => {
       root,
       capabilityId: capability.id,
     });
-    const directory = projectDirectory(root, capability.procedure.id, capability.procedure.version);
-    fs.mkdirSync(directory, { recursive: true });
-    const manifest = {
-      ...bundled.manifest,
-      replaces: {
-        id: capability.procedure.id,
-        version: capability.procedure.version,
-      },
-    };
-    fs.writeFileSync(
-      path.join(directory, "procedure.json"),
-      `${JSON.stringify(manifest)}\n`,
-    );
-    fs.writeFileSync(path.join(directory, "PROCEDURE.md"), "# Project override\n");
-    fs.writeFileSync(path.join(directory, "ignored.txt"), "ignored");
-    fs.symlinkSync("missing", path.join(directory, "ignored-link"));
+    const paths = await writeValidProjectOverride(root, capability.id);
+    fs.writeFileSync(path.join(paths.directory, "ignored.txt"), "ignored");
+    fs.symlinkSync("missing", path.join(paths.directory, "ignored-link"));
 
     const project = await resolveResearchProcedure({
       root,

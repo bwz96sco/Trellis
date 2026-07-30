@@ -17,56 +17,50 @@ const capability = RESEARCH_CAPABILITY_REGISTRY.find(
 )!;
 
 describe("historical Procedure resolution", () => {
-  it("registry-current selects v1 while activation-recorded resolves exact v2 bytes", async () => {
-    // Wave-0 containment: future selection is 1.0.0; dormant 2.0.0 remains replayable.
-    expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("1.0.0");
-    expect(capability.procedure.version).toBe("1.0.0");
+  it("registry-current selects 2.0.1 while recorded 1.0.0 and 2.0.0 still resolve", async () => {
+    expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("2.0.1");
+    expect(capability.procedure.version).toBe("2.0.1");
 
     const current = await resolveResearchProcedure({
       root: os.tmpdir(),
       capabilityId: capability.id,
       mode: "registry-current",
     });
-    expect(current.manifest.version).toBe("1.0.0");
-    expect(current.digestDomain ?? "v1").toBe("v1");
+    expect(current.manifest.version).toBe("2.0.1");
+    expect(current.digestDomain).toBe("v2");
+    expect(current.packageSchemaVersion).toBe(2);
 
-    const recordedV2 = await resolveResearchProcedure({
-      root: os.tmpdir(),
-      capabilityId: capability.id,
-      mode: "activation-recorded",
-      procedureId: capability.procedure.id,
-      procedureVersion: "2.0.0",
-    });
-    expect(recordedV2.manifest.id).toBe(capability.procedure.id);
-    expect(recordedV2.manifest.version).toBe("2.0.0");
-    expect(recordedV2.digestDomain).toBe("v2");
-    expect(recordedV2.digest).not.toBe(current.digest);
-
-    const historicalV1 = path.join(
-      getBundledResearchProcedureRoot(),
-      capability.procedure.id,
-      "1.0.0",
-      "procedure.json",
-    );
-    const dormantV2 = path.join(
-      getBundledResearchProcedureRoot(),
-      capability.procedure.id,
-      "2.0.0",
-      "procedure.json",
-    );
-    expect(fs.existsSync(historicalV1)).toBe(true);
-    expect(fs.existsSync(dormantV2)).toBe(true);
-  });
-
-  it("activation-recorded still resolves recorded 1.0.0 after a future cutover path exists", async () => {
-    const recorded = await resolveResearchProcedure({
+    const v1 = await resolveResearchProcedure({
       root: os.tmpdir(),
       capabilityId: capability.id,
       mode: "activation-recorded",
       procedureId: capability.procedure.id,
       procedureVersion: "1.0.0",
     });
-    expect(recorded.manifest.version).toBe("1.0.0");
-    expect(recorded.digestDomain ?? "v1").toBe("v1");
+    expect(v1.manifest.version).toBe("1.0.0");
+    expect(v1.digestDomain ?? "v1").toBe("v1");
+    expect(v1.digest).not.toBe(current.digest);
+
+    const v2 = await resolveResearchProcedure({
+      root: os.tmpdir(),
+      capabilityId: capability.id,
+      mode: "activation-recorded",
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.0",
+    });
+    expect(v2.manifest.version).toBe("2.0.0");
+    expect(v2.digestDomain).toBe("v2");
+    expect(v2.digest).not.toBe(current.digest);
+    expect(v2.digest).not.toBe(v1.digest);
+
+    for (const version of ["1.0.0", "2.0.0", "2.0.1"]) {
+      const p = path.join(
+        getBundledResearchProcedureRoot(),
+        capability.procedure.id,
+        version,
+        "procedure.json",
+      );
+      expect(fs.existsSync(p)).toBe(true);
+    }
   });
 });

@@ -174,10 +174,29 @@ def _validate_dispatch_context_response(payload: dict, dispatch_id: str) -> dict
         "authority",
         "outputContract",
     }
-    if set(context) != expected_context_keys:
-        raise ValueError("preflight context has an invalid normalized shape")
-    if context.get("schemaVersion") != 1 or context.get("host") != "claude":
+    context_schema = context.get("schemaVersion")
+    if context_schema not in {1, 2} or context.get("host") != "claude":
         raise ValueError("preflight context host or schema does not match Claude")
+    actual_keys = set(context)
+    if context_schema == 1:
+        if actual_keys != expected_context_keys:
+            raise ValueError("preflight context has an invalid normalized shape")
+    else:
+        # schemaVersion 2 adds worker-visible methodology projection only.
+        if actual_keys != expected_context_keys | {"methodology"}:
+            raise ValueError("preflight context has an invalid normalized shape")
+        methodology = _require_object(context.get("methodology"), "context.methodology")
+        if methodology.get("schemaVersion") != 2:
+            raise ValueError("context.methodology.schemaVersion must be 2")
+        if methodology.get("workerAuthority") != "proposal-only":
+            raise ValueError("context.methodology.workerAuthority must be proposal-only")
+        _require_string(
+            methodology.get("procedureDigest"), "context.methodology.procedureDigest"
+        )
+        _require_list(
+            methodology.get("workerVisibleEntries"),
+            "context.methodology.workerVisibleEntries",
+        )
 
     dispatch = _require_object(context.get("dispatch"), "context.dispatch")
     actual_dispatch_id = _research_response_id(

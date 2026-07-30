@@ -9,6 +9,7 @@ export type ResearchCapabilityId =
   | "research.framing.admin"
   | "research.literature.scan"
   | "research.literature.review"
+  | "research.literature.survey"
   | "research.ideation.generate"
   | "research.ideation.evaluate"
   | "research.experiment.round"
@@ -17,9 +18,9 @@ export type ResearchCapabilityId =
   | "research.theory.case"
   | "research.audit.case"
   | "research.audit.campaign"
-  | "research.writing.case";
-// P2-12 cutover registers optional capabilities:
-// research.literature.survey, research.writing.figure, research.writing.slides
+  | "research.writing.case"
+  | "research.writing.figure"
+  | "research.writing.slides";
 
 export type ResearchCapabilityKind = "bounded" | "workflow" | "advisory";
 export type ResearchActivationMode = "automatic" | "explicit";
@@ -92,12 +93,10 @@ interface CapabilityDefinitionInput {
 
 /**
  * Registry current Procedure package version (future selection only).
- * Wave-0 repair containment: new activations select 1.0.0.
- * Dormant 2.0.0 packages remain on disk for repair, testing, and
- * activation-recorded historical replay. Repaired packages will ship as 2.0.1;
- * final cutover to 2.0.1 requires separate activation approval.
+ * Wave-6 final activation: new activations select repaired 2.0.1 packages.
+ * Historical 1.0.0 and 2.0.0 remain on disk for activation-recorded replay.
  */
-export const RESEARCH_PROCEDURE_CURRENT_VERSION = "1.0.0";
+export const RESEARCH_PROCEDURE_CURRENT_VERSION = "2.0.1";
 
 function defineCapability(
   input: CapabilityDefinitionInput,
@@ -157,14 +156,24 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDurationMinutes: 15,
     maxDispatches: 1,
   }),
-  // Wave-0 containment: pre-cutover live literature routing.
-  // Frozen v1.2 literature disposition (review default) is deferred until
-  // accepted 2.0.1 candidate cutover. survey/figure/slides stay off live registry.
+  // Wave-6 frozen v1.2 literature disposition (final activation):
+  // review is stage default; scan is explicit non-default; survey optional.
+  defineCapability({
+    id: "research.literature.review",
+    stage: "literature",
+    kind: "workflow",
+    activation: "automatic",
+    procedureId: "literature-review-v1",
+    networkPolicy: "declared-only",
+    repositoryScope: "multiple",
+    maxDurationMinutes: 60,
+    maxDispatches: 4,
+  }),
   defineCapability({
     id: "research.literature.scan",
     stage: "literature",
     kind: "bounded",
-    activation: "automatic",
+    activation: "explicit",
     procedureId: "literature-scan-v1",
     networkPolicy: "forbidden",
     repositoryScope: "single",
@@ -172,15 +181,15 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDispatches: 1,
   }),
   defineCapability({
-    id: "research.literature.review",
+    id: "research.literature.survey",
     stage: "literature",
     kind: "workflow",
     activation: "explicit",
-    procedureId: "literature-review-v1",
-    networkPolicy: "declared-only",
-    repositoryScope: "multiple",
-    maxDurationMinutes: 60,
-    maxDispatches: 4,
+    procedureId: "survey-v1",
+    networkPolicy: "forbidden",
+    repositoryScope: "single",
+    maxDurationMinutes: 45,
+    maxDispatches: 2,
   }),
   defineCapability({
     id: "research.ideation.generate",
@@ -281,12 +290,34 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDurationMinutes: 15,
     maxDispatches: 1,
   }),
+  defineCapability({
+    id: "research.writing.figure",
+    stage: "writing",
+    kind: "workflow",
+    activation: "explicit",
+    procedureId: "figure-v1",
+    networkPolicy: "forbidden",
+    repositoryScope: "single",
+    maxDurationMinutes: 30,
+    maxDispatches: 2,
+  }),
+  defineCapability({
+    id: "research.writing.slides",
+    stage: "writing",
+    kind: "workflow",
+    activation: "explicit",
+    procedureId: "slides-v1",
+    networkPolicy: "forbidden",
+    repositoryScope: "single",
+    maxDurationMinutes: 30,
+    maxDispatches: 2,
+  }),
 ] satisfies readonly ResearchCapabilityDefinition[]);
 
 export const RESEARCH_DEFAULT_CAPABILITY_BY_STAGE = Object.freeze({
   setup: "research.setup.project",
   framing: "research.framing.quest",
-  literature: "research.literature.scan",
+  literature: "research.literature.review",
   ideation: "research.ideation.generate",
   experiment: "research.experiment.round",
   computation: "research.computation.case",

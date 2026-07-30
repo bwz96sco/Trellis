@@ -214,7 +214,7 @@ describe("public approved Research Dispatch Context", { timeout: 30_000 }, () =>
       command: "research dispatch context",
       valid: true,
       context: {
-        schemaVersion: 1,
+        schemaVersion: 2,
         host: "codex",
         dispatch: { id: fixture.ids.dispatchId },
         approval: { id: granted.approval.grant.id },

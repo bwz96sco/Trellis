@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import * as researchCore from "@mindfoldhq/trellis-core/research";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -66,7 +67,7 @@ describe("approved Research Dispatch Context", { timeout: 30_000 }, () => {
       command: "research dispatch context",
       valid: true,
       context: {
-        schemaVersion: 1,
+        schemaVersion: 2,
         host: "codex",
         dispatch: { id: fixture.ids.dispatchId },
         approval: { id: granted.approval.grant.id },
@@ -462,17 +463,49 @@ describe("approved Context acceptance matrix", { timeout: 30_000 }, () => {
       baseline.context.procedure.manifest.id,
       baseline.context.procedure.manifest.version,
     );
-    fs.mkdirSync(procedureDirectory, { recursive: true });
+    // Valid schema-v2 project override (full methodology pack) with drifted instructions.
+    const bundledRoot = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "../../src/templates/research/procedures",
+      baseline.context.procedure.manifest.id,
+      baseline.context.procedure.manifest.version,
+    );
+    fs.cpSync(bundledRoot, procedureDirectory, { recursive: true });
+    const driftedManifest = {
+      schemaVersion: baseline.context.procedure.manifest.schemaVersion,
+      id: baseline.context.procedure.manifest.id,
+      version: baseline.context.procedure.manifest.version,
+      stage: baseline.context.procedure.manifest.stage,
+      kind: baseline.context.procedure.manifest.kind,
+      inputs: baseline.context.procedure.manifest.inputs,
+      outputs: baseline.context.procedure.manifest.outputs,
+      networkPolicy: baseline.context.procedure.manifest.networkPolicy,
+      repositoryScope: baseline.context.procedure.manifest.repositoryScope,
+      ...(baseline.context.procedure.manifest.maxDurationMinutes === undefined
+        ? {}
+        : {
+            maxDurationMinutes:
+              baseline.context.procedure.manifest.maxDurationMinutes,
+          }),
+      ...(baseline.context.procedure.manifest.maxDispatches === undefined
+        ? {}
+        : {
+            maxDispatches: baseline.context.procedure.manifest.maxDispatches,
+          }),
+      replaces: {
+        id: baseline.context.procedure.manifest.id,
+        version: baseline.context.procedure.manifest.version,
+      },
+      ...(baseline.context.procedure.manifest.packageSchemaVersion === undefined
+        ? {}
+        : {
+            packageSchemaVersion:
+              baseline.context.procedure.manifest.packageSchemaVersion,
+          }),
+    };
     fs.writeFileSync(
       path.join(procedureDirectory, "procedure.json"),
-      `${JSON.stringify({
-        ...baseline.context.procedure.manifest,
-        maxDurationMinutes: 10,
-        replaces: {
-          id: baseline.context.procedure.manifest.id,
-          version: baseline.context.procedure.manifest.version,
-        },
-      })}\n`,
+      `${JSON.stringify(driftedManifest)}\n`,
     );
     fs.writeFileSync(
       path.join(procedureDirectory, "PROCEDURE.md"),
