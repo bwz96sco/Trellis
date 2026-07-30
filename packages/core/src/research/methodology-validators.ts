@@ -93,18 +93,24 @@ const REGISTRY: Record<string, ValidatorFn> = {
   },
 };
 
+/** Trusted implementations are keyed by exact (id, version). Unknown pairs are always critical. */
+const VERSIONED_REGISTRY: Record<string, ValidatorFn> = Object.fromEntries(
+  Object.entries(REGISTRY).map(([id, fn]) => [`${id}@1`, fn]),
+);
+
 export function runMethodologyValidators(
   ctx: MethodologyValidationContext,
 ): MethodologyValidationReport {
   const findings: MethodologyValidatorFinding[] = [];
   for (const d of ctx.declaredValidators) {
-    const fn = REGISTRY[d.id];
+    const key = `${d.id}@${d.version}`;
+    const fn = VERSIONED_REGISTRY[key];
     if (!fn) {
       findings.push({
         validatorId: d.id,
-        severity: d.severity,
+        severity: "critical",
         code: "UNKNOWN_VALIDATOR",
-        message: `No trusted implementation for validator '${d.id}'`,
+        message: `No trusted implementation for validator '${d.id}' version '${d.version}'`,
       });
       continue;
     }
@@ -114,7 +120,7 @@ export function runMethodologyValidators(
   return {
     ok: !criticalFailure,
     criticalFailure,
-    findings,
+    findings: Object.freeze(findings),
   };
 }
 

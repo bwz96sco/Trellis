@@ -43,7 +43,8 @@ export type ResearchActivationErrorCode =
   | "PROCEDURE_DIGEST_MISMATCH"
   | "POLICY_DIGEST_MISMATCH"
   | "REQUEST_DIGEST_MISMATCH"
-  | "SCOPE_HASH_MISMATCH";
+  | "SCOPE_HASH_MISMATCH"
+  | "METHODOLOGY_VALIDATION_FAILED";
 
 export type ResearchDispatchContextErrorCode = ResearchActivationErrorCode;
 

@@ -78,6 +78,7 @@ import {
   revalidateDispatchActivationStaged,
   type StagedDispatchRevalidation,
 } from "./dispatch-revalidation.js";
+import { validateMethodologyBeforeRecord } from "./dispatch-methodology-validation.js";
 import { executeRepositoryDispatchMutations } from "./mutation.js";
 import {
   resolveRepositoryForUse,
@@ -1197,6 +1198,29 @@ export async function recordApprovedResearchDispatchResult(
     parsed.result.artifactRefs,
     false,
   );
+  // Wave-2: methodology validation is fail-closed before any canonical write.
+  // Applies to schema-v2 activations; schema-v1 keeps existing behavior when
+  // validators report only informational findings for empty declared sets.
+  const methodologyGate = validateMethodologyBeforeRecord({
+    procedureId: activation.procedure.id,
+    procedureVersion: activation.procedure.version,
+    procedureDigest: activation.procedure.digest,
+    dispatchId: dispatch.id,
+    activationId: activation.id,
+    terminalState: parsed.result.status,
+    artifactPaths: parsed.result.artifactRefs.map((ref) => ref.path),
+    facts: {
+      resultStatus: parsed.result.status,
+      proposalStatus: parsed.proposal.status,
+      proposalOperationCount: parsed.proposal.operations.length,
+    },
+  });
+  if (methodologyGate.criticalFailure || !methodologyGate.ok) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced`,
+    );
+  }
   const mutations: readonly ResearchMutation[] = [
     { kind: "result.record", result: parsed.result },
     { kind: "proposal.record", proposal: parsed.proposal },
