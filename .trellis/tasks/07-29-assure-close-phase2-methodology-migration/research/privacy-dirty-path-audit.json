@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "excludedPaths": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs-site",
+    "marketplace"
+  ],
+  "dirtyUnrelatedPathsObserved": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs-site",
+    "marketplace"
+  ],
+  "productionEditsByP213": false,
+  "status": "pass-dirty-paths-isolated"
+}

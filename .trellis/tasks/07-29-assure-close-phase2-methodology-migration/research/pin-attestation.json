@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "methodologyContract": "evaluation-contract-v1.2.0",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "privateSourceEvidenceCommit": "9a02a533f5f3ecfd0c0789a01588fc492d321d6c",
+  "infrastructurePin": "ccd5bb3afc99283252c599916a2b8c2e05075cc6",
+  "cutoverManifestPath": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-manifest.json",
+  "cutoverManifestSha256": "913cf128a101c8d9764fb71dd1dd5f2ecb95cc4c292bb06069c463238dd5583c",
+  "cutoverStatus": "cutover-applied",
+  "registryCurrentVersion": "2.0.0",
+  "attestedAt": "2026-07-30T01:58:19Z"
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "p2_12_implementer": "ZhangBowen <bwz96sco@outlook.com>",
+  "p2_13_reviewer": "ZhangBowen <bwz96sco@outlook.com>",
+  "independent": false,
+  "status": "fail-closed-equal-identity",
+  "note": "Mechanical git identity comparison only; does not prove organizational independence."
+}

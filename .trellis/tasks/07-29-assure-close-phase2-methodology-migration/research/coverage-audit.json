@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "frozenCaseCount": 229,
+  "frozenUnique": 229,
+  "expansionCaseCount": 38,
+  "expansionUnique": 38,
+  "overlap": [],
+  "allocationSha256": "3888775804fa81b5ebe61ed948af00b3806e832fbc5b0d2901ae651f981311fc",
+  "expansionSha256": "d70c0fbe3a23860b3113acfd87419a512da95d61c1cd5c5cfa8f9f4b8d09715a",
+  "executionStatus": "plan-only",
+  "status": "partial",
+  "blockers": [
+    "Family differential fixtures remain plan-only; 229/38 IDs allocated but not fully executed as harness cases.",
+    "Per-child execution-evidence-ledger.json files with exact argv/cwd/exit digests are incomplete."
+  ]
+}

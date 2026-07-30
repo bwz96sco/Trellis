@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "requiredPredecessor": "P2-12 accepted",
+  "reviewerGate": {"p2_12_implementerRequired": true, "p2_13_reviewerRequired": true, "mustDiffer": true, "missingOrEqual": "fail-closed"},
+  "requiredInputs": ["P2-12 cutover manifest and digest","P2-01 through P2-12 execution-evidence-ledger.json files","16 package reports","229 frozen-case aggregate report","38 expansion-case aggregate report","3 composition-edge reports","historical replay report","project-override failure report","pre-activation rollback rehearsal","post-activation registry rollback rehearsal","packed lifecycle audit","privacy and dirty-path snapshot"],
+  "requiredOutputs": ["pin-attestation.json","reviewer-independence.json","coverage-audit.json","authority-compatibility-audit.json","composition-audit.json","rollback-audit.json","packed-lifecycle-audit.json","privacy-dirty-path-audit.json","acceptance-recommendation.md"],
+  "forbiddenOutputs": ["production source","tests","Procedure packages","registry edits","specification edits","private workflow bodies or fixtures"]
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "workerAuthority": "proposal-only",
+  "literatureDefault": "research.literature.review",
+  "literatureScan": "explicit-non-default",
+  "optionalCapabilities": [
+    "research.literature.survey",
+    "research.writing.figure",
+    "research.writing.slides"
+  ],
+  "automaticApprovalWidening": false,
+  "note": "literature.review is stage default with registry activation automatic; workflow/multi-repo/network bounds keep automatic grant ineligible without authority widening.",
+  "historicalResolution": "activation-recorded 1.0.0 retained; registry-current 2.0.0",
+  "status": "pass-with-notes"
+}

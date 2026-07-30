@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "preActivationRollback": "revert RESEARCH_PROCEDURE_CURRENT_VERSION to 1.0.0 and optional capability registration",
+  "postActivationHistoricalBinding": "activation-recorded id/version/digest preserved; future selection only affected by registry rollback",
+  "disableEventClaimed": false,
+  "status": "documented-not-rehearsed-live"
+}

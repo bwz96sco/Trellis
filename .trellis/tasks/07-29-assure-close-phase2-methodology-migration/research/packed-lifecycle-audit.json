@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "status": "not-executed-this-session",
+  "note": "Full clean pack/install/update/uninstall tarball scan not run in this assurance commit; unit packed-core-audit tests green in core suite."
+}

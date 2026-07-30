@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "frozenCompositionEdges": 3,
+  "edgeIds": [
+    "COMP-001",
+    "COMP-002",
+    "COMP-003"
+  ],
+  "runtimeModule": "packages/core/src/research/composition.ts",
+  "status": "runtime-present-plan-coverage",
+  "note": "Composition edges registered in runtime; full 3/3 differential execution still plan-only subset of 229."
+}
