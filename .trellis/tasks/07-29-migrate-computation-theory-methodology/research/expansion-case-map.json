@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-09",
+  "relationshipToFrozenMatrix": "additional-not-part-of-229",
+  "cases": [
+    {"id":"EXP-COMPUTATION-ARTIFACT-FIELD-MATRIX","assertion":"Every frozen computation artifact field has an exact name, type, requiredness, cardinality, producer, consumer, and invalid-value code with positive/base/negative fixtures."},
+    {"id":"EXP-COMPUTATION-TRANSITION-TERMINAL-MATRIX","assertion":"Artifact lifecycle checkpoints and blocked, failed, null, partial, inconclusive, and success transitions are explicit and mutually valid."},
+    {"id":"EXP-THEORY-STAGE-FIELD-MATRIX","assertion":"Every frozen theory stage field has an exact name, type, requiredness, cardinality, producer, consumer, and invalid-value code with positive/base/negative fixtures."},
+    {"id":"EXP-THEORY-TRANSITION-TERMINAL-MATRIX","assertion":"Theory stage transitions, proof obligations, counterexamples, audit, handoff, and terminal outcomes are explicit and cross-consistent."}
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-09",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 24,
+  "criticalCount": 22,
+  "packages": [
+    "research-computation",
+    "research-theory"
+  ],
+  "cases": [
+    {
+      "id": "DFT-computation-required-vs-optional-artifacts",
+      "package": "research-computation",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-computation-missing-critical-evidence",
+      "package": "research-computation",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-computation-provenance-stable-id-drift",
+      "package": "research-computation",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-computation-forbidden-mutation",
+      "package": "research-computation",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-computation-invalid-handoff",
+      "package": "research-computation",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-computation-outcome-blocked",
+      "package": "research-computation",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-computation-outcome-failed",
+      "package": "research-computation",
+      "family": "outcome-failed",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted failed"
+    },
+    {
+      "id": "DFT-computation-outcome-success",
+      "package": "research-computation",
+      "family": "outcome-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted success"
+    },
+    {
+      "id": "DFT-theory-ordered-stage-progression",
+      "package": "research-theory",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-theory-required-vs-optional-artifacts",
+      "package": "research-theory",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-theory-missing-critical-evidence",
+      "package": "research-theory",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-theory-provenance-stable-id-drift",
+      "package": "research-theory",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-theory-forbidden-mutation",
+      "package": "research-theory",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-theory-invalid-handoff",
+      "package": "research-theory",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-theory-outcome-blocked",
+      "package": "research-theory",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-theory-outcome-failed",
+      "package": "research-theory",
+      "family": "outcome-failed",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted failed"
+    },
+    {
+      "id": "DFT-theory-outcome-partial",
+      "package": "research-theory",
+      "family": "outcome-partial",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted partial"
+    },
+    {
+      "id": "DFT-theory-stage-00-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "00-derivation",
+      "stage_id": "00-derivation"
+    },
+    {
+      "id": "DFT-theory-stage-01-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-theory-contract",
+      "stage_id": "01-theory-contract"
+    },
+    {
+      "id": "DFT-theory-stage-02-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-statement-normalization",
+      "stage_id": "02-statement-normalization"
+    },
+    {
+      "id": "DFT-theory-stage-03-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-proof-plan",
+      "stage_id": "03-proof-plan"
+    },
+    {
+      "id": "DFT-theory-stage-04-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-proof-drafting",
+      "stage_id": "04-proof-drafting"
+    },
+    {
+      "id": "DFT-theory-stage-05-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-proof-audit",
+      "stage_id": "05-proof-audit"
+    },
+    {
+      "id": "DFT-theory-stage-06-progression",
+      "package": "research-theory",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-handoff",
+      "stage_id": "06-handoff"
+    }
+  ]
+}
