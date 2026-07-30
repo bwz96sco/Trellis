@@ -1,0 +1,315 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-07",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 32,
+  "criticalCount": 31,
+  "packages": [
+    "research-literature",
+    "research-survey"
+  ],
+  "cases": [
+    {
+      "id": "DFT-literature-ordered-stage-progression",
+      "package": "research-literature",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-literature-required-vs-optional-artifacts",
+      "package": "research-literature",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-literature-missing-critical-evidence",
+      "package": "research-literature",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-literature-provenance-stable-id-drift",
+      "package": "research-literature",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-literature-forbidden-mutation",
+      "package": "research-literature",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-literature-invalid-handoff",
+      "package": "research-literature",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-literature-outcome-blocked",
+      "package": "research-literature",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-literature-outcome-selected",
+      "package": "research-literature",
+      "family": "outcome-selected",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted selected"
+    },
+    {
+      "id": "DFT-literature-closure-exclusivity",
+      "package": "research-literature",
+      "family": "closure-exclusivity",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "exclusive closure"
+    },
+    {
+      "id": "DFT-literature-external-integration-unavailable",
+      "package": "research-literature",
+      "family": "external-integration-unavailable",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "external integrations"
+    },
+    {
+      "id": "DFT-literature-stage-00-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "00-scout",
+      "stage_id": "00-scout"
+    },
+    {
+      "id": "DFT-literature-stage-01-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-search-contract",
+      "stage_id": "01-search-contract"
+    },
+    {
+      "id": "DFT-literature-stage-02-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-discover",
+      "stage_id": "02-discover"
+    },
+    {
+      "id": "DFT-literature-stage-03-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-triage",
+      "stage_id": "03-triage"
+    },
+    {
+      "id": "DFT-literature-stage-04-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-read-and-extract",
+      "stage_id": "04-read-and-extract"
+    },
+    {
+      "id": "DFT-literature-stage-05-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-prior-map",
+      "stage_id": "05-prior-map"
+    },
+    {
+      "id": "DFT-literature-stage-06-progression",
+      "package": "research-literature",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-output-pack",
+      "stage_id": "06-output-pack"
+    },
+    {
+      "id": "DFT-survey-ordered-stage-progression",
+      "package": "research-survey",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-survey-required-vs-optional-artifacts",
+      "package": "research-survey",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-survey-missing-critical-evidence",
+      "package": "research-survey",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-survey-provenance-stable-id-drift",
+      "package": "research-survey",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-survey-forbidden-mutation",
+      "package": "research-survey",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-survey-invalid-handoff",
+      "package": "research-survey",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-survey-outcome-blocked",
+      "package": "research-survey",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-survey-outcome-success",
+      "package": "research-survey",
+      "family": "outcome-success",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted success"
+    },
+    {
+      "id": "DFT-survey-external-integration-unavailable",
+      "package": "research-survey",
+      "family": "external-integration-unavailable",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "external integrations"
+    },
+    {
+      "id": "DFT-survey-stage-01-progression",
+      "package": "research-survey",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-rq-brief",
+      "stage_id": "01-rq-brief"
+    },
+    {
+      "id": "DFT-survey-stage-02-progression",
+      "package": "research-survey",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-corpus-coverage",
+      "stage_id": "02-corpus-coverage"
+    },
+    {
+      "id": "DFT-survey-stage-03-progression",
+      "package": "research-survey",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-taxonomy",
+      "stage_id": "03-taxonomy"
+    },
+    {
+      "id": "DFT-survey-stage-04-progression",
+      "package": "research-survey",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-synthesis-writing",
+      "stage_id": "04-synthesis-writing"
+    },
+    {
+      "id": "DFT-survey-stage-05-progression",
+      "package": "research-survey",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-self-adversarial",
+      "stage_id": "05-self-adversarial"
+    },
+    {
+      "id": "DFT-survey-stage-06-progression",
+      "package": "research-survey",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-output-contract",
+      "stage_id": "06-output-contract"
+    }
+  ]
+}

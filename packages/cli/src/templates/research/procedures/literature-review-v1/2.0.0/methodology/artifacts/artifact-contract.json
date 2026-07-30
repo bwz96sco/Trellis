@@ -1,0 +1,20 @@
+{
+  "procedureId": "literature-review-v1",
+  "version": "2.0.0",
+  "checkpoints": [
+    "00-scout",
+    "01-frame",
+    "02-collect",
+    "03-screen",
+    "04-extract",
+    "05-synthesize",
+    "06-close"
+  ],
+  "terminalStates": [
+    "success",
+    "blocked",
+    "failed",
+    "partial"
+  ],
+  "proposalOnly": true
+}
