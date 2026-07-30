@@ -1,0 +1,19 @@
+{
+  "validators": [
+    {
+      "id": "missing-critical-evidence",
+      "version": "1",
+      "severity": "critical"
+    },
+    {
+      "id": "provenance-stable-id-drift",
+      "version": "1",
+      "severity": "critical"
+    },
+    {
+      "id": "forbidden-mutation",
+      "version": "1",
+      "severity": "critical"
+    }
+  ]
+}

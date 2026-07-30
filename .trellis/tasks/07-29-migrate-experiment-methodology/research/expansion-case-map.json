@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-08",
+  "relationshipToFrozenMatrix": "additional-not-part-of-229",
+  "cases": [
+    {"id":"EXP-COMP-001-AUTHORIZED-CAMPAIGN-ROUND","assertion":"A root-authorized experiment campaign launches only the bound experiment-round capability within budget."},
+    {"id":"EXP-COMP-001-CHILD-FAILURE-PROPAGATION","assertion":"Failed or inconclusive round evidence remains visible and cannot close the campaign as success."},
+    {"id":"EXP-COMP-001-CANCEL-ROLLBACK","assertion":"Cancellation stops further rounds and records deterministic rollback evidence without deleting history."}
+  ]
+}

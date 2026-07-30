@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "child": "P2-08",
+  "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+  "sourceAllocation": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/differential-case-allocation.json",
+  "caseCount": 38,
+  "criticalCount": 33,
+  "packages": [
+    "research-experiment",
+    "research-experiment-campaign",
+    "research-experiment-campaign->research-experiment"
+  ],
+  "cases": [
+    {
+      "id": "DFT-experiment-ordered-stage-progression",
+      "package": "research-experiment",
+      "family": "ordered-stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "canonical stages present"
+    },
+    {
+      "id": "DFT-experiment-required-vs-optional-artifacts",
+      "package": "research-experiment",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-experiment-missing-critical-evidence",
+      "package": "research-experiment",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-experiment-provenance-stable-id-drift",
+      "package": "research-experiment",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-experiment-forbidden-mutation",
+      "package": "research-experiment",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-experiment-invalid-handoff",
+      "package": "research-experiment",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-experiment-outcome-blocked",
+      "package": "research-experiment",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-experiment-outcome-failed",
+      "package": "research-experiment",
+      "family": "outcome-failed",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted failed"
+    },
+    {
+      "id": "DFT-experiment-outcome-partial",
+      "package": "research-experiment",
+      "family": "outcome-partial",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted partial"
+    },
+    {
+      "id": "DFT-experiment-outcome-null",
+      "package": "research-experiment",
+      "family": "outcome-null",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted null"
+    },
+    {
+      "id": "DFT-experiment-outcome-inconclusive",
+      "package": "research-experiment",
+      "family": "outcome-inconclusive",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted inconclusive"
+    },
+    {
+      "id": "DFT-experiment-outcome-selected",
+      "package": "research-experiment",
+      "family": "outcome-selected",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted selected"
+    },
+    {
+      "id": "DFT-experiment-closure-exclusivity",
+      "package": "research-experiment",
+      "family": "closure-exclusivity",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "exclusive closure"
+    },
+    {
+      "id": "DFT-experiment-baseline-frozen-before-execution",
+      "package": "research-experiment",
+      "family": "baseline-frozen-before-execution",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "baseline freeze"
+    },
+    {
+      "id": "DFT-experiment-run-plan-actual-consistency",
+      "package": "research-experiment",
+      "family": "run-plan-actual-consistency",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "plan/actual"
+    },
+    {
+      "id": "DFT-experiment-failed-exec-no-success-claim",
+      "package": "research-experiment",
+      "family": "failed-exec-no-success-claim",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "no success claim"
+    },
+    {
+      "id": "DFT-experiment-null-inconclusive-visible",
+      "package": "research-experiment",
+      "family": "null-inconclusive-visible",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "visibility"
+    },
+    {
+      "id": "DFT-experiment-claim-strength-bounded-by-evidence",
+      "package": "research-experiment",
+      "family": "claim-strength-bounded-by-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "claim bound"
+    },
+    {
+      "id": "DFT-experiment-stage-01-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "01-contract",
+      "stage_id": "01-contract"
+    },
+    {
+      "id": "DFT-experiment-stage-02-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "02-baseline",
+      "stage_id": "02-baseline"
+    },
+    {
+      "id": "DFT-experiment-stage-03-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "03-plan",
+      "stage_id": "03-plan"
+    },
+    {
+      "id": "DFT-experiment-stage-04-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "04-project-adapter",
+      "stage_id": "04-project-adapter"
+    },
+    {
+      "id": "DFT-experiment-stage-05-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "05-execute-monitor",
+      "stage_id": "05-execute-monitor"
+    },
+    {
+      "id": "DFT-experiment-stage-06-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "06-result-to-claim",
+      "stage_id": "06-result-to-claim"
+    },
+    {
+      "id": "DFT-experiment-stage-07-progression",
+      "package": "research-experiment",
+      "family": "stage-progression",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "07-analysis-campaign",
+      "stage_id": "07-analysis-campaign"
+    },
+    {
+      "id": "DFT-experiment-campaign-required-vs-optional-artifacts",
+      "package": "research-experiment-campaign",
+      "family": "required-vs-optional-artifacts",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "required artifacts"
+    },
+    {
+      "id": "DFT-experiment-campaign-missing-critical-evidence",
+      "package": "research-experiment-campaign",
+      "family": "missing-critical-evidence",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-experiment-campaign-provenance-stable-id-drift",
+      "package": "research-experiment-campaign",
+      "family": "provenance-stable-id-drift",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "hard gate"
+    },
+    {
+      "id": "DFT-experiment-campaign-forbidden-mutation",
+      "package": "research-experiment-campaign",
+      "family": "forbidden-mutation",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "authority"
+    },
+    {
+      "id": "DFT-experiment-campaign-invalid-handoff",
+      "package": "research-experiment-campaign",
+      "family": "invalid-handoff",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "handoff integrity"
+    },
+    {
+      "id": "DFT-experiment-campaign-invalid-composition-chaining",
+      "package": "research-experiment-campaign",
+      "family": "invalid-composition-chaining",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "composition parent"
+    },
+    {
+      "id": "DFT-experiment-campaign-outcome-blocked",
+      "package": "research-experiment-campaign",
+      "family": "outcome-blocked",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted blocked"
+    },
+    {
+      "id": "DFT-experiment-campaign-outcome-failed",
+      "package": "research-experiment-campaign",
+      "family": "outcome-failed",
+      "expected": "assert-behavior",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "asserted failed"
+    },
+    {
+      "id": "DFT-experiment-campaign-outcome-partial",
+      "package": "research-experiment-campaign",
+      "family": "outcome-partial",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted partial"
+    },
+    {
+      "id": "DFT-experiment-campaign-outcome-null",
+      "package": "research-experiment-campaign",
+      "family": "outcome-null",
+      "expected": "assert-behavior",
+      "critical": false,
+      "applicable": true,
+      "applicability_reason": "asserted null"
+    },
+    {
+      "id": "DFT-experiment-campaign-campaign-composition-bounded",
+      "package": "research-experiment-campaign",
+      "family": "campaign-composition-bounded",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "campaign bound"
+    },
+    {
+      "id": "DFT-experiment-campaign-failed-exec-no-success-claim",
+      "package": "research-experiment-campaign",
+      "family": "failed-exec-no-success-claim",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "no success claim"
+    },
+    {
+      "id": "DFT-COMP-001",
+      "package": "research-experiment-campaign->research-experiment",
+      "family": "composition",
+      "expected": "fail-closed",
+      "critical": true,
+      "applicable": true,
+      "applicability_reason": "COMP-001"
+    }
+  ]
+}
