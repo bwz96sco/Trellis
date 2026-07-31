@@ -210,11 +210,12 @@ describe("public approved Research Dispatch Context", { timeout: 30_000 }, () =>
       host: "codex",
     });
 
+    // Completion Wave-0: registry-current is Procedure 1.0.0 → Context schema v1.
     expect(result).toMatchObject({
       command: "research dispatch context",
       valid: true,
       context: {
-        schemaVersion: 2,
+        schemaVersion: 1,
         host: "codex",
         dispatch: { id: fixture.ids.dispatchId },
         approval: { id: granted.approval.grant.id },

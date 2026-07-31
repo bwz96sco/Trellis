@@ -17,50 +17,66 @@ const capability = RESEARCH_CAPABILITY_REGISTRY.find(
 )!;
 
 describe("historical Procedure resolution", () => {
-  it("registry-current selects 2.0.1 while recorded 1.0.0 and 2.0.0 still resolve", async () => {
-    expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("2.0.1");
-    expect(capability.procedure.version).toBe("2.0.1");
+  it("registry-current selects v1 while recorded 1.0.0/2.0.0/2.0.1 still resolve", async () => {
+    // Completion Wave-0 containment: future selection is 1.0.0; dormant 2.0.x remain replayable.
+    expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("1.0.0");
+    expect(capability.procedure.version).toBe("1.0.0");
 
     const current = await resolveResearchProcedure({
       root: os.tmpdir(),
       capabilityId: capability.id,
       mode: "registry-current",
     });
-    expect(current.manifest.version).toBe("2.0.1");
-    expect(current.digestDomain).toBe("v2");
-    expect(current.packageSchemaVersion).toBe(2);
+    expect(current.manifest.version).toBe("1.0.0");
+    expect(current.digestDomain ?? "v1").toBe("v1");
 
-    const v1 = await resolveResearchProcedure({
-      root: os.tmpdir(),
-      capabilityId: capability.id,
-      mode: "activation-recorded",
-      procedureId: capability.procedure.id,
-      procedureVersion: "1.0.0",
-    });
-    expect(v1.manifest.version).toBe("1.0.0");
-    expect(v1.digestDomain ?? "v1").toBe("v1");
-    expect(v1.digest).not.toBe(current.digest);
+    const digests = new Set<string>([current.digest]);
 
-    const v2 = await resolveResearchProcedure({
-      root: os.tmpdir(),
-      capabilityId: capability.id,
-      mode: "activation-recorded",
-      procedureId: capability.procedure.id,
-      procedureVersion: "2.0.0",
-    });
-    expect(v2.manifest.version).toBe("2.0.0");
-    expect(v2.digestDomain).toBe("v2");
-    expect(v2.digest).not.toBe(current.digest);
-    expect(v2.digest).not.toBe(v1.digest);
+    for (const version of ["1.0.0", "2.0.0", "2.0.1"] as const) {
+      const recorded = await resolveResearchProcedure({
+        root: os.tmpdir(),
+        capabilityId: capability.id,
+        mode: "activation-recorded",
+        procedureId: capability.procedure.id,
+        procedureVersion: version,
+      });
+      expect(recorded.manifest.id).toBe(capability.procedure.id);
+      expect(recorded.manifest.version).toBe(version);
+      if (version === "1.0.0") {
+        expect(recorded.digestDomain ?? "v1").toBe("v1");
+        expect(recorded.digest).toBe(current.digest);
+      } else {
+        expect(recorded.digestDomain).toBe("v2");
+        expect(recorded.digest).not.toBe(current.digest);
+      }
+      digests.add(recorded.digest);
 
-    for (const version of ["1.0.0", "2.0.0", "2.0.1"]) {
-      const p = path.join(
+      const onDisk = path.join(
         getBundledResearchProcedureRoot(),
         capability.procedure.id,
         version,
         "procedure.json",
       );
-      expect(fs.existsSync(p)).toBe(true);
+      expect(fs.existsSync(onDisk)).toBe(true);
     }
+
+    // Distinct bytes per package generation (1.0.0 equals registry-current).
+    expect(digests.size).toBe(3);
+  });
+
+  it("activation-recorded uses exact recorded Procedure id even when registry id matches", async () => {
+    // Recorded identity is authoritative; capability ceilings still apply via capabilityId.
+    const recorded = await resolveResearchProcedure({
+      root: os.tmpdir(),
+      capabilityId: capability.id,
+      mode: "activation-recorded",
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.1",
+    });
+    expect(recorded.manifest.id).toBe(capability.procedure.id);
+    expect(recorded.manifest.version).toBe("2.0.1");
+    // Registry-current remains 1.0.0 and must not rewrite the recorded package.
+    expect(capability.procedure.version).toBe("1.0.0");
+    expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("1.0.0");
   });
 });

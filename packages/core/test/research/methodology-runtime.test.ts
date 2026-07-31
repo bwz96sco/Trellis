@@ -1,10 +1,18 @@
+import { createHash } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
 
 import {
   FROZEN_COMPOSITION_EDGES,
+  RESEARCH_CAPABILITY_REGISTRY,
   buildMethodologyReport,
+  buildSupportPackInventory,
+  buildWorkerMethodologyProjectionV2,
   listTrustedMethodologyValidatorIds,
+  parseResearchProcedure,
+  parseSupportPackManifest,
   runMethodologyValidators,
+  serializeSupportPackManifest,
   validateMethodologyArtifacts,
   validateRootCompositionDescriptor,
 } from "../../src/research/index.js";
@@ -160,5 +168,244 @@ describe("methodology runtime", () => {
     });
     expect(bad.ok).toBe(false);
     if (!bad.ok) expect(bad.code).toBe("CHILD_COUNT_EXCEEDED");
+  });
+});
+
+describe("Context v2 methodology projection", () => {
+  const encoder = new TextEncoder();
+  const capability = RESEARCH_CAPABILITY_REGISTRY.find(
+    (c) => c.id === "research.ideation.generate",
+  )!;
+
+  function sha256Hex(bytes: Uint8Array): string {
+    return createHash("sha256").update(bytes).digest("hex");
+  }
+
+  it("recomputes digests and refuses checkpoint-name synthesis", () => {
+    const contractBytes = encoder.encode(
+      `${JSON.stringify({
+        procedureId: capability.procedure.id,
+        version: "2.0.0",
+        checkpoints: ["01-frame", "02-generate"],
+        terminalStates: ["success", "blocked"],
+        proposalOnly: true,
+      })}\n`,
+    );
+    const exactContractBytes = encoder.encode(
+      `${JSON.stringify({
+        contracts: [
+          {
+            id: "candidates",
+            pathPattern: "evidence/04_candidates.md",
+            mediaType: "text/markdown",
+            requiredness: "required",
+            cardinality: "1",
+          },
+        ],
+        terminalStates: ["success", "blocked"],
+      })}\n`,
+    );
+    const thinPack = parseSupportPackManifest({
+      packJsonBytes: encoder.encode(
+        serializeSupportPackManifest({
+          schemaVersion: 1,
+          procedureId: capability.procedure.id,
+          procedureVersion: "2.0.0",
+          entries: [
+            {
+              path: "artifacts/artifact-contract.json",
+              role: "artifacts",
+              mediaType: "application/json",
+              contractVersion: "1",
+              provenanceId: "t",
+              sha256: sha256Hex(contractBytes),
+              maxBytes: 10_000,
+              workerVisibility: "worker-visible",
+            },
+          ],
+        }),
+      ),
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.0",
+    });
+    const thinInventory = buildSupportPackInventory({
+      manifest: thinPack,
+      files: { "artifacts/artifact-contract.json": contractBytes },
+    });
+    const manifestJson = `${JSON.stringify({
+      schemaVersion: 1,
+      id: capability.procedure.id,
+      version: "2.0.0",
+      stage: capability.stage,
+      kind: capability.kind,
+      inputs: [
+        "dispatch",
+        "repository",
+        "context",
+        "artifacts",
+        "allowedWritePaths",
+        "expectedOutputs",
+        "checks",
+      ],
+      outputs: ["result", "proposal"],
+      networkPolicy: capability.networkPolicy,
+      repositoryScope: capability.repositoryScope,
+      maxDurationMinutes: capability.maxDurationMinutes,
+      maxDispatches: capability.maxDispatches,
+    })}\n`;
+    const thinParsed = parseResearchProcedure({
+      capabilityId: capability.id,
+      source: "bundled",
+      manifestBytes: encoder.encode(manifestJson),
+      instructionBytes: encoder.encode("# Procedure\n"),
+      identityMode: "recorded-version",
+      recordedProcedureId: capability.procedure.id,
+      recordedVersion: "2.0.0",
+      packageSchemaVersion: 2,
+      supportPack: {
+        manifest: thinPack,
+        packJsonBytes: encoder.encode(serializeSupportPackManifest(thinPack)),
+        inventoryItems: thinInventory,
+      },
+    });
+    const thinProjection = buildWorkerMethodologyProjectionV2(thinParsed);
+    expect(thinProjection.artifactRequirements).toEqual([]);
+    expect(thinProjection.allowedTerminalStates).toEqual(["success", "blocked"]);
+    expect(thinProjection.workerVisibleEntries[0]?.sha256).toBe(
+      sha256Hex(contractBytes),
+    );
+
+    const exactPack = parseSupportPackManifest({
+      packJsonBytes: encoder.encode(
+        serializeSupportPackManifest({
+          schemaVersion: 1,
+          procedureId: capability.procedure.id,
+          procedureVersion: "2.0.0",
+          entries: [
+            {
+              path: "artifacts/artifact-contract.json",
+              role: "artifacts",
+              mediaType: "application/json",
+              contractVersion: "1",
+              provenanceId: "t",
+              sha256: sha256Hex(exactContractBytes),
+              maxBytes: 10_000,
+              workerVisibility: "worker-visible",
+            },
+          ],
+        }),
+      ),
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.0",
+    });
+    const exactInventory = buildSupportPackInventory({
+      manifest: exactPack,
+      files: { "artifacts/artifact-contract.json": exactContractBytes },
+    });
+    const exactParsed = parseResearchProcedure({
+      capabilityId: capability.id,
+      source: "bundled",
+      manifestBytes: encoder.encode(manifestJson),
+      instructionBytes: encoder.encode("# Procedure\n"),
+      identityMode: "recorded-version",
+      recordedProcedureId: capability.procedure.id,
+      recordedVersion: "2.0.0",
+      packageSchemaVersion: 2,
+      supportPack: {
+        manifest: exactPack,
+        packJsonBytes: encoder.encode(serializeSupportPackManifest(exactPack)),
+        inventoryItems: exactInventory,
+      },
+    });
+    const exactProjection = buildWorkerMethodologyProjectionV2(exactParsed);
+    expect(exactProjection.artifactRequirements).toEqual([
+      {
+        id: "candidates",
+        pathPattern: "evidence/04_candidates.md",
+        mediaType: "text/markdown",
+        requiredness: "required",
+        cardinality: "1",
+      },
+    ]);
+  });
+
+  it("rejects sha256 drift at injection", () => {
+    const bytes = encoder.encode('{"terminalStates":["success"]}\n');
+    // Same length, different content — size check passes, sha256 must fail.
+    const tampered = encoder.encode('{"terminalStates":["SUCCESX"]}\n');
+    expect(tampered.byteLength).toBe(bytes.byteLength);
+    const pack = parseSupportPackManifest({
+      packJsonBytes: encoder.encode(
+        serializeSupportPackManifest({
+          schemaVersion: 1,
+          procedureId: capability.procedure.id,
+          procedureVersion: "2.0.0",
+          entries: [
+            {
+              path: "artifacts/artifact-contract.json",
+              role: "artifacts",
+              mediaType: "application/json",
+              contractVersion: "1",
+              provenanceId: "t",
+              sha256: sha256Hex(bytes),
+              maxBytes: 10_000,
+            },
+          ],
+        }),
+      ),
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.0",
+    });
+    const inventory = buildSupportPackInventory({
+      manifest: pack,
+      files: { "artifacts/artifact-contract.json": bytes },
+    });
+    // Mutate retained bytes after inventory build (simulates injection-time drift).
+    const drifted = inventory.map((item) =>
+      item.path === "artifacts/artifact-contract.json"
+        ? {
+            ...item,
+            bytes: tampered,
+            // keep declared sha256 and byteLength stale relative to new content hash
+          }
+        : item,
+    );
+    const manifestJson = `${JSON.stringify({
+      schemaVersion: 1,
+      id: capability.procedure.id,
+      version: "2.0.0",
+      stage: capability.stage,
+      kind: capability.kind,
+      inputs: [
+        "dispatch",
+        "repository",
+        "context",
+        "artifacts",
+        "allowedWritePaths",
+        "expectedOutputs",
+        "checks",
+      ],
+      outputs: ["result", "proposal"],
+      networkPolicy: capability.networkPolicy,
+      repositoryScope: capability.repositoryScope,
+      maxDurationMinutes: capability.maxDurationMinutes,
+      maxDispatches: capability.maxDispatches,
+    })}\n`;
+    const parsed = parseResearchProcedure({
+      capabilityId: capability.id,
+      source: "bundled",
+      manifestBytes: encoder.encode(manifestJson),
+      instructionBytes: encoder.encode("# Procedure\n"),
+      identityMode: "recorded-version",
+      recordedProcedureId: capability.procedure.id,
+      recordedVersion: "2.0.0",
+      packageSchemaVersion: 2,
+      supportPack: {
+        manifest: pack,
+        packJsonBytes: encoder.encode(serializeSupportPackManifest(pack)),
+        inventoryItems: drifted,
+      },
+    });
+    expect(() => buildWorkerMethodologyProjectionV2(parsed)).toThrow(/sha256 drift/i);
   });
 });

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "cutover-containment-status",
+  "createdAt": "2026-07-30T11:40:00Z",
+  "status": "remediating-contained-to-v1",
+  "operationalFutureSelection": {
+    "registryCurrentVersion": "1.0.0",
+    "liveCapabilityCount": 14,
+    "literatureDefault": "research.literature.scan"
+  },
+  "preservedHistoricalEvidence": {
+    "cutoverManifest": "cutover-manifest.json",
+    "cutoverManifestSha256": "cutover-manifest.sha256",
+    "candidateCutoverManifest": "candidate-cutover-manifest.json",
+    "candidateCutoverManifestSha256": "candidate-cutover-manifest.sha256",
+    "prematureActivationCommit": "fe1cd02e",
+    "note": "Premature 2.0.1 active/candidate manifests left unchanged as historical evidence."
+  },
+  "repairTargetVersion": "2.0.2",
+  "disposition": "activation-version-disposition.json"
+}

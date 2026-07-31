@@ -176,6 +176,8 @@ export type {
 } from "./procedure-policy.js";
 
 export {
+  FROZEN_METHODOLOGY_CONTRACT_DIGEST,
+  FROZEN_METHODOLOGY_CONTRACT_VERSION,
   PROCEDURE_DIGEST_DOMAIN_V2,
   SupportPackError,
   buildSupportPackInventory,

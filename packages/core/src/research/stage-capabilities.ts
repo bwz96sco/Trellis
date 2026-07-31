@@ -9,7 +9,6 @@ export type ResearchCapabilityId =
   | "research.framing.admin"
   | "research.literature.scan"
   | "research.literature.review"
-  | "research.literature.survey"
   | "research.ideation.generate"
   | "research.ideation.evaluate"
   | "research.experiment.round"
@@ -18,9 +17,9 @@ export type ResearchCapabilityId =
   | "research.theory.case"
   | "research.audit.case"
   | "research.audit.campaign"
-  | "research.writing.case"
-  | "research.writing.figure"
-  | "research.writing.slides";
+  | "research.writing.case";
+// P2-12 cutover registers optional capabilities:
+// research.literature.survey, research.writing.figure, research.writing.slides
 
 export type ResearchCapabilityKind = "bounded" | "workflow" | "advisory";
 export type ResearchActivationMode = "automatic" | "explicit";
@@ -81,8 +80,9 @@ interface CapabilityDefinitionInput {
   readonly activation: ResearchActivationMode;
   readonly procedureId: string;
   /**
-   * Procedure package version. Phase-2 cutover uses 2.0.0 methodology packs;
-   * 1.0.0 remains on disk for historical activation revalidation.
+   * Procedure package version. Completion Wave-0 future selection uses 1.0.0;
+   * 2.0.0 and 2.0.1 remain on disk for historical activation revalidation;
+   * 2.0.2 is the planned semantic repair version (not live).
    */
   readonly procedureVersion?: string;
   readonly networkPolicy: "forbidden" | "declared-only";
@@ -93,10 +93,12 @@ interface CapabilityDefinitionInput {
 
 /**
  * Registry current Procedure package version (future selection only).
- * Wave-6 final activation: new activations select repaired 2.0.1 packages.
- * Historical 1.0.0 and 2.0.0 remain on disk for activation-recorded replay.
+ * Completion Wave-0 containment (post-fe1cd02e): new activations select 1.0.0.
+ * Immutable 1.0.0 / 2.0.0 / 2.0.1 package bytes remain on disk for historical
+ * activation-recorded replay. Semantic repair packs ship as 2.0.2; dormant
+ * candidate proof and final cutover to 2.0.2 require separate approvals.
  */
-export const RESEARCH_PROCEDURE_CURRENT_VERSION = "2.0.1";
+export const RESEARCH_PROCEDURE_CURRENT_VERSION = "1.0.0";
 
 function defineCapability(
   input: CapabilityDefinitionInput,
@@ -156,24 +158,15 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDurationMinutes: 15,
     maxDispatches: 1,
   }),
-  // Wave-6 frozen v1.2 literature disposition (final activation):
-  // review is stage default; scan is explicit non-default; survey optional.
-  defineCapability({
-    id: "research.literature.review",
-    stage: "literature",
-    kind: "workflow",
-    activation: "automatic",
-    procedureId: "literature-review-v1",
-    networkPolicy: "declared-only",
-    repositoryScope: "multiple",
-    maxDurationMinutes: 60,
-    maxDispatches: 4,
-  }),
+  // Completion Wave-0 containment: accepted v1 live literature routing.
+  // Frozen v1.2 literature disposition (review default) is deferred until
+  // accepted 2.0.2 candidate cutover. survey/figure/slides stay off live registry.
+  // Premature 2.0.1 activation (fe1cd02e) retained as immutable historical state.
   defineCapability({
     id: "research.literature.scan",
     stage: "literature",
     kind: "bounded",
-    activation: "explicit",
+    activation: "automatic",
     procedureId: "literature-scan-v1",
     networkPolicy: "forbidden",
     repositoryScope: "single",
@@ -181,15 +174,15 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDispatches: 1,
   }),
   defineCapability({
-    id: "research.literature.survey",
+    id: "research.literature.review",
     stage: "literature",
     kind: "workflow",
     activation: "explicit",
-    procedureId: "survey-v1",
-    networkPolicy: "forbidden",
-    repositoryScope: "single",
-    maxDurationMinutes: 45,
-    maxDispatches: 2,
+    procedureId: "literature-review-v1",
+    networkPolicy: "declared-only",
+    repositoryScope: "multiple",
+    maxDurationMinutes: 60,
+    maxDispatches: 4,
   }),
   defineCapability({
     id: "research.ideation.generate",
@@ -290,34 +283,12 @@ export const RESEARCH_CAPABILITY_REGISTRY = Object.freeze([
     maxDurationMinutes: 15,
     maxDispatches: 1,
   }),
-  defineCapability({
-    id: "research.writing.figure",
-    stage: "writing",
-    kind: "workflow",
-    activation: "explicit",
-    procedureId: "figure-v1",
-    networkPolicy: "forbidden",
-    repositoryScope: "single",
-    maxDurationMinutes: 30,
-    maxDispatches: 2,
-  }),
-  defineCapability({
-    id: "research.writing.slides",
-    stage: "writing",
-    kind: "workflow",
-    activation: "explicit",
-    procedureId: "slides-v1",
-    networkPolicy: "forbidden",
-    repositoryScope: "single",
-    maxDurationMinutes: 30,
-    maxDispatches: 2,
-  }),
 ] satisfies readonly ResearchCapabilityDefinition[]);
 
 export const RESEARCH_DEFAULT_CAPABILITY_BY_STAGE = Object.freeze({
   setup: "research.setup.project",
   framing: "research.framing.quest",
-  literature: "research.literature.review",
+  literature: "research.literature.scan",
   ideation: "research.ideation.generate",
   experiment: "research.experiment.round",
   computation: "research.computation.case",

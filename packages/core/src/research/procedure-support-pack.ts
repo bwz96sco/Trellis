@@ -12,6 +12,12 @@ export const PROCEDURE_DIGEST_DOMAIN_V2 = TEXT_ENCODER.encode(
   "trellis-research-procedure-digest-v2\0",
 );
 
+/** Frozen methodology contract identity (evaluation-contract-v1.2.0). */
+export const FROZEN_METHODOLOGY_CONTRACT_VERSION =
+  "evaluation-contract-v1.2.0" as const;
+export const FROZEN_METHODOLOGY_CONTRACT_DIGEST =
+  "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb" as const;
+
 /** Local error type to avoid circular import with procedure-policy. */
 export class SupportPackError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -57,8 +63,9 @@ export interface SupportPackManifest {
   readonly procedureId: string;
   readonly procedureVersion: string;
   /**
-   * Frozen methodology contract identity. Optional on retained 2.0.0 fixtures;
-   * required for repaired 2.0.1+ packs.
+   * Frozen methodology contract identity. Optional on retained immutable 2.0.0
+   * fixtures; required for 2.0.1+ schema-v2 packs. 2.0.2+ must equal the frozen
+   * evaluation-contract-v1.2.0 identity exactly.
    */
   readonly methodologyContractVersion?: string;
   readonly methodologyContractDigest?: string;
@@ -163,6 +170,16 @@ export function parseSupportPackManifest(input: {
   if (value.procedureVersion !== input.procedureVersion) {
     fail("Support-pack procedureVersion does not match Procedure version");
   }
+  const isImmutable200 = input.procedureVersion === "2.0.0";
+  const isHistorical201 = input.procedureVersion === "2.0.1";
+  // Semantic repair packs (2.0.2+) and any future 2.x beyond retained fixtures.
+  const requiresStrictSchemaV2 =
+    !isImmutable200 &&
+    !isHistorical201 &&
+    (/^2\./.test(input.procedureVersion) ||
+      input.procedureVersion.startsWith("2."));
+  const requiresMethodologyContract = !isImmutable200;
+
   let methodologyContractVersion: string | undefined;
   let methodologyContractDigest: string | undefined;
   if (value.methodologyContractVersion !== undefined) {
@@ -185,6 +202,26 @@ export function parseSupportPackManifest(input: {
       );
     }
     methodologyContractDigest = value.methodologyContractDigest;
+  }
+  if (requiresMethodologyContract) {
+    if (
+      methodologyContractVersion === undefined ||
+      methodologyContractDigest === undefined
+    ) {
+      fail(
+        "Support-pack methodologyContractVersion and methodologyContractDigest are required for schema-v2 packages other than immutable 2.0.0",
+      );
+    }
+  }
+  if (requiresStrictSchemaV2 || input.procedureVersion === "2.0.2") {
+    if (
+      methodologyContractVersion !== FROZEN_METHODOLOGY_CONTRACT_VERSION ||
+      methodologyContractDigest !== FROZEN_METHODOLOGY_CONTRACT_DIGEST
+    ) {
+      fail(
+        "Support-pack 2.0.2+ methodology contract must equal frozen evaluation-contract-v1.2.0 identity",
+      );
+    }
   }
   if (!Array.isArray(value.entries)) {
     fail("Support-pack entries must be an array");
@@ -240,14 +277,22 @@ export function parseSupportPackManifest(input: {
     ) {
       fail(`Support-pack maxBytes must be a positive integer for ${path}`);
     }
-    let workerVisibility: SupportPackWorkerVisibility = "worker-visible";
-    if (entry.workerVisibility !== undefined) {
-      if (
-        entry.workerVisibility !== "worker-visible" &&
-        entry.workerVisibility !== "root-only"
-      ) {
-        fail(`Support-pack workerVisibility invalid for ${path}`);
+    let workerVisibility: SupportPackWorkerVisibility;
+    if (entry.workerVisibility === undefined) {
+      // Retained immutable 2.0.0/2.0.1 fixtures omit visibility; default only for those.
+      // 2.0.2+ require explicit workerVisibility (no silent worker-visible default).
+      if (requiresStrictSchemaV2 || input.procedureVersion === "2.0.2") {
+        fail(
+          `Support-pack workerVisibility is required for ${path} on procedure ${input.procedureVersion}`,
+        );
       }
+      workerVisibility = "worker-visible";
+    } else if (
+      entry.workerVisibility !== "worker-visible" &&
+      entry.workerVisibility !== "root-only"
+    ) {
+      fail(`Support-pack workerVisibility invalid for ${path}`);
+    } else {
       workerVisibility = entry.workerVisibility;
     }
     entries.push(
@@ -400,6 +445,10 @@ export function computeResearchProcedureDigestV2(input: {
 export function serializeSupportPackManifest(
   manifest: SupportPackManifest,
 ): string {
+  const requiresExplicitVisibility =
+    manifest.procedureVersion !== "2.0.0" &&
+    manifest.procedureVersion !== "2.0.1" &&
+    /^2\./.test(manifest.procedureVersion);
   const entries = [...manifest.entries]
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
     .map((e) => {
@@ -412,8 +461,9 @@ export function serializeSupportPackManifest(
         sha256: e.sha256,
         maxBytes: e.maxBytes,
       };
-      // Omit default worker-visible so retained 2.0.0 pack.json bytes stay valid.
-      if (e.workerVisibility !== "worker-visible") {
+      // Retained 2.0.0/2.0.1 omit default worker-visible so on-disk bytes stay valid.
+      // 2.0.2+ always serialize explicit workerVisibility.
+      if (requiresExplicitVisibility || e.workerVisibility !== "worker-visible") {
         row.workerVisibility = e.workerVisibility;
       }
       return row;
@@ -434,11 +484,10 @@ export function serializeSupportPackManifest(
 }
 
 /**
- * Wave-1 package schema discriminator.
- * - Explicit packageSchemaVersion on procedure.json is preferred.
- * - Retained immutable 2.0.0 fixtures without the field are treated as schema-v2
- *   when their Procedure version is exactly "2.0.0" (not inferred from pack presence).
- * - Repaired packages must use packageSchemaVersion: 2 and version 2.0.1+.
+ * Package schema discriminator (not inferred from pack.json presence).
+ * - Explicit packageSchemaVersion on procedure.json is authoritative.
+ * - Retained immutable 2.0.0 fixtures without the field are schema-v2 by exact version.
+ * - 2.0.1 / 2.0.2+ must set packageSchemaVersion: 2 on procedure.json.
  */
 export function resolveProcedurePackageSchemaVersion(input: {
   readonly packageSchemaVersion?: unknown;

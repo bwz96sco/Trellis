@@ -3,7 +3,7 @@
   "name": "activate-migrated-research-methodology",
   "title": "Activate migrated Research methodology atomically",
   "description": "Perform the sole registry/version cutover after all dormant methodology families and frozen cases pass.",
-  "status": "blocked-remediating",
+  "status": "remediating",
   "dev_type": null,
   "scope": null,
   "package": "core",
@@ -23,6 +23,6 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {},
-  "repairNote": "fe56c9c2 retained unaccepted cutover; Wave-0 restored v1 future selection",
-  "updatedAt": "2026-07-30T06:17:11Z"
+  "repairNote": "Completion Wave-0: re-contain future selection to v1 after premature fe1cd02e 2.0.1 activation. Preserve 1.0.0/2.0.0/2.0.1 bytes and historical cutover manifests. Repair target Procedure 2.0.2.",
+  "updatedAt": "2026-07-30T11:40:00Z"
 }

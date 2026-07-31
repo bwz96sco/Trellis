@@ -117,7 +117,7 @@ describe("@mindfoldhq/trellis-core package compatibility", () => {
     expect(research.parseResearchProjectPolicy).toBeTypeOf("function");
     expect(research.resolveResearchEffectiveAuthority).toBeTypeOf("function");
     expect(research.evaluateResearchAutomaticEligibility).toBeTypeOf("function");
-    expect(research.RESEARCH_CAPABILITY_REGISTRY).toHaveLength(17);
+    expect(research.RESEARCH_CAPABILITY_REGISTRY).toHaveLength(14);
     for (const retired of [
       "RESEARCH_STAGE_CAPABILITIES",
       "normalizeDiscoveredResearchSkillNames",

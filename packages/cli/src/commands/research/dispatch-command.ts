@@ -1198,13 +1198,14 @@ export async function recordApprovedResearchDispatchResult(
     parsed.result.artifactRefs,
     false,
   );
-  // Wave-2: methodology validation is fail-closed before any canonical write.
-  // Applies to schema-v2 activations; schema-v1 keeps existing behavior when
-  // validators report only informational findings for empty declared sets.
+  // Wave-2: pack-driven methodology validation is fail-closed before any
+  // canonical write. Schema-v2 uses exact support-pack validator descriptors;
+  // schema-v1 uses the default trusted set.
   const methodologyGate = validateMethodologyBeforeRecord({
     procedureId: activation.procedure.id,
     procedureVersion: activation.procedure.version,
     procedureDigest: activation.procedure.digest,
+    procedure: candidate.procedure,
     dispatchId: dispatch.id,
     activationId: activation.id,
     terminalState: parsed.result.status,

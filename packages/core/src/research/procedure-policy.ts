@@ -141,13 +141,14 @@ export interface ParsedResearchProcedure {
   readonly packageSchemaVersion: 1 | 2;
   /**
    * Retained support-pack views for schema-v2 packages (not discarded after digest).
-   * Root-only entries remain in inventory; worker-visible view filters them.
+   * Full inventory is root-retained; worker-visible and root-only are split views.
    */
   readonly supportPack?: Readonly<{
     readonly manifest: SupportPackManifest;
     readonly packJsonBytes: Uint8Array;
     readonly inventoryItems: readonly SupportPackInventoryItem[];
     readonly workerVisibleInventory: readonly SupportPackInventoryItem[];
+    readonly rootOnlyInventory: readonly SupportPackInventoryItem[];
   }>;
 }
 
@@ -347,6 +348,7 @@ function parseManifest(
   source: ResearchProcedureSource,
   identityMode: ResearchProcedureIdentityMode = "capability-current",
   recordedVersion?: string,
+  recordedProcedureId?: string,
 ): ResearchProcedureManifest {
   const value = plainObject(
     parsed,
@@ -367,26 +369,35 @@ function parseManifest(
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure id must be a lowercase slug");
   }
   const version = exactSemver(value.version, "Procedure version");
+  // Stage/kind/authority ceilings always come from the current capability.
+  // Historical Procedure id must not be rewritten to the capability's current binding.
   if (value.stage !== capability.stage) {
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure stage does not match capability");
   }
   if (value.kind !== capability.kind) {
     fail("INVALID_RESEARCH_PROCEDURE", "Procedure kind does not match capability");
   }
-  if (value.id !== capability.procedure.id) {
-    fail(
-      "INVALID_RESEARCH_PROCEDURE",
-      "Procedure identity does not match capability binding",
-    );
-  }
   if (identityMode === "capability-current") {
-    if (version !== capability.procedure.version) {
+    if (
+      value.id !== capability.procedure.id ||
+      version !== capability.procedure.version
+    ) {
       fail(
         "INVALID_RESEARCH_PROCEDURE",
         "Procedure identity does not match capability binding",
       );
     }
   } else {
+    if (
+      recordedProcedureId === undefined ||
+      recordedProcedureId.length === 0 ||
+      value.id !== recordedProcedureId
+    ) {
+      fail(
+        "INVALID_RESEARCH_PROCEDURE",
+        "Procedure id does not match recorded activation identity",
+      );
+    }
     if (recordedVersion === undefined || version !== recordedVersion) {
       fail(
         "INVALID_RESEARCH_PROCEDURE",
@@ -453,14 +464,17 @@ function parseManifest(
       "INVALID_RESEARCH_PROCEDURE",
     );
     // Project overrides must declare which bundled identity they replace.
-    // In capability-current mode this is the registry binding; in recorded-version
-    // mode it is the recorded package version being revalidated.
+    // capability-current → registry binding; recorded-version → recorded id/version.
+    const expectedReplaceId =
+      identityMode === "capability-current"
+        ? capability.procedure.id
+        : recordedProcedureId!;
     const expectedReplaceVersion =
       identityMode === "capability-current"
         ? capability.procedure.version
         : recordedVersion!;
     if (
-      replacement.id !== capability.procedure.id ||
+      replacement.id !== expectedReplaceId ||
       replacement.version !== expectedReplaceVersion
     ) {
       fail(
@@ -469,7 +483,7 @@ function parseManifest(
       );
     }
     replaces = Object.freeze({
-      id: capability.procedure.id,
+      id: expectedReplaceId,
       version: expectedReplaceVersion,
     });
   } else if (value.replaces !== undefined) {
@@ -579,6 +593,8 @@ export function parseResearchProcedure(input: {
   readonly instructionBytes: Uint8Array;
   readonly identityMode?: ResearchProcedureIdentityMode;
   readonly recordedVersion?: string;
+  /** Exact recorded Procedure id for activation-recorded replay (not capability-current). */
+  readonly recordedProcedureId?: string;
   /**
    * When present, Procedure digest uses the v2 domain binding support-pack
    * inventory. Omit for schema-v1 packages (default).
@@ -594,11 +610,14 @@ export function parseResearchProcedure(input: {
   const identityMode = input.identityMode ?? "capability-current";
   if (
     identityMode === "recorded-version" &&
-    (input.recordedVersion === undefined || input.recordedVersion.length === 0)
+    (input.recordedVersion === undefined ||
+      input.recordedVersion.length === 0 ||
+      input.recordedProcedureId === undefined ||
+      input.recordedProcedureId.length === 0)
   ) {
     fail(
       "INVALID_RESEARCH_PROCEDURE",
-      "recordedVersion is required for recorded-version identity mode",
+      "recordedProcedureId and recordedVersion are required for recorded-version identity mode",
     );
   }
   const manifestBytes = new Uint8Array(input.manifestBytes);
@@ -615,6 +634,7 @@ export function parseResearchProcedure(input: {
     input.source,
     identityMode,
     input.recordedVersion,
+    input.recordedProcedureId,
   );
   const packageSchemaVersion = input.packageSchemaVersion ?? 1;
   if (packageSchemaVersion === 2 && input.supportPack === undefined) {
@@ -667,11 +687,17 @@ export function parseResearchProcedure(input: {
         (item) => item.workerVisibility === "worker-visible",
       ),
     );
+    const rootOnlyInventory = Object.freeze(
+      input.supportPack.inventoryItems.filter(
+        (item) => item.workerVisibility === "root-only",
+      ),
+    );
     supportPack = Object.freeze({
       manifest: input.supportPack.manifest,
       packJsonBytes: new Uint8Array(input.supportPack.packJsonBytes),
       inventoryItems: input.supportPack.inventoryItems,
       workerVisibleInventory,
+      rootOnlyInventory,
     });
   } else {
     digest = computeResearchProcedureDigest({

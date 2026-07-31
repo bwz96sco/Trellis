@@ -100,6 +100,7 @@ describe("procedure support pack", () => {
       manifestBytes,
       instructionBytes: encoder.encode("# Procedure\n"),
       identityMode: "recorded-version",
+      recordedProcedureId: capability.procedure.id,
       recordedVersion: "2.0.0",
       packageSchemaVersion: 2,
       supportPack: {
@@ -230,5 +231,72 @@ describe("procedure support pack", () => {
         instructionBytes: encoder.encode("# Procedure\n"),
       }),
     );
+  });
+
+  it("requires methodology contract and explicit visibility for 2.0.2 packs", () => {
+    const fileA = encoder.encode("# stage\n");
+    const baseEntry = {
+      path: "instructions/stage.md",
+      role: "instructions" as const,
+      mediaType: "text/markdown",
+      contractVersion: "1",
+      provenanceId: "SRC-TEST",
+      sha256: sha256Hex(fileA),
+      maxBytes: 10_000,
+    };
+    expect(() =>
+      parseSupportPackManifest({
+        packJsonBytes: encoder.encode(
+          `${JSON.stringify({
+            schemaVersion: 1,
+            procedureId: capability.procedure.id,
+            procedureVersion: "2.0.2",
+            entries: [baseEntry],
+          })}\n`,
+        ),
+        procedureId: capability.procedure.id,
+        procedureVersion: "2.0.2",
+      }),
+    ).toThrow(/methodologyContract/i);
+
+    expect(() =>
+      parseSupportPackManifest({
+        packJsonBytes: encoder.encode(
+          `${JSON.stringify({
+            schemaVersion: 1,
+            procedureId: capability.procedure.id,
+            procedureVersion: "2.0.2",
+            methodologyContractVersion: "evaluation-contract-v1.2.0",
+            methodologyContractDigest:
+              "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+            entries: [baseEntry],
+          })}\n`,
+        ),
+        procedureId: capability.procedure.id,
+        procedureVersion: "2.0.2",
+      }),
+    ).toThrow(/workerVisibility/i);
+
+    const ok = parseSupportPackManifest({
+      packJsonBytes: encoder.encode(
+        serializeSupportPackManifest({
+          schemaVersion: 1,
+          procedureId: capability.procedure.id,
+          procedureVersion: "2.0.2",
+          methodologyContractVersion: "evaluation-contract-v1.2.0",
+          methodologyContractDigest:
+            "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+          entries: [
+            {
+              ...baseEntry,
+              workerVisibility: "root-only",
+            },
+          ],
+        }),
+      ),
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.2",
+    });
+    expect(ok.entries[0]?.workerVisibility).toBe("root-only");
   });
 });

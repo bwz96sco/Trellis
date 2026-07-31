@@ -177,3 +177,46 @@ P2-12 integrates reviewed family modules and packs but must route family-body de
 - Existing `packages/core/src/research/types.ts`, `schema.ts`, `events.ts`, and `reducer.ts` remain excluded unless P2-01 proves the composition contract cannot be safely bound through existing canonical Dispatch/Activation/Proposal records and a separately reviewed state-migration amendment assigns them.
 - Existing Procedure `1.0.0` directories are read-only compatibility fixtures for all children.
 - The private source repository is read-only evidence and never a Trellis path owner.
+
+## Amendment — Completion Wave-0 / Procedure 2.0.2 repair disposition (2026-07-30)
+
+Status: superseding forward containment after premature `fe1cd02e` 2.0.1 activation. Repair starting snapshot `fe1cd02e`. Semantic repair version is **2.0.2**.
+
+### Immutable historical package trees (all children)
+
+- `packages/cli/src/templates/research/procedures/*/1.0.0/**` — read-only
+- `packages/cli/src/templates/research/procedures/*/2.0.0/**` — read-only
+- `packages/cli/src/templates/research/procedures/*/2.0.1/**` — read-only (premature activation evidence)
+
+### New 2.0.2 family ownership (issue only; do not edit historical trees)
+
+- P2-05: `.../idea-generation-v1/2.0.2/**`, `.../idea-evaluation-v1/2.0.2/**`
+- P2-06: `.../project-setup-v1/2.0.2/**`, `.../quest-framing-v1/2.0.2/**`, `.../quest-admin-v1/2.0.2/**`
+- P2-07: `.../literature-scan-v1/2.0.2/**`, `.../literature-review-v1/2.0.2/**`, `.../survey-v1/2.0.2/**`
+- P2-08: `.../experiment-round-v1/2.0.2/**`, `.../experiment-campaign-v1/2.0.2/**`
+- P2-09: `.../computation-case-v1/2.0.2/**`, `.../theory-case-v1/2.0.2/**`
+- P2-10: `.../review-case-v1/2.0.2/**`, `.../review-campaign-v1/2.0.2/**`
+- P2-11: `.../writing-case-v1/2.0.2/**`, `.../figure-v1/2.0.2/**`, `.../slides-v1/2.0.2/**`
+
+Prior map rows that list only `2.0.0/**` remain historical ownership for those trees; new work targets `2.0.2/**` exclusively.
+
+### P2-12 remediation ownership (forward containment + dormant candidate)
+
+- `packages/core/src/research/stage-capabilities.ts` (future selection containment; candidate projection only after Wave 6)
+- `packages/core/test/research/stage-capabilities.test.ts`
+- `.trellis/tasks/07-29-activate-migrated-research-methodology/research/activation-version-disposition.json`
+- `.trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-containment-status.json`
+- New 2.0.2 candidate/active manifests (do not rewrite premature 2.0.1 `cutover-manifest.json` / `candidate-cutover-manifest.json`)
+- `packages/cli/scripts/packed-cli-audit.js` extensions for historical 1.0.0/2.0.0/2.0.1 + 2.0.2
+
+### Runtime repair ownership (unchanged owners)
+
+- P2-02: exact package parsing + historical identity separation
+- P2-03: Context v2 digests, root validation, Proposal containment, composition production path
+- P2-04: exact harness registry (212 critical + 17 non-critical; 38 expansions)
+
+### Rules restated
+
+1. Do not rewrite historical reports, cutover manifests, or package bytes to appear passing.
+2. Do not archive Phase-2 tasks during remediation.
+3. Final 2.0.2 activation, tarball lifecycle, commits, and push remain separate approvals.

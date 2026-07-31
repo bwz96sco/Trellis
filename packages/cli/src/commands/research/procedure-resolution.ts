@@ -428,6 +428,7 @@ function parseSelectedProcedure(
   selection: ProcedureDirectorySelection,
   mode: ResearchProcedureResolveMode = "registry-current",
   recordedVersion?: string,
+  recordedProcedureId?: string,
 ): ParsedResearchProcedure {
   const bytes = readProcedureBytes(selection);
   // Peek procedure identity without full policy parse for pack binding.
@@ -436,13 +437,26 @@ function parseSelectedProcedure(
     version?: string;
     packageSchemaVersion?: unknown;
   };
-  const procedureId = typeof peek.id === "string" ? peek.id : "";
+  const procedureId =
+    recordedProcedureId ?? (typeof peek.id === "string" ? peek.id : "");
   const procedureVersion =
     recordedVersion ?? (typeof peek.version === "string" ? peek.version : "");
   const packageSchemaVersion = resolveProcedurePackageSchemaVersion({
     packageSchemaVersion: peek.packageSchemaVersion,
     procedureVersion,
   });
+  const recordedIdentity =
+    mode === "activation-recorded" &&
+    recordedVersion !== undefined &&
+    recordedProcedureId !== undefined
+      ? {
+          identityMode: "recorded-version" as const,
+          recordedVersion,
+          recordedProcedureId,
+        }
+      : {
+          identityMode: "capability-current" as const,
+        };
   if (packageSchemaVersion === 2) {
     const supportPack = loadRequiredSupportPack(
       selection,
@@ -454,13 +468,7 @@ function parseSelectedProcedure(
       source,
       ...bytes,
       packageSchemaVersion: 2,
-      identityMode:
-        mode === "activation-recorded"
-          ? "recorded-version"
-          : "capability-current",
-      ...(mode === "activation-recorded" && recordedVersion !== undefined
-        ? { recordedVersion }
-        : {}),
+      ...recordedIdentity,
       supportPack,
     });
   }
@@ -470,13 +478,7 @@ function parseSelectedProcedure(
     source,
     ...bytes,
     packageSchemaVersion: 1,
-    identityMode:
-      mode === "activation-recorded"
-        ? "recorded-version"
-        : "capability-current",
-    ...(mode === "activation-recorded" && recordedVersion !== undefined
-      ? { recordedVersion }
-      : {}),
+    ...recordedIdentity,
   });
 }
 
@@ -513,28 +515,24 @@ export async function resolveResearchProcedure(input: {
   }
 
   const mode = input.mode ?? "registry-current";
-  const procedureId =
-    mode === "activation-recorded"
-      ? (input.procedureId ?? capability.procedure.id)
-      : capability.procedure.id;
-  const procedureVersion =
-    mode === "activation-recorded"
-      ? (input.procedureVersion ?? capability.procedure.version)
-      : capability.procedure.version;
-
+  // activation-recorded uses exact recorded Procedure id/version (not rebinding
+  // to capability.procedure.id). registry-current uses the capability binding.
+  let procedureId = capability.procedure.id;
+  let procedureVersion = capability.procedure.version;
   if (mode === "activation-recorded") {
-    if (!input.procedureId || !input.procedureVersion) {
+    if (
+      input.procedureId === undefined ||
+      input.procedureId.length === 0 ||
+      input.procedureVersion === undefined ||
+      input.procedureVersion.length === 0
+    ) {
       throw new ResearchProcedureResolutionError(
         "INVALID_BUNDLED_PROCEDURE",
         "activation-recorded mode requires procedureId and procedureVersion",
       );
     }
-    if (input.procedureId !== capability.procedure.id) {
-      throw new ResearchProcedureResolutionError(
-        "INVALID_BUNDLED_PROCEDURE",
-        "Recorded Procedure id does not match capability binding",
-      );
-    }
+    procedureId = input.procedureId;
+    procedureVersion = input.procedureVersion;
   }
 
   const projectSegments = [
@@ -558,6 +556,7 @@ export async function resolveResearchProcedure(input: {
         project.selection,
         mode,
         procedureVersion,
+        procedureId,
       );
     } catch (error) {
       mapResolutionError("INVALID_PROJECT_PROCEDURE", capability.id, error);
@@ -579,6 +578,7 @@ export async function resolveResearchProcedure(input: {
       bundled.selection,
       mode,
       procedureVersion,
+      procedureId,
     );
   } catch (error) {
     mapResolutionError("INVALID_BUNDLED_PROCEDURE", capability.id, error);
