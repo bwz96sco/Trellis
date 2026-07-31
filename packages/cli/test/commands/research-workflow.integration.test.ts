@@ -367,6 +367,8 @@ describe("research workflow end-to-end closure", () => {
       title: "Task-linked code analysis",
     });
 
+    // Quest stage Proposal mutations require framing.admin at the framing stage.
+    await setResearchQuestStage({ root, questId, stage: "framing" });
     const taskFreeDispatch = await prepareResearchDispatch({
       root,
       runId: taskFreeRunId,
@@ -374,7 +376,7 @@ describe("research workflow end-to-end closure", () => {
       campaignId,
       repositoryId: paperRepository.id,
       ownerSkill: "trellis-research-literature",
-      capabilityId: "research.setup.project",
+      capabilityId: "research.framing.admin",
       objective: "Review the declared paper repository",
       acceptanceCriteria: ["Return bounded observations"],
       allowedWritePaths: ["outputs/literature.json"],
@@ -394,6 +396,7 @@ describe("research workflow end-to-end closure", () => {
       questId,
       repository: paper,
       summary: "Task-free literature review complete",
+      // Quest stage mutation is admin-only under capability-contained allowlists.
       operations: [{ kind: "quest.stage", questId, stage: "literature" }],
       output: taskFreeApproval.output,
     });

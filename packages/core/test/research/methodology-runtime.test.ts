@@ -143,6 +143,8 @@ describe("methodology runtime", () => {
       edgeId: "COMP-001",
       parentDispatchId: "dsp_1",
       parentActivationId: "act_1",
+      parentCapabilityId: "research.experiment.campaign",
+      childCapabilityOrAdapterId: "research.experiment.round",
       maxChildren: 1,
       remainingDispatchBudget: 1,
       procedureDigest: "sha256:x",
@@ -168,6 +170,42 @@ describe("methodology runtime", () => {
     });
     expect(bad.ok).toBe(false);
     if (!bad.ok) expect(bad.code).toBe("CHILD_COUNT_EXCEEDED");
+  });
+
+  it("rejects wrong parent/child with exact matching (no substring soft pass)", () => {
+    const wrongParent = validateRootCompositionDescriptor({
+      schemaVersion: 1,
+      compositionId: "cmp-3",
+      edgeId: "COMP-001",
+      parentDispatchId: "dsp_1",
+      parentActivationId: "act_1",
+      parentCapabilityId: "research.audit.campaign",
+      maxChildren: 1,
+      remainingDispatchBudget: 1,
+      procedureDigest: "sha256:x",
+      policyDigest: "sha256:y",
+      requestDigest: "sha256:z",
+      rootAuthorizationEvidence: "root-approved",
+    });
+    expect(wrongParent.ok).toBe(false);
+    if (!wrongParent.ok) expect(wrongParent.code).toBe("PARENT_MISMATCH");
+
+    const wrongChild = validateRootCompositionDescriptor({
+      schemaVersion: 1,
+      compositionId: "cmp-4",
+      edgeId: "COMP-002",
+      parentDispatchId: "dsp_1",
+      parentActivationId: "act_1",
+      childCapabilityOrAdapterId: "research.experiment.round",
+      maxChildren: 1,
+      remainingDispatchBudget: 1,
+      procedureDigest: "sha256:x",
+      policyDigest: "sha256:y",
+      requestDigest: "sha256:z",
+      rootAuthorizationEvidence: "root-approved",
+    });
+    expect(wrongChild.ok).toBe(false);
+    if (!wrongChild.ok) expect(wrongChild.code).toBe("CHILD_MISMATCH");
   });
 });
 

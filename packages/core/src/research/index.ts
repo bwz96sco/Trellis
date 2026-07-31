@@ -187,6 +187,18 @@ export {
   serializeSupportPackInventoryForDigest,
   serializeSupportPackManifest,
 } from "./procedure-support-pack.js";
+
+export {
+  ORDINARY_RESEARCH_PROPOSAL_OPERATION_KINDS,
+  QUEST_ADMIN_PROPOSAL_OPERATION_KINDS,
+  allowedProposalOperationKindsForCapability,
+  validateProposalOperationsForCapability,
+} from "./proposal-operation-allowlist.js";
+export type {
+  ProposalOperationAllowlistErrorCode,
+  ProposalOperationAllowlistResult,
+  ProposalOperationKind,
+} from "./proposal-operation-allowlist.js";
 export type {
   SupportPackEntry,
   SupportPackInventoryItem,

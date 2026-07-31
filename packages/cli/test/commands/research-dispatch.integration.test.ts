@@ -489,9 +489,14 @@ describe("research repositories and dispatch integration", () => {
           dispatchId: prepared.dispatch.id,
           questId,
           title: "Advance review",
+          // Ordinary capability: non-admin ops only (quest.stage requires framing.admin).
           operations: [
-            { kind: "quest.stage", questId, stage: "audit" },
             { kind: "run.status", runId, status: "running" },
+            {
+              kind: "run.invalidate",
+              runId,
+              reason: "not selected in subset apply",
+            },
           ],
           status: "pending",
           createdAt: "2026-07-17T00:00:00.000Z",
@@ -547,8 +552,8 @@ describe("research repositories and dispatch integration", () => {
     expect(applied.appliedEventIds).toHaveLength(1);
     expect(applied.rejectedOperationIndexes).toEqual([1]);
     const state = await readResearchState(root);
-    expect(state.quests[questId]?.stage).toBe("audit");
-    expect(state.runs[runId]?.status).toBe("planned");
+    // Index 0 applied → run running; index 1 rejected → invalidate not applied.
+    expect(state.runs[runId]?.status).toBe("running");
     const decisionPath = path.join(root, applied.decisionFile ?? "");
     const decisionFile = JSON.parse(fs.readFileSync(decisionPath, "utf-8"));
     expect(decisionFile.appliedEventIds).toEqual(applied.appliedEventIds);

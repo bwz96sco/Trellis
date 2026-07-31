@@ -1,48 +1,62 @@
 /**
- * Root-owned bounded composition descriptors (Phase-2).
- * Workers never launch composition edges.
+ * Root-owned bounded composition descriptors (Phase-2 / Completion Wave-3).
+ * Workers never launch composition edges. Matching is exact, not substring.
  */
 
 export type CompositionEdgeId = "COMP-001" | "COMP-002" | "COMP-003";
 
 export interface FrozenCompositionEdge {
   readonly id: CompositionEdgeId;
-  readonly parentPackage: string;
-  readonly childPackageOrAdapter: string;
+  /** Exact parent capability id (Trellis registry id). */
+  readonly parentCapabilityId: string;
+  /** Exact child capability id or bounded adapter id. */
+  readonly childCapabilityOrAdapterId: string;
   readonly kind: "research-child-dispatch" | "bounded-adapter";
   readonly importPrivateImpl: false;
   readonly workerMayLaunch: false;
   readonly transitive: false;
+  /**
+   * Legacy package labels retained for report compatibility only.
+   * Exact matching uses parentCapabilityId / childCapabilityOrAdapterId.
+   */
+  readonly parentPackage: string;
+  readonly childPackageOrAdapter: string;
 }
 
 export const FROZEN_COMPOSITION_EDGES: readonly FrozenCompositionEdge[] =
   Object.freeze([
     Object.freeze({
       id: "COMP-001" as const,
-      parentPackage: "research-experiment-campaign",
-      childPackageOrAdapter: "research-experiment",
+      parentCapabilityId: "research.experiment.campaign",
+      childCapabilityOrAdapterId: "research.experiment.round",
       kind: "research-child-dispatch" as const,
       importPrivateImpl: false,
       workerMayLaunch: false,
       transitive: false,
+      parentPackage: "research-experiment-campaign",
+      childPackageOrAdapter: "research-experiment",
     }),
     Object.freeze({
       id: "COMP-002" as const,
-      parentPackage: "research-review-campaign",
-      childPackageOrAdapter: "research-review-case",
+      parentCapabilityId: "research.audit.campaign",
+      childCapabilityOrAdapterId: "research.audit.case",
       kind: "research-child-dispatch" as const,
       importPrivateImpl: false,
       workerMayLaunch: false,
       transitive: false,
+      parentPackage: "research-review-campaign",
+      childPackageOrAdapter: "research-review-case",
     }),
     Object.freeze({
       id: "COMP-003" as const,
-      parentPackage: "research-slides",
-      childPackageOrAdapter: "personal-slides",
+      parentCapabilityId: "research.writing.slides",
+      childCapabilityOrAdapterId: "personal-slides",
       kind: "bounded-adapter" as const,
       importPrivateImpl: false,
       workerMayLaunch: false,
       transitive: false,
+      parentPackage: "research-slides",
+      childPackageOrAdapter: "personal-slides",
     }),
   ]);
 
@@ -75,6 +89,7 @@ export type CompositionValidationCode =
   | "TRANSITIVE_FORBIDDEN"
   | "CHILD_COUNT_EXCEEDED"
   | "CHILD_MISMATCH"
+  | "PARENT_MISMATCH"
   | "DIGEST_BINDING_MISSING"
   | "CANCELLED_OR_FAILED_WITHOUT_ROLLBACK";
 
@@ -137,28 +152,26 @@ export function validateRootCompositionDescriptor(
       message: `Actual child count ${desc.actualChildCount} exceeds maxChildren ${desc.maxChildren}`,
     };
   }
+  // Exact parent/child capability binding when provided (no substring soft match).
+  if (
+    desc.parentCapabilityId !== undefined &&
+    desc.parentCapabilityId !== edge.parentCapabilityId
+  ) {
+    return {
+      ok: false,
+      code: "PARENT_MISMATCH",
+      message: `Parent capability '${desc.parentCapabilityId}' does not match edge ${edge.id} (${edge.parentCapabilityId})`,
+    };
+  }
   if (
     desc.childCapabilityOrAdapterId !== undefined &&
-    desc.childCapabilityOrAdapterId !== edge.childPackageOrAdapter &&
-    // allow capability IDs that map to the same frozen child package label
-    !desc.childCapabilityOrAdapterId.includes(
-      edge.childPackageOrAdapter.replace(/^research-/, ""),
-    )
+    desc.childCapabilityOrAdapterId !== edge.childCapabilityOrAdapterId
   ) {
-    // Soft check: only fail when clearly unrelated token present
-    if (
-      desc.childCapabilityOrAdapterId.startsWith("research.") &&
-      !desc.childCapabilityOrAdapterId.includes("experiment") &&
-      !desc.childCapabilityOrAdapterId.includes("review") &&
-      !desc.childCapabilityOrAdapterId.includes("slides") &&
-      edge.kind === "research-child-dispatch"
-    ) {
-      return {
-        ok: false,
-        code: "CHILD_MISMATCH",
-        message: `Child '${desc.childCapabilityOrAdapterId}' does not match edge ${edge.id}`,
-      };
-    }
+    return {
+      ok: false,
+      code: "CHILD_MISMATCH",
+      message: `Child '${desc.childCapabilityOrAdapterId}' does not match edge ${edge.id} (${edge.childCapabilityOrAdapterId})`,
+    };
   }
   if (!desc.rootAuthorizationEvidence) {
     return {

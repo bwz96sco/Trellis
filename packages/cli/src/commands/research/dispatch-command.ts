@@ -16,6 +16,7 @@ import {
   resolveResearchCapability,
   resultSchema,
   stableResearchJson,
+  validateProposalOperationsForCapability,
   type ApprovalId,
   type ArtifactRef,
   type CampaignId,
@@ -1222,6 +1223,18 @@ export async function recordApprovedResearchDispatchResult(
       `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced`,
     );
   }
+  // Capability-contained Proposal operations at recording time.
+  const operationGate = validateProposalOperationsForCapability({
+    capabilityId: activation.capabilityId,
+    operations: parsed.proposal.operations,
+  });
+  if (!operationGate.ok) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      operationGate.message ??
+        `Proposal operations not allowed for capability '${activation.capabilityId}'`,
+    );
+  }
   const mutations: readonly ResearchMutation[] = [
     { kind: "result.record", result: parsed.result },
     { kind: "proposal.record", proposal: parsed.proposal },
@@ -1380,6 +1393,25 @@ async function reviewProposal(
   const dispatch = state.dispatches[proposal.dispatchId];
   if (!dispatch)
     throw new Error(`Unknown research dispatch '${proposal.dispatchId}'`);
+  // Recover Activation → capability ancestry before applying persisted operations.
+  const activationForAllowlist = Object.values(state.activations).find(
+    (activation) => activation.dispatchId === dispatch.id,
+  );
+  if (activationForAllowlist === undefined) {
+    throw new Error(
+      `Cannot apply Proposal '${proposal.id}': no Activation found for Dispatch '${dispatch.id}'`,
+    );
+  }
+  const applyGate = validateProposalOperationsForCapability({
+    capabilityId: activationForAllowlist.capabilityId,
+    operations: selectedOperations,
+  });
+  if (!applyGate.ok) {
+    throw new Error(
+      applyGate.message ??
+        `Proposal operations not allowed for capability '${activationForAllowlist.capabilityId}'`,
+    );
+  }
   const artifactRepositoryRoots: Partial<Record<RepositoryId, string>> = {};
   if (outcome === "accept") {
     const resolved = await resolveRepositoryForUse(
