@@ -1,0 +1,1 @@
+{"id":"DFT-experiment-campaign-required-vs-optional-artifacts","scenarioId":"proposal-allowlist","criticality":"non-critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"proposal-allowlist","detail":"DFT-experiment-campaign-required-vs-optional-artifacts"}}

@@ -1,0 +1,1 @@
+{"id":"DFT-experiment-stage-05-progression","scenarioId":"provenance-drift","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"DFT-experiment-stage-05-progression"}}

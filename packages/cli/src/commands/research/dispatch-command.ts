@@ -1207,15 +1207,17 @@ export async function recordApprovedResearchDispatchResult(
     procedureVersion: activation.procedure.version,
     procedureDigest: activation.procedure.digest,
     procedure: candidate.procedure,
+    capabilityId: activation.capabilityId,
     dispatchId: dispatch.id,
     activationId: activation.id,
     terminalState: parsed.result.status,
+    resultStatus: parsed.result.status,
+    proposalStatus: parsed.proposal.status,
+    proposalOperationCount: parsed.proposal.operations.length,
     artifactPaths: parsed.result.artifactRefs.map((ref) => ref.path),
-    facts: {
-      resultStatus: parsed.result.status,
-      proposalStatus: parsed.proposal.status,
-      proposalOperationCount: parsed.proposal.operations.length,
-    },
+    artifactDigests: parsed.result.artifactRefs
+      .filter((ref) => typeof ref.sha256 === "string")
+      .map((ref) => ({ path: ref.path, sha256: ref.sha256 as string })),
   });
   if (methodologyGate.criticalFailure || !methodologyGate.ok) {
     approvedResultError(

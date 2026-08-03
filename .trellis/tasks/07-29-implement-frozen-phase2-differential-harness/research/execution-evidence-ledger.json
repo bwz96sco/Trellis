@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "task": "07-29-implement-frozen-phase2-differential-harness",
+  "generatedAt": "2026-08-03T02:20:07.642498+00:00",
+  "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+  "entries": [
+    {
+      "commandId": "differential-harness-frozen",
+      "argv": [
+        "node",
+        "packages/cli/scripts/research-methodology-differential.mjs",
+        "frozen"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:07.386474+00:00",
+      "endedAt": "2026-08-03T02:20:07.485528+00:00",
+      "elapsedMs": 98,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e"
+    },
+    {
+      "commandId": "differential-harness-expansion",
+      "argv": [
+        "node",
+        "packages/cli/scripts/research-methodology-differential.mjs",
+        "expansion"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:07.485587+00:00",
+      "endedAt": "2026-08-03T02:20:07.556840+00:00",
+      "elapsedMs": 71,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e"
+    },
+    {
+      "commandId": "differential-harness-smoke",
+      "argv": [
+        "node",
+        "packages/cli/scripts/research-methodology-differential.mjs",
+        "smoke"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:07.556895+00:00",
+      "endedAt": "2026-08-03T02:20:07.642437+00:00",
+      "elapsedMs": 85,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e"
+    }
+  ]
+}

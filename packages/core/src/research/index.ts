@@ -120,6 +120,7 @@ export type {
 } from "./methodology-artifacts.js";
 
 export {
+  deriveMethodologyValidatorFacts,
   listTrustedMethodologyValidatorIds,
   runMethodologyValidators,
 } from "./methodology-validators.js";
@@ -150,6 +151,12 @@ export type {
   FrozenCompositionEdge,
   RootCompositionDescriptor,
 } from "./composition.js";
+
+export {
+  listRootCompositionEdgeIds,
+  planRootCompositionAction,
+} from "./dispatch-composition.js";
+export type { RootCompositionAction } from "./dispatch-composition.js";
 
 export {
   CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON,

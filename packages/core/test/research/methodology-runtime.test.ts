@@ -160,6 +160,8 @@ describe("methodology runtime", () => {
       edgeId: "COMP-001",
       parentDispatchId: "dsp_1",
       parentActivationId: "act_1",
+      parentCapabilityId: "research.experiment.campaign",
+      childCapabilityOrAdapterId: "research.experiment.round",
       maxChildren: 1,
       remainingDispatchBudget: 1,
       actualChildCount: 2,
@@ -180,6 +182,7 @@ describe("methodology runtime", () => {
       parentDispatchId: "dsp_1",
       parentActivationId: "act_1",
       parentCapabilityId: "research.audit.campaign",
+      childCapabilityOrAdapterId: "research.experiment.round",
       maxChildren: 1,
       remainingDispatchBudget: 1,
       procedureDigest: "sha256:x",
@@ -196,6 +199,7 @@ describe("methodology runtime", () => {
       edgeId: "COMP-002",
       parentDispatchId: "dsp_1",
       parentActivationId: "act_1",
+      parentCapabilityId: "research.audit.campaign",
       childCapabilityOrAdapterId: "research.experiment.round",
       maxChildren: 1,
       remainingDispatchBudget: 1,
@@ -206,6 +210,57 @@ describe("methodology runtime", () => {
     });
     expect(wrongChild.ok).toBe(false);
     if (!wrongChild.ok) expect(wrongChild.code).toBe("CHILD_MISMATCH");
+
+    const missingIds = validateRootCompositionDescriptor({
+      schemaVersion: 1,
+      compositionId: "cmp-5",
+      edgeId: "COMP-001",
+      parentDispatchId: "dsp_1",
+      parentActivationId: "act_1",
+      maxChildren: 1,
+      remainingDispatchBudget: 1,
+      procedureDigest: "sha256:x",
+      policyDigest: "sha256:y",
+      requestDigest: "sha256:z",
+      rootAuthorizationEvidence: "root-approved",
+    });
+    expect(missingIds.ok).toBe(false);
+  });
+
+  it("rejects both-true and both-false closure", () => {
+    const bothTrue = runMethodologyValidators({
+      procedureId: "x",
+      procedureVersion: "1",
+      procedureDigest: "sha256:x",
+      artifactPaths: [],
+      declaredValidators: [
+        { id: "closure-exclusivity", version: "1", severity: "critical" },
+      ],
+      facts: { selected: true, blocked: true },
+    });
+    expect(bothTrue.criticalFailure).toBe(true);
+    const bothFalse = runMethodologyValidators({
+      procedureId: "x",
+      procedureVersion: "1",
+      procedureDigest: "sha256:x",
+      artifactPaths: [],
+      declaredValidators: [
+        { id: "closure-exclusivity", version: "1", severity: "critical" },
+      ],
+      facts: { selected: false, blocked: false },
+    });
+    expect(bothFalse.criticalFailure).toBe(true);
+    const xor = runMethodologyValidators({
+      procedureId: "x",
+      procedureVersion: "1",
+      procedureDigest: "sha256:x",
+      artifactPaths: [],
+      declaredValidators: [
+        { id: "closure-exclusivity", version: "1", severity: "critical" },
+      ],
+      facts: { selected: true, blocked: false },
+    });
+    expect(xor.ok).toBe(true);
   });
 });
 

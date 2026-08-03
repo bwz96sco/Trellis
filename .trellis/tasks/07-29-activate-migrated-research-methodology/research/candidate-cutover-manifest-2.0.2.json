@@ -33,7 +33,7 @@
       "procedureId": "review-campaign-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "b147bdd93f1a21185ac4892c5f78edb8c2e2c10520f8b9e62c830e5fcfab290f",
-      "packJsonSha256": "25d75382c6deb646887d2cc7e37f7da5a63c758923b37bec05ef14012c025099",
+      "packJsonSha256": "4f5bd9937e5b2d44c2f2d64ef6caf94cb22c2fa3483f4f624329fd54f72f1fba",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2",
@@ -45,7 +45,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.audit.case",
@@ -56,7 +78,7 @@
       "procedureId": "review-case-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "8bc62ba3a0366ea595bae4089be7cea81e8c8f567c4002114fc3d5d274e47950",
-      "packJsonSha256": "8828ce382ed1e1242d45d6507f2b778fec5cef963140ebb5e9ac4495d8720641",
+      "packJsonSha256": "4db4cfc415137d80f32e61deeb5a0cddea96788c24bf9a21bbb4410bf894bc76",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2",
@@ -68,7 +90,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.computation.case",
@@ -79,7 +123,7 @@
       "procedureId": "computation-case-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "896bc0da79f56ec8027b3791482c0626831209c8a762f74ad0a16dfedb6efd35",
-      "packJsonSha256": "7943e122aec8f4dd9ab7293f251dce0b8159c3d3e453ea73db9a859988f5523f",
+      "packJsonSha256": "d7cff341c53e3eaaab292ef6c0f908713eecaa02cc06bfa5efc968a978f8e053",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2",
@@ -91,7 +135,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.experiment.campaign",
@@ -102,7 +168,7 @@
       "procedureId": "experiment-campaign-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "ce3ac8cedc8df8c8626cc37e741c9b8cb016d522e7559a6def2b32aeba1216d4",
-      "packJsonSha256": "1e98461dc76866f574e8ff590dd04ef3d76fa3c04ce763b1c563d871d0640152",
+      "packJsonSha256": "db9880ca794abaea92c46a9a0c9cc066d88ff51f9ce181f554271c7b61ce5144",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2",
@@ -114,7 +180,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.experiment.round",
@@ -125,7 +213,7 @@
       "procedureId": "experiment-round-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "5152c5827db2df1b7c98dc5accef6e908f6ea2d90c263449a8b3e06e9453f7e8",
-      "packJsonSha256": "181200b7ac227b60a43bfc9318d499f521936f7acdbe4080cb600999b9ed490e",
+      "packJsonSha256": "05b0b6a9c330bb0c4ec87607c484809f12c8aee468a6501fcc3b036252e98210",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2",
@@ -137,7 +225,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.framing.admin",
@@ -148,7 +258,7 @@
       "procedureId": "quest-admin-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "a7407774f15de9c95e6f60232133417c33d04faaaca2e0eb26274339bc30d3f1",
-      "packJsonSha256": "48c18db286f472cb645e6471bb6674f45fd904331c6ea3fd18f3b4fdcb8fe590",
+      "packJsonSha256": "8ebad3f30ec2e69fd3b61c82244d64887ea62fe548521fdcf65824c9109b5e7b",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2",
@@ -160,7 +270,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.framing.quest",
@@ -171,7 +303,7 @@
       "procedureId": "quest-framing-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "bb4b1e4fe305c1842bcbb930997076621ae9e33a140c55cf6dd6f79c44e72cbe",
-      "packJsonSha256": "8a6ed1598a1da04ea9a38917daf2726449100a533ff000c20a18d05170bcf036",
+      "packJsonSha256": "5a9e6242ad6871e91e9c3b209aa39f739d3f92db7e78cca6ea101e168dd4b11f",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2",
@@ -183,7 +315,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.ideation.evaluate",
@@ -194,7 +348,7 @@
       "procedureId": "idea-evaluation-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "62197ec0f5743a63011c827056e3b388ebbc1021720b426f6f49d1161ca8e6c9",
-      "packJsonSha256": "79666129b7a8540a76d7cb07e292361dcdce27669c7f1c226362aa822651083a",
+      "packJsonSha256": "e15d4bb395bd566e528250d56ac326b03395b714aeda4a4dd75a0d77ee53b6a3",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2",
@@ -206,7 +360,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.ideation.generate",
@@ -217,7 +393,7 @@
       "procedureId": "idea-generation-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "10625fbb37c1c06f541584ae6108c8c95761a1567dd3d7370fbaf1fa37278a18",
-      "packJsonSha256": "f21cc4a1503313feaab99f990ad3772588205040f1d054869e508d09ba74ec01",
+      "packJsonSha256": "bdbae2acb05b7c72452aadce3de5a287e29af8f0eac6fcbe9e4241a474fed11c",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2",
@@ -229,7 +405,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.literature.review",
@@ -240,7 +438,7 @@
       "procedureId": "literature-review-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "d442ae4f0067e8f74c503e6f094c2d383bd76c8fab391bfc97971368726c7a85",
-      "packJsonSha256": "20fdf151074f871bb8fa43100132f6fdc77db3e55411684e925e09a70fad8237",
+      "packJsonSha256": "dd424e49c6c6ea0c557c579191d2451111dd02e503e88e2bf4ee40b2684be41e",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2",
@@ -252,7 +450,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.literature.scan",
@@ -263,7 +483,7 @@
       "procedureId": "literature-scan-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "09acde625caca92a8161080f607c4ea124980aeb0e6c6cd848bcb49e34d30bb8",
-      "packJsonSha256": "73148cc1ac089929b0b472b34a0ea9793552b14b87d9b7147f883476342e1b9f",
+      "packJsonSha256": "241d7e7d73ebf0616cb472de72e84bef079be27541dcb2b57ef826b3b01dd40b",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2",
@@ -275,7 +495,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.literature.survey",
@@ -286,7 +528,7 @@
       "procedureId": "survey-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "9fa7b4723913435e0fd28769f1f6c8b9fe241d854db501b704f253a1614fe1b4",
-      "packJsonSha256": "088dbefae57ab755fd1696be0e5e34aa151123a6cd3a6e060c591f1ed22ea9fa",
+      "packJsonSha256": "2226e23b49edd21431e984e5b4f57e92ca121c8c378eeb4074fcc7c49661d51b",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2",
@@ -298,7 +540,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.setup.project",
@@ -309,7 +573,7 @@
       "procedureId": "project-setup-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "05e1252501f65355484e6ea1ac6ddbf25cddebe80723d0e3b7e2fba3073a6562",
-      "packJsonSha256": "128a8a92e53238b93abf618e9c1547e4a47d4407985e9d2fddb71ad35dbb8420",
+      "packJsonSha256": "f8d635c68c40294ee895f68caf903405939ab4c7601cbd4039bf25ad80470b0b",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2",
@@ -321,7 +585,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.theory.case",
@@ -332,7 +618,7 @@
       "procedureId": "theory-case-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "cc314985201c1bedccaa9d56b4f1ffd1486e27ed165016fdcc8be3bef2576741",
-      "packJsonSha256": "40230c67ad070cf3970c0a9957b39071c2955f8a12c8d0685af1970ce0232123",
+      "packJsonSha256": "12f88f2252dd8bc4b57cc694f8f6fe0ae92f05aa1bc24a0a4d93accd5deb14c4",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2",
@@ -344,7 +630,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.writing.case",
@@ -355,7 +663,7 @@
       "procedureId": "writing-case-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "e6b9397afd9cf0f66ed3d78feab0683fa2f5bd2ffba50f42861dbfd721fc8742",
-      "packJsonSha256": "9573c28baab6a70faf316c91511153337f59f3f56179cfc090f4f4d16cef142b",
+      "packJsonSha256": "b56ab54c607bc4091b854c12158ead35893f052779301f48906cb0be4bf189dd",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2",
@@ -367,7 +675,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.writing.figure",
@@ -378,7 +708,7 @@
       "procedureId": "figure-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "4eabebaac14a77e8ea12b79ab6a5c3d01db859d988eeb99210a6ec29fd1dd9eb",
-      "packJsonSha256": "848fd9111ecdb858b422e66ebc6638cd85f32db036b3cf9d67b18b879ca63421",
+      "packJsonSha256": "17bcaca9ad0fe3fabffdf352dd5449af408d5598b3a3f503507fb155cb3fde62",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2",
@@ -390,7 +720,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     },
     {
       "capabilityId": "research.writing.slides",
@@ -401,7 +753,7 @@
       "procedureId": "slides-v1",
       "procedureVersion": "2.0.2",
       "procedureJsonSha256": "f9ad977b65c9c54c6432545e5408bde34dacc7348b94b9786dfd1b4148fa8156",
-      "packJsonSha256": "7fa35db732a9297a51733a718f341c37b1d6f681a637699be5ea6add8a81a199",
+      "packJsonSha256": "431e0b259a62495eafbe44dd52d23cd8c993883bd67c8d91c42c40690dc04ec4",
       "methodologyContractVersion": "evaluation-contract-v1.2.0",
       "methodologyContractDigest": "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
       "packedPath": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2",
@@ -413,7 +765,29 @@
       "rollbackTargets": {
         "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
         "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.2 activations keep digests"
-      }
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
     }
   ],
   "aggregates": {

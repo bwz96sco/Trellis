@@ -1,0 +1,1 @@
+{"id":"DFT-quest-admin-missing-critical-evidence","scenarioId":"proposal-allowlist","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"proposal-allowlist","detail":"DFT-quest-admin-missing-critical-evidence"}}

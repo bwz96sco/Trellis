@@ -1,184 +1,133 @@
 {
   "schemaVersion": 1,
-  "owner": "P2-12",
-  "wave": "completion-wave-0",
-  "sourceCommitBefore": "fe1cd02eae4fba2af911d6572c1c91353cbf564f",
-  "plan": "Phase-2 Research Methodology Migration \u2014 Completion and Repair-in-Place",
-  "checks": [
+  "task": "07-29-activate-migrated-research-methodology",
+  "generatedAt": "2026-08-03T02:19:52.423606+00:00",
+  "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+  "entries": [
     {
-      "id": "wave0-gitnexus-analyze",
+      "commandId": "core-full-test-suite",
       "argv": [
         "npx",
-        "gitnexus",
-        "analyze"
+        "vitest",
+        "run"
       ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "pass",
-      "actual": "pass",
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core",
+      "startedAt": "2026-08-03T02:19:39.010035+00:00",
+      "endedAt": "2026-08-03T02:19:44.467487+00:00",
+      "elapsedMs": 5457,
       "exitCode": 0,
-      "notes": "Index refreshed from stale 8d59dc9 to fe1cd02; 17921 nodes"
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "methodologyContract": "evaluation-contract-v1.2.0",
+      "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "stdoutPreview": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core\u001b[39m\n\n \u001b[32m\u2713\u001b[39m test/compatibility/package-exports.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 626\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m\u2713\u001b[22m\u001b[39m keeps root identities limited to the Channel and Task barrels \u001b[33m 304\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m\u2713\u001b[22m\u001b[39m imports every explicit subpath with representative public values \u001b[33m 318\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m test/channel/cha",
+      "stderrPreview": ""
     },
     {
-      "id": "wave0-gitnexus-impact",
+      "commandId": "core-methodology-tests",
       "argv": [
-        "gitnexus",
-        "impact",
-        "RESEARCH_PROCEDURE_CURRENT_VERSION",
-        "-d",
-        "upstream",
-        "--depth",
-        "3",
-        "-r",
-        "Trellis"
-      ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "report-blast-radius",
-      "actual": "pass",
-      "exitCode": 0,
-      "notes": "CURRENT_VERSION and REGISTRY: risk LOW (0 direct). resolveResearchCapability: CRITICAL if body changed \u2014 body not edited; data-only containment proceeded."
-    },
-    {
-      "id": "wave0-core-unit",
-      "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis-core",
-        "exec",
+        "npx",
         "vitest",
         "run",
-        "test/research/stage-capabilities.test.ts",
-        "test/research/procedure-policy.test.ts",
-        "test/compatibility/package-exports.test.ts",
-        "test/research/cutover-rollback-rehearsal.test.ts"
+        "test/research/methodology-runtime.test.ts",
+        "test/research/dispatch-composition.test.ts",
+        "test/research/cutover-rollback-rehearsal.test.ts",
+        "test/research/proposal-operation-allowlist.test.ts"
       ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "pass",
-      "actual": "pass",
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core",
+      "startedAt": "2026-08-03T02:19:44.467581+00:00",
+      "endedAt": "2026-08-03T02:19:45.785121+00:00",
+      "elapsedMs": 1317,
       "exitCode": 0,
-      "notes": "97 tests; CURRENT=1.0.0; registry length 14; literature.scan default"
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "methodologyContract": "evaluation-contract-v1.2.0",
+      "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "stdoutPreview": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core\u001b[39m\n\n \u001b[32m\u2713\u001b[39m test/research/dispatch-composition.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m test/research/proposal-operation-allowlist.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m test/research/cutover-rollback-rehearsal.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m tes",
+      "stderrPreview": ""
     },
     {
-      "id": "wave0-historical-and-resolution",
+      "commandId": "cli-methodology-tests",
       "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis",
-        "exec",
+        "npx",
         "vitest",
         "run",
-        "test/commands/research-procedure-historical-resolution.test.ts",
-        "test/commands/research-procedure-resolution.integration.test.ts"
+        "test/commands/research-methodology-candidate-bijection.test.ts",
+        "test/commands/research-procedure-historical-resolution.test.ts"
       ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "pass",
-      "actual": "pass",
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/cli",
+      "startedAt": "2026-08-03T02:19:45.785167+00:00",
+      "endedAt": "2026-08-03T02:19:49.119046+00:00",
+      "elapsedMs": 3333,
       "exitCode": 0,
-      "notes": "17 tests; registry-current v1; activation-recorded 1.0.0/2.0.0/2.0.1 resolve exact distinct digests"
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "methodologyContract": "evaluation-contract-v1.2.0",
+      "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "stdoutPreview": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/cli\u001b[39m\n\n \u001b[32m\u2713\u001b[39m test/commands/research-methodology-candidate-bijection.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m\u2713\u001b[39m test/commands/research-procedure-historical-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[",
+      "stderrPreview": "npm warn Unknown project config \"ignore-workspace-root-check\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\n"
     },
     {
-      "id": "wave0-historical-package-byte-identity",
+      "commandId": "differential-harness-all",
       "argv": [
-        "git",
-        "diff",
-        "--stat",
-        "--",
-        "packages/cli/src/templates/research/procedures/"
+        "node",
+        "packages/cli/scripts/research-methodology-differential.mjs"
       ],
       "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "empty-diff",
-      "actual": "empty-diff",
+      "startedAt": "2026-08-03T02:19:49.119154+00:00",
+      "endedAt": "2026-08-03T02:19:49.267516+00:00",
+      "elapsedMs": 148,
       "exitCode": 0,
-      "notes": "1.0.0, 2.0.0, and 2.0.1 Procedure trees unmodified"
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "methodologyContract": "evaluation-contract-v1.2.0",
+      "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "stdoutPreview": "{\n  \"schemaVersion\": 2,\n  \"mode\": \"all\",\n  \"status\": \"pass\",\n  \"wording\": \"229 frozen cases passed; 38 separate Phase-2 expansion cases passed.\",\n  \"frozen\": {\n    \"total\": 229,\n    \"unique\": 229,\n    \"passed\": 229,\n    \"failed\": 0,\n    \"unexecuted\": 0,\n    \"criticalPassed\": 212,\n    \"nonCriticalPassed\": 17\n  },\n  \"expansion\": {\n    \"total\": 38,\n    \"unique\": 38,\n    \"passed\": 38,\n    \"failed\": 0,\n    \"unexecuted\": 0\n  },\n  \"completeness\": {\n    \"ok\": true,\n    \"errors\": [],\n    \"criticalCount\":",
+      "stderrPreview": ""
     },
     {
-      "id": "wave0-premature-cutover-manifests-preserved",
+      "commandId": "core-typescript-check",
       "argv": [
-        "git",
-        "diff",
-        "--stat",
-        "--",
-        ".trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-manifest.json",
-        ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest.json"
+        "npx",
+        "tsc",
+        "--noEmit"
       ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "empty-diff",
-      "actual": "empty-diff",
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core",
+      "startedAt": "2026-08-03T02:19:49.267563+00:00",
+      "endedAt": "2026-08-03T02:19:50.783603+00:00",
+      "elapsedMs": 1516,
       "exitCode": 0,
-      "notes": "Premature 2.0.1 active/candidate manifests retained as historical evidence"
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "methodologyContract": "evaluation-contract-v1.2.0",
+      "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "stdoutPreview": "",
+      "stderrPreview": ""
     },
     {
-      "id": "wave1-core-parser-identity",
+      "commandId": "cli-typescript-check",
       "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis-core",
-        "exec",
-        "vitest",
-        "run",
-        "test/research/procedure-support-pack.test.ts",
-        "test/research/procedure-policy.test.ts"
+        "npx",
+        "tsc",
+        "--noEmit"
       ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "pass",
-      "actual": "pass",
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/cli",
+      "startedAt": "2026-08-03T02:19:50.783997+00:00",
+      "endedAt": "2026-08-03T02:19:52.423544+00:00",
+      "elapsedMs": 1639,
       "exitCode": 0,
-      "notes": "Historical id/version separation; 2.0.2 methodology+visibility rules; rootOnlyInventory"
-    },
-    {
-      "id": "wave1-cli-historical-resolution",
-      "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis",
-        "exec",
-        "vitest",
-        "run",
-        "test/commands/research-procedure-historical-resolution.test.ts",
-        "test/commands/research-procedure-resolution.integration.test.ts"
-      ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "pass",
-      "actual": "pass",
-      "exitCode": 0,
-      "notes": "activation-recorded no longer forces procedureId==capability.procedure.id"
-    },
-    {
-      "id": "wave2-partial-context-v2",
-      "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis-core",
-        "exec",
-        "vitest",
-        "run",
-        "test/research/methodology-runtime.test.ts"
-      ],
-      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
-      "expected": "pass",
-      "actual": "pass",
-      "exitCode": 0,
-      "notes": "Context v2 recomputes digests; no checkpoint-name artifact synthesis; exact contracts only"
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "methodologyContract": "evaluation-contract-v1.2.0",
+      "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "stdoutPreview": "",
+      "stderrPreview": "npm warn Unknown project config \"ignore-workspace-root-check\". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.\n"
     }
-  ],
-  "dirtyPathAudit": {
-    "excludedFromStaging": [
-      "AGENTS.md",
-      "CLAUDE.md",
-      "docs-site",
-      "marketplace"
-    ],
-    "unrelatedResearchState": "not modified"
-  },
-  "supersedesPriorLedgerWave": "prior wave-0 ledger at 276e9d5a remains in git history; this ledger is Completion Wave-0 after fe1cd02e",
-  "waveProgress": {
-    "completionWave0": "complete-uncommitted",
-    "completionWave1": "complete-uncommitted",
-    "completionWave2": "partial-context-v2-only",
-    "remainingWave2": [
-      "pack-driven root validation with artifact bytes",
-      "Proposal record/apply capability allowlists",
-      "closure selected XOR blocked enforcement wiring",
-      "deterministic report binding to pack contracts"
-    ]
-  }
+  ]
 }

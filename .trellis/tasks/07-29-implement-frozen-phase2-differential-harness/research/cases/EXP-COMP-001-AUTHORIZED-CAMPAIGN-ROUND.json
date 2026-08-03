@@ -1,0 +1,1 @@
+{"id":"EXP-COMP-001-AUTHORIZED-CAMPAIGN-ROUND","scenarioId":"composition","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"composition","detail":"COMP-001"}}

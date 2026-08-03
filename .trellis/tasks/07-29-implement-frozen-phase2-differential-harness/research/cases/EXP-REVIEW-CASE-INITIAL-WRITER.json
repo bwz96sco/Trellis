@@ -1,0 +1,1 @@
+{"id":"EXP-REVIEW-CASE-INITIAL-WRITER","scenarioId":"missing-critical-evidence","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"EXP-REVIEW-CASE-INITIAL-WRITER"}}

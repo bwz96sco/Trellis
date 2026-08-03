@@ -1,0 +1,1 @@
+{"id":"DFT-computation-required-vs-optional-artifacts","scenarioId":"provenance-drift","criticality":"non-critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"DFT-computation-required-vs-optional-artifacts"}}

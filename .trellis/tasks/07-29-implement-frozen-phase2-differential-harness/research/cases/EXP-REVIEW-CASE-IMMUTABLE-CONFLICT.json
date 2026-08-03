@@ -1,0 +1,1 @@
+{"id":"EXP-REVIEW-CASE-IMMUTABLE-CONFLICT","scenarioId":"forbidden-mutation","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"EXP-REVIEW-CASE-IMMUTABLE-CONFLICT"}}

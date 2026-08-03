@@ -1,0 +1,1 @@
+{"id":"DFT-survey-required-vs-optional-artifacts","scenarioId":"package-digest-v1","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"package-digest-v1","detail":"sha256:04451926ffa5374d0d8510387c90d7ae4f421fe3165c8d0918ea387eceb36c70"}}

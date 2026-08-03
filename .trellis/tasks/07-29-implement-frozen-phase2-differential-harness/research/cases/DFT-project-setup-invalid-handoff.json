@@ -1,0 +1,1 @@
+{"id":"DFT-project-setup-invalid-handoff","scenarioId":"closure-exclusivity","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"closure-exclusivity-enforced","detail":"DFT-project-setup-invalid-handoff"}}

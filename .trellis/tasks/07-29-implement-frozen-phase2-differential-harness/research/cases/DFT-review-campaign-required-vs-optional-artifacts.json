@@ -1,0 +1,1 @@
+{"id":"DFT-review-campaign-required-vs-optional-artifacts","scenarioId":"forbidden-mutation","criticality":"non-critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"DFT-review-campaign-required-vs-optional-artifacts"}}

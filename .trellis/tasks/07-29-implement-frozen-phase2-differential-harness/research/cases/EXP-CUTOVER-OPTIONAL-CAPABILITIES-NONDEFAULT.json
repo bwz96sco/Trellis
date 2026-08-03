@@ -1,0 +1,1 @@
+{"id":"EXP-CUTOVER-OPTIONAL-CAPABILITIES-NONDEFAULT","scenarioId":"forbidden-mutation","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"EXP-CUTOVER-OPTIONAL-CAPABILITIES-NONDEFAULT"}}

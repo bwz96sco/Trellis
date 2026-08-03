@@ -1,0 +1,1 @@
+{"id":"DFT-survey-missing-critical-evidence","scenarioId":"global-control","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"global-control","detail":"DFT-survey-missing-critical-evidence"}}

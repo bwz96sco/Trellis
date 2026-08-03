@@ -77,21 +77,79 @@ const REGISTRY: Record<string, ValidatorFn> = {
     ];
   },
   "closure-exclusivity": (ctx) => {
-    const selected = ctx.facts.selected === true;
-    const blocked = ctx.facts.blocked === true;
-    if (selected && blocked) {
+    // Frozen selected XOR blocked: both true and both false are critical.
+    const selectedPresent = "selected" in ctx.facts;
+    const blockedPresent = "blocked" in ctx.facts;
+    if (!selectedPresent || !blockedPresent) {
       return [
         {
           validatorId: "closure-exclusivity",
           severity: "critical",
           code: "INVALID_CLOSURE",
-          message: "Selected and blocked closure cannot both be true",
+          message: "Closure requires explicit selected and blocked facts",
+        },
+      ];
+    }
+    const selected = ctx.facts.selected === true;
+    const blocked = ctx.facts.blocked === true;
+    if (selected === blocked) {
+      return [
+        {
+          validatorId: "closure-exclusivity",
+          severity: "critical",
+          code: "INVALID_CLOSURE",
+          message:
+            selected && blocked
+              ? "Selected and blocked closure cannot both be true"
+              : "Selected and blocked closure cannot both be false",
         },
       ];
     }
     return [];
   },
 };
+
+/**
+ * Derive validator facts from canonical Result/Proposal fields only.
+ * Callers must not invent opaque authority booleans without this derivation.
+ */
+export function deriveMethodologyValidatorFacts(input: {
+  readonly resultStatus?: string;
+  readonly proposalStatus?: string;
+  readonly proposalOperationCount?: number;
+  readonly artifactPaths?: readonly string[];
+  readonly selected?: boolean;
+  readonly blocked?: boolean;
+  readonly missingCriticalEvidence?: boolean;
+  readonly provenanceDrift?: boolean;
+  readonly forbiddenMutation?: boolean;
+}): Readonly<Record<string, unknown>> {
+  const resultStatus = input.resultStatus;
+  const blocked =
+    input.blocked ??
+    (resultStatus === "blocked" || resultStatus === "failed");
+  // Success terminals that complete work are "selected" for XOR closure.
+  const selected =
+    input.selected ??
+    (resultStatus === "completed" ||
+      resultStatus === "success" ||
+      resultStatus === "partial");
+  // missingCriticalEvidence is never invented from empty paths alone: blocked
+  // terminals legitimately have no artifacts. Pack artifact contracts enforce
+  // required evidence on applicable success terminals.
+  return Object.freeze({
+    resultStatus,
+    proposalStatus: input.proposalStatus,
+    proposalOperationCount: input.proposalOperationCount ?? 0,
+    selected,
+    blocked,
+    missingCriticalEvidence: input.missingCriticalEvidence === true,
+    provenanceDrift: input.provenanceDrift === true,
+    idDrift: false,
+    forbiddenMutation: input.forbiddenMutation === true,
+    artifactPathCount: input.artifactPaths?.length ?? 0,
+  });
+}
 
 /** Trusted implementations are keyed by exact (id, version). Unknown pairs are always critical. */
 const VERSIONED_REGISTRY: Record<string, ValidatorFn> = Object.fromEntries(

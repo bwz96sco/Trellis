@@ -1,0 +1,1 @@
+{"id":"EXP-CUTOVER-POSTACTIVATION-REGISTRY-ROLLBACK","scenarioId":"artifact-contract","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"artifact-contract","detail":"EXP-CUTOVER-POSTACTIVATION-REGISTRY-ROLLBACK"}}

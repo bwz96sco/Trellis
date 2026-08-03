@@ -1,0 +1,1 @@
+{"id":"DFT-figure-external-integration-unavailable","scenarioId":"provenance-drift","criticality":"non-critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"DFT-figure-external-integration-unavailable"}}

@@ -1,0 +1,1 @@
+{"id":"DFT-ideation-forbidden-mutation","scenarioId":"artifact-contract","criticality":"critical","expectedOutcome":"pass","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"artifact-contract","detail":"DFT-ideation-forbidden-mutation"}}

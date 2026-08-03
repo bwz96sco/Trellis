@@ -103,4 +103,36 @@ describe("historical Procedure resolution", () => {
     expect(current.manifest.version).toBe("1.0.0");
     expect(current.digest).not.toBe(dormant.digest);
   });
+
+  it("activation-recorded Procedure ID may differ from capability.current Procedure ID", async () => {
+    // literature.review currently binds literature-review-v1; a historical
+    // activation may have recorded survey-v1 (same stage+kind ceilings).
+    const reviewCap = RESEARCH_CAPABILITY_REGISTRY.find(
+      (c) => c.id === "research.literature.review",
+    )!;
+    expect(reviewCap.procedure.id).toBe("literature-review-v1");
+    expect(reviewCap.procedure.id).not.toBe("survey-v1");
+
+    const recorded = await resolveResearchProcedure({
+      root: os.tmpdir(),
+      capabilityId: reviewCap.id,
+      mode: "activation-recorded",
+      procedureId: "survey-v1",
+      procedureVersion: "2.0.2",
+    });
+    expect(recorded.manifest.id).toBe("survey-v1");
+    expect(recorded.manifest.version).toBe("2.0.2");
+    expect(recorded.manifest.stage).toBe(reviewCap.stage);
+    expect(recorded.manifest.kind).toBe(reviewCap.kind);
+    expect(recorded.digestDomain).toBe("v2");
+
+    const currentBinding = await resolveResearchProcedure({
+      root: os.tmpdir(),
+      capabilityId: reviewCap.id,
+      mode: "registry-current",
+    });
+    expect(currentBinding.manifest.id).toBe("literature-review-v1");
+    expect(currentBinding.manifest.id).not.toBe(recorded.manifest.id);
+    expect(currentBinding.digest).not.toBe(recorded.digest);
+  });
 });

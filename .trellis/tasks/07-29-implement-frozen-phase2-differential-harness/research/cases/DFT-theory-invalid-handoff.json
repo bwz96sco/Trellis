@@ -1,0 +1,1 @@
+{"id":"DFT-theory-invalid-handoff","scenarioId":"global-control","criticality":"critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"global-control","detail":"DFT-theory-invalid-handoff"}}

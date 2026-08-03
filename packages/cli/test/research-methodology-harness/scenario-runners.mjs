@@ -127,13 +127,10 @@ function runClosureExclusivity(caseRecord) {
     ],
     facts: { selected: false, blocked: false },
   });
-  // Selected XOR blocked: both false should also be critical under frozen contract.
-  // If implementation only catches both-true, still require both-true path above.
-  if (bothFalse.criticalFailure || !bothFalse.ok) {
-    return ok("closure-exclusivity-enforced", caseRecord.id);
+  if (!bothFalse.criticalFailure) {
+    return fail("closure-both-false-not-caught", caseRecord.id);
   }
-  // Accept both-true-only enforcement as long as dual-true fails closed.
-  return ok("expected-critical-failure", caseRecord.id);
+  return ok("closure-exclusivity-enforced", caseRecord.id);
 }
 
 function runArtifactContract(caseRecord) {
@@ -221,6 +218,7 @@ function runComposition(caseRecord) {
     parentDispatchId: "dsp_parent",
     parentActivationId: "act_parent",
     parentCapabilityId: "research.ideation.generate",
+    childCapabilityOrAdapterId: edge.childCapabilityOrAdapterId,
     maxChildren: 1,
     remainingDispatchBudget: 1,
     procedureDigest: "sha256:p",
@@ -238,6 +236,8 @@ function runComposition(caseRecord) {
     edgeId,
     parentDispatchId: "dsp_parent",
     parentActivationId: "act_parent",
+    parentCapabilityId: edge.parentCapabilityId,
+    childCapabilityOrAdapterId: edge.childCapabilityOrAdapterId,
     maxChildren: 1,
     remainingDispatchBudget: 1,
     actualChildCount: 2,

@@ -1,98 +1,373 @@
 {
+  "schemaVersion": 1,
   "task": "07-29-freeze-phase2-methodology-packaging-contracts",
-  "child": "P2-01",
-  "startedAt": "2026-07-29T15:07:05Z",
-  "completedAt": "2026-07-29T15:07:05Z",
-  "verdict": "accepted",
-  "pins": {
-    "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
-    "digestMatch": true,
-    "infraPin": "ccd5bb3afc99283252c599916a2b8c2e05075cc6",
-    "ownerCaseHash": "0ff21fb80869b6ab8b8ca5287d3247f0d44210ccadb6d36f259f887d181fafb5",
-    "fullMetadataHash": "d22f05619f540459a1f982935a1b3742b8e8565e85f31bcffb4f0770807e00b7"
-  },
-  "checks": [
+  "generatedAt": "2026-08-03T02:20:47.352080+00:00",
+  "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+  "entries": [
     {
-      "id": "CHK-PIN-DIGEST",
-      "command": "sha256 frozen-migration-target-v1.2.json",
-      "result": "pass",
-      "observed": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb"
+      "commandId": "verify-202-package-computation-case-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package computation-case-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.312452+00:00",
+      "endedAt": "2026-08-03T02:20:47.312689+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:d7cff341c53e3eaa; artifact-contract:OK:154752764f7e06d4; validators:OK:1a96c7d5378aaaad; instructions:OK:18d400e1471894ef"
     },
     {
-      "id": "CHK-FROZEN-CASE-BIJECTION",
-      "command": "alloc caseIds vs matrix",
-      "result": "pass",
-      "missingInAlloc": [],
-      "extraInAlloc": [],
-      "allocCount": 229,
-      "matrixCount": 229
+      "commandId": "verify-202-package-experiment-campaign-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package experiment-campaign-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.313117+00:00",
+      "endedAt": "2026-08-03T02:20:47.313125+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:db9880ca794abaea; artifact-contract:OK:1e179bbd778833be; validators:OK:1a96c7d5378aaaad; instructions:OK:50a76a25fce6daae"
     },
     {
-      "id": "CHK-EXPANSION-NO-OVERLAP",
-      "command": "expansion \u2229 frozen",
-      "result": "pass",
-      "overlap": [],
-      "expansionCount": 38
+      "commandId": "verify-202-package-experiment-round-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package experiment-round-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.313641+00:00",
+      "endedAt": "2026-08-03T02:20:47.313644+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:05b0b6a9c330bb0c; artifact-contract:OK:f64605d9039a3f9f; validators:OK:1a96c7d5378aaaad; instructions:OK:2b85249f1e92b98d"
     },
     {
-      "id": "CHK-PATH-DISJOINT",
-      "command": "path-ownership parse",
-      "result": "pass",
-      "overlaps": {}
+      "commandId": "verify-202-package-figure-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package figure-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.314165+00:00",
+      "endedAt": "2026-08-03T02:20:47.314167+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:17bcaca9ad0fe3fa; artifact-contract:OK:5f322c0ea30cd99e; validators:OK:1a96c7d5378aaaad; instructions:OK:a46c127ef1ddd61f"
     },
     {
-      "id": "CHK-PACKAGE-16",
-      "command": "coverage map",
-      "result": "pass"
+      "commandId": "verify-202-package-idea-evaluation-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package idea-evaluation-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.314409+00:00",
+      "endedAt": "2026-08-03T02:20:47.314414+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:e15d4bb395bd566e; artifact-contract:OK:a76df8212be90399; validators:OK:1a96c7d5378aaaad; instructions:OK:bb64f7ed873ebab4"
     },
     {
-      "id": "CHK-CHECKPOINT-COVERAGE",
-      "command": "every package has checkpoints",
-      "result": "pass"
+      "commandId": "verify-202-package-idea-generation-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package idea-generation-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.314748+00:00",
+      "endedAt": "2026-08-03T02:20:47.314750+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:bdbae2acb05b7c72; artifact-contract:OK:3fd1d7d6f5e060a5; validators:OK:1a96c7d5378aaaad; instructions:OK:0cde52afb3b18c1a"
     },
     {
-      "id": "CHK-IDEATION-DISPOSITION",
-      "command": "ideation-closure-disposition.md",
-      "result": "pass"
+      "commandId": "verify-202-package-literature-review-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package literature-review-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.314978+00:00",
+      "endedAt": "2026-08-03T02:20:47.314983+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:dd424e49c6c6ea0c; artifact-contract:OK:bcc187d880dc36a9; validators:OK:1a96c7d5378aaaad; instructions:OK:480b412dcf9d4fcc"
     },
     {
-      "id": "CHK-LITERATURE-ROUTE",
-      "command": "literature-route-disposition.md",
-      "result": "pass"
+      "commandId": "verify-202-package-literature-scan-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package literature-scan-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.315196+00:00",
+      "endedAt": "2026-08-03T02:20:47.315198+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:241d7e7d73ebf061; artifact-contract:OK:a15204e827cdfda8; validators:OK:1a96c7d5378aaaad; instructions:OK:816a7d4ff47cc580"
     },
     {
-      "id": "CHK-NO-PRODUCTION-EDITS",
-      "command": "git path scope",
-      "result": "pass",
-      "owned": "task research/** only"
+      "commandId": "verify-202-package-project-setup-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package project-setup-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.315402+00:00",
+      "endedAt": "2026-08-03T02:20:47.315406+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:f8d635c68c40294e; artifact-contract:OK:33fe8e481ea00c3c; validators:OK:1a96c7d5378aaaad; instructions:OK:cd0ace918df9ef58"
     },
     {
-      "id": "CHK-PRIVACY",
-      "command": "no private bodies",
-      "result": "pass"
+      "commandId": "verify-202-package-quest-admin-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package quest-admin-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.315613+00:00",
+      "endedAt": "2026-08-03T02:20:47.315616+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:8ebad3f30ec2e69f; artifact-contract:OK:570cdb75f40a52f0; validators:OK:1a96c7d5378aaaad; instructions:OK:3ec36a5e53d0e947"
+    },
+    {
+      "commandId": "verify-202-package-quest-framing-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package quest-framing-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.315866+00:00",
+      "endedAt": "2026-08-03T02:20:47.315869+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:5a9e6242ad6871e9; artifact-contract:OK:6411726f3f691b40; validators:OK:1a96c7d5378aaaad; instructions:OK:9c31da444f0e7a1e"
+    },
+    {
+      "commandId": "verify-202-package-review-campaign-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package review-campaign-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.316077+00:00",
+      "endedAt": "2026-08-03T02:20:47.316079+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:4f5bd9937e5b2d44; artifact-contract:OK:d715f2ec1a08f68f; validators:OK:1a96c7d5378aaaad; instructions:OK:2270be335c33e5a0"
+    },
+    {
+      "commandId": "verify-202-package-review-case-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package review-case-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.316283+00:00",
+      "endedAt": "2026-08-03T02:20:47.316286+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:4db4cfc415137d80; artifact-contract:OK:cbd6246b33f4c8e0; validators:OK:1a96c7d5378aaaad; instructions:OK:59fa134fa20da188"
+    },
+    {
+      "commandId": "verify-202-package-slides-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package slides-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.316619+00:00",
+      "endedAt": "2026-08-03T02:20:47.316624+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:431e0b259a62495e; artifact-contract:OK:a29faf1f002e38b1; validators:OK:1a96c7d5378aaaad; instructions:OK:b6f842ff6b4b7b32"
+    },
+    {
+      "commandId": "verify-202-package-survey-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package survey-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.317053+00:00",
+      "endedAt": "2026-08-03T02:20:47.317059+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:2226e23b49edd214; artifact-contract:OK:921c97bb8ecf0819; validators:OK:1a96c7d5378aaaad; instructions:OK:f034b7541422d0e0"
+    },
+    {
+      "commandId": "verify-202-package-theory-case-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package theory-case-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.317330+00:00",
+      "endedAt": "2026-08-03T02:20:47.317332+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:12f88f2252dd8bc4; artifact-contract:OK:ef83917260c0915f; validators:OK:1a96c7d5378aaaad; instructions:OK:a1ee47f476c37cef"
+    },
+    {
+      "commandId": "verify-202-package-writing-case-v1",
+      "argv": [
+        "python3",
+        "-c",
+        "verify 2.0.2 package writing-case-v1"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.317553+00:00",
+      "endedAt": "2026-08-03T02:20:47.317555+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "pack.json:OK:b56ab54c607bc409; artifact-contract:OK:ce226529de51ee37; validators:OK:1a96c7d5378aaaad; instructions:OK:bbc2702f593f6ac4"
+    },
+    {
+      "commandId": "verify-historical-1.0.0-unchanged",
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "HEAD",
+        "--",
+        "packages/cli/src/templates/research/procedures/*/1.0.0/"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.329513+00:00",
+      "endedAt": "2026-08-03T02:20:47.329542+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "changed_files=0"
+    },
+    {
+      "commandId": "verify-historical-2.0.0-unchanged",
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "HEAD",
+        "--",
+        "packages/cli/src/templates/research/procedures/*/2.0.0/"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.340317+00:00",
+      "endedAt": "2026-08-03T02:20:47.340344+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "changed_files=0"
+    },
+    {
+      "commandId": "verify-historical-2.0.1-unchanged",
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "HEAD",
+        "--",
+        "packages/cli/src/templates/research/procedures/*/2.0.1/"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.351734+00:00",
+      "endedAt": "2026-08-03T02:20:47.351794+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "changed_files=0"
+    },
+    {
+      "commandId": "verify-candidate-manifest-digest",
+      "argv": [
+        "sha256",
+        "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest-2.0.2.json"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "startedAt": "2026-08-03T02:20:47.352061+00:00",
+      "endedAt": "2026-08-03T02:20:47.352069+00:00",
+      "elapsedMs": 0,
+      "exitCode": 0,
+      "expectedOutcome": "pass",
+      "actualOutcome": "pass",
+      "sourceCommit": "cfea6a33b43574bd95aaca1188274b745ae1224e",
+      "stdoutPreview": "computed=eb992905ad31cf3831e464ddbe6f39fad8728ad8715b6a0031fdb4e604261458 expected=eb992905ad31cf3831e464ddbe6f39fad8728ad8715b6a0031fdb4e604261458 match=True"
     }
-  ],
-  "forbiddenPathScan": {
-    "AGENTS.md": "excluded",
-    "CLAUDE.md": "excluded",
-    "docs-site": "excluded",
-    "marketplace": "excluded"
-  },
-  "deliverables": [
-    "allocation-freeze-hashes.json",
-    "artifact-and-validator-contract.md",
-    "differential-case-allocation.json",
-    "full-metadata-freeze.json",
-    "ideation-closure-disposition.md",
-    "literature-route-disposition.md",
-    "methodology-contract-freeze.json",
-    "owner-case-freeze.json",
-    "package-contract.md",
-    "package-coverage-map.json",
-    "path-ownership-map.md",
-    "phase2-expansion-case-allocation.json",
-    "pin-attestation.md",
-    "planning-context.md",
-    "versioning-and-rollback-contract.md"
   ]
 }

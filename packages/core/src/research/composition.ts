@@ -152,11 +152,18 @@ export function validateRootCompositionDescriptor(
       message: `Actual child count ${desc.actualChildCount} exceeds maxChildren ${desc.maxChildren}`,
     };
   }
-  // Exact parent/child capability binding when provided (no substring soft match).
+  // Exact parent/child capability bindings are required (no optional soft match).
   if (
-    desc.parentCapabilityId !== undefined &&
-    desc.parentCapabilityId !== edge.parentCapabilityId
+    desc.parentCapabilityId === undefined ||
+    desc.parentCapabilityId.length === 0
   ) {
+    return {
+      ok: false,
+      code: "PARENT_MISMATCH",
+      message: `Parent capability is required for edge ${edge.id}`,
+    };
+  }
+  if (desc.parentCapabilityId !== edge.parentCapabilityId) {
     return {
       ok: false,
       code: "PARENT_MISMATCH",
@@ -164,9 +171,16 @@ export function validateRootCompositionDescriptor(
     };
   }
   if (
-    desc.childCapabilityOrAdapterId !== undefined &&
-    desc.childCapabilityOrAdapterId !== edge.childCapabilityOrAdapterId
+    desc.childCapabilityOrAdapterId === undefined ||
+    desc.childCapabilityOrAdapterId.length === 0
   ) {
+    return {
+      ok: false,
+      code: "CHILD_MISMATCH",
+      message: `Child capability or adapter is required for edge ${edge.id}`,
+    };
+  }
+  if (desc.childCapabilityOrAdapterId !== edge.childCapabilityOrAdapterId) {
     return {
       ok: false,
       code: "CHILD_MISMATCH",

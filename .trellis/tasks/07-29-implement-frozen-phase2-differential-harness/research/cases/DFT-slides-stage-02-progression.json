@@ -1,0 +1,1 @@
+{"id":"DFT-slides-stage-02-progression","scenarioId":"proposal-allowlist","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"proposal-allowlist","detail":"DFT-slides-stage-02-progression"}}

@@ -1,0 +1,1 @@
+{"id":"DFT-figure-missing-critical-evidence","scenarioId":"closure-exclusivity","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"closure-exclusivity-enforced","detail":"DFT-figure-missing-critical-evidence"}}

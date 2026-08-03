@@ -69,6 +69,63 @@ for (const c of cases) {
       detail: error instanceof Error ? error.message : String(error),
     };
   }
+  // Enforce per-row expected outcome / zero-write declarations.
+  if (result.executed && result.ok) {
+    const outcome = result.outcome ?? "";
+    if (
+      c.expectedOutcome === "expected-critical-failure" &&
+      !String(outcome).includes("critical") &&
+      !String(outcome).includes("fail")
+    ) {
+      // critical-failure scenarios must not report a pure success outcome name
+      if (outcome === "pass" || outcome === "ok") {
+        result = {
+          ok: false,
+          executed: true,
+          outcome: "expected-outcome-mismatch",
+          detail: `row expected ${c.expectedOutcome}, got ${outcome}`,
+        };
+      }
+    }
+    if (c.zeroWrite === true && outcome === "structural-registration") {
+      result = {
+        ok: false,
+        executed: true,
+        outcome: "zero-write-not-exercised",
+        detail: c.id,
+      };
+    }
+  }
+  if (Array.isArray(c.expectedErrorCodes) && c.expectedErrorCodes.length > 0) {
+    const detail = `${result.outcome ?? ""} ${result.detail ?? ""}`;
+    const missing = c.expectedErrorCodes.filter(
+      (code) => !detail.includes(code),
+    );
+    if (missing.length && result.ok) {
+      result = {
+        ok: false,
+        executed: result.executed,
+        outcome: "expected-error-code-missing",
+        detail: missing.join(","),
+      };
+    }
+  }
+  // Per-case evidence destination (deterministic record)
+  if (c.evidenceDestination && result.executed) {
+    const evidencePath = path.join(repoRoot, c.evidenceDestination);
+    fs.mkdirSync(path.dirname(evidencePath), { recursive: true });
+    fs.writeFileSync(
+      evidencePath,
+      `${JSON.stringify({
+        id: c.id,
+        scenarioId: c.scenarioId,
+        criticality: c.criticality,
+        expectedOutcome: c.expectedOutcome,
+        zeroWrite: c.zeroWrite,
+        result,
+      })}\n`,
+    );
+  }
   if (!result.executed) unexecuted += 1;
   if (!result.ok) failed += 1;
   results.push({
@@ -77,6 +134,8 @@ for (const c of cases) {
     ownerChild: c.ownerChild,
     scenarioId: c.scenarioId,
     criticality: c.criticality,
+    expectedOutcome: c.expectedOutcome,
+    zeroWrite: c.zeroWrite,
     ...result,
   });
 }

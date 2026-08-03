@@ -1,0 +1,1 @@
+{"id":"DFT-ideation-improve-qualifying-vs-non-qualifying-novelty-delta","scenarioId":"forbidden-mutation","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"DFT-ideation-improve-qualifying-vs-non-qualifying-novelty-delta"}}

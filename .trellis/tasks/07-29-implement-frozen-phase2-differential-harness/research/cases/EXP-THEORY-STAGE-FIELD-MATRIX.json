@@ -1,0 +1,1 @@
+{"id":"EXP-THEORY-STAGE-FIELD-MATRIX","scenarioId":"provenance-drift","criticality":"non-critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"expected-critical-failure","detail":"EXP-THEORY-STAGE-FIELD-MATRIX"}}

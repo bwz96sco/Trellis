@@ -1,0 +1,1 @@
+{"id":"DFT-writing-stage-04-progression","scenarioId":"proposal-allowlist","criticality":"critical","expectedOutcome":"expected-critical-failure","zeroWrite":true,"result":{"ok":true,"executed":true,"outcome":"proposal-allowlist","detail":"DFT-writing-stage-04-progression"}}

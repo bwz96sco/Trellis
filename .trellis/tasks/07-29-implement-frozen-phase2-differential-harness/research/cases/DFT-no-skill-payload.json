@@ -1,0 +1,1 @@
+{"id":"DFT-no-skill-payload","scenarioId":"global-control","criticality":"critical","expectedOutcome":"pass","zeroWrite":false,"result":{"ok":true,"executed":true,"outcome":"global-control","detail":"DFT-no-skill-payload"}}
