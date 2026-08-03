@@ -1,0 +1,12 @@
+{
+  "mindfoldhq-trellis-0.6.7.tgz": {
+    "path": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-0.6.7.tgz",
+    "sha256": "c41bee8651e8e9a80c2d9341b4eae38171dc2c40a6cd685a14acaa577aa6b89e",
+    "bytes": 376239
+  },
+  "mindfoldhq-trellis-core-0.6.7.tgz": {
+    "path": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-core-0.6.7.tgz",
+    "sha256": "d88ed671ab5fdad28635f51f6b7ac208b52bd1dc7c6980c08a9b90bbf8a4384b",
+    "bytes": 238287
+  }
+}
