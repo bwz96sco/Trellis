@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "mode": "all",
+  "status": "pass",
+  "wording": "229 frozen cases passed; 38 separate Phase-2 expansion cases passed.",
+  "frozen": {
+    "total": 229,
+    "unique": 229,
+    "passed": 229,
+    "failed": 0,
+    "unexecuted": 0,
+    "criticalPassed": 212,
+    "nonCriticalPassed": 17
+  },
+  "expansion": {
+    "total": 38,
+    "unique": 38,
+    "passed": 38,
+    "failed": 0,
+    "unexecuted": 0
+  },
+  "completeness": {
+    "ok": true,
+    "errors": [],
+    "criticalCount": 212,
+    "nonCriticalCount": 17
+  },
+  "allocation": {
+    "explicitRegistrySha256": "e3a24209f2d0db687cfa34e29e46aece6db37485a89525675ebac386ad21d062",
+    "expectedFrozen": 229,
+    "expectedFrozenCritical": 212,
+    "expectedFrozenNonCritical": 17,
+    "expectedExpansion": 38,
+    "nonCriticalFrozenIds": [
+      "DFT-computation-required-vs-optional-artifacts",
+      "DFT-experiment-campaign-required-vs-optional-artifacts",
+      "DFT-experiment-required-vs-optional-artifacts",
+      "DFT-figure-external-integration-unavailable",
+      "DFT-figure-required-vs-optional-artifacts",
+      "DFT-idea-evaluation-required-vs-optional-artifacts",
+      "DFT-ideation-required-vs-optional-artifacts",
+      "DFT-literature-required-vs-optional-artifacts",
+      "DFT-project-setup-required-vs-optional-artifacts",
+      "DFT-quest-admin-required-vs-optional-artifacts",
+      "DFT-quest-required-vs-optional-artifacts",
+      "DFT-review-campaign-required-vs-optional-artifacts",
+      "DFT-review-case-required-vs-optional-artifacts",
+      "DFT-slides-required-vs-optional-artifacts",
+      "DFT-survey-required-vs-optional-artifacts",
+      "DFT-theory-required-vs-optional-artifacts",
+      "DFT-writing-required-vs-optional-artifacts"
+    ]
+  },
+  "failures": []
+}

@@ -1,0 +1,1 @@
+{"procedureId":"review-campaign-v1","version":"2.0.2","checkpoints":["01-scope","02-case-bind","03-roll-up"],"orderedStages":["01-scope","02-case-bind","03-roll-up"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

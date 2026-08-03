@@ -1,0 +1,1 @@
+{"procedureId":"experiment-campaign-v1","version":"2.0.2","checkpoints":["01-protocol","02-queue","03-round-bind","04-close"],"orderedStages":["01-protocol","02-queue","03-round-bind","04-close"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

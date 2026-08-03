@@ -79,4 +79,28 @@ describe("historical Procedure resolution", () => {
     expect(capability.procedure.version).toBe("1.0.0");
     expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("1.0.0");
   });
+
+  it("activation-recorded resolves dormant 2.0.2 while registry-current stays 1.0.0", async () => {
+    expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("1.0.0");
+    const dormant = await resolveResearchProcedure({
+      root: os.tmpdir(),
+      capabilityId: capability.id,
+      mode: "activation-recorded",
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.2",
+    });
+    expect(dormant.manifest.version).toBe("2.0.2");
+    expect(dormant.packageSchemaVersion).toBe(2);
+    expect(dormant.digestDomain).toBe("v2");
+    expect(dormant.supportPack?.manifest.methodologyContractVersion).toBe(
+      "evaluation-contract-v1.2.0",
+    );
+    const current = await resolveResearchProcedure({
+      root: os.tmpdir(),
+      capabilityId: capability.id,
+      mode: "registry-current",
+    });
+    expect(current.manifest.version).toBe("1.0.0");
+    expect(current.digest).not.toBe(dormant.digest);
+  });
 });

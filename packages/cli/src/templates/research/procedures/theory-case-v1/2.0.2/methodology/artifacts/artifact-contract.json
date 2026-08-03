@@ -1,0 +1,1 @@
+{"procedureId":"theory-case-v1","version":"2.0.2","checkpoints":["01-claim","02-argument","03-bound"],"orderedStages":["01-claim","02-argument","03-bound"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

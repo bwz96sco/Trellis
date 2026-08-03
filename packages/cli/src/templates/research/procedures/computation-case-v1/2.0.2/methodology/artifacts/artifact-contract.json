@@ -1,0 +1,1 @@
+{"procedureId":"computation-case-v1","version":"2.0.2","checkpoints":["01-spec","02-execute","03-repro"],"orderedStages":["01-spec","02-execute","03-repro"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

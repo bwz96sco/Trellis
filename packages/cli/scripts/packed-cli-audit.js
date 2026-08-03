@@ -35,7 +35,7 @@ export const RESEARCH_PROCEDURE_IDS = [
 ];
 
 /** Versions that must ship for historical replay / candidate repair. */
-export const RESEARCH_PROCEDURE_VERSIONS = ["1.0.0", "2.0.0", "2.0.1"];
+export const RESEARCH_PROCEDURE_VERSIONS = ["1.0.0", "2.0.0", "2.0.1", "2.0.2"];
 
 /** Optional procedures exist only from 2.0.0+ (no 1.0.0 fixture). */
 export const RESEARCH_OPTIONAL_PROCEDURE_IDS = new Set([

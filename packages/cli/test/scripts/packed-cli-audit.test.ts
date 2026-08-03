@@ -300,7 +300,7 @@ describe("packed CLI inventory audit", () => {
           `package/dist/templates/research/procedures/${procedureId}/1.0.0/PROCEDURE.md`,
         );
       }
-      for (const version of ["2.0.0", "2.0.1"] as const) {
+      for (const version of ["2.0.0", "2.0.1", "2.0.2"] as const) {
         expect(inventory.requiredEntries).toContain(
           `package/dist/templates/research/procedures/${procedureId}/${version}/procedure.json`,
         );

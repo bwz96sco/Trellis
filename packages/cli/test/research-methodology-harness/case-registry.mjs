@@ -1,6 +1,7 @@
 /**
- * Frozen allocation registry for Phase-2 differential harness.
- * Synthetic fixtures only — no private Skill test bodies.
+ * Explicit differential case registry (Completion Wave-4).
+ * Completeness and criticality come only from explicit-registry.json rows —
+ * no runtime case-ID inference for behavior or criticality.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -8,16 +9,19 @@ import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, "../../../..");
+const EXPLICIT_REGISTRY_PATH = path.join(__dirname, "explicit-registry.json");
 
-export const FROZEN_ALLOCATION_PATH = path.join(
-  root,
-  ".trellis/tasks/07-29-freeze-phase2-methodology-packaging-contracts/research/differential-case-allocation.json",
-);
-export const EXPANSION_ALLOCATION_PATH = path.join(
-  root,
-  ".trellis/tasks/07-29-freeze-phase2-methodology-packaging-contracts/research/phase2-expansion-case-allocation.json",
-);
+const ALLOWED_SCENARIOS = new Set([
+  "missing-critical-evidence",
+  "forbidden-mutation",
+  "provenance-drift",
+  "closure-exclusivity",
+  "artifact-contract",
+  "composition",
+  "global-control",
+  "proposal-allowlist",
+  "package-digest-v1",
+]);
 
 function loadJson(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -28,105 +32,76 @@ function sha256File(p) {
 }
 
 /**
- * @returns {{
- *   frozen: Array<CaseRecord>,
- *   expansion: Array<CaseRecord>,
- *   meta: object
- * }}
+ * @typedef {object} CaseRecord
+ * @property {string} id
+ * @property {"frozen"|"expansion"} namespace
+ * @property {string} ownerChild
+ * @property {string} [ownerTask]
+ * @property {string} family
+ * @property {string} procedureId
+ * @property {string} procedureVersion
+ * @property {"critical"|"non-critical"} criticality
+ * @property {string} scenarioId
+ * @property {string} fixtureId
+ * @property {string} expectedOutcome
+ * @property {string[]} expectedErrorCodes
+ * @property {boolean} zeroWrite
+ * @property {string} evidenceDestination
+ */
+
+/**
+ * @returns {{ frozen: CaseRecord[], expansion: CaseRecord[], meta: object }}
  */
 export function loadCaseRegistry() {
-  const frozenAlloc = loadJson(FROZEN_ALLOCATION_PATH);
-  const expansionAlloc = loadJson(EXPANSION_ALLOCATION_PATH);
-
-  const frozen = [];
-  for (const owner of frozenAlloc.implementationOwners) {
-    for (const id of owner.caseIds) {
-      frozen.push({
-        id,
-        namespace: "frozen",
-        ownerChild: owner.child,
-        ownerTask: owner.task,
-        packageHint: inferPackage(id),
-        criticality: inferCriticality(id),
-        scenario: inferScenario(id),
-        expectedOutcome: "pass-or-expected-fail",
-        zeroWrite: /missing|forbidden|invalid|drift|unexpected|budget/i.test(id),
-      });
-    }
+  const doc = loadJson(EXPLICIT_REGISTRY_PATH);
+  if (doc.kind !== "explicit-differential-case-registry") {
+    throw new Error("explicit-registry.json kind mismatch");
   }
-
-  const expansion = [];
-  for (const owner of expansionAlloc.implementationOwners) {
-    for (const id of owner.caseIds ?? []) {
-      expansion.push({
-        id,
-        namespace: "expansion",
-        ownerChild: owner.child,
-        ownerTask: owner.task,
-        packageHint: inferPackage(id),
-        criticality: "non-critical",
-        scenario: inferScenario(id),
-        expectedOutcome: "pass-or-expected-fail",
-        zeroWrite: false,
-      });
-    }
-  }
-
+  const frozen = doc.frozen.map(normalizeRow);
+  const expansion = doc.expansion.map(normalizeRow);
   return {
     frozen,
     expansion,
     meta: {
-      frozenAllocationSha256: sha256File(FROZEN_ALLOCATION_PATH),
-      expansionAllocationSha256: sha256File(EXPANSION_ALLOCATION_PATH),
-      expectedFrozen: 229,
-      expectedFrozenCritical: 212,
-      expectedExpansion: 38,
+      explicitRegistrySha256: sha256File(EXPLICIT_REGISTRY_PATH),
+      expectedFrozen: doc.counts.frozen,
+      expectedFrozenCritical: doc.counts.frozenCritical,
+      expectedFrozenNonCritical: doc.counts.frozenNonCritical,
+      expectedExpansion: doc.counts.expansion,
+      nonCriticalFrozenIds: doc.nonCriticalFrozenIds,
     },
   };
 }
 
-function inferPackage(id) {
-  const lower = id.toLowerCase();
-  if (lower.includes("ideation") || lower.includes("idea-eval") || lower.includes("evaluation"))
-    return "ideation-evaluation";
-  if (lower.includes("project-setup") || lower.includes("quest") || lower.includes("framing"))
-    return "setup-quest";
-  if (lower.includes("literature") || lower.includes("survey")) return "literature-survey";
-  if (lower.includes("experiment")) return "experiment";
-  if (lower.includes("computation") || lower.includes("theory")) return "computation-theory";
-  if (lower.includes("review")) return "review";
-  if (lower.includes("writing") || lower.includes("figure") || lower.includes("slides") || lower.includes("comp-003"))
-    return "writing-figure-slides";
-  if (lower.includes("comp-001") || lower.includes("comp-002") || lower.includes("comp-003"))
-    return "composition";
-  if (lower.includes("ctrl-") || lower.includes("control")) return "global-control";
-  return "shared";
-}
-
-function inferCriticality(id) {
-  // Expansion is non-critical; frozen defaults critical except explicit non-critical tokens.
-  if (/non-?critical|advisory|optional-only/i.test(id)) return "non-critical";
-  return "critical";
-}
-
-function inferScenario(id) {
-  const lower = id.toLowerCase();
-  if (lower.includes("comp-001") || lower.includes("comp-002") || lower.includes("comp-003"))
-    return "composition";
-  if (lower.includes("missing-critical-evidence")) return "missing-critical-evidence";
-  if (lower.includes("forbidden-mutation")) return "forbidden-mutation";
-  if (lower.includes("provenance") || lower.includes("stable-id-drift")) return "provenance-drift";
-  if (lower.includes("closure") || lower.includes("selected") || lower.includes("blocked"))
-    return "closure-exclusivity";
-  if (lower.includes("required") || lower.includes("optional") || lower.includes("artifact"))
-    return "artifact-contract";
-  if (lower.includes("ordered-stage") || lower.includes("checkpoint")) return "ordered-stages";
-  if (lower.includes("ctrl-")) return "global-control";
-  return "structural-registration";
+function normalizeRow(row) {
+  if (typeof row.id !== "string" || row.id.length === 0) {
+    throw new Error("case row missing id");
+  }
+  if (row.namespace !== "frozen" && row.namespace !== "expansion") {
+    throw new Error(`case ${row.id}: invalid namespace`);
+  }
+  if (row.criticality !== "critical" && row.criticality !== "non-critical") {
+    throw new Error(`case ${row.id}: invalid criticality`);
+  }
+  if (!ALLOWED_SCENARIOS.has(row.scenarioId)) {
+    throw new Error(
+      `case ${row.id}: unknown or fixtureless scenarioId '${row.scenarioId}'`,
+    );
+  }
+  if (typeof row.fixtureId !== "string" || row.fixtureId.length === 0) {
+    throw new Error(`case ${row.id}: missing fixtureId`);
+  }
+  // Alias for runners that historically used `scenario`
+  return Object.freeze({
+    ...row,
+    scenario: row.scenarioId,
+    expectedErrorCodes: Object.freeze([...(row.expectedErrorCodes ?? [])]),
+  });
 }
 
 /**
- * Completeness self-checks: duplicate, missing, overlap, count drift.
+ * Completeness self-checks: duplicate, missing, unowned, unknown scenario,
+ * fixtureless, criticality drift, overlap, double-count.
  */
 export function assertRegistryComplete(registry) {
   const errors = [];
@@ -153,12 +128,59 @@ export function assertRegistryComplete(registry) {
   }
   const overlap = [...frozenSet].filter((id) => expansionSet.has(id));
   if (overlap.length) {
-    errors.push(`frozen/expansion overlap: ${overlap.join(",")}`);
+    errors.push(`frozen/expansion overlap: ${overlap.slice(0, 10).join(",")}`);
   }
-  const critical = registry.frozen.filter((c) => c.criticality === "critical").length;
-  // Soft: inventory may not mark all non-critical; record but do not hard-fail if close
-  if (critical < 200) {
-    errors.push(`critical frozen count suspiciously low: ${critical}`);
+
+  const critical = registry.frozen.filter(
+    (c) => c.criticality === "critical",
+  ).length;
+  const nonCritical = registry.frozen.filter(
+    (c) => c.criticality === "non-critical",
+  ).length;
+  if (critical !== registry.meta.expectedFrozenCritical) {
+    errors.push(
+      `critical frozen ${critical} !== ${registry.meta.expectedFrozenCritical}`,
+    );
   }
-  return { ok: errors.length === 0, errors, criticalCount: critical };
+  if (nonCritical !== registry.meta.expectedFrozenNonCritical) {
+    errors.push(
+      `non-critical frozen ${nonCritical} !== ${registry.meta.expectedFrozenNonCritical}`,
+    );
+  }
+
+  for (const c of [...registry.frozen, ...registry.expansion]) {
+    if (!c.ownerChild) errors.push(`unowned case ${c.id}`);
+    if (!ALLOWED_SCENARIOS.has(c.scenarioId)) {
+      errors.push(`unknown scenario for ${c.id}: ${c.scenarioId}`);
+    }
+    if (!c.fixtureId) errors.push(`fixtureless case ${c.id}`);
+    if (c.scenarioId === "structural-registration") {
+      errors.push(`structural no-op scenario forbidden: ${c.id}`);
+    }
+  }
+
+  // Named non-critical set must match meta list
+  const listed = new Set(registry.meta.nonCriticalFrozenIds ?? []);
+  for (const c of registry.frozen) {
+    if (c.criticality === "non-critical" && !listed.has(c.id)) {
+      errors.push(`non-critical ${c.id} not listed in nonCriticalFrozenIds`);
+    }
+    if (c.criticality === "critical" && listed.has(c.id)) {
+      errors.push(`critical ${c.id} incorrectly listed as non-critical`);
+    }
+  }
+  if (listed.size !== registry.meta.expectedFrozenNonCritical) {
+    errors.push(
+      `nonCriticalFrozenIds size ${listed.size} !== ${registry.meta.expectedFrozenNonCritical}`,
+    );
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    criticalCount: critical,
+    nonCriticalCount: nonCritical,
+  };
 }
+
+export { EXPLICIT_REGISTRY_PATH, ALLOWED_SCENARIOS };

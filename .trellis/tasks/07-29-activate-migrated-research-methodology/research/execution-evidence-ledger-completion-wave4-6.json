@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "owner": "P2-12",
+  "wave": "completion-wave-4-6-dormant-candidate",
+  "sourceCommitBefore": "f52d11b8205142107a77fa92eeb93c225ee69354",
+  "checks": [
+    {
+      "id": "gating-core-research",
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis-core",
+        "exec",
+        "vitest",
+        "run",
+        "test/research/stage-capabilities.test.ts",
+        "test/research/procedure-policy.test.ts",
+        "test/research/procedure-support-pack.test.ts",
+        "test/research/methodology-runtime.test.ts",
+        "test/research/proposal-operation-allowlist.test.ts",
+        "test/compatibility/package-exports.test.ts"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "exitCode": 0,
+      "expected": "pass",
+      "actual": "pass",
+      "stdoutPath": "scratch/core-research.log"
+    },
+    {
+      "id": "gating-cli-resolution",
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis",
+        "exec",
+        "vitest",
+        "run",
+        "test/commands/research-procedure-historical-resolution.test.ts",
+        "test/commands/research-procedure-resolution.integration.test.ts"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "exitCode": 0,
+      "expected": "pass",
+      "actual": "pass",
+      "stdoutPath": "scratch/cli-resolution.log"
+    },
+    {
+      "id": "gating-harness-all",
+      "argv": [
+        "node",
+        "packages/cli/scripts/research-methodology-differential.mjs",
+        "all"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "exitCode": 0,
+      "expected": "pass",
+      "actual": "pass",
+      "notes": "229 frozen (212 critical + 17 non-critical); 38 expansions",
+      "stdoutPath": "scratch/harness-all.log"
+    },
+    {
+      "id": "pack-identity-historical-unmodified",
+      "argv": [
+        "git",
+        "diff",
+        "--name-only",
+        "--",
+        "packages/cli/src/templates/research/procedures/"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "exitCode": 0,
+      "expected": "no-modified-tracked-historical",
+      "actual": "no-modified-tracked",
+      "notes": "Only untracked */2.0.2/** trees added"
+    },
+    {
+      "id": "candidate-dormant-v1-live",
+      "argv": [
+        "node",
+        "-e",
+        "assert CURRENT 1.0.0 and candidate dormant"
+      ],
+      "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis",
+      "exitCode": 0,
+      "expected": "pass",
+      "actual": "pass",
+      "notes": "candidate-cutover-manifest-2.0.2.json status=dormant-candidate; CURRENT=1.0.0"
+    }
+  ],
+  "dirtyPathAudit": {
+    "excludedFromStaging": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs-site",
+      "marketplace"
+    ]
+  }
+}

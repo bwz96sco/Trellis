@@ -1,0 +1,1 @@
+{"procedureId":"quest-admin-v1","version":"2.0.2","checkpoints":["01-plan-change","02-apply-event"],"orderedStages":["01-plan-change","02-apply-event"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

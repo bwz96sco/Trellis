@@ -1,0 +1,1 @@
+{"procedureId":"writing-case-v1","version":"2.0.2","checkpoints":["01-outline","02-draft","03-evidence-bind"],"orderedStages":["01-outline","02-draft","03-evidence-bind"],"terminalStates":["success","blocked","failed","partial"],"proposalOnly":true}

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Phase-2 differential harness — executable.
- * Loads frozen 229 + expansion 38, runs synthetic Trellis-native scenarios,
- * fails nonzero on registry drift or any non-execution/failure.
+ * Phase-2 differential harness — explicit registry only.
+ * Proves exactly 229 frozen (212 critical + 17 non-critical) and 38 expansions.
+ * Nonzero exit on registry drift, non-execution, or failure.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -40,18 +40,14 @@ function selectCases() {
   if (mode === "frozen") return registry.frozen;
   if (mode === "expansion") return registry.expansion;
   if (mode === "smoke") {
-    const smokeFrozen = registry.frozen
-      .filter((c) =>
-        [
-          "composition",
-          "missing-critical-evidence",
-          "forbidden-mutation",
-          "artifact-contract",
-          "global-control",
-        ].includes(c.scenario),
-      )
-      .slice(0, 12);
-    return [...smokeFrozen, ...registry.expansion.slice(0, 3)];
+    const byScenario = new Map();
+    for (const c of registry.frozen) {
+      if (!byScenario.has(c.scenarioId)) byScenario.set(c.scenarioId, c);
+    }
+    return [
+      ...byScenario.values(),
+      ...registry.expansion.slice(0, 3),
+    ];
   }
   return [...registry.frozen, ...registry.expansion];
 }
@@ -79,7 +75,7 @@ for (const c of cases) {
     id: c.id,
     namespace: c.namespace,
     ownerChild: c.ownerChild,
-    scenario: c.scenario,
+    scenarioId: c.scenarioId,
     criticality: c.criticality,
     ...result,
   });
@@ -89,15 +85,25 @@ const frozenResults = results.filter((r) => r.namespace === "frozen");
 const expansionResults = results.filter((r) => r.namespace === "expansion");
 
 const report = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   mode,
   status: failed === 0 && unexecuted === 0 ? "pass" : "fail",
+  wording:
+    mode === "all"
+      ? "229 frozen cases passed; 38 separate Phase-2 expansion cases passed."
+      : undefined,
   frozen: {
     total: frozenResults.length,
     unique: new Set(frozenResults.map((r) => r.id)).size,
     passed: frozenResults.filter((r) => r.ok).length,
     failed: frozenResults.filter((r) => !r.ok).length,
     unexecuted: frozenResults.filter((r) => !r.executed).length,
+    criticalPassed: frozenResults.filter(
+      (r) => r.criticality === "critical" && r.ok,
+    ).length,
+    nonCriticalPassed: frozenResults.filter(
+      (r) => r.criticality === "non-critical" && r.ok,
+    ).length,
   },
   expansion: {
     total: expansionResults.length,
@@ -112,9 +118,15 @@ const report = {
 };
 
 if (mode === "all") {
-  if (report.frozen.unique !== 229 || report.frozen.passed !== 229) {
+  if (
+    report.frozen.unique !== 229 ||
+    report.frozen.passed !== 229 ||
+    report.frozen.criticalPassed !== 212 ||
+    report.frozen.nonCriticalPassed !== 17
+  ) {
     report.status = "fail";
-    report.frozenGate = "expected 229/229 frozen passed";
+    report.frozenGate =
+      "expected 229 unique passed with 212 critical + 17 non-critical";
   }
   if (report.expansion.unique !== 38 || report.expansion.passed !== 38) {
     report.status = "fail";
@@ -132,9 +144,13 @@ const outDir = path.join(
   ".trellis/tasks/07-29-implement-frozen-phase2-differential-harness/research",
 );
 fs.mkdirSync(outDir, { recursive: true });
-const outPath = path.join(outDir, `differential-run-${mode}.json`);
+// Supersede via new versioned filename; retain prior differential-run-all.json historical.
+const outPath = path.join(outDir, `differential-run-${mode}-v2.json`);
 fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
 const digest = createHash("sha256").update(fs.readFileSync(outPath)).digest("hex");
-fs.writeFileSync(path.join(outDir, `differential-run-${mode}.sha256`), `${digest}\n`);
+fs.writeFileSync(
+  path.join(outDir, `differential-run-${mode}-v2.sha256`),
+  `${digest}\n`,
+);
 
 process.exit(report.status === "pass" ? 0 : 1);
