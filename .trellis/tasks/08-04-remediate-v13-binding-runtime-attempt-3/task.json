@@ -1,0 +1,29 @@
+{
+  "id": "remediate-v13-binding-runtime-attempt-3",
+  "name": "remediate-v13-binding-runtime-attempt-3",
+  "title": "R1\u2013R5 \u2014 Remediate runtime against accepted A3 digest",
+  "description": "Version dispatch 2.0.4\u2192accepted A3; strict v1.3 lifecycle/closure/report-v2/worker projection after OA3 accept.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": null,
+  "createdAt": "2026-08-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "Blocked until OA3 accept. Procedure corrections use 2.0.4 only.",
+  "meta": {
+    "attempt": 3,
+    "assuranceModel": "MAL-1"
+  }
+}

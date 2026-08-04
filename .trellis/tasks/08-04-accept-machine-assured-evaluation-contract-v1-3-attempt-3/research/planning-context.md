@@ -1,0 +1,5 @@
+# Planning context — accept-machine-assured-evaluation-contract-v1-3-attempt-3
+
+Parent: migrate-research-methodology-to-procedures
+Assurance model: MAL-1
+Attempt: 3

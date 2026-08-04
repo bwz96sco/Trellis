@@ -1,0 +1,29 @@
+{
+  "id": "author-evaluation-contract-v1-3-attempt-3",
+  "name": "author-evaluation-contract-v1-3-attempt-3",
+  "title": "A3 \u2014 Author evaluation-contract-v1.3.0 attempt-3",
+  "description": "Public-evidence-only attempt-3 candidate under this directory only. A2 is negative comparison only.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": null,
+  "createdAt": "2026-08-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "Activation and authoring commits separate. No production/test/Procedure authority.",
+  "meta": {
+    "attempt": 3,
+    "assuranceModel": "MAL-1"
+  }
+}

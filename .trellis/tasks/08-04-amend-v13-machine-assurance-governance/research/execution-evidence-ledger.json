@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "task": "amend-v13-machine-assurance-governance",
+  "wave": "G0",
+  "commands": [],
+  "note": "Governance authoring only; no production commands required for G0 commit",
+  "recordedOn": "2026-08-04"
+}

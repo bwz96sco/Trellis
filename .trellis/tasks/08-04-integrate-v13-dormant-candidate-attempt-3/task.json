@@ -1,0 +1,29 @@
+{
+  "id": "integrate-v13-dormant-candidate-attempt-3",
+  "name": "integrate-v13-dormant-candidate-attempt-3",
+  "title": "R8 \u2014 Dormant 2.0.4 integration candidate",
+  "description": "Dormant candidate binding A3/B3/OA3 and 2.0.4 digests with activationAuthorized=false.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": null,
+  "createdAt": "2026-08-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "Blocked until R7 family packages complete.",
+  "meta": {
+    "attempt": 3,
+    "assuranceModel": "MAL-1"
+  }
+}

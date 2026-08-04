@@ -423,3 +423,12 @@ R0 remains addressability/planning evidence. R1 post-freeze semantics remain non
 3. P2: V13-A attempt-2 authoring-only commit after activation.
 4. P3: second human reviewer assignment (hard stop if unavailable).
 5. P4: V13-B attempt-2 nine-output assurance; only committed pass releases R1C/R2A.
+
+## Additive overlay — MAL-1 attempt-3 (2026-08-04)
+
+1. G0 commit governance/incident/tasks.
+2. Q0/Q1 containment implementation.
+3. A3 authoring under attempt-3 path only.
+4. B3 fresh Codex MAL-1; stop if isolation unavailable.
+5. OA3 operator accept unlocks R1+.
+6. 2.0.4 packages only; never rewrite 2.0.3 bytes.

@@ -1,0 +1,29 @@
+{
+  "id": "assure-evaluation-contract-v1-3-attempt-3",
+  "name": "assure-evaluation-contract-v1-3-attempt-3",
+  "title": "B3 \u2014 MAL-1 assure evaluation-contract-v1.3.0 attempt-3",
+  "description": "Fresh isolated machine reviewer (MAL-1/Codex) reviews exact A3 Git objects; nine allowlisted outputs; no repairs.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": null,
+  "createdAt": "2026-08-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "Intentionally unassigned until B3-0 assignment. Requires fresh Codex isolation; stop if unavailable.",
+  "meta": {
+    "attempt": 3,
+    "assuranceModel": "MAL-1"
+  }
+}

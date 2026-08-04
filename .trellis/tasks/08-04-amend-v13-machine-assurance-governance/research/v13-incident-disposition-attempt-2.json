@@ -1,0 +1,76 @@
+{
+  "a2B2MustNotBeRewrittenAsValid": true,
+  "classifications": {
+    "08-04-assure-evaluation-contract-v1-3-attempt-2": {
+      "assuranceOutputsCommitted": false,
+      "disposition": "historical-planning-evidence-only",
+      "invalidClaim": "User waived second-human gate — unsupported and invalid under original human-review rule; does not authorize A2 acceptance",
+      "role": "b2-never-executed",
+      "verdict": null
+    },
+    "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f": {
+      "accepted": false,
+      "authoritative": false,
+      "availableToRuntimeAuthority": false,
+      "digests": {
+        "candidateManifestSha256": "d8bc82e870d00593c738c7708528f99381e4d6b308bddf9256d5b4b99563e85f",
+        "frozenMigrationTargetSha256": "76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166"
+      },
+      "role": "unaccepted-unauthorized-a2-candidate"
+    },
+    "692dc5130d3832a542808b390ca5b8c2a818996f": {
+      "immutable": true,
+      "procedureBlobs": 334,
+      "protectedEvidenceBlobs": 412,
+      "role": "valid-portable-c0-and-wave7-archive-evidence"
+    },
+    "867954ae7a201582fefcf26191e3733269cc9e39": {
+      "immutable": true,
+      "role": "preserved-attempt-1-v13b-fail-evidence",
+      "verdict": "fail"
+    },
+    "unassuredDevelopmentRange": {
+      "acceptedAuthority": false,
+      "commits": [
+        "1c0f942de4098b43a9eb32b4684b6de4fb5ef802",
+        "201f4c744c2230d9ef3a15769f52632f8f22e353",
+        "4aca2e72",
+        "7a33838e"
+      ],
+      "from": "1c0f942de4098b43a9eb32b4684b6de4fb5ef802",
+      "materialDefectsNoted": [
+        "unsupported-reviewer-waiver-claim",
+        "obsolete-104-54-50-as-v13-input",
+        "incomplete-lifecycle-validator-enforcement",
+        "forbidden-result-status-closure-inference",
+        "incorrect-report-v2-framing",
+        "report-v2-on-live-1.0.0",
+        "unsafe-post-commit-sidecar-failure-behavior",
+        "five-row-not-116-delta-harness",
+        "incomplete-fail-closed-version-handling",
+        "obsolete-worker-projection",
+        "ownership-violations",
+        "missing-retained-gitnexus-test-evidence"
+      ],
+      "role": "unassured-development-evidence",
+      "to": "7a33838e"
+    }
+  },
+  "forwardOnly": true,
+  "liveContainmentRequired": true,
+  "liveSelection": {
+    "capabilityCount": 14,
+    "literatureDefault": "research.literature.scan",
+    "procedureVersion": "1.0.0"
+  },
+  "mal1Adoption": "prospective-only-for-attempt-3+",
+  "procedure203Disposition": {
+    "bytesPreserved": true,
+    "correctedPackageVersion": "2.0.4",
+    "role": "defective-dormant-historical-development-evidence",
+    "runtimeAuthority": false
+  },
+  "recordId": "v13-incident-disposition-attempt-2-unassured-runtime",
+  "recordedOn": "2026-08-04",
+  "schemaVersion": 1
+}

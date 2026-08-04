@@ -1,0 +1,29 @@
+{
+  "id": "amend-v13-machine-assurance-governance",
+  "name": "amend-v13-machine-assurance-governance",
+  "title": "G0 \u2014 Adopt MAL-1 machine assurance governance",
+  "description": "Additive MAL-1 contract, incident disposition of A2/B2/unassured commits, ownership overlays, and planned attempt-3 child topology.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": "grok",
+  "createdAt": "2026-08-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "G0 authoring MAL-1 + incident + child planning. Commit is governance-only.",
+  "meta": {
+    "attempt": 3,
+    "assuranceModel": "MAL-1"
+  }
+}

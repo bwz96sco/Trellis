@@ -425,3 +425,7 @@ Historical Procedure `2.0.2` remains bound to exact v1.2. Future Procedure `2.0.
 ## Additive overlay — attempt-2 forward repair (2026-08-04)
 
 P0 preserves attempt-1 fail package. P1 anchors portable C0 + archives + A2/B2 planning. P2–P4 re-author and re-assure under path-owned siblings with second-human independence. Do not amend attempt-1.
+
+## Additive overlay — MAL-1 attempt-3 (2026-08-04)
+
+G0 governance → Q0/Q1 containment → A3 candidate → B3 MAL-1 → OA3 accept → R1–R8 / 2.0.4 / CS3. Forward-only history.

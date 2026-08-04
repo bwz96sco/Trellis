@@ -42,3 +42,9 @@ Only `.trellis/spec/**` and this task's own `research/**` paths may appear in it
 - Portable C0 attempt-2 locks under this research/ directory
 - Children: `08-04-author-evaluation-contract-v1-3-attempt-2`, `08-04-assure-evaluation-contract-v1-3-attempt-2`
 - R2A blocked until attempt-2 assurance pass
+
+## MAL-1 attempt-3 (2026-08-04)
+
+- Incident: `08-04-amend-v13-machine-assurance-governance/research/v13-incident-disposition-attempt-2.json`
+- MAL-1 contract under same research/
+- Children: contain, A3, B3, OA3, remediate-runtime, remediate-harness, integrate-dormant, CS3, CS3-OA

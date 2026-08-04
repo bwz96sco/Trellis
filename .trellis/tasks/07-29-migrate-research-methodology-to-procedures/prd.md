@@ -176,3 +176,7 @@ This overlay preserves every historical requirement above. It supersedes only th
 ## Additive overlay — attempt-2 forward repair (2026-08-04)
 
 Attempt-1 (`4d36ecda`, V13-B fail at `867954ae`) is immutable failure evidence. Forward path uses portable C0 attempt-2 (334/412 Git-blob locks), four exact Wave-7 archive exceptions, and sibling tasks `08-04-author-evaluation-contract-v1-3-attempt-2` / `08-04-assure-evaluation-contract-v1-3-attempt-2`. R2A remains blocked until attempt-2 V13-B committed pass. Live v1 containment unchanged.
+
+## Additive overlay — MAL-1 attempt-3 forward repair (2026-08-04)
+
+A2 (`4c49b8fd`) is unaccepted. B2 never executed; waiver claim invalid. Unassured commits `1c0f942d`–`7a33838e` are development evidence only. Prospective assurance model is MAL-1 (machine-only; not human-equivalent). Live v1 containment required before new A3. Corrected packages use Procedure **2.0.4**. No activation/release/push.

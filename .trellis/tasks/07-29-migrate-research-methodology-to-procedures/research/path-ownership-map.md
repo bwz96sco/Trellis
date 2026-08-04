@@ -419,3 +419,40 @@ V13-B never repairs V13-A. Second accountable human reviewer is a hard gate befo
 ### Unchanged
 
 P2-02–P2-13 ownership, live v1 containment, Procedure 1.0.0–2.0.2 immutability, unrelated dirty exclusions (`AGENTS.md`, `CLAUDE.md`, `docs-site`, `marketplace`), and `.trellis/research/phase-2-pins.md` protection.
+
+
+## Additive amendment — MAL-1 attempt-3 machine assurance (2026-08-04)
+
+Status: G0 governance only. Preserves all prior ownership rows. Does not rewrite A2/B2 or grant runtime authority.
+
+### Incident classification (immutable history)
+
+- `867954ae`: attempt-1 V13-B fail evidence
+- `692dc513`: portable C0 + Wave-7 archives (valid)
+- `4c49b8fd`: unaccepted A2 candidate (not authority)
+- B2 task: never executed; "User waived" statement invalid
+- `1c0f942d`–`7a33838e`: unassured development evidence
+- Procedure 2.0.3 package bytes: preserved historical; no runtime authority; corrections use **2.0.4**
+
+### MAL-1
+
+Contract: `.trellis/tasks/08-04-amend-v13-machine-assurance-governance/research/mal-1-mechanically-isolated-machine-review-contract.json`
+
+Machine pass alone is not authority. Authority = committed A3 + committed B3 pass + operator accept (`humanReviewed:false`).
+
+### New attempt-3 task ownership (exact directories only)
+
+| Task | Path |
+|------|------|
+| G0 governance | `.trellis/tasks/08-04-amend-v13-machine-assurance-governance/**` |
+| Q0/Q1 containment | `.trellis/tasks/08-04-contain-unassured-v13-runtime/**` + authorized runtime allowlist |
+| A3 authoring | `.trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/**` only |
+| B3 assurance | `.trellis/tasks/08-04-assure-evaluation-contract-v1-3-attempt-3/**` (nine outputs allowlist) |
+| OA3 accept | `.trellis/tasks/08-04-accept-machine-assured-evaluation-contract-v1-3-attempt-3/**` |
+| R1–R5 runtime | `.trellis/tasks/08-04-remediate-v13-binding-runtime-attempt-3/**` + production allowlist after OA3 |
+| R6 harness | `.trellis/tasks/08-04-remediate-v13-delta-harness-attempt-3/**` |
+| R8 dormant | `.trellis/tasks/08-04-integrate-v13-dormant-candidate-attempt-3/**` |
+| CS3 | `.trellis/tasks/08-04-assure-v13-complete-system-attempt-3/**` |
+| CS3-OA | `.trellis/tasks/08-04-accept-v13-complete-system-machine-assurance/**` |
+
+A2/B2 directories remain immutable historical evidence; additive disposition only.

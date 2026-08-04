@@ -35,7 +35,17 @@
     "08-03-author-evaluation-contract-v1-3",
     "08-03-assure-evaluation-contract-v1-3",
     "08-04-author-evaluation-contract-v1-3-attempt-2",
-    "08-04-assure-evaluation-contract-v1-3-attempt-2"
+    "08-04-assure-evaluation-contract-v1-3-attempt-2",
+    "08-04-amend-v13-machine-assurance-governance",
+    "08-04-contain-unassured-v13-runtime",
+    "08-04-author-evaluation-contract-v1-3-attempt-3",
+    "08-04-assure-evaluation-contract-v1-3-attempt-3",
+    "08-04-accept-machine-assured-evaluation-contract-v1-3-attempt-3",
+    "08-04-remediate-v13-binding-runtime-attempt-3",
+    "08-04-remediate-v13-delta-harness-attempt-3",
+    "08-04-integrate-v13-dormant-candidate-attempt-3",
+    "08-04-assure-v13-complete-system-attempt-3",
+    "08-04-accept-v13-complete-system-machine-assurance"
   ],
   "parent": null,
   "relatedFiles": [],

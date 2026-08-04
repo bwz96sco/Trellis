@@ -1,0 +1,58 @@
+{
+  "assuranceLevelId": "MAL-1",
+  "authorityRule": {
+    "contractAuthorityRequires": [
+      "committed-A3-candidate",
+      "committed-MAL-1-B3-pass",
+      "separate-operator-accept-risk-acknowledgment"
+    ],
+    "machinePassAloneInsufficient": true,
+    "operatorAcceptExcludes": [
+      "activation",
+      "release",
+      "publication",
+      "push"
+    ],
+    "operatorAcceptMustBind": [
+      "exact-commits-and-digests",
+      "humanReviewed:false",
+      "assuranceLevel:MAL-1",
+      "residual-risks",
+      "accept-or-reject"
+    ]
+  },
+  "description": "Prospective machine-only assurance level for evaluation-contract-v1.3.0 attempt-3+. Does not claim A2/B2 satisfied the old human-reviewer rule.",
+  "doesNotValidateA2B2": true,
+  "humanEquivalent": false,
+  "isolationFailurePolicy": "stop-do-not-substitute-current-agent-or-resumed-session",
+  "name": "Mechanically Isolated Machine Review",
+  "prospectiveOnly": true,
+  "recordedOn": "2026-08-04",
+  "requirements": {
+    "builderAsOracleForbidden": true,
+    "candidateOrProductionRepairForbidden": true,
+    "distinctFromAuthor": true,
+    "exactOutputAllowlist": [
+      "exact-input-attestation.json",
+      "reviewer-independence.json",
+      "schema-digest-audit.json",
+      "provenance-coverage-audit.json",
+      "durable-output-lifecycle-audit.json",
+      "closure-validator-audit.json",
+      "privacy-mutation-audit.json",
+      "execution-evidence-ledger.json",
+      "assurance-verdict.json"
+    ],
+    "freshCodexRuntime": true,
+    "independentVerificationCode": true,
+    "noAuthorUncommittedWorkspace": true,
+    "noResume": true,
+    "noSharedScratchState": true,
+    "noSharedTranscript": true,
+    "retainRuntimeModelSessionMetadata": true,
+    "reviewExactGitObjectsOnly": true,
+    "reviewOnlyAuthority": true,
+    "verdictExactlyPassOrFail": true
+  },
+  "schemaVersion": 1
+}
