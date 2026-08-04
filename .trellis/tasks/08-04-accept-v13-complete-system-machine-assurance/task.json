@@ -1,15 +1,15 @@
 {
   "id": "accept-v13-complete-system-machine-assurance",
   "name": "accept-v13-complete-system-machine-assurance",
-  "title": "CS3-OA \u2014 Operator accept complete-system machine assurance",
+  "title": "CS3-OA — Operator accept complete-system machine assurance",
   "description": "Separate operator accept for complete-system MAL-1. No automatic activation.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
   "priority": "P1",
   "creator": "grok",
-  "assignee": null,
+  "assignee": "operator-goal",
   "createdAt": "2026-08-04",
   "completedAt": null,
   "branch": null,
@@ -21,9 +21,14 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "Does not authorize activation/release/push.",
+  "notes": "CS3-OA-0 activated after CS3-1 pass b4c0c72df289. Decision commit separate. No activation/release/push.",
   "meta": {
     "attempt": 3,
-    "assuranceModel": "MAL-1"
+    "assuranceModel": "MAL-1",
+    "activation": {
+      "wave": "CS3-OA-0",
+      "cs3Commit": "b4c0c72df2893bb2618cefc7e2b5e4751ae85a8f",
+      "cs3Verdict": "pass"
+    }
   }
 }
