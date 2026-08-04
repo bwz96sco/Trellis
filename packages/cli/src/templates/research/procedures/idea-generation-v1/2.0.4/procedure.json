@@ -1,0 +1,1 @@
+{"id":"idea-generation-v1","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"kind":"bounded","maxDispatches":1,"maxDurationMinutes":15,"networkPolicy":"forbidden","outputs":["result","proposal"],"packageSchemaVersion":2,"repositoryScope":"single","schemaVersion":1,"stage":"ideation","version":"2.0.4"}
