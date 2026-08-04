@@ -1,15 +1,15 @@
 {
   "id": "assure-v13-complete-system-attempt-3",
   "name": "assure-v13-complete-system-attempt-3",
-  "title": "CS3 \u2014 Complete-system MAL-1 assurance",
+  "title": "CS3 — Complete-system MAL-1 assurance",
   "description": "Fresh MAL-1 runtime distinct from B3 reviews full system subject commits.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
   "priority": "P1",
   "creator": "grok",
-  "assignee": null,
+  "assignee": "codex-mal1-cs3-fresh",
   "createdAt": "2026-08-04",
   "completedAt": null,
   "branch": null,
@@ -21,9 +21,18 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "Blocked until dormant candidate ready.",
+  "notes": "CS3-0 assignment bound to HEAD 404d714a855d; distinct from B3; nine complete-system outputs; repairAuthority:false.",
   "meta": {
     "attempt": 3,
-    "assuranceModel": "MAL-1"
+    "assuranceModel": "MAL-1",
+    "assignment": {
+      "wave": "CS3-0",
+      "head": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+      "a3": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+      "b3": "064844af8317f90a2eb484f877f7be16462725dc",
+      "oa3": "266a9f43107fd1ced95be1be607ca8cd52a76437",
+      "r8": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+      "repairAuthority": false
+    }
   }
 }
