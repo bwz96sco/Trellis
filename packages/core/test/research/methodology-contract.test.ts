@@ -203,7 +203,14 @@ describe("Research methodology contract (historical Phase-2 fixture + version di
       authoritative: false,
     });
     expect(resolveMethodologyContractBinding("2.0.2").authoritative).toBe(true);
-    expect(resolveMethodologyContractBinding("2.0.4").disposition).toBe(
+    expect(resolveMethodologyContractBinding("2.0.4")).toEqual({
+      version: "evaluation-contract-v1.3.0",
+      digest:
+        "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      disposition: "exact-v1.3-accepted",
+      authoritative: true,
+    });
+    expect(resolveMethodologyContractBinding("2.0.5").disposition).toBe(
       "unknown-fail-closed",
     );
   });

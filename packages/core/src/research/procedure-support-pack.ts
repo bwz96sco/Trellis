@@ -42,11 +42,22 @@ export const V13_METHODOLOGY_CANDIDATE_MANIFEST_DIGEST =
   V13_ATTEMPT2_REJECTED_CANDIDATE_MANIFEST_DIGEST;
 
 /**
- * Future accepted v1.3 binding slot for attempt-3 after OA3.
- * Empty until operator accept; 2.0.4 will bind here.
+ * Accepted evaluation-contract-v1.3.0 attempt-3 binding after OA3 accept
+ * (266a9f43). Frozen-target digest is the authoritative methodology identity;
+ * candidate-manifest digest is retained for inventory/audit only.
  */
-export const V13_ACCEPTED_CONTRACT_VERSION: string | null = null;
-export const V13_ACCEPTED_CONTRACT_DIGEST: string | null = null;
+export const V13_ACCEPTED_CONTRACT_VERSION =
+  "evaluation-contract-v1.3.0" as const;
+export const V13_ACCEPTED_CONTRACT_DIGEST =
+  "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f" as const;
+export const V13_ACCEPTED_CANDIDATE_MANIFEST_DIGEST =
+  "sha256:39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6" as const;
+export const V13_ACCEPTED_A3_COMMIT =
+  "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4" as const;
+export const V13_ACCEPTED_B3_COMMIT =
+  "064844af8317f90a2eb484f877f7be16462725dc" as const;
+export const V13_ACCEPTED_OA3_COMMIT =
+  "266a9f43" as const;
 
 /** Exact procedure-version → methodology contract binding (fail-closed). */
 export function resolveMethodologyContractBinding(procedureVersion: string): {
@@ -94,11 +105,7 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
       authoritative: false,
     };
   }
-  if (
-    procedureVersion === "2.0.4" &&
-    V13_ACCEPTED_CONTRACT_VERSION !== null &&
-    V13_ACCEPTED_CONTRACT_DIGEST !== null
-  ) {
+  if (procedureVersion === "2.0.4") {
     return {
       version: V13_ACCEPTED_CONTRACT_VERSION,
       digest: V13_ACCEPTED_CONTRACT_DIGEST,
@@ -340,13 +347,11 @@ export function parseSupportPackManifest(input: {
     }
   } else if (input.procedureVersion === "2.0.4") {
     if (
-      V13_ACCEPTED_CONTRACT_VERSION === null ||
-      V13_ACCEPTED_CONTRACT_DIGEST === null ||
       methodologyContractVersion !== V13_ACCEPTED_CONTRACT_VERSION ||
       methodologyContractDigest !== V13_ACCEPTED_CONTRACT_DIGEST
     ) {
       fail(
-        "Support-pack 2.0.4 requires exact accepted evaluation-contract-v1.3.0 digest after OA3 (currently no accepted binding)",
+        "Support-pack 2.0.4 requires exact accepted evaluation-contract-v1.3.0 frozen-target digest after OA3",
       );
     }
   } else if (requiresStrictSchemaV2) {

@@ -2580,10 +2580,8 @@ export function loadResearchMethodologyContractFromProcedure(
       `Procedure ${LOSSLESS_METHODOLOGY_PROCEDURE_VERSION} methodology contracts require package schema v2 and an accepted binding`,
     );
   }
-  // Accepted 2.0.4 only after OA3 sets V13_ACCEPTED_* (currently none).
+  // Accepted 2.0.4 binds exact OA3-accepted A3 frozen-target digest.
   if (
-    V13_ACCEPTED_CONTRACT_VERSION === null ||
-    V13_ACCEPTED_CONTRACT_DIGEST === null ||
     procedure.supportPack.manifest.methodologyContractVersion !==
       V13_ACCEPTED_CONTRACT_VERSION ||
     procedure.supportPack.manifest.methodologyContractDigest !==
