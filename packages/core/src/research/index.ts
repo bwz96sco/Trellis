@@ -192,6 +192,32 @@ export type {
 } from "./methodology-worker-context.js";
 
 export {
+  MethodologyV13RuntimeError,
+  V13_CLOSURE_FAMILY_COUNT,
+  V13_DELTA_CASE_COUNT,
+  V13_ENFORCEABLE_ARTIFACT_COUNT,
+  V13_LIFECYCLE_DIMENSIONS,
+  V13_LIFECYCLE_DIMENSION_COUNT,
+  V13_OUTPUT_COUNT,
+  V13_PROVENANCE_ROW_COUNT,
+  V13_TRUSTED_VALIDATOR_COUNT,
+  V13_VALIDATOR_BINDING_COUNT,
+  assertHistoricalPhase2FixtureIsNotV13Authority,
+  expectedV13ContractCounts,
+  parseAcceptedV13ContractPack,
+  selectTrustedV13ValidatorDescriptors,
+} from "./methodology-v13-runtime.js";
+export type {
+  V13AcceptedContractPack,
+  V13ArtifactLifecycleRow,
+  V13ContractPackCounts,
+  V13LeafFileName,
+  V13LifecycleDimension,
+  V13TrustedValidatorEntry,
+  V13ValidatorBinding,
+} from "./methodology-v13-runtime.js";
+
+export {
   FROZEN_COMPOSITION_EDGES,
   getFrozenCompositionEdge,
   validateRootCompositionDescriptor,
