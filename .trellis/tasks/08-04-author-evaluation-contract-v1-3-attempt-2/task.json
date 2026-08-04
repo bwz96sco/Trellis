@@ -3,13 +3,13 @@
   "name": "author-evaluation-contract-v1-3-attempt-2",
   "title": "V13-A attempt-2 \u2014 Author public-evidence evaluation contract v1.3",
   "description": "Retry authoring evaluation-contract-v1.3.0 candidate from public evidence and Trellis-native decisions under attempt-2 portable C0 and path-owned scope.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
   "priority": "P1",
   "creator": "grok",
-  "assignee": null,
+  "assignee": "grok",
   "createdAt": "2026-08-04",
   "completedAt": null,
   "branch": null,
@@ -21,12 +21,14 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "Attempt-2 sibling. Owns only this directory. Attempt-1 (08-03-author-evaluation-contract-v1-3) is immutable historical failure evidence. Candidate authoring and authoring commit require separate activation; no production/test/Procedure authority. Bound to portable C0 attempt-2 locks under parent research/.",
+  "notes": "Attempt-2 authoring activated under auto-stage-commit authorization. Owns only this directory. Candidate remains non-authoritative until V13-B pass.",
   "meta": {
     "attempt": 2,
     "predecessorFailedAttempt": "08-03-author-evaluation-contract-v1-3",
     "failedCompoundCommit": "4d36ecda5940b07a9611cf89089fe0bab7f3a54b",
     "p0PreservationCommit": "867954ae7a201582fefcf26191e3733269cc9e39",
-    "portableC0Manifest": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-portable-preservation-manifest.json"
+    "portableC0Manifest": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-portable-preservation-manifest.json",
+    "activatedAt": "2026-08-04",
+    "p1AncestorCommit": "692dc5130d3832a542808b390ca5b8c2a818996f"
   }
 }
