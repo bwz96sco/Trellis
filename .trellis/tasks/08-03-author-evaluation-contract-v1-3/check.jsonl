@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-03-author-evaluation-contract-v1-3/research/planning-context.md","reason":"Verify task-local pins, evidence boundaries, ownership, privacy, and separate authoring-commit authorization."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check that the candidate does not widen worker authority, mutate historical identities, or conflate version domains."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check strict bytes, filename-bound digests, path allowlists, protected evidence, and zero-write failure behavior."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check exact deterministic vectors, non-tautological mutation cases, and compatibility assertions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check independent rebuild, snapshot, subprocess, and retained-evidence quality."}

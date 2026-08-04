@@ -7,3 +7,4 @@
 {"file":".trellis/spec/cli/backend/commands-research.md","reason":"CLI Procedure resolution, Dispatch, Context, Result, Proposal, and authority contracts."}
 {"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Generic worker and hook authority boundaries that methodology Context must preserve."}
 {"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Contained reads, project override, zero-write, and package filesystem safety rules."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-planning-preservation-lock.json","reason":"Bind the v1.3 child topology, corrected evidence interpretation, live-v1 containment, protected paths, dirty exclusions, dependency sequence, and no-authorization boundary."}

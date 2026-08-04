@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-03-assure-evaluation-contract-v1-3/research/planning-context.md","reason":"Check exact immutable-input, accountable-identity, no-repair, privacy, live-v1, and separate-authorization boundaries."}
+{"file":".trellis/tasks/08-03-assure-evaluation-contract-v1-3/research/assurance-plan-v1.3.json","reason":"Check exact output allowlist, complete verification domains, and unambiguous pass/fail behavior."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check that assurance preserves historical identities, event compatibility, and worker/root authority separation."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Check exact commit extraction, protected bytes, filename-bound digests, and mutation isolation."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check independent deterministic vectors and mutation cases rather than self-validating fixtures."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check isolated rebuild, snapshots, retained outputs, and exact command evidence."}

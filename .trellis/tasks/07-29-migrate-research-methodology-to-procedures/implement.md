@@ -365,3 +365,53 @@ The parent may close only after P2-13 recommends acceptance and the parent verif
 - no historical record gained new authority;
 - live-trial status is described accurately;
 - no unauthorized commit, archive, publication, release, or push occurred.
+
+## 14. Additive v1.3 forward-correction execution overlay (2026-08-03)
+
+This overlay preserves the historical execution plan and inserts new prerequisites before R2A semantic enforcement.
+
+### 14.1 C0 — planning and preservation lock
+
+1. Create real V13-A and V13-B children under this parent without starting them.
+2. Fully plan each complex child with `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl`.
+3. Append, rather than rewrite, the parent requirements/design/execution overlays and the v1.3 ownership amendment.
+4. Record exact parent/child identities, active v1.2/proposed v1.3 identities, Wave-8 digest, R0 reclassification, live-v1 containment, protected paths, inherited dirty paths, and V13-A → V13-B → R2A sequencing in a parent research preservation record with a filename-bound digest sidecar.
+5. Validate parent and both children; prove ownership disjointness and V13-B's exact output allowlist; run C0-path-only diff hygiene; and compare historical Procedure, Wave-8, protected evidence, and unrelated dirty-path baselines.
+6. Do not author contract candidate files or edit production/test/Procedure/registry/specification paths.
+
+C0 completion authorizes no commit, task start, contract authoring, assurance, package lifecycle, activation, archive, release, publication, push, network, model, or provider work.
+
+### 14.2 V13-A — contract authoring prerequisite
+
+After separate task-start approval, V13-A authors the public-evidence-only `evaluation-contract-v1.3.0` candidate. It must:
+
+- apply exactly the four provenance classes;
+- disposition all 64 public durable outputs;
+- define all 13 lifecycle dimensions or explicit inapplicable/blocked semantics;
+- define canonical closure sources with no undeclared `Result.status` heuristic;
+- bind exact validator `(id, version, severity)` triples;
+- produce deterministic canonical bytes, frozen-target digest, manifest, filename-bound sidecars, and exact execution evidence;
+- preserve private-source, historical, production, and dirty-path boundaries.
+
+Obtain separate authorization before the immutable V13-A authoring commit.
+
+### 14.3 V13-B — independent contract assurance prerequisite
+
+After an immutable V13-A authoring commit exists, assign V13-B to a mechanically distinct accountable reviewer. V13-B consumes the exact commit, candidate manifest path/digest, contract identity, and contract digest; independently verifies schema/digest/provenance/coverage/closure/validator/privacy/mutation/compatibility; writes only its exact allowlist; makes no repairs; and emits exact pass/fail.
+
+Failure requires a new V13-A authoring commit/digest and complete rerun. Obtain separate authorization before the assurance-only commit.
+
+### 14.4 Corrected downstream ordering
+
+```text
+C0 validated
+  -> separately approve/start V13-A
+  -> separately authorize V13-A authoring commit
+  -> assign distinct reviewer and separately approve/start V13-B
+  -> separately authorize V13-B assurance commit
+  -> only on pass: R1 mechanical correction/reuse
+  -> R2A root enforcement against exact accepted v1.3 digest
+  -> remaining R2B–R8 waves under their existing separate boundaries
+```
+
+R0 remains addressability/planning evidence. R1 post-freeze semantics remain non-authoritative. Live selection stays at Procedure `1.0.0`; Procedure repair remains `2.0.3`. Every remediation subject, execution evidence, P2-13, activation, package lifecycle, archive, release, publication, and push boundary remains separately authorized.

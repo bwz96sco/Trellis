@@ -10,3 +10,4 @@
 {"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check generated generic host adapters and cross-host integration boundaries."}
 {"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check exact deterministic vectors, compatibility fixtures, and test ownership."}
 {"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check real filesystem, subprocess, clean-build, and packed-tarball assurance."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-planning-preservation-lock.json","reason":"Verify exact C0 topology, preservation baselines, R0/R1 reclassification, live-v1 containment, dependency gates, and separate authorization boundaries."}

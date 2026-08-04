@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "recordId": "c0-v1.3-planning-preservation-lock-v1",
+  "recordedOn": "2026-08-03",
+  "parent": {
+    "id": "migrate-research-methodology-to-procedures",
+    "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures"
+  },
+  "children": [
+    {
+      "role": "V13-A",
+      "id": "author-evaluation-contract-v1-3",
+      "path": ".trellis/tasks/08-03-author-evaluation-contract-v1-3",
+      "purpose": "public-evidence-only evaluation-contract-v1.3.0 candidate authoring"
+    },
+    {
+      "role": "V13-B",
+      "id": "assure-evaluation-contract-v1-3",
+      "path": ".trellis/tasks/08-03-assure-evaluation-contract-v1-3",
+      "purpose": "mechanically independent read-only exact-commit-and-digest contract assurance"
+    }
+  ],
+  "methodology": {
+    "active": {
+      "identity": "evaluation-contract-v1.2.0",
+      "digest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+      "status": "immutable-active-until-v13-b-pass"
+    },
+    "proposed": {
+      "identity": "evaluation-contract-v1.3.0",
+      "digest": null,
+      "status": "not-authored-non-authoritative"
+    },
+    "provenanceClasses": [
+      "inherited-public-v1.2",
+      "trellis-native-v1.3",
+      "inapplicable",
+      "blocked-by-contract"
+    ]
+  },
+  "wave8Audit": {
+    "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/wave8-r2a-frozen-v1.2-evidence-gap-audit.md",
+    "sha256": "d4415b8cec1e1e8e66ed20ce7416a6969e441a266f5256cbafb579b8d5af0933",
+    "verdict": "r2a-semantic-enforcement-blocked-under-public-v1.2"
+  },
+  "r0Reclassification": {
+    "preserveBytes": true,
+    "classification": "source-addressability-count-ownership-and-planned-destination-evidence",
+    "notAuthorityFor": [
+      "artifact-lifecycle-semantics",
+      "closure-derivation",
+      "validator-bindings",
+      "exact-50-of-64-selection"
+    ]
+  },
+  "r1Disposition": {
+    "preserveCurrentUncommittedFiles": true,
+    "reusableMechanics": [
+      "strict-utf8-json",
+      "duplicate-decoded-key-rejection",
+      "exact-identity-and-digest",
+      "contained-paths",
+      "canonical-object-ordering",
+      "immutable-results",
+      "worker-visibility-projection"
+    ],
+    "postFreezeSemanticFixturesAuthoritative": false
+  },
+  "liveContainment": {
+    "procedureVersion": "1.0.0",
+    "capabilityCount": 14,
+    "literatureDefault": "research.literature.scan",
+    "forwardRepairProcedureVersion": "2.0.3",
+    "activationAuthorized": false
+  },
+  "dependencySequence": [
+    "C0-planning-validation",
+    "V13-A-authoring-after-separate-task-start-approval",
+    "V13-A-authoring-commit-after-separate-authorization",
+    "V13-B-independent-assurance-after-exact-commit-and-digests",
+    "V13-B-assurance-commit-after-separate-authorization",
+    "R1-mechanical-correction-and-reuse-after-v13-b-pass",
+    "R2A-semantic-enforcement-against-exact-accepted-v1.3-digest"
+  ],
+  "r2aStatus": "blocked-on-v13-a-then-v13-b",
+  "protectedHistoricalPaths": [
+    ".trellis/tasks/archive/2026-07/**",
+    ".trellis/tasks/07-29-freeze-phase2-methodology-packaging-contracts/**",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/r0-*.json",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/wave8-r2a-frozen-v1.2-evidence-gap-audit.md",
+    ".trellis/tasks/07-29-activate-migrated-research-methodology/research/**",
+    ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/**",
+    "packages/cli/src/templates/research/procedures/*/1.0.0/**",
+    "packages/cli/src/templates/research/procedures/*/2.0.0/**",
+    "packages/cli/src/templates/research/procedures/*/2.0.1/**",
+    "packages/cli/src/templates/research/procedures/*/2.0.2/**",
+    ".trellis/research/phase-2-pins.md"
+  ],
+  "inheritedDirtyPathsAtC0Start": [
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/path-ownership-map.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs-site",
+    "marketplace",
+    "packages/cli/src/commands/research/dispatch-methodology-validation.ts",
+    "packages/core/src/research/index.ts",
+    "packages/core/src/research/methodology-worker-context.ts",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/r0-baseline-disposition.json",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/r0-gitnexus-evidence.json",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/r0-integrity-inventory.json",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/r0-methodology-derivability-matrix.json",
+    ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/wave8-r2a-frozen-v1.2-evidence-gap-audit.md",
+    "packages/cli/test/commands/research-methodology-validation.test.ts",
+    "packages/core/src/research/methodology-contract.ts",
+    "packages/core/test/research/methodology-contract.test.ts"
+  ],
+  "unrelatedDirtyExclusions": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs-site",
+    "marketplace"
+  ],
+  "preservationBaseline": {
+    "procedureHistoricalFileCount": 334,
+    "procedureHashInventorySha256": "67aa0f50f157859e6747ee7f8cbfbe45ed1b236461f3d7095d8672e694f2d7a5",
+    "protectedEvidenceFileCount": 412,
+    "protectedEvidenceHashInventorySha256": "66a1327a8e2c70f0c5e82c146f99b30b277a7ff54d6863c3d727e156774065e5",
+    "initialGitStatusSnapshotSha256": "f6be24fc062c2db245286b0e4787a7dc539bca4145cfbce052e039930a5f9547",
+    "excludedStatusSnapshotSha256": "57f2a4c5d8241a75228dd902578a7beeb5c1648b5dd56fe7e8b42f5b3f24d881",
+    "excludedDiffSnapshotSha256": "7a838c5638701f04fcec9733bdd75662551ce9d5685a23eaddb1dd2e5ca928e0",
+    "verificationRule": "recompute-the-same-local-inventories-and-require-byte-identical-results"
+  },
+  "authorization": {
+    "contractCandidateAuthoring": false,
+    "taskActivation": false,
+    "authoringCommit": false,
+    "contractAssurance": false,
+    "assuranceCommit": false,
+    "productionOrTestEdit": false,
+    "procedureOrRegistryEdit": false,
+    "packageLifecycle": false,
+    "activation": false,
+    "archive": false,
+    "release": false,
+    "publication": false,
+    "push": false,
+    "networkModelOrProviderWork": false
+  }
+}

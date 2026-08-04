@@ -369,3 +369,55 @@ The Phase-1 live-trial waiver applies to planning only. Live multi-host/model eq
 - explicitly accept the deterministic-only evidence boundary for that release.
 
 This deferred release decision does not block planning or deterministic implementation, but it blocks any claim of live multi-host equivalence.
+
+## 17. Additive v1.3 forward-correction design overlay (2026-08-03)
+
+This section preserves the historical design above and changes only the future semantic authority path after the Wave-8 gap audit.
+
+### 17.1 Corrected authority chain
+
+```text
+immutable public v1.2 identity and evidence boundary
+  -> R0 addressability/planned-destination evidence only
+  -> V13-A public-evidence + Trellis-native v1.3 candidate
+  -> separately authorized immutable authoring commit
+  -> V13-B independent exact-commit/digest assurance
+  -> accepted evaluation-contract-v1.3.0 digest
+  -> R1 mechanical reuse/correction
+  -> R2A root enforcement against exact accepted digest
+```
+
+Until V13-B passes, v1.2 remains the active methodology pin and R2A semantic enforcement remains blocked. The live registry remains at Procedure `1.0.0`; Procedure `2.0.3` remains the forward repair version and dormant future package target.
+
+### 17.2 Public-evidence reconstruction
+
+V13-A uses only public frozen v1.2 facts, archived public Trellis evidence, the Wave-8 audit, and explicit Trellis-native decisions. It does not inspect or transmit private Skill bodies or related private prompts, validators, tests, fixtures, cases, or raw outputs.
+
+Every normative field has exactly one provenance class:
+
+1. `inherited-public-v1.2` — exact public fact with immutable digest and line/JSON-pointer citation;
+2. `trellis-native-v1.3` — explicit new decision with rationale, rejected alternatives, compatibility, visibility, validator, and fixture obligations;
+3. `inapplicable` — explicit null/absence semantics and rationale;
+4. `blocked-by-contract` — no authority to infer; runtime/tests fail closed.
+
+R0 is reclassified interpretively as source-addressability and planned-destination evidence. R1 mechanics may be reused, but post-freeze semantic fixtures cannot establish v1.2 or v1.3 rules.
+
+### 17.3 Candidate contract shape
+
+The V13-A research-only candidate contains a public-evidence index, normative-decision ledger, complete 64-output disposition, complete artifact-lifecycle contract, closure contract, validator registry/binding matrix, derivability/provenance matrix, frozen target, deterministic candidate manifest, filename-bound sidecars, and exact execution evidence. Conditional normalized inventory, IO ledger, and differential-delta files are produced only when material v1.3 changes require them.
+
+All included lifecycle artifacts/checkpoints define the 13 dimensions identified by Wave-8, or explicitly record inapplicable/blocked semantics. Closure binds exact canonical fields, types, null behavior, producer/reader, evidence, validation order, zero-write errors, and validator triples. Generic `Result.status` does not imply selection or blockage.
+
+Strict JSON is deterministic UTF-8 with duplicate decoded-key rejection, recursive object-key ordering, array-order preservation, and one final LF. The frozen target is the methodology digest target. The candidate manifest inventories semantic files without self-reference, and filename-bound sidecars bind both manifest and frozen target.
+
+### 17.4 Independent assurance boundary
+
+V13-B consumes one exact immutable authoring commit plus exact candidate-manifest and contract digests. Accountable reviewer identity must differ mechanically from the V13-A author. The reviewer independently checks schema, bytes, digests, provenance, 64-output coverage, 13-dimension completeness, closure, exact validator triples, privacy, compatibility, authority, and mutation boundaries without importing production R2A behavior as the sole oracle.
+
+V13-B writes only its exact assurance allowlist, makes no repair, and emits exact pass/fail. Failure requires a new authoring commit/digest and full rerun. Accepted v1.3.0 bytes are immutable; later semantic correction advances to v1.3.1+.
+
+### 17.5 Ownership and compatibility
+
+V13-A and V13-B own no production, test, Procedure, registry, activation, package, specification, release, or historical evidence paths. Existing P2-02 through P2-13 ownership remains unchanged. Methodology, Procedure package, Procedure version, Context, report, and event schema versions remain independent.
+
+Historical Procedure `2.0.2` remains bound to exact v1.2. Future Procedure `2.0.3` may bind only to the exact V13-B-accepted v1.3 digest. Existing activation records retain recorded identity. Every authoring, assurance, remediation, evidence, complete-system assurance, activation, archive, release, publication, and push boundary requires separate explicit authorization.

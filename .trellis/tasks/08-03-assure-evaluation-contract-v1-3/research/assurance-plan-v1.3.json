@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "assuranceId": "evaluation-contract-v1.3.0-independent-assurance",
+  "predecessor": {
+    "taskId": "author-evaluation-contract-v1-3",
+    "taskPath": ".trellis/tasks/08-03-author-evaluation-contract-v1-3",
+    "immutableAuthoringCommitRequired": true
+  },
+  "subjectBindings": {
+    "authoringCommit": {
+      "value": null,
+      "requiredBeforeStart": true,
+      "format": "40-lowercase-hex",
+      "source": "separately-authorized-v13-a-authoring-commit"
+    },
+    "authorAccountableIdentity": {
+      "value": null,
+      "requiredBeforeStart": true,
+      "source": "v13-a-authoring-execution-evidence",
+      "commitAuthorNameEmailAlsoRecorded": true
+    },
+    "candidateManifest": {
+      "path": ".trellis/tasks/08-03-author-evaluation-contract-v1-3/research/contract-candidate-manifest-v1.3.json",
+      "sidecarPath": ".trellis/tasks/08-03-author-evaluation-contract-v1-3/research/contract-candidate-manifest-v1.3.sha256",
+      "sha256": null,
+      "sha256RequiredBeforeStart": true
+    },
+    "contract": {
+      "identity": "evaluation-contract-v1.3.0",
+      "targetPath": ".trellis/tasks/08-03-author-evaluation-contract-v1-3/research/frozen-migration-target-v1.3.json",
+      "sidecarPath": ".trellis/tasks/08-03-author-evaluation-contract-v1-3/research/frozen-migration-target-v1.3.sha256",
+      "digest": null,
+      "digestRequiredBeforeStart": true
+    },
+    "authoringEvidence": {
+      "path": ".trellis/tasks/08-03-author-evaluation-contract-v1-3/research/execution-evidence-ledger.json",
+      "requiredAtAuthoringCommit": true
+    }
+  },
+  "reviewerIndependence": {
+    "reviewerAccountableIdentity": null,
+    "reviewerIdentityRequiredBeforeStart": true,
+    "authorCommitIdentityRequired": true,
+    "authorEvidenceIdentityRequired": true,
+    "agentLabelIsInsufficient": true,
+    "comparison": "exact-accountable-identity-inequality",
+    "missingAmbiguousOrEqual": "fail"
+  },
+  "verificationDomains": [
+    "path-allowlist-and-historical-preservation",
+    "strict-schema-and-canonical-bytes",
+    "manifest-length-digest-and-sidecars",
+    "provenance-and-public-citations",
+    "durable-output-64-completeness",
+    "lifecycle-13-dimension-completeness",
+    "closure-source-and-no-status-heuristic",
+    "validator-id-version-severity-bindings",
+    "worker-root-visibility-and-authority",
+    "procedure-contract-compatibility",
+    "privacy-and-mutation-boundary",
+    "independent-digest-recomputation"
+  ],
+  "requiredOutputs": [
+    "research/exact-input-attestation.json",
+    "research/reviewer-independence.json",
+    "research/schema-digest-audit.json",
+    "research/provenance-coverage-audit.json",
+    "research/durable-output-lifecycle-audit.json",
+    "research/closure-validator-audit.json",
+    "research/privacy-mutation-audit.json",
+    "research/execution-evidence-ledger.json",
+    "research/assurance-verdict.json"
+  ],
+  "verdicts": ["pass", "fail"],
+  "repairAuthority": false,
+  "failureDisposition": "new-v13-a-authoring-commit-and-digest-then-full-rerun",
+  "assuranceCommitRequiresSeparateAuthorization": true,
+  "forbiddenOutputs": [
+    "candidate-repairs",
+    "production-source",
+    "tests",
+    "procedure-packages",
+    "registry-or-activation-edits",
+    "specification-edits",
+    "historical-evidence-edits",
+    "private-source-content"
+  ]
+}

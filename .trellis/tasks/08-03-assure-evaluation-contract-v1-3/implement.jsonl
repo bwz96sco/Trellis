@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/08-03-assure-evaluation-contract-v1-3/research/planning-context.md","reason":"Task-local exact-input, reviewer-independence, read-only, privacy, live-v1, and authorization boundaries."}
+{"file":".trellis/tasks/08-03-assure-evaluation-contract-v1-3/research/assurance-plan-v1.3.json","reason":"Normative exact inputs, verification domains, output allowlist, pass/fail rule, and no-repair boundary."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Verify historical Procedure identity, version-domain separation, Proposal-only workers, and root-owned canonical authority."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Verify pre-record zero-write validation, Result/Proposal/Decision authority, and compatibility boundaries."}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Enforce isolated exact-commit reads, protected paths, strict sidecars, and no writes outside assurance outputs."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Design independent strict-schema, digest, mutation, and non-tautological assurance checks."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Plan isolated commit extraction, independent rebuild, full-tree snapshots, and exact retained evidence."}

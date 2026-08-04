@@ -136,3 +136,39 @@ No sibling or external file may influence worker execution unless it is explicit
 - All 14 task manifests, topology, semantic manifest policy, exact 229-case allocation, disjoint path ownership, and planning diff hygiene must pass deterministic validation after every review-driven correction.
 - Three adversarial review/remediation rounds plus a focused hygiene recheck completed. The final read-only verdict is `READY`: no implementation-blocking planning defect survived.
 - The task remains `planning`; implementation still requires a new explicit user approval of the final summary before any `task.py start`.
+
+## Additive v1.3 forward-correction overlay (2026-08-03)
+
+This overlay preserves every historical requirement above. It supersedes only the future interpretation that public frozen v1.2 already supplies executable artifact-lifecycle, closure-derivation, or exact validator-binding semantics.
+
+### Corrected evidence and authority status
+
+- Frozen `evaluation-contract-v1.2.0` and digest `57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb` remain immutable and are the active methodology pin until an exact `evaluation-contract-v1.3.0` candidate passes mechanically independent V13-B assurance.
+- R0 remains immutable addressability, count, ownership, and planned-destination evidence. It is not semantic derivability proof.
+- Current R1 strict parsing, duplicate-key rejection, exact identity/digest, path containment, canonicalization, immutability, and worker-visibility mechanics may be reused after v1.3 acceptance. Post-freeze R1 semantic fixtures and the 104/54/50 skeleton are non-authoritative for both v1.2 and v1.3.
+- R2A semantic enforcement is blocked on V13-A contract authoring followed by V13-B exact-commit/digest assurance. No later task may infer the missing semantics while that dependency is unsatisfied.
+- The live system remains contained to Procedure `1.0.0`, 14 capabilities, and `research.literature.scan` as the literature default. The forward repair Procedure version remains `2.0.3`; C0 does not author packages or change selection.
+
+### V13-A — public-evidence contract authoring
+
+- Create a research-only `evaluation-contract-v1.3.0` candidate from public frozen v1.2 facts, archived public Trellis evidence, the Wave-8 audit, and explicit Trellis-native normative decisions.
+- Every normative field uses exactly one provenance class: `inherited-public-v1.2`, `trellis-native-v1.3`, `inapplicable`, or `blocked-by-contract`.
+- The candidate must disposition all 64 public durable outputs in the seven lifecycle-modeled families; define all 13 lifecycle dimensions or explicit inapplicable/blocked semantics; define canonical closure fields without a generic `Result.status` heuristic; and bind exact validator `(id, version, severity)` triples.
+- Candidate JSON, digests, sidecars, and manifest membership must be deterministic and independently rebuildable.
+- No private Skill body, prompt, validator, test, fixture, case, or raw output may be inspected, transmitted, copied, or used as authority.
+- A separate explicit authorization is required before the immutable V13-A authoring commit.
+
+### V13-B — independent exact-input assurance
+
+- Review the exact immutable V13-A authoring commit, candidate-manifest digest, contract identity, and contract digest.
+- Mechanically prove accountable reviewer identity differs from the V13-A author; different agent labels alone are insufficient.
+- Verify strict schema/digest/provenance/coverage/closure/validator/privacy/mutation requirements read-only, emit only the exact allowlisted assurance outputs, and produce an unambiguous `pass` or `fail` without repairs.
+- Any failure returns to a new V13-A authoring commit and digest, followed by a complete V13-B rerun.
+- A separate explicit authorization is required before the assurance-only commit.
+
+### Additional acceptance gates
+
+- [ ] V13-A and V13-B are real validated child tasks with disjoint research-only ownership and no production/test/Procedure/registry/specification authority.
+- [ ] The C0 preservation record binds the parent/children, active v1.2 and proposed v1.3 identities, Wave-8 digest, R0 reclassification, live-v1 containment, protected paths, inherited dirty exclusions, and V13-A → V13-B → R2A dependency.
+- [ ] No archived evidence, P2-01 evidence, R0 file, Wave-8 audit, historical Procedure `1.0.0–2.0.2`, cutover/candidate/assurance evidence, or `.trellis/research/phase-2-pins.md` is rewritten.
+- [ ] Every later commit, assurance, remediation subject, evidence, activation, package lifecycle, archive, release, publication, and push boundary remains separately authorized; one approval never implies another.
