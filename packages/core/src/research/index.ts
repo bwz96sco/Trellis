@@ -149,6 +149,8 @@ export type {
 } from "./methodology-contract.js";
 
 export {
+  bindMethodologyArtifactPath,
+  matchesMethodologyPathPattern,
   validateMethodologyArtifacts,
 } from "./methodology-artifacts.js";
 export type {
@@ -206,6 +208,7 @@ export {
   V13_TRUSTED_VALIDATOR_COUNT,
   V13_VALIDATOR_BINDING_COUNT,
   assertHistoricalPhase2FixtureIsNotV13Authority,
+  evaluateAcceptedV13DeltaCase,
   expectedV13ContractCounts,
   parseAcceptedV13ContractPack,
   selectTrustedV13ValidatorDescriptors,
@@ -214,6 +217,8 @@ export type {
   V13AcceptedContractPack,
   V13ArtifactLifecycleRow,
   V13ContractPackCounts,
+  V13DeltaCaseEvaluationInput,
+  V13DeltaCaseEvaluationResult,
   V13LeafFileName,
   V13LifecycleDimension,
   V13TrustedValidatorEntry,

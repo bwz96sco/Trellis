@@ -51,14 +51,38 @@ export interface MethodologyArtifactValidationResult {
   }[];
 }
 
-function matchesPathPattern(path: string, pattern: string): boolean {
-  // Limited glob: * matches one path segment, ** matches any suffix.
+/**
+ * Exact pathPattern match for methodology artifact contracts.
+ * Limited glob only: * = one path segment, ** = any suffix.
+ * No substring / includes authority.
+ */
+export function matchesMethodologyPathPattern(
+  path: string,
+  pattern: string,
+): boolean {
   const escaped = pattern
     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
     .replace(/\*\*/g, "§§")
     .replace(/\*/g, "[^/]+")
     .replace(/§§/g, ".*");
   return new RegExp(`^${escaped}$`).test(path);
+}
+
+/**
+ * Bind an artifact path to exactly one contract via pathPattern.
+ * Ambiguous or zero matches return undefined — never invent contract ids.
+ */
+export function bindMethodologyArtifactPath(
+  path: string,
+  contracts: readonly MethodologyArtifactContract[],
+): MethodologyArtifactContract | undefined {
+  const matches = contracts.filter((c) =>
+    matchesMethodologyPathPattern(path, c.pathPattern),
+  );
+  if (matches.length === 1) {
+    return matches[0];
+  }
+  return undefined;
 }
 
 function cardinalityOk(
@@ -144,7 +168,7 @@ export function validateMethodologyArtifacts(input: {
     }
 
     for (const inst of present) {
-      if (!matchesPathPattern(inst.path, c.pathPattern)) {
+      if (!matchesMethodologyPathPattern(inst.path, c.pathPattern)) {
         errors.push({
           code: "PATH_PATTERN_MISMATCH",
           message: `Path '${inst.path}' does not match pattern '${c.pathPattern}'`,

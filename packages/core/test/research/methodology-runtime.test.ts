@@ -23,11 +23,67 @@ import {
   serializeMethodologyReportV2Sidecar,
   serializeSupportPackManifest,
   shouldMaterializeMethodologyReportSidecar,
+  bindMethodologyArtifactPath,
+  matchesMethodologyPathPattern,
   validateMethodologyArtifacts,
   validateRootCompositionDescriptor,
 } from "../../src/research/index.js";
 
 describe("methodology runtime", () => {
+  it("binds artifact paths by pathPattern only (no substring / no invented ids)", () => {
+    const contracts = [
+      {
+        id: "01-query",
+        version: "1",
+        requiredness: "required" as const,
+        cardinality: "1" as const,
+        pathPattern: "evidence/**/01-query*",
+        mediaType: "text/markdown",
+        producer: "worker",
+        consumers: ["root"],
+        terminalApplicability: ["success"],
+        validatorIds: ["missing-critical-evidence"],
+      },
+      {
+        id: "02-collect",
+        version: "1",
+        requiredness: "optional" as const,
+        cardinality: "0..1" as const,
+        pathPattern: "evidence/**/02-collect*",
+        mediaType: "application/json",
+        producer: "worker",
+        consumers: ["root"],
+        terminalApplicability: ["success"],
+        validatorIds: [],
+      },
+    ];
+    expect(
+      matchesMethodologyPathPattern(
+        "evidence/run-1/01-query.md",
+        "evidence/**/01-query*",
+      ),
+    ).toBe(true);
+    // Substring of contract id outside the pathPattern must not bind.
+    expect(
+      bindMethodologyArtifactPath("notes/about-01-query.md", contracts),
+    ).toBeUndefined();
+    // Path that would match path.includes("01-query") under the old authority
+    // but fails the exact pathPattern (wrong prefix).
+    expect(
+      bindMethodologyArtifactPath("other/run-1/01-query.md", contracts),
+    ).toBeUndefined();
+    const hit = bindMethodologyArtifactPath(
+      "evidence/run-1/01-query.md",
+      contracts,
+    );
+    expect(hit?.id).toBe("01-query");
+    expect(hit?.mediaType).toBe("text/markdown");
+    // Unmatched path: no invented unexpected-${index} contract.
+    expect(
+      bindMethodologyArtifactPath("evidence/run-1/unknown.bin", contracts),
+    ).toBeUndefined();
+  });
+
   it("fails closed on missing required artifacts and cardinality", () => {
     const result = validateMethodologyArtifacts({
       contracts: [

@@ -17,6 +17,7 @@ import {
   V13_TRUSTED_VALIDATOR_COUNT,
   V13_VALIDATOR_BINDING_COUNT,
   assertHistoricalPhase2FixtureIsNotV13Authority,
+  evaluateAcceptedV13DeltaCase,
   expectedV13ContractCounts,
   parseAcceptedV13ContractPack,
   selectTrustedV13ValidatorDescriptors,
@@ -208,5 +209,52 @@ describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
     expect(pack.deltaCases.every((c) => String(c.caseId).startsWith("V13-"))).toBe(
       true,
     );
+  });
+
+  it("evaluates delta cases with semanticRule/mutation: positive, base, fail-closed, not-run", () => {
+    const pack = parseAcceptedV13ContractPack({ leafBytes: loadA3LeafBytes() });
+    const requirednessCases = pack.deltaCases.filter((row) => {
+      return (
+        typeof row.ruleKind === "string" &&
+        row.ruleKind === "artifact.requiredness"
+      );
+    });
+    expect(requirednessCases.length).toBe(4);
+
+    for (const row of requirednessCases) {
+      const caseId = String(row.caseId);
+      const fixtureClass = String(row.fixtureClass);
+      const ruleTargets = Array.isArray(row.ruleTargets)
+        ? row.ruleTargets.map(String)
+        : [];
+      const bindingIds = Array.isArray(row.bindingIds)
+        ? row.bindingIds.map(String)
+        : [];
+      const syntheticMutation = String(row.syntheticMutation ?? "");
+      const result = evaluateAcceptedV13DeltaCase({
+        pack,
+        caseId,
+        fixtureClass,
+        semanticRule: "artifact.requiredness",
+        syntheticMutation,
+        ruleTargets,
+        bindingIds,
+      });
+      expect(result.executed).toBe(true);
+      expect(result.zeroWrite).toBe(true);
+      expect(result.executionFingerprint.length).toBe(64);
+      if (fixtureClass === "positive") {
+        expect(result.outcome).toBe("pass");
+        expect(result.errorCodes).toEqual([]);
+      } else if (fixtureClass === "base") {
+        expect(result.outcome).toBe("pass-noncanonical-until-root-accept");
+      } else if (fixtureClass === "critical-negative") {
+        expect(result.outcome).toBe("fail-closed");
+        expect(result.errorCodes).toContain("V13_ARTIFACT_REQUIRED_MISSING");
+      } else if (fixtureClass === "inapplicable") {
+        expect(result.outcome).toBe("not-run");
+        expect(result.errorCodes).toEqual([]);
+      }
+    }
   });
 });

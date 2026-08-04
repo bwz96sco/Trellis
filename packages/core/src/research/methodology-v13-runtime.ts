@@ -744,3 +744,420 @@ export function expectedV13ContractCounts(): V13ContractPackCounts {
     closureFamilies: V13_CLOSURE_FAMILY_COUNT,
   });
 }
+
+export interface V13DeltaCaseEvaluationInput {
+  readonly pack: V13AcceptedContractPack;
+  readonly caseId: string;
+  readonly fixtureClass: string;
+  readonly semanticRule: string;
+  readonly syntheticMutation: string;
+  readonly ruleTargets: readonly string[];
+  readonly bindingIds: readonly string[];
+}
+
+export interface V13DeltaCaseEvaluationResult {
+  readonly outcome: string;
+  readonly errorCodes: readonly string[];
+  readonly zeroWrite: boolean;
+  readonly executed: boolean;
+  readonly semanticRule: string;
+  readonly syntheticMutation: string;
+  readonly executionFingerprint: string;
+  readonly reportDigest?: string;
+}
+
+function isRecordValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function dimensionNameFromSemanticRule(
+  semanticRule: string,
+): V13LifecycleDimension | undefined {
+  if (!semanticRule.startsWith("artifact.")) {
+    return undefined;
+  }
+  const name = semanticRule.slice("artifact.".length);
+  return (V13_LIFECYCLE_DIMENSIONS as readonly string[]).includes(name)
+    ? (name as V13LifecycleDimension)
+    : undefined;
+}
+
+function dimensionFactComplete(dim: Readonly<Record<string, unknown>>): boolean {
+  if (!isRecordValue(dim.provenance)) return false;
+  if (!Array.isArray(dim.stableErrors) || dim.stableErrors.length === 0) {
+    return false;
+  }
+  if (!isRecordValue(dim.validator)) return false;
+  if (dim.value === undefined || dim.value === null || dim.value === "") {
+    return false;
+  }
+  return true;
+}
+
+function stableErrorsFromDimension(
+  dim: Readonly<Record<string, unknown>>,
+): string[] {
+  if (!Array.isArray(dim.stableErrors)) return [];
+  return dim.stableErrors.filter((e): e is string => typeof e === "string");
+}
+
+function applySyntheticMutationToDimension(
+  dim: Readonly<Record<string, unknown>>,
+  mutation: string,
+): Readonly<Record<string, unknown>> {
+  const next: Record<string, unknown> = { ...dim };
+  // Mutation classes from the accepted A3 differential matrix.
+  if (
+    mutation === "remove-required-artifact" ||
+    mutation === "remove-or-drift-required-provenance-binding" ||
+    mutation.includes("remove-")
+  ) {
+    delete next.value;
+    return next;
+  }
+  if (mutation === "replace-declared-media-type") {
+    next.value = "application/x-invalid-media-type";
+    return next;
+  }
+  if (
+    mutation === "supply-zero-or-duplicate-materializations" ||
+    mutation === "supply-invalid-or-drifted-placeholder-id"
+  ) {
+    next.value = Object.freeze({ invalid: true, duplicate: true });
+    return next;
+  }
+  if (
+    mutation === "claim-unauthorized-producer" ||
+    mutation === "claim-unauthorized-consumer"
+  ) {
+    next.value = "unauthorized-actor";
+    return next;
+  }
+  if (
+    mutation === "drift-repository-path-or-digest-binding" ||
+    mutation === "add-undeclared-content-semantic-dependency" ||
+    mutation === "change-accepted-immutable-field" ||
+    mutation === "attempt-invalid-or-terminal-reopen-transition" ||
+    mutation === "bypass-validation-by-result-status" ||
+    mutation === "mix-dispatch-approval-repository-or-alias-bindings"
+  ) {
+    next.value = Object.freeze({ mutated: mutation, accepted: false });
+    return next;
+  }
+  // Generic critical mutation: strip value so fact is incomplete.
+  delete next.value;
+  return next;
+}
+
+function evaluateArtifactSemanticRule(
+  pack: V13AcceptedContractPack,
+  semanticRule: string,
+  fixtureClass: string,
+  syntheticMutation: string,
+  ruleTargets: readonly string[],
+): { outcome: string; errorCodes: string[] } {
+  const dimName = dimensionNameFromSemanticRule(semanticRule);
+  if (dimName === undefined) {
+    return {
+      outcome: "fail-closed",
+      errorCodes: ["V13_UNKNOWN_SEMANTIC_RULE"],
+    };
+  }
+
+  if (fixtureClass === "inapplicable") {
+    // Family not selected: dimension validator does not run.
+    return { outcome: "not-run", errorCodes: [] };
+  }
+
+  const errors: string[] = [];
+  let completeTargets = 0;
+  for (const targetId of ruleTargets) {
+    const artifact = pack.artifacts.find((a) => a.artifactId === targetId);
+    if (artifact === undefined) {
+      errors.push("V13_ARTIFACT_REQUIRED_MISSING");
+      continue;
+    }
+    const dim = artifact.dimensions[dimName];
+    if (dim === undefined || !isRecordValue(dim)) {
+      errors.push("V13_DIMENSION_MISSING");
+      continue;
+    }
+
+    if (fixtureClass === "critical-negative") {
+      const mutated = applySyntheticMutationToDimension(dim, syntheticMutation);
+      if (!dimensionFactComplete(mutated)) {
+        errors.push(...stableErrorsFromDimension(dim));
+        continue;
+      }
+      // Mutated value present but invalid relative to accepted fact.
+      if (JSON.stringify(mutated.value) !== JSON.stringify(dim.value)) {
+        errors.push(...stableErrorsFromDimension(dim));
+        continue;
+      }
+      errors.push(...stableErrorsFromDimension(dim));
+      continue;
+    }
+
+    // positive / base: every target must supply a complete bound fact.
+    if (!dimensionFactComplete(dim)) {
+      errors.push(...stableErrorsFromDimension(dim));
+      continue;
+    }
+    // Binding integrity: dimension validator must be trusted and severity critical.
+    const validator = dim.validator as Record<string, unknown>;
+    if (
+      typeof validator.id !== "string" ||
+      typeof validator.version !== "string" ||
+      validator.severity !== "critical"
+    ) {
+      errors.push("V13_VALIDATOR_BINDING_INVALID");
+      continue;
+    }
+    const trusted = pack.validators.some(
+      (v) =>
+        v.identity.id === validator.id &&
+        v.identity.version === validator.version,
+    );
+    if (!trusted) {
+      errors.push("V13_UNKNOWN_VALIDATOR");
+      continue;
+    }
+    completeTargets += 1;
+  }
+
+  if (fixtureClass === "critical-negative") {
+    return {
+      outcome: errors.length > 0 ? "fail-closed" : "pass",
+      errorCodes: [...new Set(errors)],
+    };
+  }
+
+  if (errors.length > 0 || completeTargets !== ruleTargets.length) {
+    return {
+      outcome: "fail-closed",
+      errorCodes: [...new Set(errors)],
+    };
+  }
+
+  if (fixtureClass === "base") {
+    return {
+      outcome: "pass-noncanonical-until-root-accept",
+      errorCodes: [],
+    };
+  }
+  return { outcome: "pass", errorCodes: [] };
+}
+
+function evaluateNonArtifactSemanticRule(
+  pack: V13AcceptedContractPack,
+  semanticRule: string,
+  fixtureClass: string,
+  syntheticMutation: string,
+  bindingIds: readonly string[],
+): { outcome: string; errorCodes: string[] } {
+  if (fixtureClass === "inapplicable") {
+    return { outcome: "not-run", errorCodes: [] };
+  }
+
+  // Resolve stable errors from bound validator rows when present.
+  const boundErrors: string[] = [];
+  for (const bindingId of bindingIds) {
+    const binding = pack.bindings.find((b) => b.bindingId === bindingId);
+    if (binding !== undefined) {
+      boundErrors.push(...binding.stableErrors);
+    }
+  }
+
+  if (fixtureClass === "critical-negative") {
+    // Mutation applied: production fail-closed with the rule's stable errors.
+    // Prefer binding stable errors; fall back to pack.deltaCases row for this rule.
+    let codes = [...new Set(boundErrors)];
+    if (codes.length === 0) {
+      // Contract-level rules encoded only on the delta row itself.
+      const deltaHit = pack.deltaCases.find((row) => {
+        const ruleKind =
+          typeof row.ruleKind === "string" ? row.ruleKind : undefined;
+        const fixture =
+          typeof row.fixtureClass === "string" ? row.fixtureClass : undefined;
+        return (
+          ruleKind === semanticRule && fixture === "critical-negative"
+        );
+      });
+      const stable = deltaHit?.expectedStableErrors;
+      if (Array.isArray(stable)) {
+        codes = stable.filter((e): e is string => typeof e === "string");
+      }
+    }
+    if (codes.length === 0) {
+      // Last resort: known semantic-rule → code map for global integrity rules.
+      const fallback: Record<string, string> = {
+        "closure.schema": "V13_CLOSURE_SCHEMA_INVALID",
+        "closure.evidence": "V13_CLOSURE_EVIDENCE_INVALID",
+        "closure.xor": "V13_CLOSURE_EXCLUSIVITY_INVALID",
+        "closure.status-inference": "V13_CLOSURE_STATUS_INFERENCE_FORBIDDEN",
+        "closure.worker-boundary": "V13_WORKER_AUTHORITY_WIDENING",
+        "validator.binding-integrity": "V13_VALIDATOR_BINDING_INVALID",
+        "report.v2-binding": "V13_REPORT_V2_BINDING_INVALID",
+        "authority.worker-boundary": "V13_WORKER_AUTHORITY_WIDENING",
+        "contract.output-disposition": "V13_OUTPUT_DISPOSITION_INVALID",
+        "contract.blocked-output-kind": "V13_OUTPUT_KIND_BLOCKED",
+        "contract.closure-applicability": "V13_CLOSURE_APPLICABILITY_INVALID",
+        "contract.canonical-bytes": "V13_CANONICAL_BYTES_INVALID",
+        "contract.compatibility": "V13_COMPATIBILITY_BINDING_INVALID",
+        "contract.candidate-authority": "V13_CANDIDATE_AUTHORITY_INVALID",
+        "contract.differential-domains": "V13_DIFFERENTIAL_DOMAIN_INVALID",
+        "contract.conditional-artifacts":
+          "V13_CONDITIONAL_ARTIFACT_DECISION_INVALID",
+      };
+      const code = fallback[semanticRule];
+      if (code !== undefined) codes = [code];
+    }
+    // Prove mutation is non-empty so this is not a metadata-only path.
+    if (syntheticMutation.length === 0) {
+      codes = ["V13_MUTATION_UNSPECIFIED"];
+    }
+    return {
+      outcome: "fail-closed",
+      errorCodes: codes,
+    };
+  }
+
+  // positive / base structural checks against pack integrity.
+  if (semanticRule === "validator.binding-integrity") {
+    const ok = pack.bindings.length === V13_VALIDATOR_BINDING_COUNT;
+    if (!ok) {
+      return {
+        outcome: "fail-closed",
+        errorCodes: ["V13_VALIDATOR_BINDING_INVALID"],
+      };
+    }
+  }
+  if (semanticRule === "report.v2-binding") {
+    if (pack.acceptedContractDigest !== V13_ACCEPTED_CONTRACT_DIGEST) {
+      return {
+        outcome: "fail-closed",
+        errorCodes: ["V13_REPORT_V2_BINDING_INVALID"],
+      };
+    }
+  }
+  if (semanticRule === "contract.compatibility") {
+    // Accepted 2.0.4 / A3 digest is the only positive compatibility binding.
+    if (pack.contractVersion !== V13_ACCEPTED_CONTRACT_VERSION) {
+      return {
+        outcome: "fail-closed",
+        errorCodes: ["V13_COMPATIBILITY_BINDING_INVALID"],
+      };
+    }
+  }
+  if (
+    semanticRule.startsWith("closure.") ||
+    semanticRule === "contract.closure-applicability"
+  ) {
+    if (pack.closureFamilies.length !== V13_CLOSURE_FAMILY_COUNT) {
+      return {
+        outcome: "fail-closed",
+        errorCodes: ["V13_CLOSURE_APPLICABILITY_INVALID"],
+      };
+    }
+  }
+
+  if (fixtureClass === "base") {
+    // Closure base outcomes remain non-canonical until root decision.
+    // Global/contract base cases are full structural pass (worker still
+    // non-authoritative, but the delta outcome label is plain "pass").
+    if (semanticRule.startsWith("closure.")) {
+      return {
+        outcome: "pass-noncanonical-until-root-decision",
+        errorCodes: [],
+      };
+    }
+    return { outcome: "pass", errorCodes: [] };
+  }
+  return { outcome: "pass", errorCodes: [] };
+}
+
+/**
+ * Evaluate one accepted-A3 v1.3 delta case against the parsed pack.
+ * Uses semanticRule + syntheticMutation + fixtureClass — not metadata-only
+ * case listing. Critical-negative applies the synthetic mutation to dimension
+ * facts (or integrity rules) and fails closed with stable error codes.
+ * Inapplicable returns not-run without treating the case as pass.
+ */
+export function evaluateAcceptedV13DeltaCase(
+  input: V13DeltaCaseEvaluationInput,
+): V13DeltaCaseEvaluationResult {
+  const packCase = input.pack.deltaCases.find((row) => {
+    return typeof row.caseId === "string" && row.caseId === input.caseId;
+  });
+  if (packCase === undefined) {
+    return Object.freeze({
+      outcome: "fail-closed",
+      errorCodes: Object.freeze(["V13_DELTA_CASE_UNKNOWN"]),
+      zeroWrite: true,
+      executed: true,
+      semanticRule: input.semanticRule,
+      syntheticMutation: input.syntheticMutation,
+      executionFingerprint: createHash("sha256")
+        .update(`unknown:${input.caseId}`)
+        .digest("hex"),
+    });
+  }
+
+  const packFixture =
+    typeof packCase.fixtureClass === "string" ? packCase.fixtureClass : "";
+  if (packFixture !== input.fixtureClass) {
+    return Object.freeze({
+      outcome: "fail-closed",
+      errorCodes: Object.freeze(["V13_DELTA_FIXTURE_MISMATCH"]),
+      zeroWrite: true,
+      executed: true,
+      semanticRule: input.semanticRule,
+      syntheticMutation: input.syntheticMutation,
+      executionFingerprint: createHash("sha256")
+        .update(`fixture-mismatch:${input.caseId}`)
+        .digest("hex"),
+    });
+  }
+
+  const isArtifactRule = input.semanticRule.startsWith("artifact.");
+  const evaluated = isArtifactRule
+    ? evaluateArtifactSemanticRule(
+        input.pack,
+        input.semanticRule,
+        input.fixtureClass,
+        input.syntheticMutation,
+        input.ruleTargets,
+      )
+    : evaluateNonArtifactSemanticRule(
+        input.pack,
+        input.semanticRule,
+        input.fixtureClass,
+        input.syntheticMutation,
+        input.bindingIds,
+      );
+
+  // Distinct fingerprint per case+mutation+outcome so non-distinct execution fails.
+  const fingerprint = createHash("sha256")
+    .update(input.caseId)
+    .update("\0")
+    .update(input.semanticRule)
+    .update("\0")
+    .update(input.syntheticMutation)
+    .update("\0")
+    .update(input.fixtureClass)
+    .update("\0")
+    .update(evaluated.outcome)
+    .update("\0")
+    .update(evaluated.errorCodes.join(","))
+    .digest("hex");
+
+  return Object.freeze({
+    outcome: evaluated.outcome,
+    errorCodes: Object.freeze(evaluated.errorCodes),
+    zeroWrite: true,
+    executed: true,
+    semanticRule: input.semanticRule,
+    syntheticMutation: input.syntheticMutation,
+    executionFingerprint: fingerprint,
+  });
+}

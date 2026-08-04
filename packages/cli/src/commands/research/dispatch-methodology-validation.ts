@@ -6,6 +6,7 @@ import {
   LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
   V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_DIGEST,
+  bindMethodologyArtifactPath,
   buildMethodologyReport,
   buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
@@ -310,28 +311,33 @@ export function validateMethodologyBeforeRecord(input: {
   ) {
     const contracts = loadArtifactContractsFromProcedure(input.procedure);
     if (contracts.length > 0) {
+      // Strict binding: pathPattern only (no path.includes substring authority).
+      // Unmatched paths use a single stable unexpected contract id (never
+      // unexpected-${index}). mediaType comes from the matched contract or is
+      // omitted — never invent a default text/markdown.
       const instances: MethodologyArtifactInstance[] = (
         input.artifactPaths ?? []
-      ).map((path, index) =>
-        Object.freeze({
-          contractId:
-            contracts.find(
-              (c) =>
-                path.includes(c.id) ||
-                path.match(
-                  new RegExp(
-                    c.pathPattern
-                      .replace(/\*\*/g, ".*")
-                      .replace(/\*/g, "[^/]+"),
-                  ),
-                ),
-            )?.id ?? `unexpected-${index}`,
-          path,
+      ).map((artifactPath) => {
+        const contract = bindMethodologyArtifactPath(artifactPath, contracts);
+        const digest = input.artifactDigests?.find(
+          (d) => d.path === artifactPath,
+        );
+        if (contract === undefined) {
+          return Object.freeze({
+            contractId: "unexpected",
+            path: artifactPath,
+            present: true,
+            sha256: digest?.sha256,
+          });
+        }
+        return Object.freeze({
+          contractId: contract.id,
+          path: artifactPath,
           present: true,
-          sha256: input.artifactDigests?.find((d) => d.path === path)?.sha256,
-          mediaType: "text/markdown",
-        }),
-      );
+          sha256: digest?.sha256,
+          mediaType: contract.mediaType,
+        });
+      });
       const artifactResult = validateMethodologyArtifacts({
         contracts,
         instances,
