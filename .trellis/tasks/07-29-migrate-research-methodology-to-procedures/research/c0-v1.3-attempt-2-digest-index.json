@@ -1,0 +1,22 @@
+{
+  "members": [
+    {
+      "byteLength": 5063,
+      "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-portable-preservation-manifest.json",
+      "sha256": "2fdbd1feb2c6871e5a219c01c1b94f5cdfb4273ad5463099cb530e6600ae6fde"
+    },
+    {
+      "byteLength": 248405,
+      "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-procedure-blob-lock.json",
+      "sha256": "721541e6fe48052d115508bc6ff2de2fbdd6ae3b01899803792499dc3e703b18"
+    },
+    {
+      "byteLength": 319178,
+      "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-protected-evidence-blob-lock.json",
+      "sha256": "7a1b482730c1690184186aa3fa33b3639544ff565b8d7b88862e7dabef78ab71"
+    }
+  ],
+  "recordId": "c0-v1.3-attempt-2-digest-index",
+  "recordedOn": "2026-08-04",
+  "schemaVersion": 1
+}

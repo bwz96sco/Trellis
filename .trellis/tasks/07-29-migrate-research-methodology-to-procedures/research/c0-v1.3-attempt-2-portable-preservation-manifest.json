@@ -1,0 +1,114 @@
+{
+  "attempt": 2,
+  "attempt1ImmutableDirs": [
+    ".trellis/tasks/08-03-author-evaluation-contract-v1-3",
+    ".trellis/tasks/08-03-assure-evaluation-contract-v1-3"
+  ],
+  "attempt2Children": [
+    {
+      "id": "author-evaluation-contract-v1-3-attempt-2",
+      "path": ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-2",
+      "purpose": "public-evidence-only evaluation-contract-v1.3.0 candidate authoring retry",
+      "role": "V13-A-attempt-2"
+    },
+    {
+      "id": "assure-evaluation-contract-v1-3-attempt-2",
+      "path": ".trellis/tasks/08-04-assure-evaluation-contract-v1-3-attempt-2",
+      "purpose": "mechanically independent assurance of exact attempt-2 authoring commit and digests; second accountable human required",
+      "role": "V13-B-attempt-2"
+    }
+  ],
+  "authorization": {
+    "activation": false,
+    "assuranceCommit": false,
+    "authoringCommit": false,
+    "contractAssurance": false,
+    "contractCandidateAuthoring": false,
+    "packageLifecycle": false,
+    "productionOrTestEdit": false,
+    "push": false,
+    "taskActivation": false
+  },
+  "doesNotEmbedOwnCommitSha": true,
+  "evidenceBaselineCommit": "a198b4f35d7595bb31ad90913ef1c18c0e0015cb",
+  "failedCompoundAuthoringCommit": {
+    "classification": "failed-compound-authoring-attempt",
+    "mustNotAmendOrReinterpret": true,
+    "sha": "4d36ecda5940b07a9611cf89089fe0bab7f3a54b"
+  },
+  "gitignoreExceptions": [
+    "!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-0.6.7.tgz",
+    "!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-core-0.6.7.tgz",
+    "!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-0.6.7.tgz",
+    "!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-core-0.6.7.tgz"
+  ],
+  "historicalAggregateDigests": {
+    "procedureHashInventorySha256": "67aa0f50f157859e6747ee7f8cbfbe45ed1b236461f3d7095d8672e694f2d7a5",
+    "protectedEvidenceHashInventorySha256": "66a1327a8e2c70f0c5e82c146f99b30b277a7ff54d6863c3d727e156774065e5"
+  },
+  "liveContainment": {
+    "activationAuthorized": false,
+    "capabilityCount": 14,
+    "forwardRepairProcedureVersion": "2.0.3",
+    "literatureDefault": "research.literature.scan",
+    "procedureVersion": "1.0.0"
+  },
+  "locks": {
+    "procedureBlobLock": {
+      "expectedCount": 334,
+      "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-procedure-blob-lock.json"
+    },
+    "protectedEvidenceBlobLock": {
+      "expectedCount": 412,
+      "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-protected-evidence-blob-lock.json"
+    }
+  },
+  "p0PreservationCommit": {
+    "sha": "867954ae7a201582fefcf26191e3733269cc9e39",
+    "v13bAttempt1Verdict": "fail"
+  },
+  "r2aStatus": "blocked-on-v13-a-attempt-2-then-v13-b-attempt-2",
+  "recordId": "c0-v1.3-attempt-2-portable-preservation-manifest",
+  "recordedOn": "2026-08-04",
+  "schemaVersion": 1,
+  "supersedesInterpretively": {
+    "note": "Old C0 remains immutable historical evidence; this attempt-2 portable lock is the forward C0 for V13-A2/B2.",
+    "path": ".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-planning-preservation-lock.json",
+    "preserveBytesUnchanged": true,
+    "recordId": "c0-v1.3-planning-preservation-lock-v1"
+  },
+  "wave7ArchivesExact": [
+    {
+      "byteLength": 376239,
+      "gitBlobOid": "f10937ba5e450663ed2594df0d9e528e975faecd",
+      "gitObjectFormat": "blob",
+      "inProtectedInventory": true,
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-0.6.7.tgz",
+      "sha256": "c41bee8651e8e9a80c2d9341b4eae38171dc2c40a6cd685a14acaa577aa6b89e"
+    },
+    {
+      "byteLength": 238287,
+      "gitBlobOid": "4b1e6ff65a8b293683e8896e109586cf896edb64",
+      "gitObjectFormat": "blob",
+      "inProtectedInventory": true,
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-core-0.6.7.tgz",
+      "sha256": "d88ed671ab5fdad28635f51f6b7ac208b52bd1dc7c6980c08a9b90bbf8a4384b"
+    },
+    {
+      "byteLength": 394811,
+      "gitBlobOid": "b2301d098e128759c6191b9782b4689f62394c17",
+      "gitObjectFormat": "blob",
+      "inProtectedInventory": true,
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-0.6.7.tgz",
+      "sha256": "43ac89b14d22f2b4cd0b9174631f894effaac7b4e57602ca710ceaae2c4cf6d3"
+    },
+    {
+      "byteLength": 253606,
+      "gitBlobOid": "3fa49e90b2c854914c996880e427a2aafaecc310",
+      "gitObjectFormat": "blob",
+      "inProtectedInventory": true,
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-core-0.6.7.tgz",
+      "sha256": "3ab4c6e5c0dc47ccf7056562b170a0a25fc7e913ff390ad30c95fae1592e362e"
+    }
+  ]
+}

@@ -379,3 +379,43 @@ No other V13-B research output is allowed. V13-B is read-only for V13-A candidat
 - `AGENTS.md`, `CLAUDE.md`, `docs-site`, `marketplace`, current uncommitted R0/R1 files, host-facing worker/template bytes, generated/installed Research Skills, and private source content.
 
 V13-A authoring commit, V13-B assurance commit, all downstream remediation/evidence/assurance commits, activation, package lifecycle, archive, release, publication, and push each require separate explicit authorization.
+
+
+## Additive amendment — v1.3 attempt-2 forward repair (2026-08-04)
+
+Status: P1 planning/C0 anchor. Preserves every preceding ownership row, Wave-8 amendment, and v1.3 attempt-1 amendment. Attempt-1 remains immutable historical failure evidence.
+
+### Attempt-1 classification (do not reinterpret)
+
+- Evidence baseline: `a198b4f3`
+- Failed compound authoring: `4d36ecda` (mixed V13-A + parent + V13-B planning paths)
+- V13-B attempt-1 fail preservation: `867954ae` (verdict exactly `fail`; 150/152 assertions; 32 mutations; four critical findings)
+- Attempt-1 task dirs immutable: `08-03-author-evaluation-contract-v1-3`, `08-03-assure-evaluation-contract-v1-3`
+
+### Portable C0 attempt-2 (parent-owned)
+
+- `.trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-portable-preservation-manifest.json`
+- `.trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-procedure-blob-lock.json` (334 Procedure blobs)
+- `.trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/c0-v1.3-attempt-2-protected-evidence-blob-lock.json` (412 protected-evidence blobs)
+- Filename-bound `.sha256` sidecars and digest index for the above
+- Old `c0-v1.3-planning-preservation-lock.json` preserved byte-unchanged
+
+Verification reads committed Git blob OIDs. Four Wave-7 `.tgz` archives are Git-tracked via exact `.gitignore` negations (not blanket force-add).
+
+### V13-A attempt-2 ownership
+
+Exact task directory only:
+
+- `.trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-2/**`
+
+### V13-B attempt-2 ownership
+
+Exact task directory only (planning, reviewer assignment, nine future outputs):
+
+- `.trellis/tasks/08-04-assure-evaluation-contract-v1-3-attempt-2/**`
+
+V13-B never repairs V13-A. Second accountable human reviewer is a hard gate before assurance.
+
+### Unchanged
+
+P2-02–P2-13 ownership, live v1 containment, Procedure 1.0.0–2.0.2 immutability, unrelated dirty exclusions (`AGENTS.md`, `CLAUDE.md`, `docs-site`, `marketplace`), and `.trellis/research/phase-2-pins.md` protection.

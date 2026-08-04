@@ -33,3 +33,12 @@ This task-local research file is the JSONL-injected context for the Phase-2 orch
 ## Manifest rule
 
 Only `.trellis/spec/**` and this task's own `research/**` paths may appear in its JSONL manifests. Code and external evidence are read on demand.
+
+## Attempt-2 forward repair (2026-08-04)
+
+- P0 commit: `867954ae` (V13-B attempt-1 verdict fail preserved)
+- Failed compound: `4d36ecda` (immutable)
+- Baseline: `a198b4f3`
+- Portable C0 attempt-2 locks under this research/ directory
+- Children: `08-04-author-evaluation-contract-v1-3-attempt-2`, `08-04-assure-evaluation-contract-v1-3-attempt-2`
+- R2A blocked until attempt-2 assurance pass

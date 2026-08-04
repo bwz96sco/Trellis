@@ -421,3 +421,7 @@ V13-B writes only its exact assurance allowlist, makes no repair, and emits exac
 V13-A and V13-B own no production, test, Procedure, registry, activation, package, specification, release, or historical evidence paths. Existing P2-02 through P2-13 ownership remains unchanged. Methodology, Procedure package, Procedure version, Context, report, and event schema versions remain independent.
 
 Historical Procedure `2.0.2` remains bound to exact v1.2. Future Procedure `2.0.3` may bind only to the exact V13-B-accepted v1.3 digest. Existing activation records retain recorded identity. Every authoring, assurance, remediation, evidence, complete-system assurance, activation, archive, release, publication, and push boundary requires separate explicit authorization.
+
+## Additive overlay — attempt-2 forward repair (2026-08-04)
+
+P0 preserves attempt-1 fail package. P1 anchors portable C0 + archives + A2/B2 planning. P2–P4 re-author and re-assure under path-owned siblings with second-human independence. Do not amend attempt-1.

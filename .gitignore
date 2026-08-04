@@ -64,6 +64,11 @@ web_modules/
 
 # Output of 'npm pack'
 *.tgz
+# Exact Wave-7 Phase-2 evidence archives (P1 portable C0 attempt-2)
+!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-0.6.7.tgz
+!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-core-0.6.7.tgz
+!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-0.6.7.tgz
+!.trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-core-0.6.7.tgz
 
 # Yarn Integrity file
 .yarn-integrity

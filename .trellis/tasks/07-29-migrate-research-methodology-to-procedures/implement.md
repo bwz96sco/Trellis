@@ -415,3 +415,11 @@ C0 validated
 ```
 
 R0 remains addressability/planning evidence. R1 post-freeze semantics remain non-authoritative. Live selection stays at Procedure `1.0.0`; Procedure repair remains `2.0.3`. Every remediation subject, execution evidence, P2-13, activation, package lifecycle, archive, release, publication, and push boundary remains separately authorized.
+
+## Additive overlay — attempt-2 forward repair (2026-08-04)
+
+1. P0 done: preserve V13-B attempt-1 fail outputs (`867954ae`).
+2. P1: gitignore exceptions, Wave-7 archive blobs, portable C0 334/412 locks, A2/B2 planning.
+3. P2: V13-A attempt-2 authoring-only commit after activation.
+4. P3: second human reviewer assignment (hard stop if unavailable).
+5. P4: V13-B attempt-2 nine-output assurance; only committed pass releases R1C/R2A.

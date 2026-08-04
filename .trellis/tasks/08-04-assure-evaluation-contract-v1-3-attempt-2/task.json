@@ -1,0 +1,49 @@
+{
+  "id": "assure-evaluation-contract-v1-3-attempt-2",
+  "name": "assure-evaluation-contract-v1-3-attempt-2",
+  "title": "V13-B attempt-2 \u2014 Independently assure evaluation contract v1.3",
+  "description": "Mechanically independent assurance of exact V13-A attempt-2 authoring commit and digests. Requires a second accountable human reviewer distinct from the author.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": null,
+  "createdAt": "2026-08-04",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "Attempt-2 sibling. Intentionally unassigned until a second accountable human accepts reviewer assignment. Owns only this directory: planning, reviewer-assignment, and exactly nine future assurance outputs. Never repairs V13-A. Attempt-1 (08-03-assure) is immutable fail evidence.",
+  "meta": {
+    "attempt": 2,
+    "predecessorFailedAttempt": "08-03-assure-evaluation-contract-v1-3",
+    "requiresSecondAccountableHuman": true,
+    "codexAdjunctRequired": true,
+    "codexAdjunctConstraints": {
+      "originator": "codex-tui",
+      "source": "cli",
+      "noResume": true,
+      "noParentThread": true,
+      "noSubagentLineage": true
+    },
+    "exactFutureOutputs": [
+      "research/exact-input-attestation.json",
+      "research/reviewer-independence.json",
+      "research/schema-digest-audit.json",
+      "research/provenance-coverage-audit.json",
+      "research/durable-output-lifecycle-audit.json",
+      "research/closure-validator-audit.json",
+      "research/privacy-mutation-audit.json",
+      "research/execution-evidence-ledger.json",
+      "research/assurance-verdict.json"
+    ]
+  }
+}

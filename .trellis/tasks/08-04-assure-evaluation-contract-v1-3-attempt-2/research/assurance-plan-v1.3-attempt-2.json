@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "assuranceId": "evaluation-contract-v1.3.0-independent-assurance-attempt-2",
+  "status": "planning",
+  "requiresSecondAccountableHuman": true,
+  "exactOutputs": [
+    "research/exact-input-attestation.json",
+    "research/reviewer-independence.json",
+    "research/schema-digest-audit.json",
+    "research/provenance-coverage-audit.json",
+    "research/durable-output-lifecycle-audit.json",
+    "research/closure-validator-audit.json",
+    "research/privacy-mutation-audit.json",
+    "research/execution-evidence-ledger.json",
+    "research/assurance-verdict.json"
+  ],
+  "attempt1Reference": {
+    "commit": "867954ae7a201582fefcf26191e3733269cc9e39",
+    "verdict": "fail",
+    "role": "historical-failure-evidence-only"
+  }
+}

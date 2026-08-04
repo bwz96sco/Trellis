@@ -172,3 +172,7 @@ This overlay preserves every historical requirement above. It supersedes only th
 - [ ] The C0 preservation record binds the parent/children, active v1.2 and proposed v1.3 identities, Wave-8 digest, R0 reclassification, live-v1 containment, protected paths, inherited dirty exclusions, and V13-A → V13-B → R2A dependency.
 - [ ] No archived evidence, P2-01 evidence, R0 file, Wave-8 audit, historical Procedure `1.0.0–2.0.2`, cutover/candidate/assurance evidence, or `.trellis/research/phase-2-pins.md` is rewritten.
 - [ ] Every later commit, assurance, remediation subject, evidence, activation, package lifecycle, archive, release, publication, and push boundary remains separately authorized; one approval never implies another.
+
+## Additive overlay — attempt-2 forward repair (2026-08-04)
+
+Attempt-1 (`4d36ecda`, V13-B fail at `867954ae`) is immutable failure evidence. Forward path uses portable C0 attempt-2 (334/412 Git-blob locks), four exact Wave-7 archive exceptions, and sibling tasks `08-04-author-evaluation-contract-v1-3-attempt-2` / `08-04-assure-evaluation-contract-v1-3-attempt-2`. R2A remains blocked until attempt-2 V13-B committed pass. Live v1 containment unchanged.
