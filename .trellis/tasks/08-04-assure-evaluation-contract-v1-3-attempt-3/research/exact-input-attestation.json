@@ -1,0 +1,50 @@
+{
+  "assignment": {
+    "assignmentCommit": "3e657d983adf9ee868c744552569d026137faff1",
+    "assignmentSha256": "31fb87895223dda54c0dfe9f354d4d29c60d06e2a85c27faa216765b07013b6d",
+    "mal1ContractPath": ".trellis/tasks/08-04-amend-v13-machine-assurance-governance/research/mal-1-mechanically-isolated-machine-review-contract.json",
+    "mal1ContractSha256": "f7e9ff8e6872570a549f06ecf54c67254498077ad6e6ae1229e5ec5ee699cd0d"
+  },
+  "attestation": {
+    "builderExecuted": false,
+    "builderImported": false,
+    "candidateReadMechanism": "git show <a3Commit>:<candidatePath>",
+    "committedIndependentOracleExecuted": false,
+    "exactGitObjectsOnly": true,
+    "workingTreeCandidateBytesRead": false
+  },
+  "leafMembers": [
+    {"byteLength": 1148478, "filename": "artifact-lifecycle-contract-v1.3.json", "sha256": "1c45fdfb347ec00466cf420433397b9418aff1ce741d950de709e8387082105a"},
+    {"byteLength": 20300, "filename": "closure-contract-v1.3.json", "sha256": "99b5fb9711da93d2c9a3343f0769809eeec9d6c2673078cbec579aa2f9c0c9c0"},
+    {"byteLength": 592874, "filename": "derivability-provenance-matrix-v1.3.json", "sha256": "d9b548b82a5cd60c6d30535a69723b5ecf6ec8ac3575bbb950c04a8d6d73b121"},
+    {"byteLength": 628648, "filename": "differential-test-matrix-v1.3.json", "sha256": "5b5bb309466278ab6d5cb68be07e83a30a254257bce21c57a060375d29be1d3e"},
+    {"byteLength": 86073, "filename": "durable-output-disposition-v1.3.json", "sha256": "0d52d392a5da298f72b9e605b0fe2d04533e45b5674a12a7f125aa2ab95e3da9"},
+    {"byteLength": 4149, "filename": "evaluation-contract-v1.3.0.md", "sha256": "5691f96c87246bb5556edf42fd25050198ef30ffdf76af17053e31fce6c2e96f"},
+    {"byteLength": 25672, "filename": "io-mapping-ledger-v1.3.csv", "sha256": "4149f601f4b582b5413be5de9d8af2fe3b88e807f7b6aee7d60197edfd2cbf6c"},
+    {"byteLength": 27229, "filename": "normative-decision-ledger-v1.3.json", "sha256": "2b9983c93cdd152a775c6050ecb3d206332327fb478849206927334487ca505e"},
+    {"byteLength": 72457, "filename": "public-evidence-index-v1.3.json", "sha256": "3c7273f0af02d5967cba5710d1831ea4353b2f80ea34d49137f107852bfe7edb"},
+    {"byteLength": 480385, "filename": "validator-binding-matrix-v1.3.json", "sha256": "216326d3effe0f174509576a2308acd74501a5f2c093d88698e4ba61bc411c69"},
+    {"byteLength": 49941, "filename": "validator-registry-v1.3.json", "sha256": "7f62559b429432b91dde8de1d6304a1873965a4dfd157e2143a8b3519cf3f83c"}
+  ],
+  "priorAttemptSeparation": {
+    "attempt1ManifestSha256": "4b8f6e507ac7239cc982bcd4941751af284c2e7425c4d65c9a6882b0bb431756",
+    "attempt1TargetSha256": "c9f95d33b8699b007d8e5e6c524b39201e4c3244f35c26d950d51dbdf5c9de4e",
+    "attempt2ManifestSha256": "d8bc82e870d00593c738c7708528f99381e4d6b308bddf9256d5b4b99563e85f",
+    "attempt2TargetSha256": "76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+    "manifestDiffersFromAttempts1And2": true,
+    "targetDiffersFromAttempts1And2": true
+  },
+  "result": "pass",
+  "schemaVersion": 1,
+  "sidecars": {
+    "manifest": {"digestMatch": true, "filenameBindingMatch": true, "strictSyntax": true},
+    "target": {"digestMatch": true, "filenameBindingMatch": true, "strictSyntax": true},
+    "targetBindsManifestDigest": true
+  },
+  "subject": {
+    "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "candidateRoot": ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/",
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "audit": {
+    "canonicalJson": {
+      "arrayOrderPreserved": true,
+      "compactSeparators": true,
+      "manifestCanonical": true,
+      "normativeJsonMemberCount": 9,
+      "normativeJsonMembersCanonical": 9,
+      "recursiveKeySort": true,
+      "targetCanonical": true,
+      "trailingNewline": true
+    },
+    "digestGraph": {
+      "acyclic": true,
+      "leafByteLengthsMatch": 11,
+      "leafDigestsMatch": 11,
+      "leafMemberCount": 11,
+      "manifestSelfHash": false,
+      "targetBindsManifest": true
+    },
+    "strictJson": {
+      "bomRejected": true,
+      "duplicateDecodedKeysRejected": true,
+      "nonFiniteNumbersRejected": true,
+      "strictUtf8": true,
+      "unpairedSurrogatesRejected": true
+    }
+  },
+  "expected": {
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  },
+  "recomputed": {
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  },
+  "result": "pass",
+  "schemaVersion": 1,
+  "sidecarBinding": {
+    "manifestDigestMatch": true,
+    "manifestFilenameMatch": true,
+    "targetDigestMatch": true,
+    "targetFilenameMatch": true
+  },
+  "subjectCommit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+  "verificationImplementation": "Independent Python standard-library strict parser and hashlib SHA-256 over git-show bytes; no builder or committed oracle execution."
+}

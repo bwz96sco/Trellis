@@ -3,7 +3,7 @@
   "name": "assure-evaluation-contract-v1-3-attempt-3",
   "title": "B3 — MAL-1 assure evaluation-contract-v1.3.0 attempt-3",
   "description": "Fresh isolated machine reviewer (MAL-1/Codex) reviews exact A3 Git objects; nine allowlisted outputs; no repairs.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "grok",
   "assignee": "codex-mal1-fresh",
   "createdAt": "2026-08-04",
-  "completedAt": null,
+  "completedAt": "2026-08-04",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -21,7 +21,7 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "B3-0 assignment bound to A3 5ca3b5cf8199; manifest=39431e5be163e0b0…; repairAuthority:false; nine-output allowlist; fresh Codex required.",
+  "notes": "B3-1 MAL-1 pass via fresh Codex session 019fcd6a-374b-7f41-bac2-b5e10a6d27b6; nine outputs; verdict=pass; no repair.",
   "meta": {
     "attempt": 3,
     "assuranceModel": "MAL-1",
@@ -32,6 +32,14 @@
       "frozenMigrationTargetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
       "mal1ContractSha256": "f7e9ff8e6872570a549f06ecf54c67254498077ad6e6ae1229e5ec5ee699cd0d",
       "repairAuthority": false
+    },
+    "assurance": {
+      "wave": "B3-1",
+      "verdict": "pass",
+      "codexThreadId": "019fcd6a-374b-7f41-bac2-b5e10a6d27b6",
+      "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+      "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+      "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
     }
   }
 }

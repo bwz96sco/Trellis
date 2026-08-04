@@ -1,0 +1,48 @@
+{
+  "authority": {
+    "activationAuthorized": false,
+    "candidateRepairPerformed": false,
+    "commitAuthorized": false,
+    "productionRepairPerformed": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false,
+    "releaseAuthorized": false,
+    "repairAuthority": false,
+    "reviewOnly": true
+  },
+  "checks": [
+    {"checkId": "B3-INPUT", "result": "pass", "summary": "A3, assignment, manifest, target, sidecars, and MAL-1 contract resolve to exact committed objects and expected digests."},
+    {"checkId": "B3-LEAVES", "result": "pass", "summary": "All 11 manifest leaf byte lengths and SHA-256 digests independently match."},
+    {"checkId": "B3-COUNTS", "result": "pass", "summary": "64 outputs, 65 artifacts, 20 validators, 876 bindings, 116 delta cases, 3343 provenance rows, and 4 closure families."},
+    {"checkId": "B3-PROVENANCE", "result": "pass", "summary": "All 3343 unique normative pointers and provenance references resolve; only four public-evidence provenance classes occur."},
+    {"checkId": "B3-LIFECYCLE", "result": "pass", "summary": "61 material outputs exactly join 61 public lifecycle artifacts; 4 closure controls yield 65 artifacts; all 13-dimension bindings resolve."},
+    {"checkId": "B3-CLOSURE", "result": "pass", "summary": "Four explicit closure families enforce selected/blocked XOR, evidence binding, and Result.status inference prohibition."},
+    {"checkId": "B3-COMPAT", "result": "pass", "summary": "2.0.4 is future MAL-1+OA3 binding; 2.0.3 remains historical-unaccepted; live 1.0.0 selection remains unchanged."},
+    {"checkId": "B3-MUTATION", "result": "pass", "summary": "Required strict JSON, path-escape, and filename-bound sidecar mutation evidence is present; independent controls reject each class."},
+    {"checkId": "B3-PRIVACY", "result": "pass", "summary": "No host absolute paths, temporary paths, file URIs, or network locators occur in candidate normative bytes."},
+    {"checkId": "B3-AUTHORITY", "result": "pass", "summary": "Candidate remains non-authoritative; machine pass alone grants no runtime authority."}
+  ],
+  "execution": {
+    "builderExecuted": false,
+    "builderImported": false,
+    "candidateReadMechanism": "git show <commit>:<path>",
+    "committedOracleExecuted": false,
+    "failureCount": 0,
+    "implementation": "Independent Python standard-library verifier plus git and jq read-only inspections",
+    "networkUsed": false,
+    "result": "pass"
+  },
+  "recordedOn": "2026-08-04",
+  "runtime": {
+    "model": "GPT-5 (Codex; exact runtime model identifier unavailable)",
+    "sessionId": null,
+    "sessionIdAvailable": false
+  },
+  "schemaVersion": 1,
+  "subject": {
+    "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "assignmentCommit": "3e657d983adf9ee868c744552569d026137faff1",
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  }
+}

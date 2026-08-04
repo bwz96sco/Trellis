@@ -1,0 +1,49 @@
+{
+  "artifactLifecycle": {
+    "allDimensionBindingsResolve": true,
+    "allValidatorSeveritiesCritical": true,
+    "dimensionCountPerArtifact": 13,
+    "enforceableArtifactCount": 65,
+    "publicDurableArtifacts": 61,
+    "stateModel": ["absent", "proposed", "accepted", "rejected"],
+    "uniqueArtifactIds": 65,
+    "v13ClosureControlArtifacts": 4
+  },
+  "durableOutputs": {
+    "blockedByContract": 1,
+    "dispositionCounts": {
+      "alias": 1,
+      "blocked-by-contract": 1,
+      "container": 1,
+      "include": 54,
+      "pattern": 7
+    },
+    "later50OmissionCount": 14,
+    "materialOutputCount": 61,
+    "materialOutputsExactlyJoinLifecycleSources": true,
+    "outputCount": 64,
+    "uniqueOutputIds": 64,
+    "uniquePublicIdentityFamilyPairs": 64
+  },
+  "familyTotals": {
+    "research-computation": 9,
+    "research-experiment-campaign": 16,
+    "research-project-setup": 9,
+    "research-quest": 1,
+    "research-quest-admin": 4,
+    "research-review-campaign": 3,
+    "research-review-case": 22
+  },
+  "recordingBoundary": {
+    "criticalFailureDisposition": "reject complete recording before append or sidecar publication",
+    "rootAcceptanceRequired": true,
+    "workerCanonicalWriteAuthority": false
+  },
+  "result": "pass",
+  "schemaVersion": 1,
+  "subject": {
+    "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  }
+}

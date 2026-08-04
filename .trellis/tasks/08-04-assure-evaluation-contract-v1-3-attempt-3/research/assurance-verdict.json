@@ -1,0 +1,32 @@
+{
+  "assuranceLevel": "MAL-1",
+  "authority": {
+    "candidateAuthoritative": false,
+    "grantsRuntimeAuthority": false,
+    "humanEquivalent": false,
+    "humanReviewed": false,
+    "machinePassAloneInsufficient": true,
+    "requiresSeparateOperatorAcceptance": true
+  },
+  "bindings": {
+    "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "assignmentCommit": "3e657d983adf9ee868c744552569d026137faff1",
+    "mal1ContractSha256": "f7e9ff8e6872570a549f06ecf54c67254498077ad6e6ae1229e5ec5ee699cd0d",
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  },
+  "residualRisks": [
+    "MAL-1 is machine-only assurance and is not equivalent to human semantic review.",
+    "Exact runtime session identifier and provider-specific model build were unavailable; freshness and independence are self-attested by this reviewer.",
+    "Author-recorded mutation assertions were inspected but the forbidden A3 builder was not executed; independent controls covered required malformed-byte, path-escape, and sidecar-binding classes.",
+    "This pass does not activate, publish, release, push, or grant runtime authority to the candidate; separate OA3 operator acceptance and downstream integration assurance remain required."
+  ],
+  "reviewerRuntime": {
+    "model": "GPT-5 (Codex; exact runtime model identifier unavailable)",
+    "reviewer": "fresh Codex MAL-1 reviewer distinct from Grok author",
+    "sessionId": null,
+    "sessionIdAvailable": false
+  },
+  "schemaVersion": 1,
+  "verdict": "pass"
+}

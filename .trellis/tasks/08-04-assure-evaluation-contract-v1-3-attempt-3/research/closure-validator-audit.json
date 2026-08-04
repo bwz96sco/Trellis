@@ -1,0 +1,67 @@
+{
+  "closure": {
+    "applicableFamilies": [
+      "research-literature",
+      "research-ideation",
+      "research-idea-evaluation",
+      "research-experiment"
+    ],
+    "blockedEvidenceRule": {
+      "absent": "invalid",
+      "false": "empty-array",
+      "null": "invalid",
+      "selfReference": "forbidden",
+      "true": "one-or-more-bound-non-closure-artifact-ref-ids"
+    },
+    "familyCount": 4,
+    "resultStatusInferenceAllowed": false,
+    "resultStatusMapping": null,
+    "selectedBlockedRelation": "exactly-one-true",
+    "selectedEvidenceRule": {
+      "absent": "invalid",
+      "false": "empty-array",
+      "null": "invalid",
+      "selfReference": "forbidden",
+      "true": "one-or-more-bound-non-closure-artifact-ref-ids"
+    },
+    "stableStatusInferenceError": "V13_CLOSURE_STATUS_INFERENCE_FORBIDDEN",
+    "workerEvidenceOnly": true,
+    "workerRootAuthorityBoundary": true
+  },
+  "compatibility": {
+    "futurePackage": {
+      "activationAuthorized": false,
+      "binding": "exact-v13-identity-and-digest-after-mal1-b3-pass-and-oa3-accept",
+      "version": "2.0.4"
+    },
+    "historicalUnacceptedPackage": {
+      "activationAuthorized": false,
+      "authoritative": false,
+      "runtimeAuthority": false,
+      "version": "2.0.3"
+    }
+  },
+  "liveSelection": {
+    "activationAuthorized": false,
+    "capabilityCount": 14,
+    "literatureDefault": "research.literature.scan",
+    "procedureVersion": "1.0.0"
+  },
+  "result": "pass",
+  "schemaVersion": 1,
+  "subject": {
+    "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  },
+  "validators": {
+    "allBindingTriplesResolve": true,
+    "allCritical": true,
+    "bindingCount": 876,
+    "closureValidatorIdsResolve": true,
+    "deltaCaseCount": 116,
+    "uniqueBindingIds": 876,
+    "uniqueValidatorTriples": 20,
+    "validatorCount": 20
+  }
+}
