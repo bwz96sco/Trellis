@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   FROZEN_COMPOSITION_EDGES,
+  METHODOLOGY_REPORT_V2_DIGEST_DOMAIN,
   RESEARCH_CAPABILITY_REGISTRY,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
@@ -11,6 +12,7 @@ import {
   buildMethodologyReportV2,
   buildSupportPackInventory,
   buildWorkerMethodologyProjectionV2,
+  computeMethodologyReportV2DigestFromCanonicalBody,
   deriveMethodologyValidatorFacts,
   listTrustedMethodologyValidatorIds,
   parseResearchProcedure,
@@ -18,6 +20,7 @@ import {
   planRootCompositionAction,
   resolveMethodologyContractBinding,
   runMethodologyValidators,
+  serializeMethodologyReportV2Sidecar,
   serializeSupportPackManifest,
   shouldMaterializeMethodologyReportSidecar,
   validateMethodologyArtifacts,
@@ -606,6 +609,40 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
     expect(v2.reportV1.reportDigest).toBe(v1a.reportDigest);
     expect(v2.reportDigest.startsWith("sha256:")).toBe(true);
     expect(v2.zeroWriteDisposition).toBe("success-sidecar-allowed");
+
+    // Domain framing: trellis-evaluation-report-v2\0 + canonical JSON + LF.
+    const body = {
+      schemaVersion: 2 as const,
+      reportV1: v1a,
+      methodologyContractDigest: V13_METHODOLOGY_CONTRACT_DIGEST,
+      supportInventoryDigest: undefined,
+      policyDigest: undefined,
+      requestDigest: undefined,
+      scopeDigest: undefined,
+      runId: undefined,
+      proposalIds: [] as string[],
+      resultIds: [] as string[],
+      approvalIds: [] as string[],
+      closureSource: { selected: true, blocked: false },
+      applicability: [] as string[],
+      blockedByContract: [] as string[],
+      operationContainment: undefined,
+      zeroWriteDisposition: "success-sidecar-allowed" as const,
+    };
+    const canonical = `${JSON.stringify(body)}\n`;
+    expect(computeMethodologyReportV2DigestFromCanonicalBody(canonical)).toBe(
+      v2.reportDigest,
+    );
+    expect(METHODOLOGY_REPORT_V2_DIGEST_DOMAIN).toEqual(
+      new TextEncoder().encode("trellis-evaluation-report-v2\0"),
+    );
+    // Non-self-referential: digest is not of a body that includes reportDigest.
+    expect(canonical.includes(v2.reportDigest)).toBe(false);
+
+    // Same-key recovery serialization is deterministic and ends with LF.
+    const sidecar = serializeMethodologyReportV2Sidecar(v2);
+    expect(sidecar.endsWith("\n")).toBe(true);
+    expect(JSON.parse(sidecar).reportDigest).toBe(v2.reportDigest);
   });
 
   it("allows report sidecar only after successful batch commit", () => {

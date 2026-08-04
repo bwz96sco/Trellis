@@ -173,8 +173,11 @@ export type {
 } from "./methodology-validators.js";
 
 export {
+  METHODOLOGY_REPORT_V2_DIGEST_DOMAIN,
   buildMethodologyReport,
   buildMethodologyReportV2,
+  computeMethodologyReportV2DigestFromCanonicalBody,
+  serializeMethodologyReportV2Sidecar,
   shouldMaterializeMethodologyReportSidecar,
 } from "./methodology-reports.js";
 export type {

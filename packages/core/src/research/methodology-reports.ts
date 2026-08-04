@@ -21,7 +21,14 @@ export interface MethodologyDeterministicReport {
 /**
  * Additive report-v2 domain for evaluation-contract-v1.3.0.
  * Does not change report-v1 bytes or digest semantics.
+ *
+ * Digest domain: `trellis-evaluation-report-v2\0` + canonical JSON + final LF.
+ * Digest input is non-self-referential (body without reportDigest).
  */
+export const METHODOLOGY_REPORT_V2_DIGEST_DOMAIN = new TextEncoder().encode(
+  "trellis-evaluation-report-v2\0",
+);
+
 export interface MethodologyDeterministicReportV2 {
   readonly schemaVersion: 2;
   readonly reportV1: MethodologyDeterministicReport;
@@ -42,9 +49,19 @@ export interface MethodologyDeterministicReportV2 {
   readonly reportDigest: string;
 }
 
-function digestBody(body: unknown): string {
+function digestBodyV1(body: unknown): string {
+  // report-v1 bytes/digest semantics preserved exactly (no domain prefix).
   const canonical = `${JSON.stringify(body)}\n`;
   return `sha256:${createHash("sha256").update(canonical).digest("hex")}`;
+}
+
+function digestBodyV2(body: unknown): string {
+  // Domain-separated, strict canonical JSON, final LF, non-self-referential.
+  const canonical = `${JSON.stringify(body)}\n`;
+  const hash = createHash("sha256");
+  hash.update(METHODOLOGY_REPORT_V2_DIGEST_DOMAIN);
+  hash.update(canonical);
+  return `sha256:${hash.digest("hex")}`;
 }
 
 export function buildMethodologyReport(input: {
@@ -74,7 +91,7 @@ export function buildMethodologyReport(input: {
     artifactDigests: input.artifactDigests ?? [],
     zeroWrite: input.zeroWrite ?? input.validation.criticalFailure,
   };
-  const reportDigest = digestBody(body);
+  const reportDigest = digestBodyV1(body);
   return Object.freeze({ ...body, reportDigest });
 }
 
@@ -115,7 +132,7 @@ export function buildMethodologyReportV2(input: {
     operationContainment: input.operationContainment,
     zeroWriteDisposition,
   };
-  const reportDigest = digestBody(body);
+  const reportDigest = digestBodyV2(body);
   return Object.freeze({ ...body, reportDigest });
 }
 
@@ -133,4 +150,26 @@ export function shouldMaterializeMethodologyReportSidecar(input: {
     !input.criticalFailure &&
     input.batchCommitted === true
   );
+}
+
+/**
+ * Same-key recovery: rebuild report-v2 sidecar bytes from a committed report
+ * object without new events, worker rerun, or Approval consumption.
+ */
+export function serializeMethodologyReportV2Sidecar(
+  report: MethodologyDeterministicReportV2,
+): string {
+  return `${JSON.stringify(report, null, 2)}\n`;
+}
+
+/**
+ * Known-answer digest vector helper for report-v2 domain framing tests.
+ */
+export function computeMethodologyReportV2DigestFromCanonicalBody(
+  canonicalJsonWithFinalLf: string,
+): string {
+  const hash = createHash("sha256");
+  hash.update(METHODOLOGY_REPORT_V2_DIGEST_DOMAIN);
+  hash.update(canonicalJsonWithFinalLf);
+  return `sha256:${hash.digest("hex")}`;
 }
