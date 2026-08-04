@@ -276,11 +276,49 @@ export function buildWorkerMethodologyProjectionV2(
           "Procedure methodology family contract must be root-only; Context exposes only its safe declarative projection",
         );
       }
-      // Accepted lossless authority only for 2.0.4 after OA3.
+      // Accepted 2.0.4: project only safe declarative lifecycle/closure
+      // obligations. Do not re-export obsolete checkpoint authority as the
+      // worker surface when a worker-visible lifecycle contracts[] exists.
       if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
-        const lossless = buildLosslessWorkerRequirements(procedure);
-        artifactRequirements.push(...lossless.requirements);
-        terminalStates = lossless.terminalStates;
+        let projectedFromLifecycle = false;
+        for (const item of procedure.supportPack.workerVisibleInventory) {
+          if (item.role !== "artifacts" || item.mediaType !== "application/json") {
+            continue;
+          }
+          const parsed = parseArtifactJson(item.bytes, item.path);
+          if (isFreezeFamilyContract(parsed)) {
+            throw new Error(
+              "Procedure methodology family contract must be root-only; Context exposes only its safe declarative projection",
+            );
+          }
+          const exact = parseExactArtifactRequirements(parsed);
+          if (exact.length > 0) {
+            artifactRequirements.push(...exact);
+            projectedFromLifecycle = true;
+          }
+          terminalStates ??= parseAllowedTerminalStates(parsed);
+        }
+        // Fallback only when the pack has no worker-visible lifecycle contracts[]:
+        // root retains family contract; worker still receives Proposal-only bounds.
+        if (!projectedFromLifecycle) {
+          const lossless = buildLosslessWorkerRequirements(procedure);
+          // Strip root-only implementation detail: project identity + terminal
+          // bounds only (no private validator/implementation metadata).
+          for (const req of lossless.requirements) {
+            if (req.kind === "artifact_lifecycle_checkpoint" && req.artifact) {
+              artifactRequirements.push(
+                Object.freeze({
+                  id: req.id,
+                  pathPattern: req.artifact,
+                  mediaType: "application/octet-stream",
+                  requiredness: "required",
+                  cardinality: "1",
+                }),
+              );
+            }
+          }
+          terminalStates = lossless.terminalStates;
+        }
       }
       // Historical 2.0.3 root-only family: do not project as accepted lossless.
     } else {
