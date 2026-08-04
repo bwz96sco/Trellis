@@ -11,10 +11,15 @@ import {
   RESEARCH_PROCEDURE_CURRENT_VERSION,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
+  loadResearchMethodologyContractFromProcedure,
 } from "@mindfoldhq/trellis-core/research";
 
 import { RESEARCH_PROCEDURE_VERSIONS } from "../../scripts/packed-cli-audit.js";
 import { getBundledResearchProcedureRoot } from "../../src/commands/research/bundled-procedure-root.js";
+import {
+  loadArtifactContractsFromProcedure,
+  validateMethodologyBeforeRecord,
+} from "../../src/commands/research/dispatch-methodology-validation.js";
 import { resolveResearchProcedure } from "../../src/commands/research/procedure-resolution.js";
 
 const repoRoot = path.resolve(
@@ -153,5 +158,153 @@ describe("dormant 2.0.3 candidate bijection", () => {
     expect(dormant.supportPack?.manifest.methodologyContractVersion).toBe(
       V13_METHODOLOGY_CONTRACT_VERSION,
     );
+
+    // Real shipped load path for freeze-family 2.0.3 packs (not literature-scan).
+    if (live.procedure.id !== "literature-scan-v1") {
+      const family = loadResearchMethodologyContractFromProcedure(dormant);
+      expect(family.intended_target.procedure).toBe(live.procedure.id);
+      expect(family.intended_target.capability).toBe(live.id);
+      expect(loadArtifactContractsFromProcedure(dormant)).toEqual([]);
+      const gate = validateMethodologyBeforeRecord({
+        procedureId: dormant.manifest.id,
+        procedureVersion: dormant.manifest.version,
+        procedureDigest: dormant.digest,
+        procedure: dormant,
+        selected: true,
+        blocked: false,
+        batchCommitted: false,
+        artifactPaths: [],
+      });
+      expect(gate.criticalFailure).toBe(false);
+      expect(gate.ok).toBe(true);
+      expect(gate.reportV2.schemaVersion).toBe(2);
+      expect(gate.materializeSidecar).toBe(false);
+    }
+  });
+
+  it("loads every freeze-family 2.0.3 pack via loadResearchMethodologyContractFromProcedure", async () => {
+    const {
+      parseSupportPackManifest,
+      buildSupportPackInventory,
+      parseResearchProcedure,
+      parseResearchMethodologyFamilyContract,
+    } = await import("@mindfoldhq/trellis-core/research");
+
+    const candidate = JSON.parse(fs.readFileSync(candidatePath, "utf8")) as {
+      bindings: Array<{
+        capabilityId: string;
+        procedureId: string;
+        procedureVersion: string;
+      }>;
+    };
+
+    let familyPacks = 0;
+    for (const binding of candidate.bindings) {
+      const packDir = path.join(
+        getBundledResearchProcedureRoot(),
+        binding.procedureId,
+        "2.0.3",
+      );
+      const packJson = fs.readFileSync(
+        path.join(packDir, "methodology", "pack.json"),
+      );
+      const artBytes = new Uint8Array(
+        fs.readFileSync(
+          path.join(
+            packDir,
+            "methodology",
+            "artifacts",
+            "artifact-contract.json",
+          ),
+        ),
+      );
+      const pack = JSON.parse(packJson.toString("utf8")) as {
+        entries: Array<{
+          path: string;
+          workerVisibility: string;
+          contractVersion: string;
+        }>;
+      };
+      const artEntry = pack.entries.find(
+        (e) => e.path === "artifacts/artifact-contract.json",
+      );
+      expect(artEntry).toBeDefined();
+
+      if (binding.procedureId === "literature-scan-v1") {
+        expect(artEntry!.workerVisibility).toBe("worker-visible");
+        expect(artEntry!.contractVersion).toBe(V13_METHODOLOGY_CONTRACT_VERSION);
+        continue;
+      }
+
+      expect(artEntry!.workerVisibility).toBe("root-only");
+      expect(artEntry!.contractVersion).toBe(V13_METHODOLOGY_CONTRACT_VERSION);
+
+      // Family contract bytes must parse as freeze-family identity.
+      const familyFromBytes = parseResearchMethodologyFamilyContract(artBytes);
+      expect(familyFromBytes.intended_target.procedure).toBe(
+        binding.procedureId,
+      );
+      expect(familyFromBytes.intended_target.capability).toBe(
+        binding.capabilityId,
+      );
+      familyPacks += 1;
+
+      // When capability is in the live registry, exercise full procedure load.
+      const capability = RESEARCH_CAPABILITY_REGISTRY.find(
+        (c) => c.id === binding.capabilityId,
+      );
+      if (capability === undefined) {
+        continue;
+      }
+
+      const files: Record<string, Uint8Array> = {
+        "artifacts/artifact-contract.json": artBytes,
+      };
+      for (const e of pack.entries) {
+        if (e.path === "artifacts/artifact-contract.json") continue;
+        files[e.path] = new Uint8Array(
+          fs.readFileSync(path.join(packDir, "methodology", e.path)),
+        );
+      }
+      const manifest = parseSupportPackManifest({
+        packJsonBytes: new Uint8Array(packJson),
+        procedureId: binding.procedureId,
+        procedureVersion: "2.0.3",
+      });
+      const inventory = buildSupportPackInventory({ manifest, files });
+      const procedure = parseResearchProcedure({
+        capabilityId: binding.capabilityId,
+        source: "bundled",
+        manifestBytes: new Uint8Array(
+          fs.readFileSync(path.join(packDir, "procedure.json")),
+        ),
+        instructionBytes: new TextEncoder().encode("# Procedure\n"),
+        packageSchemaVersion: 2,
+        identityMode: "recorded-version",
+        recordedProcedureId: binding.procedureId,
+        recordedVersion: "2.0.3",
+        supportPack: {
+          manifest,
+          packJsonBytes: new Uint8Array(packJson),
+          inventoryItems: inventory,
+        },
+      });
+      const family = loadResearchMethodologyContractFromProcedure(procedure);
+      expect(family.intended_target.procedure).toBe(binding.procedureId);
+      expect(loadArtifactContractsFromProcedure(procedure)).toEqual([]);
+      const gate = validateMethodologyBeforeRecord({
+        procedureId: procedure.manifest.id,
+        procedureVersion: procedure.manifest.version,
+        procedureDigest: procedure.digest,
+        procedure,
+        selected: true,
+        blocked: false,
+        batchCommitted: false,
+        artifactPaths: [],
+      });
+      expect(gate.ok).toBe(true);
+      expect(gate.criticalFailure).toBe(false);
+    }
+    expect(familyPacks).toBe(16);
   });
 });

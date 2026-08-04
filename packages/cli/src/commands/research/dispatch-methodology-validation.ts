@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
@@ -112,10 +115,13 @@ export function loadArtifactContractsFromProcedure(
     return Object.freeze([]);
   }
   if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
-    // Parse and validate the complete frozen family contract without coercing its
-    // checkpoint union into the older path/media lifecycle primitive.
-    loadResearchMethodologyContractFromProcedure(procedure);
-    return Object.freeze([]);
+    // literature-scan-v1 is a compatibility-routing extension, not a freeze family.
+    // All other 2.0.3 packages bind root-only freeze-family contracts.
+    if (procedure.manifest.id !== "literature-scan-v1") {
+      loadResearchMethodologyContractFromProcedure(procedure);
+      return Object.freeze([]);
+    }
+    // Fall through to lifecycle contracts[] loading for literature-scan only.
   }
   const contracts: MethodologyArtifactContract[] = [];
   for (const item of procedure.supportPack.inventoryItems) {
@@ -346,4 +352,29 @@ export function validateMethodologyBeforeRecord(input: {
     reportV2,
     materializeSidecar,
   };
+}
+
+/**
+ * Materialize report-v2 sidecar only after a successful atomic batch.
+ * Path: .trellis/research/dispatches/<dispatchId>/methodology-report-v2.json
+ */
+export function materializeMethodologyReportV2Sidecar(input: {
+  readonly root: string;
+  readonly dispatchId: string;
+  readonly reportV2: MethodologyDeterministicReportV2;
+}): string {
+  const dir = path.join(
+    input.root,
+    ".trellis",
+    "research",
+    "dispatches",
+    input.dispatchId,
+  );
+  fs.mkdirSync(dir, { recursive: true });
+  const filePath = path.join(dir, "methodology-report-v2.json");
+  const body = `${JSON.stringify(input.reportV2, null, 2)}\n`;
+  const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, body, "utf8");
+  fs.renameSync(tmp, filePath);
+  return filePath;
 }

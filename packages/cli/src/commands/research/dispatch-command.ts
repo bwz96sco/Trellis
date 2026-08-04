@@ -79,7 +79,10 @@ import {
   revalidateDispatchActivationStaged,
   type StagedDispatchRevalidation,
 } from "./dispatch-revalidation.js";
-import { validateMethodologyBeforeRecord } from "./dispatch-methodology-validation.js";
+import {
+  materializeMethodologyReportV2Sidecar,
+  validateMethodologyBeforeRecord,
+} from "./dispatch-methodology-validation.js";
 import { executeRepositoryDispatchMutations } from "./mutation.js";
 import {
   resolveRepositoryForUse,
@@ -1199,9 +1202,16 @@ export async function recordApprovedResearchDispatchResult(
     parsed.result.artifactRefs,
     false,
   );
-  // Wave-2: pack-driven methodology validation is fail-closed before any
+  // Wave-2 / R2A: pack-driven methodology validation is fail-closed before any
   // canonical write. Schema-v2 uses exact support-pack validator descriptors;
-  // schema-v1 uses the default trusted set.
+  // schema-v1 uses the default trusted set. v1.3 requires explicit closure
+  // fields (root maps Result terminals here; status is not authority inside
+  // deriveMethodologyValidatorFacts when requireExplicitClosure is set).
+  const resultStatus = parsed.result.status;
+  const explicitSelected =
+    resultStatus === "completed" || resultStatus === "partial";
+  const explicitBlocked =
+    resultStatus === "blocked" || resultStatus === "failed";
   const methodologyGate = validateMethodologyBeforeRecord({
     procedureId: activation.procedure.id,
     procedureVersion: activation.procedure.version,
@@ -1210,10 +1220,13 @@ export async function recordApprovedResearchDispatchResult(
     capabilityId: activation.capabilityId,
     dispatchId: dispatch.id,
     activationId: activation.id,
-    terminalState: parsed.result.status,
-    resultStatus: parsed.result.status,
+    terminalState: resultStatus,
+    resultStatus,
     proposalStatus: parsed.proposal.status,
     proposalOperationCount: parsed.proposal.operations.length,
+    selected: explicitSelected,
+    blocked: explicitBlocked,
+    batchCommitted: false,
     artifactPaths: parsed.result.artifactRefs.map((ref) => ref.path),
     artifactDigests: parsed.result.artifactRefs
       .filter((ref) => typeof ref.sha256 === "string")
@@ -1332,16 +1345,45 @@ export async function recordApprovedResearchDispatchResult(
     approvalFile: null,
   };
   if (result.dryRun) return result;
+  const materialized = materializeApprovedResult({
+    root: preflight.root,
+    headSeq: result.headSeq,
+    idempotencyKey: result.idempotencyKey,
+    result: result.result,
+    proposal: result.proposal,
+    approval: result.approval,
+  });
+  // R2B: report-v2 sidecar only after successful atomic batch commit.
+  const postBatchGate = validateMethodologyBeforeRecord({
+    procedureId: activation.procedure.id,
+    procedureVersion: activation.procedure.version,
+    procedureDigest: activation.procedure.digest,
+    procedure: candidate.procedure,
+    capabilityId: activation.capabilityId,
+    dispatchId: dispatch.id,
+    activationId: activation.id,
+    terminalState: resultStatus,
+    resultStatus,
+    proposalStatus: parsed.proposal.status,
+    proposalOperationCount: parsed.proposal.operations.length,
+    selected: explicitSelected,
+    blocked: explicitBlocked,
+    batchCommitted: true,
+    artifactPaths: parsed.result.artifactRefs.map((ref) => ref.path),
+    artifactDigests: parsed.result.artifactRefs
+      .filter((ref) => typeof ref.sha256 === "string")
+      .map((ref) => ({ path: ref.path, sha256: ref.sha256 as string })),
+  });
+  if (postBatchGate.materializeSidecar) {
+    materializeMethodologyReportV2Sidecar({
+      root: preflight.root,
+      dispatchId: dispatch.id,
+      reportV2: postBatchGate.reportV2,
+    });
+  }
   return {
     ...result,
-    ...materializeApprovedResult({
-      root: preflight.root,
-      headSeq: result.headSeq,
-      idempotencyKey: result.idempotencyKey,
-      result: result.result,
-      proposal: result.proposal,
-      approval: result.approval,
-    }),
+    ...materialized,
   };
 }
 
