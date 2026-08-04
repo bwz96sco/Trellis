@@ -1,0 +1,28 @@
+{
+  "candidateBytesInActivationCommit": false,
+  "denied": [
+    "production packages/core packages/cli (except this task path)",
+    "Procedure package mutations",
+    "B3 assurance outputs",
+    "parent evidence rewrites",
+    "activation release publication push"
+  ],
+  "negativeEvidenceOnly": {
+    "a2Commit": "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f",
+    "a2ManifestDigest": "d8bc82e870d00593c738c7708528f99381e4d6b308bddf9256d5b4b99563e85f",
+    "a2TargetDigest": "76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+    "role": "negative-comparison-only-not-semantic-authority-or-oracle"
+  },
+  "readOnlyInputs": [
+    "public frozen evaluation-contract-v1.2.0 evidence",
+    "archived public Trellis evidence under .trellis/tasks/archive and 07-29-*",
+    "portable C0 Git objects at 692dc513",
+    "explicit trellis-native-v1.3 decisions"
+  ],
+  "schemaVersion": 1,
+  "task": "08-04-author-evaluation-contract-v1-3-attempt-3",
+  "wave": "A3-0",
+  "writeAllowlist": [
+    ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/**"
+  ]
+}
