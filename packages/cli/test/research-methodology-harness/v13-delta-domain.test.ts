@@ -70,9 +70,12 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
     expect(facts).not.toHaveProperty("selected");
     expect(facts).not.toHaveProperty("blocked");
 
-    // V13-203-CONTRACT-BINDING
+    // Contained: 2.0.3 is historical-unaccepted, not development binding.
     expect(resolveMethodologyContractBinding("2.0.3").disposition).toBe(
-      "exact-v1.3-attempt-2-development-binding",
+      "historical-unaccepted-2.0.3-not-authoritative",
+    );
+    expect(resolveMethodologyContractBinding("2.0.3").authoritative).toBe(
+      false,
     );
 
     // V13-SIDECAR-ONLY-AFTER-BATCH

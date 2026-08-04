@@ -160,27 +160,28 @@ describe("dormant 2.0.3 candidate bijection", () => {
       V13_METHODOLOGY_CONTRACT_VERSION,
     );
 
-    // Real shipped load path for freeze-family 2.0.3 packs (not literature-scan).
-    if (live.procedure.id !== "literature-scan-v1") {
-      const family = loadResearchMethodologyContractFromProcedure(dormant);
-      expect(family.intended_target.procedure).toBe(live.procedure.id);
-      expect(family.intended_target.capability).toBe(live.id);
-      expect(loadArtifactContractsFromProcedure(dormant)).toEqual([]);
-      const gate = validateMethodologyBeforeRecord({
-        procedureId: dormant.manifest.id,
-        procedureVersion: dormant.manifest.version,
-        procedureDigest: dormant.digest,
-        procedure: dormant,
-        selected: true,
-        blocked: false,
-        batchCommitted: false,
-        artifactPaths: [],
-      });
-      expect(gate.criticalFailure).toBe(false);
-      expect(gate.ok).toBe(true);
-      expect(gate.reportV2.schemaVersion).toBe(2);
-      expect(gate.materializeSidecar).toBe(false);
-    }
+    // Containment: 2.0.3 resolves as dormant bytes but has no methodology authority.
+    expect(() =>
+      loadResearchMethodologyContractFromProcedure(dormant),
+    ).toThrow(/historical-unaccepted|not available as methodology authority/);
+    const gate = validateMethodologyBeforeRecord({
+      procedureId: dormant.manifest.id,
+      procedureVersion: dormant.manifest.version,
+      procedureDigest: dormant.digest,
+      procedure: dormant,
+      selected: true,
+      blocked: false,
+      batchCommitted: false,
+      artifactPaths: [],
+    });
+    expect(gate.criticalFailure).toBe(true);
+    expect(gate.ok).toBe(false);
+    expect(
+      gate.report.validation.findings.some(
+        (f) => f.code === "METHODOLOGY_AUTHORITY_NOT_ACCEPTED",
+      ),
+    ).toBe(true);
+    expect(gate.materializeSidecar).toBe(false);
   });
 
   it("loads every freeze-family 2.0.3 pack via loadResearchMethodologyContractFromProcedure", async () => {
@@ -290,9 +291,10 @@ describe("dormant 2.0.3 candidate bijection", () => {
           inventoryItems: inventory,
         },
       });
-      const family = loadResearchMethodologyContractFromProcedure(procedure);
-      expect(family.intended_target.procedure).toBe(binding.procedureId);
-      expect(loadArtifactContractsFromProcedure(procedure)).toEqual([]);
+      // Family bytes remain parseable as historical evidence, but authority load fails.
+      expect(() =>
+        loadResearchMethodologyContractFromProcedure(procedure),
+      ).toThrow(/historical-unaccepted|not available as methodology authority/);
       const gate = validateMethodologyBeforeRecord({
         procedureId: procedure.manifest.id,
         procedureVersion: procedure.manifest.version,
@@ -303,8 +305,8 @@ describe("dormant 2.0.3 candidate bijection", () => {
         batchCommitted: false,
         artifactPaths: [],
       });
-      expect(gate.ok).toBe(true);
-      expect(gate.criticalFailure).toBe(false);
+      expect(gate.ok).toBe(false);
+      expect(gate.criticalFailure).toBe(true);
     }
     expect(familyPacks).toBe(16);
   });
@@ -380,7 +382,7 @@ describe("dormant 2.0.3 candidate bijection", () => {
     expect(proj203.packageSchemaVersion).toBe(2);
     // Must not require root-only family contract for scan.
     expect(() => loadResearchMethodologyContractFromProcedure(v203)).toThrow(
-      /root-only/,
+      /historical-unaccepted|not available as methodology authority|root-only/,
     );
   });
 });

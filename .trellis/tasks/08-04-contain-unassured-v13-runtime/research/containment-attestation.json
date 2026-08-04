@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "wave": "Q1",
+  "recordedOn": "2026-08-04",
+  "a2Authoritative": false,
+  "procedure203Authoritative": false,
+  "reportV2AuthorizedFor": [
+    "2.0.4-after-OA3-only"
+  ],
+  "reportV2ForbiddenFor": [
+    "1.0.0",
+    "2.0.0",
+    "2.0.1",
+    "2.0.2",
+    "2.0.3"
+  ],
+  "liveSelectionUnchanged": {
+    "procedureVersion": "1.0.0",
+    "capabilityCount": 14,
+    "literatureDefault": "research.literature.scan"
+  },
+  "rejectedA2Digests": {
+    "target": "76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+    "manifest": "d8bc82e870d00593c738c7708528f99381e4d6b308bddf9256d5b4b99563e85f"
+  },
+  "procedure203PackageBytesMutated": false,
+  "correctedPackageVersion": "2.0.4"
+}

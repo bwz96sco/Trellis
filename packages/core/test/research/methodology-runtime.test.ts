@@ -639,8 +639,10 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
     expect(resolveMethodologyContractBinding("2.0.3")).toEqual({
       version: V13_METHODOLOGY_CONTRACT_VERSION,
       digest: V13_METHODOLOGY_CONTRACT_DIGEST,
-      disposition: "exact-v1.3-attempt-2-development-binding",
+      disposition: "historical-unaccepted-2.0.3-not-authoritative",
+      authoritative: false,
     });
+    expect(resolveMethodologyContractBinding("2.0.2").authoritative).toBe(true);
   });
 
   it("plans root composition without worker launch authority", () => {

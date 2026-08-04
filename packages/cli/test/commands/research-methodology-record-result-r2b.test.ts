@@ -177,7 +177,8 @@ describe("record-result R2A/R2B methodology gate", { timeout: 30_000 }, () => {
     expect(fs.existsSync(reportSidecar)).toBe(false);
   });
 
-  it("materializes report-v2 sidecar only after successful batch commit", async () => {
+  it("does not materialize report-v2 sidecar for live Procedure 1.0.0 after success", async () => {
+    // Containment: report-v2 is authorized only for accepted 2.0.4 after OA3.
     const fixture = await createResearchDispatchFixture(sandbox, {
       automaticEnabled: true,
     });
@@ -185,7 +186,7 @@ describe("record-result R2A/R2B methodology gate", { timeout: 30_000 }, () => {
       root: fixture.root,
       dispatchId: fixture.ids.dispatchId,
       host: "codex",
-      idempotencyKey: "r2b-sidecar-grant",
+      idempotencyKey: "r2b-no-sidecar-grant",
     });
     const now = new Date(Date.parse(granted.approval.grant.grantedAt) + 1_000);
     const payload = outputPayload({
@@ -201,7 +202,7 @@ describe("record-result R2A/R2B methodology gate", { timeout: 30_000 }, () => {
       dispatchId: fixture.ids.dispatchId,
       approvalId: granted.approval.grant.id,
       input: lazyInput(sandbox, () => payload),
-      idempotencyKey: "r2b-sidecar",
+      idempotencyKey: "r2b-no-sidecar",
       now,
     });
     expect(recorded.events.length).toBeGreaterThan(0);
@@ -214,13 +215,6 @@ describe("record-result R2A/R2B methodology gate", { timeout: 30_000 }, () => {
       fixture.ids.dispatchId,
       "methodology-report-v2.json",
     );
-    expect(fs.existsSync(reportSidecar)).toBe(true);
-    const body = JSON.parse(fs.readFileSync(reportSidecar, "utf8")) as {
-      schemaVersion: number;
-      reportV1: { schemaVersion: number; zeroWrite: boolean };
-    };
-    expect(body.schemaVersion).toBe(2);
-    expect(body.reportV1.schemaVersion).toBe(1);
-    expect(body.reportV1.zeroWrite).toBe(false);
+    expect(fs.existsSync(reportSidecar)).toBe(false);
   });
 });

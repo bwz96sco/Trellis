@@ -264,23 +264,25 @@ export function buildWorkerMethodologyProjectionV2(
     );
   }
 
-  if (
-    procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION &&
-    familyArtifact !== undefined
-  ) {
+  if (familyArtifact !== undefined) {
     const parsedFamilyProbe = parseArtifactJson(
       familyArtifact.bytes,
       familyArtifact.path,
     );
     if (isFreezeFamilyContract(parsedFamilyProbe)) {
+      // Freeze-family contracts must never be worker-visible (authority leakage).
       if (familyArtifact.workerVisibility !== "root-only") {
         throw new Error(
-          "Procedure 2.0.3 methodology family contract must be root-only; Context exposes only its safe declarative projection",
+          "Procedure methodology family contract must be root-only; Context exposes only its safe declarative projection",
         );
       }
-      const lossless = buildLosslessWorkerRequirements(procedure);
-      artifactRequirements.push(...lossless.requirements);
-      terminalStates = lossless.terminalStates;
+      // Accepted lossless authority only for 2.0.4 after OA3.
+      if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
+        const lossless = buildLosslessWorkerRequirements(procedure);
+        artifactRequirements.push(...lossless.requirements);
+        terminalStates = lossless.terminalStates;
+      }
+      // Historical 2.0.3 root-only family: do not project as accepted lossless.
     } else {
       // Lifecycle contracts[] path (e.g. literature-scan compatibility routing).
       for (const item of procedure.supportPack.workerVisibleInventory) {
@@ -290,7 +292,7 @@ export function buildWorkerMethodologyProjectionV2(
         const parsed = parseArtifactJson(item.bytes, item.path);
         if (isFreezeFamilyContract(parsed)) {
           throw new Error(
-            "Procedure 2.0.3 methodology family contract must be root-only; Context exposes only its safe declarative projection",
+            "Procedure methodology family contract must be root-only; Context exposes only its safe declarative projection",
           );
         }
         artifactRequirements.push(...parseExactArtifactRequirements(parsed));
@@ -303,6 +305,11 @@ export function buildWorkerMethodologyProjectionV2(
         continue;
       }
       const parsed = parseArtifactJson(item.bytes, item.path);
+      if (isFreezeFamilyContract(parsed)) {
+        throw new Error(
+          "Procedure methodology family contract must be root-only; Context exposes only its safe declarative projection",
+        );
+      }
       artifactRequirements.push(...parseExactArtifactRequirements(parsed));
       terminalStates ??= parseAllowedTerminalStates(parsed);
     }

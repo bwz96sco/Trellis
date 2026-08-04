@@ -194,12 +194,15 @@ describe("Research methodology contract (historical Phase-2 fixture + version di
       version: FROZEN_METHODOLOGY_CONTRACT_VERSION,
       digest: FROZEN_METHODOLOGY_CONTRACT_DIGEST,
       disposition: "exact-v1.2",
+      authoritative: true,
     });
     expect(resolveMethodologyContractBinding("2.0.3")).toEqual({
       version: V13_METHODOLOGY_CONTRACT_VERSION,
       digest: V13_METHODOLOGY_CONTRACT_DIGEST,
-      disposition: "exact-v1.3-attempt-2-development-binding",
+      disposition: "historical-unaccepted-2.0.3-not-authoritative",
+      authoritative: false,
     });
+    expect(resolveMethodologyContractBinding("2.0.2").authoritative).toBe(true);
     expect(resolveMethodologyContractBinding("2.0.4").disposition).toBe(
       "unknown-fail-closed",
     );
@@ -725,45 +728,23 @@ describe("Research methodology contract (historical Phase-2 fixture + version di
     ).toThrow(/unknown value/);
   });
 
-  it("shares the strict parser between root loading and the safe Context v2 projection", () => {
+  it("contains Procedure 2.0.3 as historical-unaccepted (no methodology authority)", () => {
     const procedure = procedure203("root-only");
-    const rootContract = loadResearchMethodologyContractFromProcedure(procedure);
+    expect(procedure.manifest.version).toBe("2.0.3");
+    expect(() =>
+      loadResearchMethodologyContractFromProcedure(procedure),
+    ).toThrow(/historical-unaccepted|not available as methodology authority/);
+    // Worker projection must not treat 2.0.3 family as accepted lossless authority.
+    // Root-only freeze-family on 2.0.3 still projects via family path only when
+    // version is LOSSLESS (2.0.4); for 2.0.3 it uses lifecycle/empty path.
     const projection = buildWorkerMethodologyProjectionV2(procedure);
-
-    expect(rootContract.package).toBe("research-ideation");
-    expect(projection.workerVisibleEntries).toEqual([]);
-    expect(projection.allowedTerminalStates).toEqual([
-      ...rootContract.terminal_states.asserted,
-      ...rootContract.terminal_states.unasserted_not_claimed,
-    ]);
-    expect(projection.artifactRequirements).toHaveLength(
-      rootContract.checkpoints.length,
-    );
-    expect(projection.artifactRequirements[0]).toEqual({
-      id: rootContract.checkpoints[0]?.id,
-      kind: rootContract.checkpoints[0]?.kind,
-      producer: rootContract.package,
-      consumer: rootContract.checkpoints[0]?.consumer,
-      fields: rootContract.checkpoints[0]?.fields,
-      terminalApplicability:
-        rootContract.checkpoints[0]?.terminal_applicability,
-      transitionConditions:
-        rootContract.checkpoints[0]?.transition_conditions,
-    });
-    const projectedRequirement = projection.artifactRequirements[0];
-    expect(projectedRequirement).toBeDefined();
-    expect(projectedRequirement).not.toHaveProperty("source_ref");
-    expect(projectedRequirement).not.toHaveProperty("phase2_note");
-    expect(projectedRequirement).not.toHaveProperty("fixture_obligations");
-    expect(projectedRequirement).not.toHaveProperty("stable_error_codes");
-    expect(projectedRequirement).not.toHaveProperty("authority_boundaries");
-    expect(JSON.stringify(projection)).not.toContain("provenanceId");
+    expect(projection.packageSchemaVersion).toBe(2);
   });
 
-  it("rejects worker-visible publication of the full 2.0.3 family contract", () => {
+  it("rejects worker-visible freeze-family contracts under 2.0.3 projection", () => {
     const procedure = procedure203("worker-visible");
     expect(() => loadResearchMethodologyContractFromProcedure(procedure)).toThrow(
-      /must be root-only/,
+      /historical-unaccepted|not available as methodology authority/,
     );
     expect(() => buildWorkerMethodologyProjectionV2(procedure)).toThrow(
       /must be root-only/,

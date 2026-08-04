@@ -4,12 +4,22 @@ import type { ParsedResearchProcedure } from "./procedure-policy.js";
 import {
   FROZEN_METHODOLOGY_CONTRACT_DIGEST,
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
+  V13_ACCEPTED_CONTRACT_DIGEST,
+  V13_ACCEPTED_CONTRACT_VERSION,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
 } from "./procedure-support-pack.js";
 import { parseStrictResearchJson } from "./strict-json.js";
 
-export const LOSSLESS_METHODOLOGY_PROCEDURE_VERSION = "2.0.3" as const;
+/** Future accepted lossless package version after OA3; not 2.0.3 (unaccepted). */
+export const LOSSLESS_METHODOLOGY_PROCEDURE_VERSION = "2.0.4" as const;
+/** Historical unaccepted development package version (bytes preserved, no authority). */
+export const HISTORICAL_UNACCEPTED_PROCEDURE_VERSION = "2.0.3" as const;
+/**
+ * Repair version recorded in the historical Phase-2 R0/derivability fixture.
+ * Not accepted methodology authority; retained for immutable matrix identity.
+ */
+export const HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION = "2.0.3" as const;
 export const FROZEN_METHODOLOGY_FAMILY_COUNT = 16 as const;
 /**
  * Historical Phase-2 packaging freeze counts (104/54/50).
@@ -450,7 +460,7 @@ export interface ResearchMethodologyPlanned203Destinations {
     bindingSelector: Readonly<{
       capabilityId: string;
       procedureId: string;
-      procedureVersion: typeof LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+      procedureVersion: typeof HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION;
     }>;
   }>;
   readonly assurance: Readonly<{
@@ -498,7 +508,7 @@ export interface ResearchMethodologyDerivabilityMatrix {
   readonly methodologyContract: typeof FROZEN_METHODOLOGY_CONTRACT_VERSION;
   readonly methodologyDigest: string;
   readonly infrastructureBase: string;
-  readonly repairVersion: typeof LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+  readonly repairVersion: typeof HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION;
   readonly sourceFiles: readonly ResearchMethodologyDerivabilitySourceFile[];
   readonly completeness: Readonly<{
     expectedFamilies: typeof FROZEN_METHODOLOGY_FAMILY_COUNT;
@@ -2011,7 +2021,7 @@ function parsePlanned203Destinations(
     candidatePath !== FROZEN_METHODOLOGY_CANDIDATE_MANIFEST_PATH ||
     selector.capabilityId !== family.capabilityId ||
     selector.procedureId !== family.procedureId ||
-    selector.procedureVersion !== LOSSLESS_METHODOLOGY_PROCEDURE_VERSION
+    selector.procedureVersion !== HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION
   ) {
     fail(`${label}.candidate is inconsistent with the frozen candidate binding`);
   }
@@ -2055,7 +2065,7 @@ function parsePlanned203Destinations(
       bindingSelector: Object.freeze({
         capabilityId: family.capabilityId,
         procedureId: family.procedureId,
-        procedureVersion: LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+        procedureVersion: HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION,
       }),
     }),
     assurance: Object.freeze({
@@ -2477,7 +2487,7 @@ export function parseResearchMethodologyDerivabilityMatrix(
     value.methodologyContract !== FROZEN_METHODOLOGY_CONTRACT_VERSION ||
     value.methodologyDigest !== freeze.methodologyDigest ||
     value.infrastructureBase !== freeze.infraPin ||
-    value.repairVersion !== LOSSLESS_METHODOLOGY_PROCEDURE_VERSION ||
+    value.repairVersion !== HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION ||
     value.matrixDigest !== FROZEN_METHODOLOGY_DERIVABILITY_MATRIX_DIGEST
   ) {
     fail("Research methodology derivability matrix identity is invalid");
@@ -2510,7 +2520,7 @@ export function parseResearchMethodologyDerivabilityMatrix(
     methodologyContract: FROZEN_METHODOLOGY_CONTRACT_VERSION,
     methodologyDigest: freeze.methodologyDigest,
     infrastructureBase: freeze.infraPin,
-    repairVersion: LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+    repairVersion: HISTORICAL_PHASE2_REPAIR_PROCEDURE_VERSION,
     sourceFiles,
     completeness,
     families,
@@ -2556,24 +2566,31 @@ export function verifyResearchMethodologyDerivabilityMatrixConformance(input: {
 export function loadResearchMethodologyContractFromProcedure(
   procedure: ParsedResearchProcedure,
 ): ResearchMethodologyFamilyContract {
+  if (procedure.manifest.version === HISTORICAL_UNACCEPTED_PROCEDURE_VERSION) {
+    fail(
+      "Procedure 2.0.3 is historical-unaccepted development evidence and is not available as methodology authority",
+    );
+  }
   if (
     procedure.packageSchemaVersion !== 2 ||
     procedure.manifest.version !== LOSSLESS_METHODOLOGY_PROCEDURE_VERSION ||
     procedure.supportPack === undefined
   ) {
     fail(
-      `Procedure ${LOSSLESS_METHODOLOGY_PROCEDURE_VERSION} methodology contracts require package schema v2`,
+      `Procedure ${LOSSLESS_METHODOLOGY_PROCEDURE_VERSION} methodology contracts require package schema v2 and an accepted binding`,
     );
   }
-  // 2.0.3 binds evaluation-contract-v1.3.0 attempt-2 development digest (not v1.2).
+  // Accepted 2.0.4 only after OA3 sets V13_ACCEPTED_* (currently none).
   if (
+    V13_ACCEPTED_CONTRACT_VERSION === null ||
+    V13_ACCEPTED_CONTRACT_DIGEST === null ||
     procedure.supportPack.manifest.methodologyContractVersion !==
-      V13_METHODOLOGY_CONTRACT_VERSION ||
+      V13_ACCEPTED_CONTRACT_VERSION ||
     procedure.supportPack.manifest.methodologyContractDigest !==
-      V13_METHODOLOGY_CONTRACT_DIGEST
+      V13_ACCEPTED_CONTRACT_DIGEST
   ) {
     fail(
-      "Procedure 2.0.3 support pack must bind exact evaluation-contract-v1.3.0 attempt-2 development identity",
+      "Procedure support pack methodology identity is not an accepted evaluation-contract-v1.3.0 binding",
     );
   }
   const candidates = procedure.supportPack.inventoryItems.filter(
@@ -2594,20 +2611,18 @@ export function loadResearchMethodologyContractFromProcedure(
       "Procedure 2.0.3 methodology family contract must be root-only; Context exposes only its safe declarative projection",
     );
   }
-  // Family descriptor contractVersion remains the packaging freeze identity until
-  // 2.0.3 packs are regenerated with v1.3 leaf contract versions (R5).
   if (
     candidate.contractVersion !== FROZEN_METHODOLOGY_CONTRACT_VERSION &&
-    candidate.contractVersion !== V13_METHODOLOGY_CONTRACT_VERSION
+    candidate.contractVersion !== V13_ACCEPTED_CONTRACT_VERSION
   ) {
-    fail("Procedure 2.0.3 methodology family contract entry has an unauthorized contractVersion");
+    fail("Procedure methodology family contract entry has an unauthorized contractVersion");
   }
   const contract = parseResearchMethodologyFamilyContract(candidate.bytes);
   if (
     contract.intended_target.procedure !== procedure.manifest.id ||
     contract.intended_target.capability !== procedure.capability.id
   ) {
-    fail("Procedure 2.0.3 methodology family identity does not match the resolved Procedure");
+    fail("Procedure methodology family identity does not match the resolved Procedure");
   }
   return contract;
 }

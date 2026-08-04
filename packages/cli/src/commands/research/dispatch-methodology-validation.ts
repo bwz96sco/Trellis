@@ -4,11 +4,12 @@ import path from "node:path";
 import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+  V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_DIGEST,
-  V13_METHODOLOGY_CONTRACT_VERSION,
   buildMethodologyReport,
   buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
+  isAuthoritativeMethodologyProcedureVersion,
   loadResearchMethodologyContractFromProcedure,
   runMethodologyValidators,
   shouldMaterializeMethodologyReportSidecar,
@@ -114,14 +115,17 @@ export function loadArtifactContractsFromProcedure(
   ) {
     return Object.freeze([]);
   }
-  if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
-    // literature-scan-v1 is a compatibility-routing extension, not a freeze family.
-    // All other 2.0.3 packages bind root-only freeze-family contracts.
+  if (procedure.manifest.version === "2.0.3") {
+    // Contained: 2.0.3 is historical-unaccepted; no family authority load.
+    // Lifecycle contracts[] may still be inspected for non-authority paths.
+  } else if (
+    procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION
+  ) {
+    // Accepted 2.0.4 lossless family contracts (post-OA3 only).
     if (procedure.manifest.id !== "literature-scan-v1") {
       loadResearchMethodologyContractFromProcedure(procedure);
       return Object.freeze([]);
     }
-    // Fall through to lifecycle contracts[] loading for literature-scan only.
   }
   const contracts: MethodologyArtifactContract[] = [];
   for (const item of procedure.supportPack.inventoryItems) {
@@ -238,9 +242,14 @@ export function validateMethodologyBeforeRecord(input: {
     input.methodologyContractDigest ??
     input.procedure?.supportPack?.manifest.methodologyContractDigest;
 
-  const isV13 =
-    methodologyContractVersion === V13_METHODOLOGY_CONTRACT_VERSION ||
-    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+  // Containment: A2 digests and Procedure 2.0.3 are never accepted authority.
+  // Report-v2 only after OA3 for accepted 2.0.4 (not live 1.0.0 / 2.0.2 / 2.0.3).
+  const procedureAuthoritative = isAuthoritativeMethodologyProcedureVersion(
+    input.procedureVersion,
+  );
+  const usesRejectedA2Digest =
+    methodologyContractDigest === V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST ||
+    methodologyContractDigest === V13_METHODOLOGY_CONTRACT_DIGEST;
 
   const facts = deriveMethodologyValidatorFacts({
     resultStatus: input.resultStatus ?? input.terminalState,
@@ -250,10 +259,11 @@ export function validateMethodologyBeforeRecord(input: {
     selected: input.selected,
     blocked: input.blocked,
     methodologyContractVersion,
-    requireExplicitClosure: isV13,
+    // Do not enable v1.3 explicit-closure mode as accepted authority until OA3.
+    requireExplicitClosure: false,
   });
 
-  const validation = runMethodologyValidators({
+  let mergedValidation = runMethodologyValidators({
     procedureId: input.procedureId,
     procedureVersion: input.procedureVersion,
     procedureDigest: input.procedureDigest,
@@ -263,10 +273,36 @@ export function validateMethodologyBeforeRecord(input: {
     facts,
   });
 
-  let mergedValidation = validation;
+  if (input.procedureVersion === "2.0.3" || usesRejectedA2Digest) {
+    const containmentFinding = {
+      validatorId: "methodology-authority-containment",
+      severity: "critical" as const,
+      code: "METHODOLOGY_AUTHORITY_NOT_ACCEPTED",
+      message:
+        "Procedure/contract identity is historical-unaccepted (A2/2.0.3) and is not available as methodology authority",
+    };
+    mergedValidation = {
+      ok: false,
+      criticalFailure: true,
+      findings: Object.freeze([
+        ...mergedValidation.findings,
+        containmentFinding,
+      ]),
+    };
+  }
+
+  // Report-v2 only for accepted 2.0.4 after OA3; never for live 1.0.0 or 2.0.2/2.0.3.
+  const reportV2Authorized =
+    procedureAuthoritative &&
+    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
 
   // When exact contracts exist on the pack, enforce artifact path/cardinality.
-  if (input.procedure !== undefined) {
+  // Skip for unaccepted 2.0.3 authority paths (already critical-failed above).
+  if (
+    input.procedure !== undefined &&
+    input.procedureVersion !== "2.0.3" &&
+    !usesRejectedA2Digest
+  ) {
     const contracts = loadArtifactContractsFromProcedure(input.procedure);
     if (contracts.length > 0) {
       const instances: MethodologyArtifactInstance[] = (
@@ -306,7 +342,7 @@ export function validateMethodologyBeforeRecord(input: {
         mergedValidation = {
           ok: false,
           criticalFailure: true,
-          findings: Object.freeze([...validation.findings, ...findings]),
+          findings: Object.freeze([...mergedValidation.findings, ...findings]),
         };
       }
     }
@@ -326,24 +362,29 @@ export function validateMethodologyBeforeRecord(input: {
     zeroWrite: mergedValidation.criticalFailure,
   });
 
+  // Always construct report-v2 object for API stability, but never authorize
+  // sidecar materialization unless reportV2Authorized (accepted 2.0.4 only).
   const reportV2 = buildMethodologyReportV2({
     reportV1: report,
-    methodologyContractDigest:
-      methodologyContractDigest ??
-      (isV13 ? V13_METHODOLOGY_CONTRACT_DIGEST : undefined),
+    methodologyContractDigest: reportV2Authorized
+      ? methodologyContractDigest
+      : undefined,
     closureSource: {
       selected: facts.selected,
       blocked: facts.blocked,
-      requireExplicitClosure: isV13,
-      resultStatusNotAuthority: isV13,
+      requireExplicitClosure: false,
+      resultStatusNotAuthority: true,
+      reportV2Authorized,
     },
   });
 
-  const materializeSidecar = shouldMaterializeMethodologyReportSidecar({
-    validationOk: mergedValidation.ok,
-    criticalFailure: mergedValidation.criticalFailure,
-    batchCommitted: input.batchCommitted === true,
-  });
+  const materializeSidecar =
+    reportV2Authorized &&
+    shouldMaterializeMethodologyReportSidecar({
+      validationOk: mergedValidation.ok,
+      criticalFailure: mergedValidation.criticalFailure,
+      batchCommitted: input.batchCommitted === true,
+    });
 
   return {
     ok: mergedValidation.ok,

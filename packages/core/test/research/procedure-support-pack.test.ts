@@ -300,7 +300,7 @@ describe("procedure support pack", () => {
     expect(ok.entries[0]?.workerVisibility).toBe("root-only");
   });
 
-  it("binds 2.0.3 to evaluation-contract-v1.3.0 attempt-2 digests and rejects v1.2 on 2.0.3", () => {
+  it("parses 2.0.3 only as historical-unaccepted A2 identity (not accepted authority)", () => {
     const fileA = encoder.encode("# stage\n");
     const baseEntry = {
       path: "instructions/stage.md",
@@ -328,7 +328,7 @@ describe("procedure support pack", () => {
         procedureId: capability.procedure.id,
         procedureVersion: "2.0.3",
       }),
-    ).toThrow(/evaluation-contract-v1\.3\.0 attempt-2/);
+    ).toThrow(/historical-unaccepted|rejected A2/);
 
     const ok = parseSupportPackManifest({
       packJsonBytes: encoder.encode(
@@ -349,5 +349,23 @@ describe("procedure support pack", () => {
     expect(ok.methodologyContractDigest).toBe(
       "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
     );
+    // 2.0.4 has no accepted binding yet
+    expect(() =>
+      parseSupportPackManifest({
+        packJsonBytes: encoder.encode(
+          serializeSupportPackManifest({
+            schemaVersion: 1,
+            procedureId: capability.procedure.id,
+            procedureVersion: "2.0.4",
+            methodologyContractVersion: "evaluation-contract-v1.3.0",
+            methodologyContractDigest:
+              "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+            entries: [baseEntry],
+          }),
+        ),
+        procedureId: capability.procedure.id,
+        procedureVersion: "2.0.4",
+      }),
+    ).toThrow(/accepted evaluation-contract-v1\.3\.0|no accepted binding/i);
   });
 });

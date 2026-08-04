@@ -13,7 +13,10 @@ import {
 } from "@mindfoldhq/trellis-core/research";
 import { describe, expect, it } from "vitest";
 
-import { loadArtifactContractsFromProcedure } from "../../src/commands/research/dispatch-methodology-validation.js";
+import {
+  loadArtifactContractsFromProcedure,
+  validateMethodologyBeforeRecord,
+} from "../../src/commands/research/dispatch-methodology-validation.js";
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -100,25 +103,36 @@ function procedure203(
   });
 }
 
-describe("root methodology contract loading", () => {
-  it("strictly validates 2.0.3 without coercing frozen checkpoints into legacy lifecycle contracts", () => {
+describe("root methodology contract loading (containment)", () => {
+  it("does not treat 2.0.3 as lossless family authority loader", () => {
     const bytes = encoder.encode(`${JSON.stringify(ideationFamily())}\n`);
+    // Contained: no family authority load for 2.0.3 — returns empty lifecycle set.
     expect(loadArtifactContractsFromProcedure(procedure203(bytes))).toEqual([]);
   });
 
-  it("rejects semantically altered 2.0.3 contracts under the frozen identity", () => {
-    const family = ideationFamily();
-    const checkpoint = (family.checkpoints as Record<string, unknown>[]).find(
-      (candidate) => "phase2_note" in candidate,
-    );
-    if (checkpoint === undefined) throw new Error("Missing ordered checkpoint");
-    checkpoint.phase2_note = "Invented replacement framing";
-
-    expect(() =>
-      loadArtifactContractsFromProcedure(
-        procedure203(encoder.encode(`${JSON.stringify(family)}\n`)),
+  it("fails closed methodology authority for 2.0.3 / rejected A2 digests", () => {
+    const bytes = encoder.encode(`${JSON.stringify(ideationFamily())}\n`);
+    const gate = validateMethodologyBeforeRecord({
+      procedureId: "idea-generation-v1",
+      procedureVersion: "2.0.3",
+      procedureDigest: "sha256:test",
+      procedure: procedure203(bytes),
+      selected: true,
+      blocked: false,
+      batchCommitted: false,
+      artifactPaths: [],
+      declaredValidators: [
+        { id: "closure-exclusivity", version: "1", severity: "critical" },
+      ],
+    });
+    expect(gate.ok).toBe(false);
+    expect(gate.criticalFailure).toBe(true);
+    expect(
+      gate.report.validation.findings.some(
+        (f) => f.code === "METHODOLOGY_AUTHORITY_NOT_ACCEPTED",
       ),
-    ).toThrow(/historical Phase-2 packaging family contract/);
+    ).toBe(true);
+    expect(gate.materializeSidecar).toBe(false);
   });
 
   it("does not apply the 2.0.3 lossless gate to historical 2.0.2 replay", () => {
@@ -130,19 +144,17 @@ describe("root methodology contract loading", () => {
     ).toEqual([]);
   });
 
-  it("fails closed on malformed and duplicate-key 2.0.3 contracts", () => {
-    expect(() =>
-      loadArtifactContractsFromProcedure(procedure203(encoder.encode("{"))),
-    ).toThrow(/strict UTF-8 JSON/);
-
-    const duplicate = JSON.stringify(ideationFamily()).replace(
-      /^\{/,
-      '{"package":"research-ideation",',
-    );
-    expect(() =>
-      loadArtifactContractsFromProcedure(
-        procedure203(encoder.encode(duplicate)),
-      ),
-    ).toThrow(/duplicate object key/);
+  it("does not emit report-v2 materialization for live 1.0.0 path", () => {
+    const gate = validateMethodologyBeforeRecord({
+      procedureId: "idea-generation-v1",
+      procedureVersion: "1.0.0",
+      procedureDigest: "sha256:test",
+      selected: true,
+      blocked: false,
+      batchCommitted: true,
+      artifactPaths: [],
+    });
+    expect(gate.materializeSidecar).toBe(false);
+    expect(gate.report.schemaVersion).toBe(1);
   });
 });
