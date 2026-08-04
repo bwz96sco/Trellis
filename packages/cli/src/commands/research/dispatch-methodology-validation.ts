@@ -251,6 +251,12 @@ export function validateMethodologyBeforeRecord(input: {
     methodologyContractDigest === V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST ||
     methodologyContractDigest === V13_METHODOLOGY_CONTRACT_DIGEST;
 
+  // Explicit closure for accepted 2.0.4 only (OA3 A3 binding). Never derive
+  // selected/blocked from Result.status on that path.
+  const requireExplicitClosure =
+    procedureAuthoritative &&
+    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+
   const facts = deriveMethodologyValidatorFacts({
     resultStatus: input.resultStatus ?? input.terminalState,
     proposalStatus: input.proposalStatus,
@@ -259,8 +265,7 @@ export function validateMethodologyBeforeRecord(input: {
     selected: input.selected,
     blocked: input.blocked,
     methodologyContractVersion,
-    // Do not enable v1.3 explicit-closure mode as accepted authority until OA3.
-    requireExplicitClosure: false,
+    requireExplicitClosure,
   });
 
   let mergedValidation = runMethodologyValidators({
@@ -372,7 +377,7 @@ export function validateMethodologyBeforeRecord(input: {
     closureSource: {
       selected: facts.selected,
       blocked: facts.blocked,
-      requireExplicitClosure: false,
+      requireExplicitClosure,
       resultStatusNotAuthority: true,
       reportV2Authorized,
     },
