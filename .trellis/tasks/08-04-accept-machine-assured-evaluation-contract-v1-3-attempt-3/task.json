@@ -3,7 +3,7 @@
   "name": "accept-machine-assured-evaluation-contract-v1-3-attempt-3",
   "title": "OA3 — Operator accept machine-only A3/B3 assurance",
   "description": "Operator accept/reject binding exact A3/B3 digests with humanReviewed:false. Only accept unlocks R1+.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "grok",
   "assignee": "operator-goal",
   "createdAt": "2026-08-04",
-  "completedAt": null,
+  "completedAt": "2026-08-04",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -21,7 +21,7 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "OA3-0 activated after committed B3 MAL-1 pass 064844af. Decision commit separate.",
+  "notes": "OA3-1 accept: MAL-1 machine-only risk acknowledged; binds A3 5ca3b5cf8199 + B3 064844af8317; unlocks R1–R8; no activation/push/release.",
   "meta": {
     "attempt": 3,
     "assuranceModel": "MAL-1",
@@ -30,6 +30,16 @@
       "b3Commit": "064844af8317f90a2eb484f877f7be16462725dc",
       "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
       "precondition": "committed-A3 + committed-MAL-1-B3-pass"
+    },
+    "decision": {
+      "wave": "OA3-1",
+      "decision": "accept",
+      "humanReviewed": false,
+      "assuranceLevel": "MAL-1",
+      "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+      "b3Commit": "064844af8317f90a2eb484f877f7be16462725dc",
+      "manifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+      "targetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
     }
   }
 }
