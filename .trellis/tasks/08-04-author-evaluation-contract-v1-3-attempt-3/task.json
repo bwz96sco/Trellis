@@ -3,7 +3,7 @@
   "name": "author-evaluation-contract-v1-3-attempt-3",
   "title": "A3 — Author evaluation-contract-v1.3.0 attempt-3",
   "description": "Public-evidence-only attempt-3 candidate under this directory only. A2 is negative comparison only.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "grok",
   "assignee": "grok",
   "createdAt": "2026-08-04",
-  "completedAt": null,
+  "completedAt": "2026-08-04",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -21,7 +21,7 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "A3-0 activated after Q1 containment 5992826e. Authoring commit separate; no candidate bytes in this commit.",
+  "notes": "A3-1 authored evaluation-contract-v1.3.0 attempt-3. manifestDigest=39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6 targetDigest=dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f. Digests differ from A1 and rejected A2. Independent oracle verified. MAL-1 B3 not yet run.",
   "meta": {
     "attempt": 3,
     "assuranceModel": "MAL-1",
@@ -36,6 +36,23 @@
       "a2NegativeEvidenceOnly": true,
       "a2Commit": "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f",
       "candidateBytesInThisCommit": false
+    },
+    "authoring": {
+      "wave": "A3-1",
+      "manifestDigest": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+      "targetDigest": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "counts": {
+        "outputs": 64,
+        "enforceableArtifacts": 65,
+        "validators": 20,
+        "bindings": 876,
+        "deltaCases": 116,
+        "derivabilityRows": 3343,
+        "closureFamilies": 4
+      },
+      "digestsDifferFromAttempt1": true,
+      "digestsDifferFromAttempt2": true,
+      "authority": false
     }
   }
 }
