@@ -1,0 +1,800 @@
+{
+  "schemaVersion": 1,
+  "kind": "candidate-cutover-manifest",
+  "candidateId": "phase2-methodology-candidate-2.0.3",
+  "createdAt": "2026-08-03T00:00:00Z",
+  "status": "dormant-candidate",
+  "liveRegistryCurrentVersion": "1.0.0",
+  "liveCapabilityCount": 14,
+  "liveLiteratureDefault": "research.literature.scan",
+  "candidateProcedureVersion": "2.0.3",
+  "candidateCapabilityCount": 17,
+  "candidateLiteratureDefault": "research.literature.review",
+  "methodologyContract": "evaluation-contract-v1.3.0",
+  "methodologyDigest": "76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+  "pins": {
+    "repairStartingSnapshot": "fe1cd02eae4fba2af911d6572c1c91353cbf564f",
+    "privateSourceEvidenceCommit": "9a02a533f5f3ecfd0c0789a01588fc492d321d6c",
+    "infrastructurePin": "ccd5bb3afc99283252c599916a2b8c2e05075cc6",
+    "v13Attempt2AuthoringCommit": "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f",
+    "v13FrozenTargetDigest": "76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166"
+  },
+  "historicalEvidencePreserved": {
+    "premature201CutoverManifest": "cutover-manifest.json",
+    "premature201CandidateManifest": "candidate-cutover-manifest.json",
+    "note": "Premature 2.0.1 active/candidate manifests not rewritten"
+  },
+  "activationAuthorized": false,
+  "bindings": [
+    {
+      "capabilityId": "research.audit.campaign",
+      "stage": "audit",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "review-campaign-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "ccb931ec889673f8f48260b93f3e71747227528db313161ba918399a97134b93",
+      "packJsonSha256": "3d0a59c2dcf0e0aa0ffff9f61f1f9e016a5fe780418326e180bb2a8b4b30a66c",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.audit.case",
+      "stage": "audit",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "review-case-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "b96f387b399dbf40dd2171b6102c176562d3e8ef8d706349a4630a3d2b1a7c86",
+      "packJsonSha256": "f9243be3072cc4524daad64bc5dfa2e327674e0e9be4965bfa7b142b0af5c571",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.computation.case",
+      "stage": "computation",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "computation-case-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "d84de1c37ab49c4e8cf3d1eeaa5cd9e945ed6ed9a3af8784adfed6c197c9394d",
+      "packJsonSha256": "8325fbcabd7518cc99bbeff2684cc7204fccb7bcd56441249575154c2221fe46",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.experiment.campaign",
+      "stage": "experiment",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "experiment-campaign-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "3427efd91fb68794de34a5bf0a3440589bab05c33ebc4edb236e4c6059d7fd2d",
+      "packJsonSha256": "a089db9ecb6a200972a1b4e656d84a111725c54a1fa579c980edc2be3a46cb14",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.experiment.round",
+      "stage": "experiment",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "experiment-round-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "10c0a7501236c551fcfb566b990615f726f03096bdb980ef21ea1a8605416e16",
+      "packJsonSha256": "3435c41c91fc268183bd4a2232730adc743423ae61bb1a62245c3c306c160a65",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.framing.admin",
+      "stage": "framing",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "quest-admin-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "40ea11fc31e0e9c16c32944b8bd95ffea9b7489a612b94d04dfc0b2f2f1fd0f8",
+      "packJsonSha256": "13d50dc91e9cc6135c914e2f2800640d8c512b318ac97233a05ad033103a72cb",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.framing.quest",
+      "stage": "framing",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "quest-framing-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "701b6f6806b10876657a015162ecc945baaaa09d29aea9defc1c2ee7b3f34528",
+      "packJsonSha256": "f34aa6cbdedfc3013762d3057f6e885ab666e1e1c65030b0d48e93e9f291db31",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.ideation.evaluate",
+      "stage": "ideation",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "idea-evaluation-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "1db5d653719acaf247ead63b6d888eb44959b12065411d3b8c84f8459673b90a",
+      "packJsonSha256": "ef87c1fe88e62dbe72d4f57c83a361a3db9322f75f3402c13090ff8333b074ca",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.ideation.generate",
+      "stage": "ideation",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "idea-generation-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "aa29600dfeb0ca5c5a84ca0efd9946556a9d3e11f5b9a8ff31312307251fe0a1",
+      "packJsonSha256": "87c3b92fbcb0b65630c7b16b47a7c3899d0dd0bfc4234e8ea3408e7d5468c5e8",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.literature.review",
+      "stage": "literature",
+      "kind": "workflow",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "literature-review-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "241d591665fd0dc17c09564dab15b77da254be42124fad0dc3a7dcda991db990",
+      "packJsonSha256": "14e1eba1b4d164eeaf133a5125461480527f3ef42433614024654904d1e0591e",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.literature.scan",
+      "stage": "literature",
+      "kind": "bounded",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "literature-scan-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "937334f6dbd1f470c60de5cc447306d6dd72ec86903268585dcb223b37dc0994",
+      "packJsonSha256": "f9ecd2ce5caab577e8b616ae5bc487dd5db831ae7d1439b8f7e245083676deba",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.literature.survey",
+      "stage": "literature",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "survey-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "d0b08ab48f8d7cfc079c2bbbf6dacdbb4b532beaa9a7eec0d3d9853ae8ad3820",
+      "packJsonSha256": "1300c4aae31812fbcae81a3da6ce2de6a229069323a3f807d5f4f50d96877995",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/survey-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.setup.project",
+      "stage": "setup",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "project-setup-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "8d9de8a579ca79bc461f611bbd7e9862527350fb5f08b9f514babed155cfc058",
+      "packJsonSha256": "cf1dfa26824da543c5b369a6a35e7c1d9404818db26968033fd3c61d72f9a24b",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.theory.case",
+      "stage": "theory",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "theory-case-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "a91462cde7e7d8961aeda0ea2226eb90b19fc64ee4c1d517f31481be2a35b1c6",
+      "packJsonSha256": "7402e6da1313aa4157b1d3084c334ec4b2d9142ff79c99bad880f83c1f751adf",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.writing.case",
+      "stage": "writing",
+      "kind": "bounded",
+      "activationMode": "automatic",
+      "isStageDefault": true,
+      "procedureId": "writing-case-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "0744f1c0b298653a9bfb5a2eb8abec765b4e8c33ad236568757596181074fb99",
+      "packJsonSha256": "7f3d3e39476cbad82adeced2bc1f16c2daff2b9f2a3a4edbf189e675075464bc",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.writing.figure",
+      "stage": "writing",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "figure-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "d35ce57c6fe2c1ff4ef8b92cbcfa41e9ac9a897bf2a8610206aec7bb7b3b9600",
+      "packJsonSha256": "cc5452e5d9fc3087543806eaac4227ff76f620e7f973e0f99e21d1a70b06c640",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/figure-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    },
+    {
+      "capabilityId": "research.writing.slides",
+      "stage": "writing",
+      "kind": "workflow",
+      "activationMode": "explicit",
+      "isStageDefault": false,
+      "procedureId": "slides-v1",
+      "procedureVersion": "2.0.3",
+      "procedureJsonSha256": "615ca07302b5e5cc6fd6c6a93d3afa60c2b00fd0f7783fdee3e9b92b12c0cedd",
+      "packJsonSha256": "5458751e61321e17f444e0555bb945e8f4f458f0be33cf9682b22c6d8f79545f",
+      "methodologyContractVersion": "evaluation-contract-v1.3.0",
+      "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "packedPath": "packages/cli/src/templates/research/procedures/slides-v1/2.0.3",
+      "previousLiveBinding": {
+        "procedureVersion": "1.0.0",
+        "note": "Completion Wave-0 containment future selection; 2.0.3 dormant only"
+      },
+      "candidateState": "dormant",
+      "rollbackTargets": {
+        "preActivation": "CURRENT=1.0.0, 14 live capabilities, literature.scan default",
+        "postActivationFutureOnly": "restore CURRENT=1.0.0 without disable event; recorded 2.0.3 activations keep digests"
+      },
+      "validatorSet": [
+        {
+          "id": "missing-critical-evidence",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "provenance-stable-id-drift",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "forbidden-mutation",
+          "version": "1",
+          "severity": "critical"
+        },
+        {
+          "id": "closure-exclusivity",
+          "version": "1",
+          "severity": "critical"
+        }
+      ]
+    }
+  ],
+  "aggregates": {
+    "frozenCases": "229 (212 critical + 17 non-critical)",
+    "expansionCases": 38,
+    "harnessEvidence": ".trellis/tasks/07-29-implement-frozen-phase2-differential-harness/research/differential-run-all-v2.json"
+  }
+}

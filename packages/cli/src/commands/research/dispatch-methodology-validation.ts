@@ -1,14 +1,19 @@
 import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+  V13_METHODOLOGY_CONTRACT_DIGEST,
+  V13_METHODOLOGY_CONTRACT_VERSION,
   buildMethodologyReport,
+  buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
   loadResearchMethodologyContractFromProcedure,
   runMethodologyValidators,
+  shouldMaterializeMethodologyReportSidecar,
   validateMethodologyArtifacts,
   type MethodologyArtifactContract,
   type MethodologyArtifactInstance,
   type MethodologyDeterministicReport,
+  type MethodologyDeterministicReportV2,
   type MethodologyValidatorDescriptor,
   type ParsedResearchProcedure,
 } from "@mindfoldhq/trellis-core/research";
@@ -180,13 +185,16 @@ export function loadArtifactContractsFromProcedure(
 
 /**
  * Root-side methodology validation before canonical Result/Proposal commit.
- * Facts are derived from Result/Proposal status — not opaque caller booleans.
+ * v1.3 requires explicit selected/blocked closure fields — Result.status is
+ * never used as closure authority. Report-v1 bytes stay unchanged; report-v2
+ * is returned additively. Sidecar materialization remains a separate R2B step.
  */
 export function validateMethodologyBeforeRecord(input: {
   readonly procedureId: string;
   readonly procedureVersion: string;
   readonly procedureDigest: string;
   readonly methodologyContractVersion?: string;
+  readonly methodologyContractDigest?: string;
   readonly capabilityId?: string;
   readonly dispatchId?: string;
   readonly activationId?: string;
@@ -194,14 +202,20 @@ export function validateMethodologyBeforeRecord(input: {
   readonly resultStatus?: string;
   readonly proposalStatus?: string;
   readonly proposalOperationCount?: number;
+  /** Explicit v1.3 closure fields (required for evaluation-contract-v1.3.0). */
+  readonly selected?: boolean;
+  readonly blocked?: boolean;
   readonly declaredValidators?: readonly MethodologyValidatorDescriptor[];
   readonly procedure?: ParsedResearchProcedure;
   readonly artifactPaths?: readonly string[];
   readonly artifactDigests?: readonly { path: string; sha256: string }[];
+  readonly batchCommitted?: boolean;
 }): {
   readonly ok: boolean;
   readonly criticalFailure: boolean;
   readonly report: MethodologyDeterministicReport;
+  readonly reportV2: MethodologyDeterministicReportV2;
+  readonly materializeSidecar: boolean;
 } {
   const declaredValidators =
     input.declaredValidators ??
@@ -214,11 +228,23 @@ export function validateMethodologyBeforeRecord(input: {
     input.procedure?.supportPack?.manifest.methodologyContractVersion ??
     FROZEN_METHODOLOGY_CONTRACT_VERSION;
 
+  const methodologyContractDigest =
+    input.methodologyContractDigest ??
+    input.procedure?.supportPack?.manifest.methodologyContractDigest;
+
+  const isV13 =
+    methodologyContractVersion === V13_METHODOLOGY_CONTRACT_VERSION ||
+    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+
   const facts = deriveMethodologyValidatorFacts({
     resultStatus: input.resultStatus ?? input.terminalState,
     proposalStatus: input.proposalStatus,
     proposalOperationCount: input.proposalOperationCount,
     artifactPaths: input.artifactPaths,
+    selected: input.selected,
+    blocked: input.blocked,
+    methodologyContractVersion,
+    requireExplicitClosure: isV13,
   });
 
   const validation = runMethodologyValidators({
@@ -230,6 +256,8 @@ export function validateMethodologyBeforeRecord(input: {
     declaredValidators,
     facts,
   });
+
+  let mergedValidation = validation;
 
   // When exact contracts exist on the pack, enforce artifact path/cardinality.
   if (input.procedure !== undefined) {
@@ -269,25 +297,11 @@ export function validateMethodologyBeforeRecord(input: {
           code: e.code,
           message: e.message,
         }));
-        const merged = {
+        mergedValidation = {
           ok: false,
           criticalFailure: true,
           findings: Object.freeze([...validation.findings, ...findings]),
         };
-        const report = buildMethodologyReport({
-          procedureId: input.procedureId,
-          procedureVersion: input.procedureVersion,
-          procedureDigest: input.procedureDigest,
-          methodologyContractVersion,
-          capabilityId: input.capabilityId,
-          dispatchId: input.dispatchId,
-          activationId: input.activationId,
-          terminalState: input.terminalState,
-          validation: merged,
-          artifactDigests: input.artifactDigests,
-          zeroWrite: true,
-        });
-        return { ok: false, criticalFailure: true, report };
       }
     }
   }
@@ -301,13 +315,35 @@ export function validateMethodologyBeforeRecord(input: {
     dispatchId: input.dispatchId,
     activationId: input.activationId,
     terminalState: input.terminalState,
-    validation,
+    validation: mergedValidation,
     artifactDigests: input.artifactDigests,
-    zeroWrite: validation.criticalFailure,
+    zeroWrite: mergedValidation.criticalFailure,
   });
+
+  const reportV2 = buildMethodologyReportV2({
+    reportV1: report,
+    methodologyContractDigest:
+      methodologyContractDigest ??
+      (isV13 ? V13_METHODOLOGY_CONTRACT_DIGEST : undefined),
+    closureSource: {
+      selected: facts.selected,
+      blocked: facts.blocked,
+      requireExplicitClosure: isV13,
+      resultStatusNotAuthority: isV13,
+    },
+  });
+
+  const materializeSidecar = shouldMaterializeMethodologyReportSidecar({
+    validationOk: mergedValidation.ok,
+    criticalFailure: mergedValidation.criticalFailure,
+    batchCommitted: input.batchCommitted === true,
+  });
+
   return {
-    ok: validation.ok,
-    criticalFailure: validation.criticalFailure,
+    ok: mergedValidation.ok,
+    criticalFailure: mergedValidation.criticalFailure,
     report,
+    reportV2,
+    materializeSidecar,
   };
 }

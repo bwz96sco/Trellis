@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"experiment-campaign-v1","version":"2.0.3","stage":"experiment","kind":"workflow","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"declared-only","repositoryScope":"multiple","maxDurationMinutes":120,"maxDispatches":8,"packageSchemaVersion":2}

@@ -5,14 +5,21 @@ import { describe, expect, it } from "vitest";
 import {
   FROZEN_COMPOSITION_EDGES,
   RESEARCH_CAPABILITY_REGISTRY,
+  V13_METHODOLOGY_CONTRACT_DIGEST,
+  V13_METHODOLOGY_CONTRACT_VERSION,
   buildMethodologyReport,
+  buildMethodologyReportV2,
   buildSupportPackInventory,
   buildWorkerMethodologyProjectionV2,
+  deriveMethodologyValidatorFacts,
   listTrustedMethodologyValidatorIds,
   parseResearchProcedure,
   parseSupportPackManifest,
+  planRootCompositionAction,
+  resolveMethodologyContractBinding,
   runMethodologyValidators,
   serializeSupportPackManifest,
+  shouldMaterializeMethodologyReportSidecar,
   validateMethodologyArtifacts,
   validateRootCompositionDescriptor,
 } from "../../src/research/index.js";
@@ -500,5 +507,162 @@ describe("Context v2 methodology projection", () => {
       },
     });
     expect(() => buildWorkerMethodologyProjectionV2(parsed)).toThrow(/sha256 drift/i);
+  });
+});
+
+
+describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
+  it("never invents selected/blocked from Result.status under v1.3", () => {
+    const facts = deriveMethodologyValidatorFacts({
+      resultStatus: "completed",
+      methodologyContractVersion: V13_METHODOLOGY_CONTRACT_VERSION,
+      requireExplicitClosure: true,
+    });
+    expect(facts).not.toHaveProperty("selected");
+    expect(facts).not.toHaveProperty("blocked");
+
+    const historical = deriveMethodologyValidatorFacts({
+      resultStatus: "completed",
+      methodologyContractVersion: "evaluation-contract-v1.2.0",
+    });
+    expect(historical.selected).toBe(true);
+    expect(historical.blocked).toBe(false);
+  });
+
+  it("fails closed when v1.3 closure fields are missing", () => {
+    const facts = deriveMethodologyValidatorFacts({
+      resultStatus: "completed",
+      methodologyContractVersion: V13_METHODOLOGY_CONTRACT_VERSION,
+    });
+    const report = runMethodologyValidators({
+      procedureId: "literature-review-v1",
+      procedureVersion: "2.0.3",
+      procedureDigest: "sha256:test",
+      artifactPaths: [],
+      declaredValidators: [
+        { id: "closure-exclusivity", version: "1", severity: "critical" },
+      ],
+      facts,
+    });
+    expect(report.criticalFailure).toBe(true);
+    expect(report.findings.some((f) => f.code === "INVALID_CLOSURE")).toBe(
+      true,
+    );
+  });
+
+  it("accepts explicit XOR closure under v1.3", () => {
+    const facts = deriveMethodologyValidatorFacts({
+      selected: true,
+      blocked: false,
+      methodologyContractVersion: V13_METHODOLOGY_CONTRACT_VERSION,
+    });
+    const report = runMethodologyValidators({
+      procedureId: "literature-review-v1",
+      procedureVersion: "2.0.3",
+      procedureDigest: "sha256:test",
+      artifactPaths: [],
+      declaredValidators: [
+        { id: "closure-exclusivity", version: "1", severity: "critical" },
+      ],
+      facts,
+    });
+    expect(report.ok).toBe(true);
+  });
+
+  it("builds additive report-v2 without changing report-v1 digest semantics", () => {
+    const validation = runMethodologyValidators({
+      procedureId: "idea-generation-v1",
+      procedureVersion: "2.0.3",
+      procedureDigest: "sha256:abc",
+      artifactPaths: [],
+      declaredValidators: [],
+      facts: { selected: true, blocked: false },
+    });
+    const v1a = buildMethodologyReport({
+      procedureId: "idea-generation-v1",
+      procedureVersion: "2.0.3",
+      procedureDigest: "sha256:abc",
+      methodologyContractVersion: V13_METHODOLOGY_CONTRACT_VERSION,
+      validation,
+      zeroWrite: false,
+    });
+    const v1b = buildMethodologyReport({
+      procedureId: "idea-generation-v1",
+      procedureVersion: "2.0.3",
+      procedureDigest: "sha256:abc",
+      methodologyContractVersion: V13_METHODOLOGY_CONTRACT_VERSION,
+      validation,
+      zeroWrite: false,
+    });
+    expect(v1a.reportDigest).toBe(v1b.reportDigest);
+    expect(v1a.schemaVersion).toBe(1);
+
+    const v2 = buildMethodologyReportV2({
+      reportV1: v1a,
+      methodologyContractDigest: V13_METHODOLOGY_CONTRACT_DIGEST,
+      closureSource: { selected: true, blocked: false },
+    });
+    expect(v2.schemaVersion).toBe(2);
+    expect(v2.reportV1.reportDigest).toBe(v1a.reportDigest);
+    expect(v2.reportDigest.startsWith("sha256:")).toBe(true);
+    expect(v2.zeroWriteDisposition).toBe("success-sidecar-allowed");
+  });
+
+  it("allows report sidecar only after successful batch commit", () => {
+    expect(
+      shouldMaterializeMethodologyReportSidecar({
+        validationOk: true,
+        criticalFailure: false,
+        batchCommitted: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldMaterializeMethodologyReportSidecar({
+        validationOk: true,
+        criticalFailure: false,
+        batchCommitted: true,
+      }),
+    ).toBe(true);
+    expect(
+      shouldMaterializeMethodologyReportSidecar({
+        validationOk: false,
+        criticalFailure: true,
+        batchCommitted: true,
+      }),
+    ).toBe(false);
+  });
+
+  it("binds 2.0.2 to v1.2 and 2.0.3 to attempt-2 v1.3", () => {
+    expect(resolveMethodologyContractBinding("2.0.2").disposition).toBe(
+      "exact-v1.2",
+    );
+    expect(resolveMethodologyContractBinding("2.0.3")).toEqual({
+      version: V13_METHODOLOGY_CONTRACT_VERSION,
+      digest: V13_METHODOLOGY_CONTRACT_DIGEST,
+      disposition: "exact-v1.3-attempt-2-development-binding",
+    });
+  });
+
+  it("plans root composition without worker launch authority", () => {
+    const planned = planRootCompositionAction({
+      schemaVersion: 1,
+      compositionId: "cmp-r3",
+      edgeId: "COMP-001",
+      parentDispatchId: "dsp_1",
+      parentActivationId: "act_1",
+      parentCapabilityId: "research.experiment.campaign",
+      childCapabilityOrAdapterId: "research.experiment.round",
+      maxChildren: 1,
+      remainingDispatchBudget: 1,
+      procedureDigest: "sha256:x",
+      policyDigest: "sha256:y",
+      requestDigest: "sha256:z",
+      rootAuthorizationEvidence: "root-approved",
+    });
+    expect(planned.ok).toBe(true);
+    if (planned.ok) {
+      expect(planned.action.edgeId).toBe("COMP-001");
+      expect(planned.action).not.toHaveProperty("launchWorker");
+    }
   });
 });

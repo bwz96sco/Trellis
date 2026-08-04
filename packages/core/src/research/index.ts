@@ -172,8 +172,15 @@ export type {
   MethodologyValidatorFinding,
 } from "./methodology-validators.js";
 
-export { buildMethodologyReport } from "./methodology-reports.js";
-export type { MethodologyDeterministicReport } from "./methodology-reports.js";
+export {
+  buildMethodologyReport,
+  buildMethodologyReportV2,
+  shouldMaterializeMethodologyReportSidecar,
+} from "./methodology-reports.js";
+export type {
+  MethodologyDeterministicReport,
+  MethodologyDeterministicReportV2,
+} from "./methodology-reports.js";
 
 export { buildWorkerMethodologyProjectionV2 } from "./methodology-worker-context.js";
 export type {

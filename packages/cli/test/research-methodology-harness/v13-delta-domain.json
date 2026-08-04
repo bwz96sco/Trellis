@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "kind": "evaluation-contract-v1.3-delta-domain",
+  "domainId": "V13-DELTA",
+  "notRelabeledAsFrozenV12": true,
+  "methodologyContractVersion": "evaluation-contract-v1.3.0",
+  "methodologyContractDigest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+  "authoringCommit": "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f",
+  "frozenV12RegistryCounts": {
+    "frozen229": 229,
+    "expansion38": 38,
+    "preservedUnchanged": true
+  },
+  "cases": [
+    {
+      "caseId": "V13-CLOSURE-EXPLICIT-REQUIRED",
+      "semanticRule": "explicit-selected-blocked-fields",
+      "productionOperation": "validateMethodologyBeforeRecord",
+      "expectedOutcome": "critical-fail",
+      "expectedErrorCodes": ["INVALID_CLOSURE"],
+      "zeroWrite": true,
+      "fixtureId": "v13-closure-missing-explicit",
+      "evidencePath": "research/v13-delta/V13-CLOSURE-EXPLICIT-REQUIRED.json"
+    },
+    {
+      "caseId": "V13-NO-STATUS-HEURISTIC",
+      "semanticRule": "result-status-not-closure-authority",
+      "productionOperation": "deriveMethodologyValidatorFacts",
+      "expectedOutcome": "no-inferred-selected-blocked",
+      "expectedErrorCodes": [],
+      "zeroWrite": true,
+      "fixtureId": "v13-status-completed-without-closure",
+      "evidencePath": "research/v13-delta/V13-NO-STATUS-HEURISTIC.json"
+    },
+    {
+      "caseId": "V13-REPORT-V2-SUCCESS",
+      "semanticRule": "report-v2-additive-domain",
+      "productionOperation": "buildMethodologyReportV2",
+      "expectedOutcome": "pass",
+      "expectedErrorCodes": [],
+      "zeroWrite": false,
+      "fixtureId": "v13-report-v2-ok",
+      "evidencePath": "research/v13-delta/V13-REPORT-V2-SUCCESS.json"
+    },
+    {
+      "caseId": "V13-SIDECAR-ONLY-AFTER-BATCH",
+      "semanticRule": "report-sidecar-post-batch",
+      "productionOperation": "shouldMaterializeMethodologyReportSidecar",
+      "expectedOutcome": "false-until-batch-committed",
+      "expectedErrorCodes": [],
+      "zeroWrite": true,
+      "fixtureId": "v13-sidecar-gate",
+      "evidencePath": "research/v13-delta/V13-SIDECAR-ONLY-AFTER-BATCH.json"
+    },
+    {
+      "caseId": "V13-203-CONTRACT-BINDING",
+      "semanticRule": "procedure-2.0.3-binds-v1.3-digest",
+      "productionOperation": "resolveMethodologyContractBinding",
+      "expectedOutcome": "exact-v1.3-attempt-2-development-binding",
+      "expectedErrorCodes": [],
+      "zeroWrite": true,
+      "fixtureId": "v13-binding-203",
+      "evidencePath": "research/v13-delta/V13-203-CONTRACT-BINDING.json"
+    }
+  ]
+}

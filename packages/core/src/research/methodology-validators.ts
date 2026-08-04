@@ -123,32 +123,55 @@ export function deriveMethodologyValidatorFacts(input: {
   readonly missingCriticalEvidence?: boolean;
   readonly provenanceDrift?: boolean;
   readonly forbiddenMutation?: boolean;
+  /**
+   * When true (evaluation-contract-v1.3.0 path), selected/blocked must be
+   * explicit — Result.status is never used as closure authority.
+   */
+  readonly requireExplicitClosure?: boolean;
+  readonly methodologyContractVersion?: string;
 }): Readonly<Record<string, unknown>> {
   const resultStatus = input.resultStatus;
-  const blocked =
-    input.blocked ??
-    (resultStatus === "blocked" || resultStatus === "failed");
-  // Success terminals that complete work are "selected" for XOR closure.
-  const selected =
-    input.selected ??
-    (resultStatus === "completed" ||
-      resultStatus === "success" ||
-      resultStatus === "partial");
-  // missingCriticalEvidence is never invented from empty paths alone: blocked
-  // terminals legitimately have no artifacts. Pack artifact contracts enforce
-  // required evidence on applicable success terminals.
-  return Object.freeze({
+  const requireExplicit =
+    input.requireExplicitClosure === true ||
+    input.methodologyContractVersion === "evaluation-contract-v1.3.0";
+
+  let selected: boolean | undefined;
+  let blocked: boolean | undefined;
+  if (requireExplicit) {
+    // Fail closed: omit selected/blocked unless both provided explicitly.
+    // Never invent from Result.status under v1.3.
+    if (input.selected !== undefined && input.blocked !== undefined) {
+      selected = input.selected;
+      blocked = input.blocked;
+    }
+  } else {
+    // Historical v1.2 / 2.0.2 path may derive from Result.status.
+    blocked =
+      input.blocked ??
+      (resultStatus === "blocked" || resultStatus === "failed");
+    selected =
+      input.selected ??
+      (resultStatus === "completed" ||
+        resultStatus === "success" ||
+        resultStatus === "partial");
+  }
+
+  // missingCriticalEvidence is never invented from empty paths alone.
+  const facts: Record<string, unknown> = {
     resultStatus,
     proposalStatus: input.proposalStatus,
     proposalOperationCount: input.proposalOperationCount ?? 0,
-    selected,
-    blocked,
     missingCriticalEvidence: input.missingCriticalEvidence === true,
     provenanceDrift: input.provenanceDrift === true,
     idDrift: false,
     forbiddenMutation: input.forbiddenMutation === true,
     artifactPathCount: input.artifactPaths?.length ?? 0,
-  });
+    requireExplicitClosure: requireExplicit,
+    methodologyContractVersion: input.methodologyContractVersion,
+  };
+  if (selected !== undefined) facts.selected = selected;
+  if (blocked !== undefined) facts.blocked = blocked;
+  return Object.freeze(facts);
 }
 
 /** Trusted implementations are keyed by exact (id, version). Unknown pairs are always critical. */

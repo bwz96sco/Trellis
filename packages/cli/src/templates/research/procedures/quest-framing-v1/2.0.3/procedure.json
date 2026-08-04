@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"quest-framing-v1","version":"2.0.3","stage":"framing","kind":"bounded","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"forbidden","repositoryScope":"single","maxDurationMinutes":15,"maxDispatches":1,"packageSchemaVersion":2}

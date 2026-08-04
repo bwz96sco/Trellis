@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"literature-review-v1","version":"2.0.3","stage":"literature","kind":"workflow","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"declared-only","repositoryScope":"multiple","maxDurationMinutes":60,"maxDispatches":4,"packageSchemaVersion":2}
