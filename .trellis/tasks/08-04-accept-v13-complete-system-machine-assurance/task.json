@@ -1,9 +1,9 @@
 {
   "id": "accept-v13-complete-system-machine-assurance",
   "name": "accept-v13-complete-system-machine-assurance",
-  "title": "CS3-OA — Operator accept complete-system machine assurance",
+  "title": "CS3-OA \u2014 Operator accept complete-system machine assurance",
   "description": "Separate operator accept for complete-system MAL-1. No automatic activation.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "grok",
   "assignee": "operator-goal",
   "createdAt": "2026-08-04",
-  "completedAt": null,
+  "completedAt": "2026-08-05",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -21,7 +21,7 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "CS3-OA-0 activated after CS3-1 pass b4c0c72df289. Decision commit separate. No activation/release/push.",
+  "notes": "CS3-OA-1 accept: complete-system MAL-1 machine-only risk acknowledged; binds CS3-1 b4c0c72df289 pass + CS3-0 assignment 0ceaaee237d6; activationAuthorized remains false; no activation/release/publication/push.",
   "meta": {
     "attempt": 3,
     "assuranceModel": "MAL-1",
@@ -29,6 +29,24 @@
       "wave": "CS3-OA-0",
       "cs3Commit": "b4c0c72df2893bb2618cefc7e2b5e4751ae85a8f",
       "cs3Verdict": "pass"
+    },
+    "decision": {
+      "wave": "CS3-OA-1",
+      "decision": "accept",
+      "humanReviewed": false,
+      "assuranceLevel": "MAL-1",
+      "scope": "complete-system",
+      "cs3Commit": "b4c0c72df2893bb2618cefc7e2b5e4751ae85a8f",
+      "cs3AssignmentCommit": "0ceaaee237d6c11035caabd8186d0378baab442a",
+      "cs3Verdict": "pass",
+      "assuranceVerdictSha256": "47bf9bd55f1925f1df727e7d50685ddb60cf1feceb29d74148e3ac2767e503e1",
+      "a3ManifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+      "a3FrozenTargetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "r8CandidateManifestSha256": "f9a2aa121b59360e274650c9dfe7b193a48deba671f90b191f4fccab989896d7",
+      "activationAuthorized": false,
+      "releaseAuthorized": false,
+      "publicationAuthorized": false,
+      "pushAuthorized": false
     }
   }
 }
