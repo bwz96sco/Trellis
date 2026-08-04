@@ -3,7 +3,7 @@
   "name": "assure-evaluation-contract-v1-3",
   "title": "V13-B — Independently assure evaluation contract v1.3",
   "description": "Mechanically and independently assure the exact immutable V13-A authoring commit and candidate digests without repairs.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
