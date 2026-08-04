@@ -11,6 +11,7 @@ import {
   RESEARCH_PROCEDURE_CURRENT_VERSION,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
+  buildWorkerMethodologyProjectionV2,
   loadResearchMethodologyContractFromProcedure,
 } from "@mindfoldhq/trellis-core/research";
 
@@ -306,5 +307,80 @@ describe("dormant 2.0.3 candidate bijection", () => {
       expect(gate.criticalFailure).toBe(false);
     }
     expect(familyPacks).toBe(16);
+  });
+
+  it("projects literature-scan-v1@2.0.3 worker Context like 2.0.2 without family loader", async () => {
+    const {
+      parseSupportPackManifest,
+      buildSupportPackInventory,
+      parseResearchProcedure,
+    } = await import("@mindfoldhq/trellis-core/research");
+
+    function loadScan(version: "2.0.2" | "2.0.3") {
+      const packDir = path.join(
+        getBundledResearchProcedureRoot(),
+        "literature-scan-v1",
+        version,
+      );
+      const packJson = new Uint8Array(
+        fs.readFileSync(path.join(packDir, "methodology", "pack.json")),
+      );
+      const pack = JSON.parse(Buffer.from(packJson).toString("utf8")) as {
+        entries: Array<{ path: string; workerVisibility: string }>;
+      };
+      const files: Record<string, Uint8Array> = {};
+      for (const e of pack.entries) {
+        files[e.path] = new Uint8Array(
+          fs.readFileSync(path.join(packDir, "methodology", e.path)),
+        );
+      }
+      const manifest = parseSupportPackManifest({
+        packJsonBytes: packJson,
+        procedureId: "literature-scan-v1",
+        procedureVersion: version,
+      });
+      const inventory = buildSupportPackInventory({ manifest, files });
+      return parseResearchProcedure({
+        capabilityId: "research.literature.scan",
+        source: "bundled",
+        manifestBytes: new Uint8Array(
+          fs.readFileSync(path.join(packDir, "procedure.json")),
+        ),
+        instructionBytes: new TextEncoder().encode("# Procedure\n"),
+        packageSchemaVersion: 2,
+        identityMode: "recorded-version",
+        recordedProcedureId: "literature-scan-v1",
+        recordedVersion: version,
+        supportPack: {
+          manifest,
+          packJsonBytes: packJson,
+          inventoryItems: inventory,
+        },
+      });
+    }
+
+    const v202 = loadScan("2.0.2");
+    const v203 = loadScan("2.0.3");
+
+    const proj202 = buildWorkerMethodologyProjectionV2(v202);
+    const proj203 = buildWorkerMethodologyProjectionV2(v203);
+
+    expect(proj202.workerVisibleEntries.length).toBe(2);
+    expect(proj203.workerVisibleEntries.length).toBe(2);
+    expect(
+      proj203.workerVisibleEntries.every((e) =>
+        ["artifacts/artifact-contract.json", "instructions/checkpoints.md"].includes(
+          e.path,
+        ),
+      ),
+    ).toBe(true);
+    // Lifecycle contracts[] requirements present (not empty family throw).
+    expect(proj202.artifactRequirements.length).toBe(3);
+    expect(proj203.artifactRequirements.length).toBe(3);
+    expect(proj203.packageSchemaVersion).toBe(2);
+    // Must not require root-only family contract for scan.
+    expect(() => loadResearchMethodologyContractFromProcedure(v203)).toThrow(
+      /root-only/,
+    );
   });
 });

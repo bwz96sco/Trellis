@@ -229,26 +229,80 @@ export function buildWorkerMethodologyProjectionV2(
 
   const artifactRequirements: WorkerMethodologyRequirement[] = [];
   let terminalStates: readonly string[] | undefined;
-  if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
-    const lossless = buildLosslessWorkerRequirements(procedure);
-    artifactRequirements.push(...lossless.requirements);
-    terminalStates = lossless.terminalStates;
+  // 2.0.3 freeze-family packs expose root-only family contracts (worker sees
+  // safe projected requirements via buildLosslessWorkerRequirements).
+  // Compatibility-routing packs such as literature-scan-v1@2.0.3 keep
+  // worker-visible lifecycle contracts[] and must not invoke the family loader.
+  // Worker-visible freeze-family contracts remain forbidden (full authority
+  // leakage); only root-only family contracts use the lossless projector.
+  const familyArtifact = procedure.supportPack.inventoryItems.find(
+    (item) =>
+      item.path === "artifacts/artifact-contract.json" &&
+      item.role === "artifacts" &&
+      item.mediaType === "application/json",
+  );
+
+  function parseArtifactJson(bytes: Uint8Array, pathLabel: string): unknown {
+    try {
+      return JSON.parse(
+        new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+      );
+    } catch (error) {
+      throw new Error(
+        `Worker-visible artifact contract is not valid UTF-8 JSON: ${pathLabel}`,
+        { cause: error },
+      );
+    }
+  }
+
+  function isFreezeFamilyContract(raw: unknown): boolean {
+    return (
+      isRecord(raw) &&
+      isRecord(raw.intended_target) &&
+      Array.isArray(raw.checkpoints) &&
+      typeof raw.package === "string"
+    );
+  }
+
+  if (
+    procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION &&
+    familyArtifact !== undefined
+  ) {
+    const parsedFamilyProbe = parseArtifactJson(
+      familyArtifact.bytes,
+      familyArtifact.path,
+    );
+    if (isFreezeFamilyContract(parsedFamilyProbe)) {
+      if (familyArtifact.workerVisibility !== "root-only") {
+        throw new Error(
+          "Procedure 2.0.3 methodology family contract must be root-only; Context exposes only its safe declarative projection",
+        );
+      }
+      const lossless = buildLosslessWorkerRequirements(procedure);
+      artifactRequirements.push(...lossless.requirements);
+      terminalStates = lossless.terminalStates;
+    } else {
+      // Lifecycle contracts[] path (e.g. literature-scan compatibility routing).
+      for (const item of procedure.supportPack.workerVisibleInventory) {
+        if (item.role !== "artifacts" || item.mediaType !== "application/json") {
+          continue;
+        }
+        const parsed = parseArtifactJson(item.bytes, item.path);
+        if (isFreezeFamilyContract(parsed)) {
+          throw new Error(
+            "Procedure 2.0.3 methodology family contract must be root-only; Context exposes only its safe declarative projection",
+          );
+        }
+        artifactRequirements.push(...parseExactArtifactRequirements(parsed));
+        terminalStates ??= parseAllowedTerminalStates(parsed);
+      }
+    }
   } else {
     for (const item of procedure.supportPack.workerVisibleInventory) {
       if (item.role !== "artifacts" || item.mediaType !== "application/json") {
         continue;
       }
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(
-          new TextDecoder("utf-8", { fatal: true }).decode(item.bytes),
-        );
-      } catch (error) {
-        throw new Error(
-          `Worker-visible artifact contract is not valid UTF-8 JSON: ${item.path}`,
-          { cause: error },
-        );
-      }
+      const parsed = parseArtifactJson(item.bytes, item.path);
       artifactRequirements.push(...parseExactArtifactRequirements(parsed));
       terminalStates ??= parseAllowedTerminalStates(parsed);
     }
