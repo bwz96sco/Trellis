@@ -1,0 +1,3053 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase2-r0-integrity-inventory",
+  "hashAlgorithm": "sha256",
+  "ordering": "UTF-8 repository-relative POSIX path ascending",
+  "treeDigestFraming": "sha256(UTF8(\"trellis-r0-tree-inventory-v1\\0\") || repeated UTF8(treeRelativePath) || 0x00 || ASCII(size) || 0x00 || ASCII(fileSha256) || 0x0A)",
+  "pins": {
+    "methodologyContract": "evaluation-contract-v1.2.0",
+    "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+    "infrastructureBase": "ccd5bb3afc99283252c599916a2b8c2e05075cc6",
+    "inspectedHead": "a5934614b15abdd73214b3681cdb5ea381eff743"
+  },
+  "immutableProcedureTrees": {
+    "versions": [
+      {
+        "version": "1.0.0",
+        "procedureCount": 14,
+        "procedures": [
+          {
+            "root": "packages/cli/src/templates/research/procedures/computation-case-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1501,
+            "treeSha256": "c27070743ec97fd615cd3f00715f17f2f4d70cf533fd139aa17f6172aa9e9ea6",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1164,
+                "sha256": "1b469fdaccb61ae3f9fa79614cb640db7392debd1a7ddda05e36f39fdc4084eb"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 337,
+                "sha256": "28c22a95969baae0cd82cbc468c09cac156d2d4c7540f0b9320467653182e919"
+              }
+            ],
+            "procedureId": "computation-case-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1573,
+            "treeSha256": "99b738882c0e7fa03887c3cfbf319abaeb00e5c819e3a1ceee1f3e7bc5b8e3d3",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1226,
+                "sha256": "5763b555597281743448850ddd43e04bf43adf1c4e50c9855c0115ae77f79eaa"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 347,
+                "sha256": "461cc3b3a6232ea2783b0b2b91d10b055c61a602984fcdaded64e7f395d05e8c"
+              }
+            ],
+            "procedureId": "experiment-campaign-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-round-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1486,
+            "treeSha256": "c8e7d85ce85a6cab576c2f3fda7fd8a49c174db2f13ad8468d15d2ca6403de0b",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1150,
+                "sha256": "9cebeab2dcd5d550d12c803c67d7822a7da7cb1c9a4cfb842ae2da014dda725c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 336,
+                "sha256": "176b4cd96c0c92c0be239eb1165a27551291b8cc1320f851916b3c41a4ca077b"
+              }
+            ],
+            "procedureId": "experiment-round-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1425,
+            "treeSha256": "d7c8a0eae38014bdfd1650d47c2bae893cbf8db82b89e74b1545540d4a05812c",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1091,
+                "sha256": "65368bb2d95be04168eea106629e5fac15fe95898415e3f2fb539ee6f3d41106"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 334,
+                "sha256": "024257d827c2c4279832fefc81610f5790bd98043797b0782f2507df801e3866"
+              }
+            ],
+            "procedureId": "idea-evaluation-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-generation-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1370,
+            "treeSha256": "4706ca99031d17a3f3320b57a9810891cf6d03113ad3f8a3c5b598b1284dbbc8",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1037,
+                "sha256": "eab6fa24e38cc7d9540ac620fc21f599b49c9e97466eb0852f07ca011dda980b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 333,
+                "sha256": "33c949fdab6e24229251a6534712cbe8b5d0e4096fa9aa29950ca155a34aa6a0"
+              }
+            ],
+            "procedureId": "idea-generation-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-review-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1585,
+            "treeSha256": "7b991d7bd31b7f4983458b1a79656dac26f125f588a9642a3cb7f7c1153b3df1",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1241,
+                "sha256": "9159ac9618938cb24f7fdf4b3792fb064827904eebec6bfe620fb41748148fd1"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 344,
+                "sha256": "c0c55569764458c27cc4caaf121ff51bf247be8fe77370b333f6aeee6529525a"
+              }
+            ],
+            "procedureId": "literature-review-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-scan-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1424,
+            "treeSha256": "4e34e473818284a7a3f180a48fc6593aa1713c86510e76272436031edf860c4e",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1089,
+                "sha256": "734e14478b96641c1e9aa1a8e3a9839297c2c265abeed3a34f65f504aa6c035a"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 335,
+                "sha256": "1750c2c511dc254f5099a179e728d9800d8bdcea277bbed4a5534990b680a0bc"
+              }
+            ],
+            "procedureId": "literature-scan-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/project-setup-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1835,
+            "treeSha256": "993465913e0fda6dae40be312c06a5cd03e1079a7975d10aaa4f8a3a54985504",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1506,
+                "sha256": "810b137f8d760e7686c08f93aadaae4e7e718d1e54c0e2be2b77deeb9a1c5808"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 329,
+                "sha256": "cad095815d6b7ffa0955cd67c1cfb582acbc438b37e242ee6d7908c5313d5011"
+              }
+            ],
+            "procedureId": "project-setup-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-admin-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1500,
+            "treeSha256": "e63f0bfc872f6e41b4b5b0d0c86a69a3d740917ec105096b22220edd4ecdecd4",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1171,
+                "sha256": "9e40893996844451429988e93ad2cad03bf682adffa45869687793b5db260969"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 329,
+                "sha256": "1100d29ad989006746b42e6de72fb3fcb8de2f78b71809619e7217ddca08ef77"
+              }
+            ],
+            "procedureId": "quest-admin-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-framing-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1435,
+            "treeSha256": "06245b9ce52871e2b7bdac6b6e57d96d807426634839181875244927a80a0427",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1105,
+                "sha256": "1426f05bebaaf779302aefa56e8aab9bf85096ed3ccec51edf596ff8ab960ff9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 330,
+                "sha256": "7aa32a3eab0a5b040f2655e41e65d098aa2e1efd35eb25be6a03216354d89630"
+              }
+            ],
+            "procedureId": "quest-framing-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-campaign-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1510,
+            "treeSha256": "4f4675810dc28554a2bdb74e5459a61563302e287ecd7ecdda9fb0ca131860aa",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1177,
+                "sha256": "e0b0e7dde295c96834d9d08a9080763a20cfe24d5366f050124aee1877103d08"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 333,
+                "sha256": "b3cb031574f65e5ad820c4016f58f7135e0607a89531385ee465fab2b56554aa"
+              }
+            ],
+            "procedureId": "review-campaign-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-case-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1470,
+            "treeSha256": "a0fc1c5819828a6132b6ef229fe1e88323ca3bdfed59b8e8d23b6cbfcf8b29b6",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1144,
+                "sha256": "b03935c0d9d2d803f51dd85fdcd7a129fc8ac7a46bda8164ad079bf450f09f5d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 326,
+                "sha256": "92e47f10f9330f38b230b66530540ff3bf1f9c713e1b6ce86d0b00c2c0edfa93"
+              }
+            ],
+            "procedureId": "review-case-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/theory-case-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1399,
+            "treeSha256": "7af254be6ea344042391c390ee215b1dc4ee9721f842ffe5ff16360cdf5d117f",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1072,
+                "sha256": "5b1bd10cb0f785244b897999a003144094e07a226cb170515683e527f7052606"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 327,
+                "sha256": "4c70ac59084f45ca5d6db49d2a21124de7f8caf12f471c84951157796c94225c"
+              }
+            ],
+            "procedureId": "theory-case-v1",
+            "version": "1.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/writing-case-v1/1.0.0",
+            "fileCount": 2,
+            "totalBytes": 1510,
+            "treeSha256": "320c564e154108138802cc41660cfd379c97fe870ed426dd0accdd15c7460e2b",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/1.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1181,
+                "sha256": "eabf27b5bc493478b47c0e767c3a7c3b1b341891892b741e98f4ddd275a8c2d9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/1.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 329,
+                "sha256": "62f921b311a0ebcefe1b741719a0cac5bb6588e8e91b78a810c81e1ce801897f"
+              }
+            ],
+            "procedureId": "writing-case-v1",
+            "version": "1.0.0"
+          }
+        ]
+      },
+      {
+        "version": "2.0.0",
+        "procedureCount": 17,
+        "procedures": [
+          {
+            "root": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3099,
+            "treeSha256": "ca44021f4c8334268c0951fec7d372a5b8a0b8c8761b17759a7bfec01e920016",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1286,
+                "sha256": "2ad72a9945f3ba5841c4b76d7416e83f32dbba58c8b19ee785e02c2117742bc6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 246,
+                "sha256": "31d3d7a5a0dcafb32a2227dab098a3141e8786ca5ac0ff08d36330e6b8b7246b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 55,
+                "sha256": "b6b83e641043e9f9d1e4973bccf84df44ab15d76792b2bc55ba771905ad8b4b6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 841,
+                "sha256": "3656a448fc892cb1667b07899fd6d01d132b76fbf55d19f1a5f6711d6273728f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 337,
+                "sha256": "ddfd39d414c525937a3b1e7b3f2f40f4d8f91af4845a315a307877d81f226093"
+              }
+            ],
+            "procedureId": "computation-case-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3295,
+            "treeSha256": "f56781f522da63a66d3c64d4cdddc06dc2f50ca46bd4899baa12a476ad3465c4",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1414,
+                "sha256": "0a7126995d32e4915e620ee48cc0786b618496e6771ae81f522d12725f76d8d0"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 272,
+                "sha256": "371777fb803f29797ef2edb5eeefc05bb96f5565b51b196bbd70c924cc2a7026"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 75,
+                "sha256": "3aeb900c902063f731e5741c1548989ff3bbbb11886c59f67908284e55bc61fb"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 853,
+                "sha256": "c65c87efdfa7ec5714093621b393dc288d61b0a82886c62c463b125e03ecdbd9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 347,
+                "sha256": "1369610285a7f09c60321cccbc4348646d5efb9db381630e05d4458f3f14107e"
+              }
+            ],
+            "procedureId": "experiment-campaign-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3254,
+            "treeSha256": "f768d24a5c7fb7f2fcf5c79d29c9e5aff29ddf54a75aa654139a22cb38d4b0f0",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1405,
+                "sha256": "b7b135835ee4fc74600976156ee1a0bc2aa26ea9c309af7dfd8d4917cbe35ead"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 266,
+                "sha256": "9c80d4da6f8fe2cf3cdb7edabc709492a03e4a7b945e99192cdf49d2afb81e00"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 72,
+                "sha256": "e02c24884b9cf3fc5edf77f74569e8857a003da2457864268e11adf463abb84b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 841,
+                "sha256": "308c72605abedac67e1580e1118a9bb3f8c0ce440326df89d82b23a50cb0241c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 336,
+                "sha256": "af9dabc0ebe6a11866583ca0c9fcc7bd14d8b2bf4ec5e2751594b5419c6ad769"
+              }
+            ],
+            "procedureId": "experiment-round-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3322,
+            "treeSha256": "6afe3953a1e92dda106fdf5669dd1bd1b6c07ecc472f81d7a447fbc4846b29b8",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1502,
+                "sha256": "034a718e1b13f17ee6b245f388b661f2e0d1b18c83a9b2b1cc66cd7bc1e759f3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 274,
+                "sha256": "6d9d2b48d51544c625d158d7a0a2a36da0b4d37609110a6af3ae388ec232f551"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 87,
+                "sha256": "b04b8d3a758151cbc8e5d91a6ec6c29e6c1cd967bc46bd70a3008f0ee7908b5d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 801,
+                "sha256": "9ee830f324396bcf4b1392a93cd828faad179753afbdbf0489746767aa97af5a"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 324,
+                "sha256": "346aa34f4186f9875052683d27eb5a7a4892311ddd695cedd8129ac8a7e6feeb"
+              }
+            ],
+            "procedureId": "figure-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3266,
+            "treeSha256": "dc1ed7809b0a903757d64e8fc41d974292aa9f30706e8d04288c539bd7d388f0",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1410,
+                "sha256": "bf27055490d0c51d948978a6b47fd948b48f7ce38e4390ddaeee132fac72f9c0"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 272,
+                "sha256": "0c6cfe6c1e67d3100bd8e36fa71d1d4e1df5e269bb4a5c4c658c73211d0ec782"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 79,
+                "sha256": "051ebe348f74287276e00e9547e435fec785b22459d5c18d514587876513f195"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 837,
+                "sha256": "788dec410c7a2ea739b550480c2c1a076486791d3d6fb2550e099dc9d4e61812"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 334,
+                "sha256": "e5f7302cfd98776192d0d26f12369bcffd4cf3d473c8408e8b71f6e98ebb11cc"
+              }
+            ],
+            "procedureId": "idea-evaluation-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3250,
+            "treeSha256": "cf895f03fd87d89cf7222c3ca1ab879549610bf7dc413cdd4dcc75a3702491f9",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1405,
+                "sha256": "cfaf6207c7f4895a99792b2273fdbfee4897c79b89179da1be09305d6c1fdae6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 267,
+                "sha256": "fcb20559aa602ade712f241e5be25c9f34bf08e6dd7fe14e24506f2ea5981d48"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 74,
+                "sha256": "d9657df484f21dab17edff3f154d45c2f635abad548c4c140c11d930c0fa8352"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 837,
+                "sha256": "67b8ba55a28ade601c00be770c64b23ac5f2c950e304fcbbcbbed9b99690fb74"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 333,
+                "sha256": "b76be7da7ac783fd64cbce1ddd199a5146d9c4dbd0c9f01516e19ccf8c5268db"
+              }
+            ],
+            "procedureId": "idea-generation-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3716,
+            "treeSha256": "966e86ec3f6d418f4f6ca5f52f6015da556b0b67fbafb9020cc38aeb06e04334",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1757,
+                "sha256": "69efb14b1d8ae366c7a5eb5b9e33fa7f60f263344c6d5064614e5a8efbca3276"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 320,
+                "sha256": "3ab2075f7720efb15d6b0d43105175442d908a5f50416182cdd0b8aa694e144c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 116,
+                "sha256": "e6d1c1a7a13d4f6dc4286aaa58bba91fd6a8cd00a827534bf5cda8847d6a4ebe"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 845,
+                "sha256": "a07a925c330a7bc084129d45f52a716c9bc15a383ef6c2a1335ae26b1f9074cf"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 344,
+                "sha256": "61329f712868f534d89ffe3efad9da54a53aba9e9b30f8f9348bfceda28fe9cf"
+              }
+            ],
+            "procedureId": "literature-review-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3093,
+            "treeSha256": "ddc015d6c0d395f9dcc21b08d58871df1c48c8e15bb4df2e64de07968cb2e6ae",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1285,
+                "sha256": "a3bb474083edcb6f0c0afc7bf5ee1351dd7368bcf144b4bbacf061261546605b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 246,
+                "sha256": "9193be2aed113af4db55bdd47462841081d91c0c625444420c83593d63c5e397"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 56,
+                "sha256": "af439d7d48f2ab80c786ccc430794f8ccc4b3e04e40e59d39975945b4e3a4f78"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 837,
+                "sha256": "81a1d32239c14e9a157854313d3abc9711474e5c232a33b9a9bf468ff2e606a1"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 335,
+                "sha256": "cd18777532c0b4815e498b3c53b20d3d9227ea7d82eab0a004c52be5066ab05d"
+              }
+            ],
+            "procedureId": "literature-scan-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3097,
+            "treeSha256": "c983d906c0b1352c66c67661c829df35462256f9c63690c9b812cb1f25e5d5e5",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1289,
+                "sha256": "76a8083f2ebb47593f4953fb1a670f03586da50eaf7db54981fa557a3dc88b9d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 252,
+                "sha256": "74bfff197dc4dd769d8c83ccb4975c4dc67b2a16d0a3a3e34f96e413eafce51c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 64,
+                "sha256": "d4b136a1f3a71a0b994cc6b7d4f57701885a8d8c77a053148bed02d01fabd891"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 829,
+                "sha256": "818568f1d773a4340c59ba6ad3fd9ee4f10419680b53d0c77a239f1f386bf8e7"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 329,
+                "sha256": "5fb58c9c09fbe8a9019c448f3aaf4c9e74aa1f2ae9440bc22f4b9c1024e0c0b6"
+              }
+            ],
+            "procedureId": "project-setup-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 2945,
+            "treeSha256": "4a92dc72ad0c03818d9b8406892881f803870e4f2fa15ffaa0b588a6182acc25",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1172,
+                "sha256": "d813a0fd77eb0750da4a102edf3f4082803119a91cff61fb709c30e3d9020c9b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 236,
+                "sha256": "1dcf380e0ea5a0b5e459479b5a4b2721d82d2e87bdcdb5d34df8cbae9a19a77d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 53,
+                "sha256": "4901ed4bfa70e4b0e368c35d85134a2c4821e09ae7a1eca961a87acc827790c5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 821,
+                "sha256": "2643fec212c329e6861ae51a04f37aaf2b4190861760e2bf1781b813ad15949e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 329,
+                "sha256": "e93634228ac475ea145278bda24e1d872e8848bc27929ef0b83803e30e7d18df"
+              }
+            ],
+            "procedureId": "quest-admin-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 2954,
+            "treeSha256": "028a8a3241af935e818df1a386470039aeedbba3092333d019891b0feea3704e",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1174,
+                "sha256": "fef101be9cc81959707c5a22238e2fad7ff7f95ae0032c6f4f2171c5c229c44c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 236,
+                "sha256": "27b43a2739a481213232a23b825774f994306a79b678f8bdabdc45575b4634b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 51,
+                "sha256": "5f438460af44ee6d235b360868d4a736ed91262218fffa3d3a6b062912bf756d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 829,
+                "sha256": "f69380d6aba21295c8adeaf5931e02642e5c0ec18dc89fdf3ee40e10b218711b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 330,
+                "sha256": "a1202f62dca7ff7933ed63ee010c0fd8396de0f3fa872238d2276f552584c16f"
+              }
+            ],
+            "procedureId": "quest-framing-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3103,
+            "treeSha256": "617b60c519df2ae3aa83ae337564d06688e4e88358c047fc0498c31cce7c438d",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1289,
+                "sha256": "9d0cfd251167ecd8c94e8feba8c0d9073be3b0645c04d719a5b51eebbe811d6b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 250,
+                "sha256": "8f4a00701cd58ce71816676ea2012a3e730f366536d9f256df80391929e2e157"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 60,
+                "sha256": "1e554c14eb32e23669690373762994db769f3a803d3d438ccc6e868db3d46611"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 837,
+                "sha256": "6927dcd9f79952bdf8aadbf73c83137efb39807c93401f5459ebeea9d76df5e8"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 333,
+                "sha256": "d17d6e5fdb9a9e1b6d7f502a0c4e38c2172237d7c6c76b681e611dd5cc0bc681"
+              }
+            ],
+            "procedureId": "review-campaign-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3065,
+            "treeSha256": "81e4a1bb81c955c3a070f58cbd62a53b1d877176e9db67b54261491d15dfcdcb",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1280,
+                "sha256": "b647a877c08743acc2f061a7c29c964c86f4ec7e3fd5897f02bf463081eb78e8"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 245,
+                "sha256": "41e8aeea80c7e183a0e185b941c18a31ac41360fef1fefee6a840ea549b5baef"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 59,
+                "sha256": "0c0621c2470be390d477c53697e522c47552c1d10caa9c4e8c925f34b25eaab6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 821,
+                "sha256": "9330b68da6927fc15c3f8ab72cf397035b2af4ac1c74d9d091df2a0ec715504a"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 326,
+                "sha256": "0836bade024f2c616179d16167c6a82674fbb4600613ff365f8b34a3d21b4c8c"
+              }
+            ],
+            "procedureId": "review-case-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3346,
+            "treeSha256": "3b8d3aaa3e748546ab25707c65741d0e17a035f84b4cb59498371472a353116a",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1510,
+                "sha256": "00fee63a8da0289984e7ecba2d4ed86fe814fb8533df81550c2587f543025de3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 282,
+                "sha256": "4f84d8c2cb6b8cfea741da232e17af41018f663ae9c8eb26b098bc9f62dc23b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 95,
+                "sha256": "93df2b7cd58fb15549d70efc32893e8d1923ffc8beb2b26ee20ba144945d203d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 801,
+                "sha256": "3a72dbb39da7f2b689055b9d26b44169a918d12f5c9e5750e8b50229722c571b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 324,
+                "sha256": "e1aa4500ca4b6f52f9e708ad9d35520b09e14e14312dc1a0c77f18a3a8e83a54"
+              }
+            ],
+            "procedureId": "slides-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3502,
+            "treeSha256": "e637be6f12f6b2089a3abde1183a4d5777c77a548bb33a741c735fb1b8eef480",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1628,
+                "sha256": "97c97ba40a48f7c4601495441afe1f16ce65caaf5168f1a3de56a58c68fcf9a7"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 301,
+                "sha256": "830f4ae0015cea83f6a37b1f8e486b381f5ae103f572ae8580c5d544254aa930"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 111,
+                "sha256": "f029dc163a943b9f54c04c036579b81b1ad35b324786217ac68d07310c0ff2d8"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 801,
+                "sha256": "cf448e30a134ee53e36c91b35f37ade9c2f0de910a45edd7653f1d30da92dd1f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 327,
+                "sha256": "f4b9e62a8640b12a4ea8fe291e04d9c3c488231c0464f41b841250207bb54d69"
+              }
+            ],
+            "procedureId": "survey-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3060,
+            "treeSha256": "1a1f31b3810a015835dd313848387352d6ba7296c1c8ab4d0c262dc37371b143",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1278,
+                "sha256": "e63733de64c0d84c35ae296f951a24ddf31e401b2bd7ca0c599a88def816b698"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 243,
+                "sha256": "38586f42e4c1a58bb7ecc82dd997a1a496f92183b86fa49685c11ff48f21d1b9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 57,
+                "sha256": "10a6f4cc4553ada359c7cd576db6df7b143e909bf24a7b4bf8162c5ba5310a87"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 821,
+                "sha256": "789526ecf734cf37c17f1ce6fa2325f210205b5de4fb1b66775b93b179167942"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 327,
+                "sha256": "c1908f84d5884742d3d8a46e8b067736cb8a3288213ab70c66f75cc51524910d"
+              }
+            ],
+            "procedureId": "theory-case-v1",
+            "version": "2.0.0"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0",
+            "fileCount": 6,
+            "totalBytes": 3090,
+            "treeSha256": "3b8151b75dcf65136127371829ee8de69f383f35016eb09c47f16f2f2e2e7857",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1287,
+                "sha256": "e55169316ba8863ae8e14fe1386c28080df882837d43bef0007f8282a9ddbe79"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 251,
+                "sha256": "b3e7b5492a9dc78906d63d67c366a4c1846b790e7151187e820e611ede6523da"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 64,
+                "sha256": "e61625916b53cc0768409891e0bf68917dc9ae698d2a6bf2ad01089061fef212"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 825,
+                "sha256": "7595cff3a09551775548d8053d308d19cd18e60f2f9933d5697a8fa9efa67d67"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 334,
+                "sha256": "be9b4aa76fe752626bd8a1a91a7bf4a234a11fad37b800d23e3d9c4b2b1b04d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.0/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 329,
+                "sha256": "c6ca0887979d3f6cad5c58f9a27baa8681b666594b8a5d81e492d9783aebd5bd"
+              }
+            ],
+            "procedureId": "writing-case-v1",
+            "version": "2.0.0"
+          }
+        ]
+      },
+      {
+        "version": "2.0.1",
+        "procedureCount": 17,
+        "procedures": [
+          {
+            "root": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3407,
+            "treeSha256": "3e81f9a94d4ce86258dd8dae9ba8d8be6812e2e9bcaac6b1b6908bb46a507e30",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1124,
+                "sha256": "bc9c92da2117b4dbaad5484b4eb9c9170fc7870789f567998a24ee5f94cf488b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 236,
+                "sha256": "7955a4f9692b6efd5d538a68dc2d2941407fe0b9788f3111c547679ce59a040d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 374,
+                "sha256": "18d400e1471894efec6ab2cb89ecec8e68770956a2859bce66db511e61a873e5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1022,
+                "sha256": "baf1e6729314eb4af6ed9b9bfe55ca963569c70ba4de583bea2416910e185933"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 362,
+                "sha256": "e630ac1c977546a9feeb078246eab63493a7ad8173e0be2e1f706d935d95eb03"
+              }
+            ],
+            "procedureId": "computation-case-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3715,
+            "treeSha256": "97c2b550b567262bb2523a0f135a5ef7e0534de6dbe0f890c244f1cb996dbdac",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1238,
+                "sha256": "4c29de9dec64bf7cecb05430840d74e8291fb69dd9c5b585e251be25b49143f0"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 275,
+                "sha256": "b69e8fab850bac7a2259bd6aaccf50b9f4d37e4a18088bc63d4a4edee6f6e93d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 507,
+                "sha256": "50a76a25fce6daae4d11d80a84d5bcfaafaa832dae07b5952c2f02b1c2359a79"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1034,
+                "sha256": "9b1dd055a066decf2cceff4cbb901a25a890f90c07e6ae85a343be014602bde1"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 372,
+                "sha256": "89529bac6cc5b825244c4fc3bb56d1f15d27fcda5704af2124511c4a28a62109"
+              }
+            ],
+            "procedureId": "experiment-campaign-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3668,
+            "treeSha256": "dbb2066de97479d93aa0deaf9e9dfbd8315cf5c4fad68837523f1b3efcc7182b",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1229,
+                "sha256": "99b71b115e065fd4d68e9999ef485e873b32cdd9b304caf861740839650754bb"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 266,
+                "sha256": "578190c25f37d712613c9f1e637bf6f3412432066e5a0ec4c3392afc95c0613e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 501,
+                "sha256": "2b85249f1e92b98dc16a864957a03b15986cea5db8c70865b14b87b33cbd8671"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1022,
+                "sha256": "472cf13270804b394c43a9a4e7aaa3dcc2b4d19fc6ecf19cb75d0a5fe1040a71"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 361,
+                "sha256": "df0f98c2ac188c329127caffccd911728822546a9336d700fe477a9e9d3db50b"
+              }
+            ],
+            "procedureId": "experiment-round-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3838,
+            "treeSha256": "d5273f445283f4d98fecd5e0c532f55732ebfff83185ba43154eb9e045493747",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1312,
+                "sha256": "773d3cfcab6f8d4f56e070f1b534ce8703fc1525bafcff742d33cc77bc8de8e2"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 282,
+                "sha256": "0480440088f272a9bf4438e03ac1958c6b4345909023cc0b66adc874bceab2ce"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 624,
+                "sha256": "a46c127ef1ddd61fa1e88b058dde911bd605720afd349f57b922608e4b8915fc"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 982,
+                "sha256": "84dbba13949695be6aa692f425d7ea32b17a0040df4f717c089cde3104043e31"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 349,
+                "sha256": "76aa8e8fe947318fe0b54e74e0a0b9341fd9a6a047fb997d7e8e237f2a0c1ab2"
+              }
+            ],
+            "procedureId": "figure-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3754,
+            "treeSha256": "aed51931dc8448b99648a7dfec98bb564f17d8f38d60fc29a5776242d4bb0ee9",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1246,
+                "sha256": "542f2c14077193107b2b4b0024bde85e89380affe380296be7051e606a6c1845"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 303,
+                "sha256": "041b91918c80585dbde741b6f318c85afe05b9b6eee95148f2939092c41ea204"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 539,
+                "sha256": "bb64f7ed873ebab49b8edb95d12f73fb72d04993819d23d7c1c790fdb5879db9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1018,
+                "sha256": "a53ff8f143f44d4174257e85a488c2da4d8eee27bc271e8220c3c1fb41819156"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 359,
+                "sha256": "9e0210d63ef21080feb6b2e79c01ebc4ac78ba7e662a384ba45408a0301039ab"
+              }
+            ],
+            "procedureId": "idea-evaluation-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3678,
+            "treeSha256": "dbb5605b7bafbc71cd7514e6f0235a19a061518b0d706173f99e1fe1287d67e2",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1231,
+                "sha256": "96fee469247f81fe4e06452255f9aff228f93482a8085f9a9c25df2e43bf0048"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 273,
+                "sha256": "930a6fc9ba5a20800ddeb68ebd2a7b3bb4809b43e9e158fdcc9293088b32f879"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 509,
+                "sha256": "0cde52afb3b18c1ab08e691fcd7b9785792d488f100b6c22e06f06ad473517f4"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1018,
+                "sha256": "4ab7a0069aa812a065896fa8da9cff08093f930e8b4628ecd711788f1fadc762"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 358,
+                "sha256": "2b57c1adb9bd9086b385482ee44d2eef0b829b637039189d47ca2bb04fb71038"
+              }
+            ],
+            "procedureId": "idea-generation-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 4434,
+            "treeSha256": "ed43809745fde0ab24037e5b842e198dfa41c08713a679beda2c7e1ec1279082",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1539,
+                "sha256": "673b57b67f657aa4b8701cdbc5f122ed908d6e449dce59a91abe9d4e36f9ec88"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 343,
+                "sha256": "696e1e31835fc32b620f0d5378a7b88ad762da8563950667ecf185c5cc45ecb8"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 868,
+                "sha256": "480b412dcf9d4fcc38cc431c81d4a1fd990b178be1f1197f349ed1656c3c1039"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1026,
+                "sha256": "1305e5a4ac440615387761c17056c4f41dc5dc419c141f945027740458eca405"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 369,
+                "sha256": "d074f321a101dad43a3096311a1ca3278f9c383831f8aaabd9199b5a62858f31"
+              }
+            ],
+            "procedureId": "literature-review-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3403,
+            "treeSha256": "547b47fe29156962a6dc331a6e5851d8c5fa0c14f149f3457bb87d444e5ac288",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1123,
+                "sha256": "a40f3b1eab4e94e21aace6c20c37a71a69b941e6c0dfbb63ed1e9ee463371241"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 237,
+                "sha256": "f50a2420d313a0def0521a0aa40e3c827e9dab8b819fc1ae2cad72b5fe1ca909"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 376,
+                "sha256": "816a7d4ff47cc5802928f606877243d6901762d84f657c8a85bc731337bd4113"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1018,
+                "sha256": "0837760e77ce88975446d66f8ac814a3386dbf29b757a1a0dec34b6fb8da9560"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 360,
+                "sha256": "b4879dbfa33c427cb54ad3e8a18a84c9e7e8687b144e9afd910c838be97a54af"
+              }
+            ],
+            "procedureId": "literature-scan-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3423,
+            "treeSha256": "acc711d4397f3256d6284f88e73b6cdb62f8f4de54576b5c60b61b28be51b749",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1127,
+                "sha256": "cadc5b711fb89b31d0389ca4d9d1d0479ddd5fce88aa78de4d60ec78a463d037"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 251,
+                "sha256": "61d60a3ca0aaad3c2aa62d1d9a2afe033d2c1ea29782a5d3eb644d11304f43d9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 392,
+                "sha256": "cd0ace918df9ef58a91229c56013a6930e115a9164b23ea9647415edbc7c23d3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1010,
+                "sha256": "4ead442a9c46ff657909af1ee40ceb08ce346228942f26004a1225dc98439d01"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 354,
+                "sha256": "2adf472e9f32ea0f3e9bcdfeb4eb6bdaec20e674d3da8c1bec50c15cb9388aa2"
+              }
+            ],
+            "procedureId": "project-setup-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3177,
+            "treeSha256": "86b9ad9ea7567be4da9a41dd3dd159d7cc6533251f7dbf507e14b5e6a3fe6f91",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1024,
+                "sha256": "691db1d933f6eb807e9ced9c5f4d8c7c50a82762c7f0ad92c9ad7fd0903dde70"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 231,
+                "sha256": "bab43c8114d87df9042c57649012eceba55e01221c6f70881fc0b78aa502c16e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 277,
+                "sha256": "3ec36a5e53d0e947b50777c3f6bc47c506d744525ad1a87079fdb2632df618d2"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1002,
+                "sha256": "967312fe444b06ebe349176d9dfc0a575c37f489ccac77f6e1cb16da051215f2"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 354,
+                "sha256": "0521dda769d382f15e3b03d9b0c751ec75aab05f91980ede57a41a6dd124e9e0"
+              }
+            ],
+            "procedureId": "quest-admin-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3182,
+            "treeSha256": "5bc5b0f59076e83b3879c8ff1e7e97d152f2a451112c326220ac5104454a3f06",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1026,
+                "sha256": "4b2c2caa486da48553f017a53939461f3ad195f27e036d35fd1351975e98aa88"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 229,
+                "sha256": "67084af300fa34466dfd33492734dbcc16df56b6fc0bf2d342bfc99a83ee5588"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 273,
+                "sha256": "9c31da444f0e7a1ead8d2600f687f0a2a2c5177839aab2b238bbaad3eb1eae79"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1010,
+                "sha256": "b48e5ee3a80a92e29f9f9203b7e7219410f4df168394901f352ab7361a17b0bd"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 355,
+                "sha256": "3193691e1870f7563ebddc999865f6883c5a3c3fd44372c395dc7a2bbefdacf9"
+              }
+            ],
+            "procedureId": "quest-framing-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3421,
+            "treeSha256": "68b4ac9630c938d776016a37a5e91dd860cb0da73db869ed33b8cd9cc721b9d0",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1127,
+                "sha256": "72b53941ad13c463ea435634d7ee83c0d2cffd57b29feec393f47b0e488879b1"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 245,
+                "sha256": "754edcd61750e3668e73da48264d2ae52a234d2471883138b3d8ecbdc47df98f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 384,
+                "sha256": "2270be335c33e5a0036587e522df7cfb75d05b997339a68d84d109f8e52bff0f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1018,
+                "sha256": "722272f754be1ab4aae9904264b511854c2fb70ec779890df065ad66e535eeda"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 358,
+                "sha256": "c123cff9cf1f63a981fb33f643f87a103155ad60bc8cfe4ef439b687398768c8"
+              }
+            ],
+            "procedureId": "review-campaign-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3381,
+            "treeSha256": "e0da95577e0d928ac666492881f172a95bfef45807cf6234d297ca1bd8e10131",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1118,
+                "sha256": "f40a3490ed63e65eccf2ee066391035b3435595395e43a46d7ee0d0606889d7b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 239,
+                "sha256": "883856a0ef016a5172272663d99ac5d4be48213874ca0be22f8ae9d06a6ab400"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 382,
+                "sha256": "59fa134fa20da188c8ef0e6f43a74d5559e28c4b207609576eeb02d1e419397f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1002,
+                "sha256": "ba1a9b21654766b9d2044d11ea6d5d03e6ca7d8e5caa1af56e83fd3ba604a258"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 351,
+                "sha256": "9c883bcd27505bcdb4085d40fde06eb1082cb35494c1102253f0b5071034e6cf"
+              }
+            ],
+            "procedureId": "review-case-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3878,
+            "treeSha256": "855e1f5c35df91cc1aaa8fb4998a9564acf179c71eef4958b2e048bf2f934031",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1320,
+                "sha256": "9fd0ec0cf5b69d3cff28228b5d070b7e15076a9818abe4a73193df9602e52f38"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 298,
+                "sha256": "3f8755ec101977e88ee88c6ffd8d3189ba3e25b03651a73c966f4ec825a9ff1e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 640,
+                "sha256": "b6f842ff6b4b7b32183fb23c7ab7c93ec23cffc60602364a8496c105e1ed654c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 982,
+                "sha256": "77d3a680ddc89aeb5dadcb6712f286b4b04046b0296a263cbc4c55e514fb3b0f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 349,
+                "sha256": "bff5b16b5ca167496a7bf859d2b27647fe6118aecdd5f46b7bd25c2818eec128"
+              }
+            ],
+            "procedureId": "slides-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 4138,
+            "treeSha256": "6c4e61571b06a96a7e01569048761b6ea9b18cfda77a2648299dd6b223bd1579",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1424,
+                "sha256": "a4912ddc11560fadadbb417bd35d7f89c85a3b0dd76fbe7036efc4e1c05b17d6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 326,
+                "sha256": "0141e2335b9a1d3b2ecc1aa259daed8ece6d900cf7190143af69ea6154aa7804"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 765,
+                "sha256": "f034b7541422d0e0f21972c3d6c3b786b2df1d1250ae57ab6eaa3c15f25366d4"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 982,
+                "sha256": "e8bc5177e270a1c8293bf0fbd4efdc59a6fce6b3906746bab36b5e5dca01f8f0"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 352,
+                "sha256": "1ecd8d1b294b1e6bb42bbc8f8082b3585767245919a0c324230c563d8d195fcb"
+              }
+            ],
+            "procedureId": "survey-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3372,
+            "treeSha256": "43fe5c4ef965028cee2551853d9afcf6aeccee5af20743a2dc9a0f3facfbdef7",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1116,
+                "sha256": "075b4f182a31a5cd5fc6471ef1331e442a3a5be9d36671c857e980e9fa13e447"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 235,
+                "sha256": "21cd49e696b701c6d876fa2a380e01d37252c9c2c80974671358df1fb1923f1a"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 378,
+                "sha256": "a1ee47f476c37cef4846561bfeb9e5d23711c2d92cedaa45ce7167da0ac6b11f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1002,
+                "sha256": "a0bbc4d3446238cc1a310821d98b1972be88401f27bb95de28821e0b44fb07d9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 352,
+                "sha256": "72be3f002047b6d24e272eedba87d7c981390c732c9701071ad769a5b9eb366d"
+              }
+            ],
+            "procedureId": "theory-case-v1",
+            "version": "2.0.1"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1",
+            "fileCount": 6,
+            "totalBytes": 3416,
+            "treeSha256": "0693c748f2ba315e30f7ee9d5757642c16a28a53b1a96b3b295e6a838f78e6f6",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1125,
+                "sha256": "4fb7d76378d902deb0fda2bc103f01e57b03bdc59681d1fd5887636867fd1763"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 250,
+                "sha256": "ea9755a37064feca3d75bc9ac2cbe030cd498890be6bce29a9320b68716a370a"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 392,
+                "sha256": "bbc2702f593f6ac4b027304560040a444c9141e2eb10249a856cbdf0f237cbf3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1006,
+                "sha256": "811dd2b36550da0a7a07dfe398fb79623af565674ef1f8cc1f1c092226a32d2d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.1/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 354,
+                "sha256": "b5d3f6c07ed521c113c2015eb28ae47e56c201af945fd6a9fac50e7da2577047"
+              }
+            ],
+            "procedureId": "writing-case-v1",
+            "version": "2.0.1"
+          }
+        ]
+      },
+      {
+        "version": "2.0.2",
+        "procedureCount": 17,
+        "procedures": [
+          {
+            "root": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4399,
+            "treeSha256": "0a9f6a3877ad949427c5d1fbe82ca60022dcbe572a85c0a58660592c67e9398c",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1124,
+                "sha256": "bd9207e8f877215ed4991c75ac32f9f57e19f73be81bae4ce64c8c27d23efa8e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1134,
+                "sha256": "154752764f7e06d4c0fbe6afed56cdc71821ca2a8079f74892e59a943a747080"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 374,
+                "sha256": "18d400e1471894efec6ab2cb89ecec8e68770956a2859bce66db511e61a873e5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1116,
+                "sha256": "d7cff341c53e3eaaab292ef6c0f908713eecaa02cc06bfa5efc968a978f8e053"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/computation-case-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 362,
+                "sha256": "896bc0da79f56ec8027b3791482c0626831209c8a762f74ad0a16dfedb6efd35"
+              }
+            ],
+            "procedureId": "computation-case-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 5010,
+            "treeSha256": "25fcd5a41d39a66c78ae1063dbb1613f5a2154986f842427414903ea8b39343e",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1238,
+                "sha256": "d1a1832ce2e79e0dbb9156ab66e1e433929bc8dd7f96977513ea160057b1050b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1476,
+                "sha256": "1e179bbd778833be166f31a1a64f80ad6d4dfecc8da7e50de1e443d62a93958f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 507,
+                "sha256": "50a76a25fce6daae4d11d80a84d5bcfaafaa832dae07b5952c2f02b1c2359a79"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1128,
+                "sha256": "db9880ca794abaea92c46a9a0c9cc066d88ff51f9ce181f554271c7b61ce5144"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-campaign-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 372,
+                "sha256": "ce3ac8cedc8df8c8626cc37e741c9b8cb016d522e7559a6def2b32aeba1216d4"
+              }
+            ],
+            "procedureId": "experiment-campaign-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4957,
+            "treeSha256": "e18cf4bab2bc2504e51fe00b1493a27ece12a5d732ddcb82880af46f7937dab9",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1229,
+                "sha256": "3f23abb89c9a3094f97b337ff77570b655b0ff5c2c04667fe47d6a5bd922fdf5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1461,
+                "sha256": "f64605d9039a3f9f6d20d2af724baeb55d89a33d03e8a1c7dc96b361c98f577d"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 501,
+                "sha256": "2b85249f1e92b98dc16a864957a03b15986cea5db8c70865b14b87b33cbd8671"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1116,
+                "sha256": "05b0b6a9c330bb0c4ec87607c484809f12c8aee468a6501fcc3b036252e98210"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/experiment-round-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 361,
+                "sha256": "5152c5827db2df1b7c98dc5accef6e908f6ea2d90c263449a8b3e06e9453f7e8"
+              }
+            ],
+            "procedureId": "experiment-round-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 5420,
+            "treeSha256": "949fd4b6e0e7d05a83b01e1af80b087b8e36ee68efc3785bee3cb7a69099ad97",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1312,
+                "sha256": "da9079dde65785a4493377f5e1cacf821bdcf9e783390fe89768defe3c7a9053"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1770,
+                "sha256": "5f322c0ea30cd99e86ee8a793f7460096e86836615b121b93eaccbc38844aec3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 624,
+                "sha256": "a46c127ef1ddd61fa1e88b058dde911bd605720afd349f57b922608e4b8915fc"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1076,
+                "sha256": "17bcaca9ad0fe3fabffdf352dd5449af408d5598b3a3f503507fb155cb3fde62"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/figure-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 349,
+                "sha256": "4eabebaac14a77e8ea12b79ab6a5c3d01db859d988eeb99210a6ec29fd1dd9eb"
+              }
+            ],
+            "procedureId": "figure-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 5081,
+            "treeSha256": "0bd523fe337e96f818d59372abbe6b6d438d2bb46f1e9b5d7e5113d03a2eac20",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1246,
+                "sha256": "293824e95289abe23e2a61bc6b723bab63587d5de4f0899d45c29f8bec863e52"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1536,
+                "sha256": "a76df8212be90399a25cde839335904ce046bfdf4a465e7e8598ed308f564ea6"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 539,
+                "sha256": "bb64f7ed873ebab49b8edb95d12f73fb72d04993819d23d7c1c790fdb5879db9"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1112,
+                "sha256": "e15d4bb395bd566e528250d56ac326b03395b714aeda4a4dd75a0d77ee53b6a3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-evaluation-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 359,
+                "sha256": "62197ec0f5743a63011c827056e3b388ebbc1021720b426f6f49d1161ca8e6c9"
+              }
+            ],
+            "procedureId": "idea-evaluation-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4975,
+            "treeSha256": "2db23b849286f3e622ee88ef3c47cd9e74f36424bd78775990d8930dc4e0f5fc",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1231,
+                "sha256": "d05de03fc5965d8d2c0031f61612b4fe5f702426c7f51ad7e44fe3878001355a"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1476,
+                "sha256": "3fd1d7d6f5e060a5374570cf42f9c1085d4b300e49a91939f862ad210d2f87de"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 509,
+                "sha256": "0cde52afb3b18c1ab08e691fcd7b9785792d488f100b6c22e06f06ad473517f4"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1112,
+                "sha256": "bdbae2acb05b7c72452aadce3de5a287e29af8f0eac6fcbe9e4241a474fed11c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/idea-generation-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 358,
+                "sha256": "10625fbb37c1c06f541584ae6108c8c95761a1567dd3d7370fbaf1fa37278a18"
+              }
+            ],
+            "procedureId": "idea-generation-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 6600,
+            "treeSha256": "3fb1c73730b1521aac9f769823e369010410573cafecd49b632bd05cdeb4394f",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1539,
+                "sha256": "a5747d24718e5b6b16aa9df7be7d9e41be0dea4f1b9e4d02328ac63b4e50117f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 2415,
+                "sha256": "bcc187d880dc36a94169d9a7a0a9b06da03ffc3e904e62e23dbc3b5b7280cfaa"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 868,
+                "sha256": "480b412dcf9d4fcc38cc431c81d4a1fd990b178be1f1197f349ed1656c3c1039"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1120,
+                "sha256": "dd424e49c6c6ea0c557c579191d2451111dd02e503e88e2bf4ee40b2684be41e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-review-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 369,
+                "sha256": "d442ae4f0067e8f74c503e6f094c2d383bd76c8fab391bfc97971368726c7a85"
+              }
+            ],
+            "procedureId": "literature-review-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4397,
+            "treeSha256": "f6159821202aecd470001bc4ea59644773502506cdefa22e001766edc48d574a",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1123,
+                "sha256": "de13e6abd9d5099bc39aabecf3d114093102773bb6cb9deaefe6eeca6f55eec2"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1137,
+                "sha256": "a15204e827cdfda8b538532de2d559013a9e3d3c8b752b3c7262fc9d4d353371"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 376,
+                "sha256": "816a7d4ff47cc5802928f606877243d6901762d84f657c8a85bc731337bd4113"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1112,
+                "sha256": "241d7e7d73ebf0616cb472de72e84bef079be27541dcb2b57ef826b3b01dd40b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/literature-scan-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 360,
+                "sha256": "09acde625caca92a8161080f607c4ea124980aeb0e6c6cd848bcb49e34d30bb8"
+              }
+            ],
+            "procedureId": "literature-scan-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4433,
+            "treeSha256": "49cba877304be05b787c450a0ee09807a842a9488cf4d516aa4c94390069b8f4",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1127,
+                "sha256": "959bb73d925c667c2aa99378e736b203fc75d91a45b44208dd009a6f22327b24"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1167,
+                "sha256": "33fe8e481ea00c3ca4730ee7ffabdabc54b12542c84d44b23a238ccb0d0277d1"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 392,
+                "sha256": "cd0ace918df9ef58a91229c56013a6930e115a9164b23ea9647415edbc7c23d3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1104,
+                "sha256": "f8d635c68c40294ee895f68caf903405939ab4c7601cbd4039bf25ad80470b0b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/project-setup-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 354,
+                "sha256": "05e1252501f65355484e6ea1ac6ddbf25cddebe80723d0e3b7e2fba3073a6562"
+              }
+            ],
+            "procedureId": "project-setup-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 3902,
+            "treeSha256": "12d35097af9a5eef0e0a1e24b2ed48851a5d967a77b138b656e35f8ad66da9a7",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1024,
+                "sha256": "dd4c59e3e8a4586001c6424ed81ccea031bfc3a629967ea25e44bea339fbdca5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 862,
+                "sha256": "570cdb75f40a52f059224501bd77dae7f9e61d53464a9003af4fcc71c0a9cf14"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 277,
+                "sha256": "3ec36a5e53d0e947b50777c3f6bc47c506d744525ad1a87079fdb2632df618d2"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1096,
+                "sha256": "8ebad3f30ec2e69fd3b61c82244d64887ea62fe548521fdcf65824c9109b5e7b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-admin-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 354,
+                "sha256": "a7407774f15de9c95e6f60232133417c33d04faaaca2e0eb26274339bc30d3f1"
+              }
+            ],
+            "procedureId": "quest-admin-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 3903,
+            "treeSha256": "3f23f0da97ed3c8418a5a6c2e093e38d18e27329a60c17c9e156bfb27dccae05",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1026,
+                "sha256": "36837bf91240efb3c22038b246cda24be0ed993d2f18c28e764da931ae0248ec"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 856,
+                "sha256": "6411726f3f691b400c5e6015916007aa93b2fcee505006e4d6848f82edfeaeb8"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 273,
+                "sha256": "9c31da444f0e7a1ead8d2600f687f0a2a2c5177839aab2b238bbaad3eb1eae79"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1104,
+                "sha256": "5a9e6242ad6871e91e9c3b209aa39f739d3f92db7e78cca6ea101e168dd4b11f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/quest-framing-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 355,
+                "sha256": "bb4b1e4fe305c1842bcbb930997076621ae9e33a140c55cf6dd6f79c44e72cbe"
+              }
+            ],
+            "procedureId": "quest-framing-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4423,
+            "treeSha256": "e172762715b816a420e6f8dd57a6cc8846f0defef2e4027f75290beb7beb79d5",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1127,
+                "sha256": "4eb31dad80d2d6cc3f0896fd884c2cc5a8a98b6d0deec6c351f8b7f79e2095ae"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1153,
+                "sha256": "d715f2ec1a08f68f8f2d733c57c7d7cb238a5d06ef2e436421c4a354a238c8fd"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 384,
+                "sha256": "2270be335c33e5a0036587e522df7cfb75d05b997339a68d84d109f8e52bff0f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1112,
+                "sha256": "4f5bd9937e5b2d44c2f2d64ef6caf94cb22c2fa3483f4f624329fd54f72f1fba"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-campaign-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 358,
+                "sha256": "b147bdd93f1a21185ac4892c5f78edb8c2e2c10520f8b9e62c830e5fcfab290f"
+              }
+            ],
+            "procedureId": "review-campaign-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4381,
+            "treeSha256": "7caed2ec7c31b3e03b8cf7065effaddf4034d07f1272271c0979dacee83577b4",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1118,
+                "sha256": "8d1c76403c0c90a285c1330f27e593eebadf6a3c3aec61a8d5e5e2d38cfbf091"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1145,
+                "sha256": "cbd6246b33f4c8e07293eefff3c944ffd6fe1ec7ba16d9f522b9e019b94a9f7b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 382,
+                "sha256": "59fa134fa20da188c8ef0e6f43a74d5559e28c4b207609576eeb02d1e419397f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1096,
+                "sha256": "4db4cfc415137d80f32e61deeb5a0cddea96788c24bf9a21bbb4410bf894bc76"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/review-case-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 351,
+                "sha256": "8bc62ba3a0366ea595bae4089be7cea81e8c8f567c4002114fc3d5d274e47950"
+              }
+            ],
+            "procedureId": "review-case-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 5476,
+            "treeSha256": "4be3c87236963f85f20aa6eea9d755359e7e281b06627edcb06cfe981d794bfc",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1320,
+                "sha256": "ab629ad874546a344a104c4c89619ecdc10ddda6d5110ad666998150cc385758"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1802,
+                "sha256": "a29faf1f002e38b11a0406f5c006c1b46c6416d30a0d15c3a7771bde476c6b1c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 640,
+                "sha256": "b6f842ff6b4b7b32183fb23c7ab7c93ec23cffc60602364a8496c105e1ed654c"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1076,
+                "sha256": "431e0b259a62495eafbe44dd52d23cd8c993883bd67c8d91c42c40690dc04ec4"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/slides-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 349,
+                "sha256": "f9ad977b65c9c54c6432545e5408bde34dacc7348b94b9786dfd1b4148fa8156"
+              }
+            ],
+            "procedureId": "slides-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 6031,
+            "treeSha256": "2f6ceea541463820faeab7c58ee4c28a2d1f8353500e125a0fdcf0451d3850b2",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1424,
+                "sha256": "60d54873248b22b9c5928ed8863acb2cd7606f666e6f7cd111a638a4f1d8c9ca"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 2125,
+                "sha256": "921c97bb8ecf0819a5e6919dcbc4b85b3ca6ee1a8274c8768496e81e91b8a19e"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 765,
+                "sha256": "f034b7541422d0e0f21972c3d6c3b786b2df1d1250ae57ab6eaa3c15f25366d4"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1076,
+                "sha256": "2226e23b49edd21431e984e5b4f57e92ca121c8c378eeb4074fcc7c49661d51b"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/survey-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 352,
+                "sha256": "9fa7b4723913435e0fd28769f1f6c8b9fe241d854db501b704f253a1614fe1b4"
+              }
+            ],
+            "procedureId": "survey-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4368,
+            "treeSha256": "1e28657c369342d2e59b0e1c58bdad22ed9178921c4b5fc33bca097d72d15d91",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1116,
+                "sha256": "dcc458267e470ca82f4fe7aadc8d96adef7e6405bef36640a03a7c09c0ee2691"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1137,
+                "sha256": "ef83917260c0915f50983746d618f6230fe48c5bd4e34dd5fc3f3c540d3287a7"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 378,
+                "sha256": "a1ee47f476c37cef4846561bfeb9e5d23711c2d92cedaa45ce7167da0ac6b11f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1096,
+                "sha256": "12f88f2252dd8bc4b57cc694f8f6fe0ae92f05aa1bc24a0a4d93accd5deb14c4"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/theory-case-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 352,
+                "sha256": "cc314985201c1bedccaa9d56b4f1ffd1486e27ed165016fdcc8be3bef2576741"
+              }
+            ],
+            "procedureId": "theory-case-v1",
+            "version": "2.0.2"
+          },
+          {
+            "root": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2",
+            "fileCount": 6,
+            "totalBytes": 4426,
+            "treeSha256": "8a64b51306b26a92e9449c6e94dd869ebf7116826cf3111a494633ba1aa9eccf",
+            "files": [
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2/PROCEDURE.md",
+                "treeRelativePath": "PROCEDURE.md",
+                "size": 1125,
+                "sha256": "b5f8b5d47bdb528a8ed88df1cfae1f23cd6fba4666964b7d90b7b8d86f982186"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2/methodology/artifacts/artifact-contract.json",
+                "treeRelativePath": "methodology/artifacts/artifact-contract.json",
+                "size": 1166,
+                "sha256": "ce226529de51ee3782f6d8c35b9ab9cc29ce5c0bf0a9468d58ac0b53248d709f"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2/methodology/instructions/checkpoints.md",
+                "treeRelativePath": "methodology/instructions/checkpoints.md",
+                "size": 392,
+                "sha256": "bbc2702f593f6ac4b027304560040a444c9141e2eb10249a856cbdf0f237cbf3"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2/methodology/pack.json",
+                "treeRelativePath": "methodology/pack.json",
+                "size": 1100,
+                "sha256": "b56ab54c607bc4091b854c12158ead35893f052779301f48906cb0be4bf189dd"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2/methodology/validators/validators.json",
+                "treeRelativePath": "methodology/validators/validators.json",
+                "size": 289,
+                "sha256": "1a96c7d5378aaaad81ff89bc57c3ddbcac116cfa8b816ff2d0f61bd12417b8b5"
+              },
+              {
+                "path": "packages/cli/src/templates/research/procedures/writing-case-v1/2.0.2/procedure.json",
+                "treeRelativePath": "procedure.json",
+                "size": 354,
+                "sha256": "e6b9397afd9cf0f66ed3d78feab0683fa2f5bd2ffba50f42861dbfd721fc8742"
+              }
+            ],
+            "procedureId": "writing-case-v1",
+            "version": "2.0.2"
+          }
+        ]
+      }
+    ],
+    "countsByVersion": {
+      "1.0.0": 14,
+      "2.0.0": 17,
+      "2.0.1": 17,
+      "2.0.2": 17
+    },
+    "mutationAllowed": false
+  },
+  "historicalAndCandidateEvidence": {
+    "p2_12Manifests": [
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/activation-version-disposition.json",
+        "size": 33340,
+        "sha256": "e0d6c6311940096a8259959add1ccf534eb92be443e6a0abbe63df35722c24cc"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest-2.0.2.json",
+        "size": 29581,
+        "sha256": "eb992905ad31cf3831e464ddbe6f39fad8728ad8715b6a0031fdb4e604261458"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest-2.0.2.sha256",
+        "size": 65,
+        "sha256": "21e05f2e497be3bd57c0358744cf74aa29b536ec901266cab2dcbdeabb5c85d5"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest.json",
+        "size": 17530,
+        "sha256": "ab4d55447c76a4005eabb6214aace27499d10152583700c7c5c21fbae43e008f"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest.sha256",
+        "size": 65,
+        "sha256": "1dd6a0882ea85e45f4986c2ad7e80720581921e62770415a6256a31e3b1de4e2"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-containment-status.json",
+        "size": 825,
+        "sha256": "d00fe61c680eeada806150a3296db0c7c143270f9144630e2d9bbbfc27206b17"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-manifest.json",
+        "size": 5792,
+        "sha256": "2e27df30c063ae5851c4c5861d3fb484f28d906f451ccee10f9583a545d1a541"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-manifest.sha256",
+        "size": 65,
+        "sha256": "bf41c26086a5abff43b1517a48f367d719b8fafe9b13ce68f42a6555f2d6f608"
+      }
+    ],
+    "failedWave7": [
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/execution-evidence-ledger.json",
+        "size": 13776,
+        "sha256": "d4b289f7e9ce5f13bf5f5fb9b03c3a18c204d1ecd1a2d45e5fdb79b203a45a2e"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/execution-evidence-ledger.sha256",
+        "size": 65,
+        "sha256": "07b6fe6457b1e8c55a36f5330941a6bb5b4c03ebc1a7cf61f2673bb9a5c3210a"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/install-test-root.txt",
+        "size": 34,
+        "sha256": "1e08d587ddba23c72e580d258e7061bc24cec78684e45e6832ed28b423cc0566"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-0.6.7.tgz",
+        "size": 376239,
+        "sha256": "c41bee8651e8e9a80c2d9341b4eae38171dc2c40a6cd685a14acaa577aa6b89e"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/mindfoldhq-trellis-core-0.6.7.tgz",
+        "size": 238287,
+        "sha256": "d88ed671ab5fdad28635f51f6b7ac208b52bd1dc7c6980c08a9b90bbf8a4384b"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-0.6.7.tgz",
+        "size": 394811,
+        "sha256": "43ac89b14d22f2b4cd0b9174631f894effaac7b4e57602ca710ceaae2c4cf6d3"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-packs/mindfoldhq-trellis-core-0.6.7.tgz",
+        "size": 253606,
+        "sha256": "3ab4c6e5c0dc47ccf7056562b170a0a25fc7e913ff390ad30c95fae1592e362e"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/pnpm-tarballs.json",
+        "size": 664,
+        "sha256": "52f34227efdba8e3d7de006921d249f97889a1dd6a5cb32e4e338550ff6777a5"
+      },
+      {
+        "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/wave7/tarballs.json",
+        "size": 642,
+        "sha256": "74ee2e763a9ba278ce78d4e0057db1210e3bf831353722e2f33ddbb233d4384a"
+      }
+    ],
+    "p2_13AssuranceOutputs": [
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/acceptance-recommendation.md",
+        "size": 1375,
+        "sha256": "cb1b002c4658b033bcd43c71bcb7c1fb4fe84089cf7be026ea830506323f24c8"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/assurance-plan.json",
+        "size": 1076,
+        "sha256": "6c6059ac7aebac58cd8ed4c54e898f2f5a0096a02cb8ba8f282c95e016503f56"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/assurance-summary.md",
+        "size": 209,
+        "sha256": "d28fad59069dc9afd7a1f2c4dfad07a28a9fa08f6bb8407cc7847c40bddc1c54"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/authority-compatibility-audit.json",
+        "size": 624,
+        "sha256": "675329d263a5ad625b6dc9edd4b461965b78d8fc299122d88e911b67742cba80"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/composition-audit.json",
+        "size": 349,
+        "sha256": "024e959e6e80d6664de26e4dc2ee4363b30e47963a16f9b6b9efa4f53a666837"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/coverage-audit.json",
+        "size": 619,
+        "sha256": "397c74a58efcbe5b9a81d5dfec3b3a69444241e3bb372f966129289c9f50481d"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/packed-lifecycle-audit.json",
+        "size": 217,
+        "sha256": "236a67a464488843cf492429e2a8045ec4ac6b94874f4744e8d3231c53d8c579"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/pin-attestation.json",
+        "size": 644,
+        "sha256": "66a675210dfcb91e8e584b3d49beb6f288f432d00819ccedff29f51f06836edf"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/privacy-dirty-path-audit.json",
+        "size": 304,
+        "sha256": "24a91b1c65f37b332559832ec62cccc0b6cf1bcc22ffb041660eca1278a790c0"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/reviewer-independence-historical-failed.json",
+        "size": 306,
+        "sha256": "6b8c234f6ecde3888f7508c6796d4778c3fdbd09d806ccd330fcf4f8be4a5193"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/reviewer-independence.json",
+        "size": 346,
+        "sha256": "d161f45a1493a2b1a5cab99e770d858e29682f68947948d796f4ccd1f8bc7015"
+      },
+      {
+        "path": ".trellis/tasks/07-29-assure-close-phase2-methodology-migration/research/rollback-audit.json",
+        "size": 361,
+        "sha256": "2f219c379e5bff773795e07a2e7cb34e64aa74318b8630796c098b99297d70c0"
+      }
+    ]
+  },
+  "currentLiveRegistryProjection": {
+    "source": {
+      "path": "packages/core/src/research/stage-capabilities.ts",
+      "size": 11519,
+      "sha256": "cba3e4d269a3e3c7614d3227b5959a0317606a97f75eea94bd2a128fa877afa1"
+    },
+    "procedureVersion": "1.0.0",
+    "capabilityCount": 14,
+    "capabilityIds": [
+      "research.setup.project",
+      "research.framing.quest",
+      "research.framing.admin",
+      "research.literature.scan",
+      "research.literature.review",
+      "research.ideation.generate",
+      "research.ideation.evaluate",
+      "research.experiment.round",
+      "research.experiment.campaign",
+      "research.computation.case",
+      "research.theory.case",
+      "research.audit.case",
+      "research.audit.campaign",
+      "research.writing.case"
+    ],
+    "literatureDefault": "research.literature.scan",
+    "activationDispositionSource": {
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/activation-version-disposition.json",
+      "size": 33340,
+      "sha256": "e0d6c6311940096a8259959add1ccf534eb92be443e6a0abbe63df35722c24cc"
+    },
+    "bindings": [
+      {
+        "capabilityId": "research.setup.project",
+        "procedureId": "project-setup-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "cad095815d6b7ffa0955cd67c1cfb582acbc438b37e242ee6d7908c5313d5011"
+      },
+      {
+        "capabilityId": "research.framing.quest",
+        "procedureId": "quest-framing-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "7aa32a3eab0a5b040f2655e41e65d098aa2e1efd35eb25be6a03216354d89630"
+      },
+      {
+        "capabilityId": "research.framing.admin",
+        "procedureId": "quest-admin-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "1100d29ad989006746b42e6de72fb3fcb8de2f78b71809619e7217ddca08ef77"
+      },
+      {
+        "capabilityId": "research.literature.scan",
+        "procedureId": "literature-scan-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "1750c2c511dc254f5099a179e728d9800d8bdcea277bbed4a5534990b680a0bc"
+      },
+      {
+        "capabilityId": "research.literature.review",
+        "procedureId": "literature-review-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "c0c55569764458c27cc4caaf121ff51bf247be8fe77370b333f6aeee6529525a"
+      },
+      {
+        "capabilityId": "research.ideation.generate",
+        "procedureId": "idea-generation-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "33c949fdab6e24229251a6534712cbe8b5d0e4096fa9aa29950ca155a34aa6a0"
+      },
+      {
+        "capabilityId": "research.ideation.evaluate",
+        "procedureId": "idea-evaluation-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "024257d827c2c4279832fefc81610f5790bd98043797b0782f2507df801e3866"
+      },
+      {
+        "capabilityId": "research.experiment.round",
+        "procedureId": "experiment-round-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "176b4cd96c0c92c0be239eb1165a27551291b8cc1320f851916b3c41a4ca077b"
+      },
+      {
+        "capabilityId": "research.experiment.campaign",
+        "procedureId": "experiment-campaign-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "461cc3b3a6232ea2783b0b2b91d10b055c61a602984fcdaded64e7f395d05e8c"
+      },
+      {
+        "capabilityId": "research.computation.case",
+        "procedureId": "computation-case-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "28c22a95969baae0cd82cbc468c09cac156d2d4c7540f0b9320467653182e919"
+      },
+      {
+        "capabilityId": "research.theory.case",
+        "procedureId": "theory-case-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "4c70ac59084f45ca5d6db49d2a21124de7f8caf12f471c84951157796c94225c"
+      },
+      {
+        "capabilityId": "research.audit.case",
+        "procedureId": "review-case-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "92e47f10f9330f38b230b66530540ff3bf1f9c713e1b6ce86d0b00c2c0edfa93"
+      },
+      {
+        "capabilityId": "research.audit.campaign",
+        "procedureId": "review-campaign-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "b3cb031574f65e5ad820c4016f58f7135e0607a89531385ee465fab2b56554aa"
+      },
+      {
+        "capabilityId": "research.writing.case",
+        "procedureId": "writing-case-v1",
+        "procedureVersion": "1.0.0",
+        "procedureJsonSha256": "62f921b311a0ebcefe1b741719a0cac5bb6588e8e91b78a810c81e1ce801897f"
+      }
+    ]
+  },
+  "dormantCandidate202": {
+    "source": {
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest-2.0.2.json",
+      "size": 29581,
+      "sha256": "eb992905ad31cf3831e464ddbe6f39fad8728ad8715b6a0031fdb4e604261458"
+    },
+    "digestSidecar": {
+      "path": ".trellis/tasks/07-29-activate-migrated-research-methodology/research/candidate-cutover-manifest-2.0.2.sha256",
+      "size": 65,
+      "sha256": "21e05f2e497be3bd57c0358744cf74aa29b536ec901266cab2dcbdeabb5c85d5"
+    },
+    "status": "dormant-candidate",
+    "activationAuthorized": false,
+    "candidateProcedureVersion": "2.0.2",
+    "candidateCapabilityCount": 17,
+    "candidateLiteratureDefault": "research.literature.review",
+    "r0Disposition": "immutable-failed-historical-candidate-evidence"
+  },
+  "excludedDirtyPaths": {
+    "rootFiles": [
+      {
+        "path": "AGENTS.md",
+        "size": 3673,
+        "sha256": "02e699f92bb99f682f94e10a41459e6f79e8e0500948d712cf01a640eebede24"
+      },
+      {
+        "path": "CLAUDE.md",
+        "size": 4957,
+        "sha256": "b2c43205bbd68e768cacfcf04e5b94a6df21d57d1a8c1fd8ea648debe78f9b14"
+      }
+    ],
+    "docsSite": {
+      "head": "be7684f2086abb9b8e24d4d35733a7dda3123a0f",
+      "files": [
+        {
+          "path": "docs-site/advanced/architecture.mdx",
+          "size": 24472,
+          "sha256": "9a58fbf12b9b6480b019af42c69bde005b5e1a2066d1cf450754731b644905ae",
+          "gitStatus": " M"
+        },
+        {
+          "path": "docs-site/advanced/research-workflow.mdx",
+          "size": 13711,
+          "sha256": "8eecd9601b8f8833c8a82a55ae55162b60b502c0194c7182c56313210a26da9d",
+          "gitStatus": "??"
+        },
+        {
+          "path": "docs-site/docs.json",
+          "size": 30293,
+          "sha256": "0b64ca4fb638dcc627cd70873ca8ef4068cc36d0cbaca03d5d32398a78a30bfa",
+          "gitStatus": " M"
+        },
+        {
+          "path": "docs-site/zh/advanced/architecture.mdx",
+          "size": 22475,
+          "sha256": "c935186bca6d27740f32da0ddf8910f928c293820df7a00360b9ca25e9b1ee1d",
+          "gitStatus": " M"
+        },
+        {
+          "path": "docs-site/zh/advanced/research-workflow.mdx",
+          "size": 13020,
+          "sha256": "7c8570e0d705ca553fb920e95e030b030555c931756cc60d9419093358696eb0",
+          "gitStatus": "??"
+        }
+      ]
+    },
+    "marketplace": {
+      "head": "d7a18bb5411c700237d21483d6889ac296ef0301",
+      "files": [
+        {
+          "path": "marketplace/workflows/native/workflow.md",
+          "size": 37889,
+          "sha256": "a360bd452ab9d6927e3264b2c23826c0b87870b31d318a0bca804a11e2c6f1db",
+          "gitStatus": " M"
+        }
+      ]
+    },
+    "verifiedAgainstSuppliedPreAnalysisValues": true,
+    "mutationAllowed": false
+  },
+  "inventoryDigest": "sha256:0a0ee8161ecbbe8487e8369ab72656b07a0a242199c6ac8c450daca24b398261"
+}

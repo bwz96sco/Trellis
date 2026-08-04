@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase2-r0-gitnexus-evidence",
+  "index": {
+    "commit": "a5934614b15abdd73214b3681cdb5ea381eff743",
+    "shortCommit": "a593461",
+    "status": "up-to-date",
+    "nodes": 18461,
+    "edges": 25267,
+    "clusters": 295,
+    "flows": 300,
+    "reanalyzePerformed": false,
+    "reanalyzeReason": "The index was already fresh; reanalysis was excluded because it rewrites managed counts in excluded files."
+  },
+  "authorizedDirectEditTargets": [
+    { "symbol": "validateMethodologyArtifacts", "risk": "LOW" },
+    { "symbol": "deriveMethodologyValidatorFacts", "risk": "LOW" },
+    { "symbol": "runMethodologyValidators", "risk": "MEDIUM" },
+    { "symbol": "validateMethodologyBeforeRecord", "risk": "LOW" },
+    { "symbol": "recordApprovedResearchDispatchResult", "risk": "LOW" },
+    { "symbol": "buildMethodologyReport", "risk": "LOW" },
+    { "symbol": "validateRootCompositionDescriptor", "risk": "LOW" },
+    { "symbol": "planRootCompositionAction", "risk": "LOW" },
+    { "symbol": "buildWorkerMethodologyProjectionV2", "risk": "LOW" },
+    { "symbol": "parseSupportPackManifest", "risk": "LOW" },
+    { "symbol": "loadArtifactContractsFromProcedure", "risk": "LOW" },
+    { "symbol": "parseExactArtifactRequirements", "risk": "LOW" },
+    { "symbol": "registerResearchCommand", "risk": "LOW" }
+  ],
+  "callOnlyNotAuthorizedForModification": [
+    {
+      "symbol": "validateResearchBatchReadOnly",
+      "risk": "CRITICAL",
+      "impactedSymbols": 51,
+      "impactedProcesses": 8
+    },
+    {
+      "symbol": "commitResearchBatch",
+      "risk": "CRITICAL",
+      "impactedSymbols": 54,
+      "impactedProcesses": 8
+    },
+    {
+      "symbol": "executeResearchLifecycleMutations",
+      "risk": "CRITICAL",
+      "impactedSymbols": 30,
+      "impactedProcesses": 5
+    },
+    {
+      "symbol": "stableResearchJson",
+      "risk": "CRITICAL",
+      "impactedSymbols": 56,
+      "impactedProcesses": 10
+    },
+    {
+      "symbol": "resolveDispatchActivationCandidate",
+      "risk": "HIGH",
+      "impactedSymbols": 27,
+      "impactedProcesses": 3
+    }
+  ],
+  "r0EditDisposition": {
+    "existingFunctionsClassesOrMethodsEdited": false,
+    "highOrCriticalSymbolsEdited": false,
+    "productionSymbolsEdited": false,
+    "evidenceOnly": true
+  }
+}

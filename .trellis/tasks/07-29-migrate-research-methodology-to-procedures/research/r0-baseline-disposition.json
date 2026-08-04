@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase2-r0-baseline-disposition",
+  "r0Authority": {
+    "alias": "approved-wave-8-remediation-baseline",
+    "newAuthorityDomain": false,
+    "scope": "additive-bounded-evidence-and-ownership-only"
+  },
+  "pins": {
+    "methodologyContract": "evaluation-contract-v1.2.0",
+    "methodologyDigest": "57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+    "privateReadOnlyEvidenceCommit": "9a02a533f5f3ecfd0c0789a01588fc492d321d6c",
+    "infrastructureBase": "ccd5bb3afc99283252c599916a2b8c2e05075cc6",
+    "repairBaselineInspectedHead": "a5934614b15abdd73214b3681cdb5ea381eff743"
+  },
+  "liveFutureSelection": {
+    "procedureVersion": "1.0.0",
+    "capabilityCount": 14,
+    "literatureDefault": "research.literature.scan",
+    "sourceEvidence": [
+      "packages/core/src/research/stage-capabilities.ts",
+      ".trellis/tasks/07-29-activate-migrated-research-methodology/research/activation-version-disposition.json",
+      ".trellis/tasks/07-29-activate-migrated-research-methodology/research/cutover-containment-status.json"
+    ]
+  },
+  "immutableHistoricalProcedureVersions": [
+    "1.0.0",
+    "2.0.0",
+    "2.0.1",
+    "2.0.2"
+  ],
+  "versionDisposition": {
+    "2.0.2": "immutable-failed-historical-candidate-evidence",
+    "forwardSemanticRepairVersion": "2.0.3",
+    "historicalMutationAllowed": false
+  },
+  "authorityBoundary": {
+    "productionCoreOrCliEditsAuthorized": false,
+    "testsAuthorized": false,
+    "activationAuthorized": false,
+    "canonicalMutationAuthorized": false,
+    "commitAuthorized": false,
+    "tarballLifecycleAuthorized": false,
+    "archiveAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false
+  }
+}
