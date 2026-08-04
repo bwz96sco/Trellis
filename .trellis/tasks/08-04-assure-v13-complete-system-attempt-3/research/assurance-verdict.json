@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "verdict": "pass",
+  "assuranceLevel": "MAL-1",
+  "scope": "complete-system",
+  "bindings": {
+    "assignmentCommit": "0ceaaee237d6c11035caabd8186d0378baab442a",
+    "subjectHeadR8": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+    "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "b3Commit": "064844af8317f90a2eb484f877f7be16462725dc",
+    "oa3Commit": "266a9f43107fd1ced95be1be607ca8cd52a76437",
+    "r7Commit": "3f53e7f938f2a75ea63d5432a5c2278a5b648736",
+    "a3ManifestSha256": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+    "a3FrozenTargetSha256": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "mal1ContractSha256": "f7e9ff8e6872570a549f06ecf54c67254498077ad6e6ae1229e5ec5ee699cd0d",
+    "r8CandidateManifestSha256": "f9a2aa121b59360e274650c9dfe7b193a48deba671f90b191f4fccab989896d7"
+  },
+  "requiredFindings": {
+    "subjectCommitsAndDigestsMatch": true,
+    "frozen229IntactAndExecuted": true,
+    "expansion38IntactAndExecuted": true,
+    "exact116V13DeltaCasesExecuted": true,
+    "all17Procedure204PacksBindAcceptedA3Digest": true,
+    "all17Procedure203PacksBindRejectedA2Digest": true,
+    "procedure203BytesNotRewritten": true,
+    "procedure204AuthoritativeExactV13Accepted": true,
+    "procedure203HistoricalUnaccepted": true,
+    "liveSelectionIs100_14_literatureScan": true,
+    "dormantCandidateActivationAuthorizedFalse": true,
+    "dirtyPathsIsolated": true,
+    "oa3AndR8GrantNoActivationReleaseOrPushAuthority": true
+  },
+  "residualRisks": [
+    "MAL-1 is machine-only assurance and is not human-equivalent semantic review.",
+    "Provider-specific model build and session identifier are unavailable; fresh-session independence is reviewer self-attestation.",
+    "The shipped 116-case test executes every unique case and strictly asserts critical-negative fail-closed zero-write behavior, but does not compare every declared positive or inapplicable expected outcome and error-code vector.",
+    "packages/cli/scripts/packed-cli-audit.js still enumerates required Procedure versions only through 2.0.3; copy-templates copies 2.0.4 and exact committed 2.0.4 paths were audited, but release-tarball required-entry coverage does not yet name 2.0.4. No release is authorized by this verdict."
+  ],
+  "humanReviewed": false,
+  "humanEquivalent": false,
+  "grantsRuntimeAuthority": false,
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "repairAuthority": false,
+  "reviewOnly": true
+}

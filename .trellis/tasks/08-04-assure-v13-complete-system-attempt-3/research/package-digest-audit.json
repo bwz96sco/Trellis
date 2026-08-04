@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "result": "pass",
+  "subjectCommit": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+  "acceptedA3Digest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+  "rejectedA2Digest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+  "procedure204": {
+    "expectedCount": 17,
+    "observedCount": 17,
+    "allBindAcceptedA3Digest": true,
+    "allProcedureVersionsExact": true,
+    "allProcedureJsonDigestsMatchInventory": true,
+    "allPackJsonDigestsMatchInventory": true,
+    "allPackEntryDigestsAndMaxBytesMatch": true,
+    "allPackageAggregatesMatchInventory": true,
+    "aggregateMethod": "SHA-256 over sorted shasum-style rows: <file-sha256><two spaces><repo-relative-path><LF>",
+    "packages": [
+      {"procedureId":"computation-case-v1","fileCount":6,"packageAggregateSha256":"8559221a5cb1d5909cb66e59653e07250c6de3f0ad40fe42a153f9fa3f9b8e4a"},
+      {"procedureId":"experiment-campaign-v1","fileCount":7,"packageAggregateSha256":"f01a1886d94267aa974c65e70fa1cdce90b57d81b418a649517b7be89651baf5"},
+      {"procedureId":"experiment-round-v1","fileCount":7,"packageAggregateSha256":"8d40e8866a15a9507f358bdda8643ea6ff180d0bf2e406d81f7c3921ca1c80ed"},
+      {"procedureId":"figure-v1","fileCount":6,"packageAggregateSha256":"c991b7bd2a77c64f04a4f05c5e5dd6c05c3c847b96c066d16999fe2a5fbbc856"},
+      {"procedureId":"idea-evaluation-v1","fileCount":7,"packageAggregateSha256":"f18c8f73082b849a24be8927081972cf9501a25c1feb9558602e929e5cc06f4b"},
+      {"procedureId":"idea-generation-v1","fileCount":7,"packageAggregateSha256":"7cf900292b55f9665a66bee500c9be6dfd5cd23a6cfea7d9b001102b42fa193a"},
+      {"procedureId":"literature-review-v1","fileCount":7,"packageAggregateSha256":"859275fd72cd5acae58d94e1e6c9843324e2c5dee0a8f0ac6df3ac41301d4f52"},
+      {"procedureId":"literature-scan-v1","fileCount":7,"packageAggregateSha256":"f11d68f2cb6fe706b0d8e3b9f619cd1a7fa0a606e1cc7af14cac6518cb8ae293"},
+      {"procedureId":"project-setup-v1","fileCount":6,"packageAggregateSha256":"037c81ed714d96b8520a8bfd4f63d63352b4b6e675739671f064720a4e5b0c8a"},
+      {"procedureId":"quest-admin-v1","fileCount":6,"packageAggregateSha256":"2823984b725d8ed96898d11d063f7386157a8e7ef2a182c915bcbaff967f6a4c"},
+      {"procedureId":"quest-framing-v1","fileCount":6,"packageAggregateSha256":"651595e7ba33cb2ada3fd85229b977ff8abdb5a2eb3972275a90284211b16bfe"},
+      {"procedureId":"review-campaign-v1","fileCount":6,"packageAggregateSha256":"94eab0b7575f17522a031f01baf58032ad832b9a608fb22f5068dddc238578d9"},
+      {"procedureId":"review-case-v1","fileCount":6,"packageAggregateSha256":"95aee260bdf3eb97fe75c778ee296d383686d747e43ca5389537fac1d5902015"},
+      {"procedureId":"slides-v1","fileCount":6,"packageAggregateSha256":"2eb669fb8fcca32bc211fb02d93a5153ce53d9ce7cb913aa75fa53997bc6ace9"},
+      {"procedureId":"survey-v1","fileCount":6,"packageAggregateSha256":"e557c3be0f171a150e1bc5bbb43cae2de7ded9e99338e9c4549e0c2741b1fd12"},
+      {"procedureId":"theory-case-v1","fileCount":6,"packageAggregateSha256":"daab30d74c09b47d1affa7321ecad417afb368b037def81fcc08d7e54b25df17"},
+      {"procedureId":"writing-case-v1","fileCount":6,"packageAggregateSha256":"bb56c6c43e2c933072641239a17fad506fa76a3bf47271ead0e4c8808e97a0d2"}
+    ]
+  },
+  "procedure203": {
+    "observedCount": 17,
+    "allBindRejectedA2Digest": true,
+    "noneBindAcceptedA3Digest": true,
+    "changedPathsFromR6ToR8": [],
+    "bytesUnchangedFromR6ToR8": true,
+    "disposition": "historical-unaccepted"
+  },
+  "candidateCrossBinding": {
+    "candidateBindingCount": 17,
+    "allCandidateBindingDigestsMatchInventory": true,
+    "allCandidateStatesDormant": true,
+    "allBindingActivationAuthorizedValues": [false]
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "result": "pass",
+  "subjectCommit": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+  "methodologyBindings": {
+    "2.0.3": {
+      "digest": "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+      "disposition": "historical-unaccepted-2.0.3-not-authoritative",
+      "authoritative": false
+    },
+    "2.0.4": {
+      "digest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "disposition": "exact-v1.3-accepted",
+      "authoritative": true
+    },
+    "unknown": {
+      "disposition": "unknown-fail-closed",
+      "authoritative": false
+    }
+  },
+  "runtimeSemantics": {
+    "acceptedA3StrictParser": true,
+    "exactTrustedValidatorIdentitySelection": true,
+    "severityDowngradeRejected": true,
+    "requiredLeafMissingFailsClosed": true,
+    "explicitClosureRequiredFor204": true,
+    "selectedBlockedNotInferredFromResultStatusForV13": true,
+    "reportV2OnlyForAccepted204": true,
+    "reportSidecarOnlyAfterSuccessfulBatchCommit": true,
+    "workerAuthority": "proposal-only"
+  },
+  "liveSelection": {
+    "procedureVersion": "1.0.0",
+    "capabilityCount": 14,
+    "literatureDefault": "research.literature.scan",
+    "candidate204Live": false
+  },
+  "candidate": {
+    "status": "dormant-candidate",
+    "activationAuthorized": false,
+    "bindingCount": 17,
+    "allBindingActivationAuthorizedValues": [false]
+  },
+  "authority": {
+    "oa3Decision": "accept",
+    "oa3HumanReviewed": false,
+    "oa3ActivationAuthorized": false,
+    "oa3ReleaseAuthorized": false,
+    "oa3PublicationAuthorized": false,
+    "oa3PushAuthorized": false,
+    "oa3Excludes": ["activation","release","publication","push"],
+    "r8GrantsActivation": false,
+    "r8GrantsRelease": false,
+    "r8GrantsPush": false
+  },
+  "testEvidence": [
+    {"suite":"packages/core six-file boundary suite","testFilesPassed":6,"testsPassed":127,"exitCode":0},
+    {"suite":"packages/cli containment, validation, record-result suite","testFilesPassed":3,"testsPassed":9,"exitCode":0},
+    {"suite":"packages/cli V13 delta domain","testFilesPassed":1,"testsPassed":3,"exitCode":0}
+  ]
+}

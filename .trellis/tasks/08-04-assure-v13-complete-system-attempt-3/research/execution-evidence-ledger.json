@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "assuranceLevel": "MAL-1",
+  "result": "pass",
+  "recordedOn": "2026-08-05",
+  "subjectCommit": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+  "executions": [
+    {
+      "id": "E1",
+      "operation": "git cat-file/rev-parse over assignment subjectCommits",
+      "result": "13 unique commit objects exist; short OA3/R7/R8 pins expand to assigned full SHAs",
+      "exitCode": 0
+    },
+    {
+      "id": "E2",
+      "operation": "independent shasum -a 256 over A3 manifest, A3 target, MAL-1 contract, R8 candidate",
+      "result": "all four recomputed digests equal assignment",
+      "exitCode": 0
+    },
+    {
+      "id": "E3",
+      "operation": "independent canonical JSON/member digest audit over A3 git-show bytes",
+      "result": "11/11 member hashes and lengths match; 9/9 normative JSON members canonical; target binds manifest",
+      "exitCode": 0
+    },
+    {
+      "id": "E4",
+      "command": "pnpm vitest run test/research-methodology-harness/v13-delta-domain.test.ts",
+      "cwd": "packages/cli",
+      "result": "1 file passed; 3 tests passed; exact 116-case execution test passed",
+      "exitCode": 0
+    },
+    {
+      "id": "E5",
+      "command": "pnpm vitest run test/research-methodology-harness/differential-harness.test.ts",
+      "cwd": "packages/cli",
+      "result": "1 file passed; 4 tests passed",
+      "exitCode": 0
+    },
+    {
+      "id": "E6",
+      "command": "pnpm exec node scripts/research-methodology-differential.mjs all",
+      "cwd": "packages/cli",
+      "result": "229/229 frozen and 38/38 expansion passed; none failed or unexecuted",
+      "exitCode": 0
+    },
+    {
+      "id": "E7",
+      "command": "pnpm vitest run test/research/methodology-contract.test.ts test/research/methodology-v13-runtime.test.ts test/research/methodology-runtime.test.ts test/research/procedure-support-pack.test.ts test/research/cutover-rollback-rehearsal.test.ts test/research/stage-capabilities.test.ts",
+      "cwd": "packages/core",
+      "result": "6 files passed; 127 tests passed",
+      "exitCode": 0
+    },
+    {
+      "id": "E8",
+      "command": "pnpm vitest run test/commands/research-methodology-candidate-bijection-2.0.3.test.ts test/commands/research-methodology-validation.test.ts test/commands/research-methodology-record-result-r2b.test.ts",
+      "cwd": "packages/cli",
+      "result": "3 files passed; 9 tests passed; containment and zero-write assertions passed",
+      "exitCode": 0
+    },
+    {
+      "id": "E9",
+      "operation": "independent 17-package Git-object audit",
+      "result": "17/17 2.0.4 aggregates, procedure hashes, pack hashes, entry hashes, identities, A3 bindings, and dormant candidate cross-bindings pass",
+      "exitCode": 0
+    },
+    {
+      "id": "E10",
+      "operation": "R6-to-R8 2.0.3 path diff and pack parsing",
+      "result": "0 changed 2.0.3 paths; 17/17 packs retain rejected A2 digest",
+      "exitCode": 0
+    },
+    {
+      "id": "E11",
+      "operation": "git status, cached diff, subject-path diff, and dirty-path range diff",
+      "result": "four pre-existing paths remain unstaged and unrelated; relevant checkout paths match R8",
+      "exitCode": 0
+    }
+  ],
+  "nonSubjectToolingNotes": [
+    "uv default cache was sandbox-inaccessible; Trellis context command was rerun with UV_CACHE_DIR under /tmp.",
+    "First independent schema read exceeded Node child-process default buffer; identical check reran with a 16 MiB buffer and passed."
+  ],
+  "builderAsOracleUsed": false,
+  "productionMutationPerformed": false,
+  "candidateMutationPerformed": false
+}

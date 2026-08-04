@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "result": "pass",
+  "subjectCommit": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+  "privacy": {
+    "a3PrivateSourceUse": false,
+    "workerAuthorityProposalOnly": true,
+    "procedure204PackCount": 17,
+    "supportPackEntryCount": 57,
+    "workerVisibleEntryCount": 24,
+    "rootOnlyEntryCount": 33,
+    "validatorEntryCount": 17,
+    "rootOnlyValidatorEntryCount": 17,
+    "instructionEntryCount": 17,
+    "workerVisibleInstructionEntryCount": 17,
+    "familyArtifactContractsRootOnlyExceptLiteratureScanCompatibilityLifecycle": true,
+    "unsafeEntryPaths": [],
+    "rootOnlyEntriesFilteredFromWorkerInventory": true,
+    "rootOnlyFamilyImplementationMetadataNotProjected": true,
+    "absoluteFilesystemPathsProjected": false
+  },
+  "lifecycleAndMutationIsolation": {
+    "accepted204PrefersWorkerVisibleLifecycleContracts": true,
+    "rootOnly204FallbackProjectsIdentityAndTerminalBoundsOnly": true,
+    "historical203CannotExerciseMethodologyAuthority": true,
+    "criticalValidationFailureZeroWrite": true,
+    "reportV2MaterializationWaitsForBatchCommit": true,
+    "rollbackRetainsRecordedActivationIdentity": true,
+    "rollbackRequiresDisableEvent": false
+  },
+  "dirtyPathIsolation": {
+    "initialUnstagedPaths": ["AGENTS.md","CLAUDE.md","docs-site","marketplace"],
+    "preReportWriteUnstagedPaths": ["AGENTS.md","CLAUDE.md","docs-site","marketplace"],
+    "stagedPaths": [],
+    "subjectRangeTouchedDirtyPaths": [],
+    "dirtyPathsTreatedAsSubject": false,
+    "dirtyPathsReadAsSubjectEvidence": false,
+    "dirtyPathsModifiedByReviewer": false,
+    "reviewerWriteRoot": ".trellis/tasks/08-04-assure-v13-complete-system-attempt-3/research/",
+    "reviewerWritesRestrictedToNineFileAllowlist": true
+  },
+  "testEvidence": {
+    "coreBoundaryTestsPassed": 127,
+    "cliContainmentAndZeroWriteTestsPassed": 9,
+    "failures": 0
+  }
+}

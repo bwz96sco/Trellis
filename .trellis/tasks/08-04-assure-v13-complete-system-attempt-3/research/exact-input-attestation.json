@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "assuranceLevel": "MAL-1",
+  "result": "pass",
+  "assignment": {
+    "commit": "0ceaaee237d6c11035caabd8186d0378baab442a",
+    "path": ".trellis/tasks/08-04-assure-v13-complete-system-attempt-3/research/cs3-reviewer-assignment.json",
+    "sha256": "207ae524aaa73ca95fad1479d8843f3675951839b80a7d9fe4bdb393c0a5f407",
+    "sidecarMatch": true
+  },
+  "subjectCommits": {
+    "a3": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+    "b3": "064844af8317f90a2eb484f877f7be16462725dc",
+    "g0": "a0ad27b02843fc29a9d5fd31df73f6b5af2ef16b",
+    "head": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+    "oa3": "266a9f43107fd1ced95be1be607ca8cd52a76437",
+    "q1": "5992826e69b677aba88a8100b799e71bafab27ef",
+    "r1": "009361cd5743854a1234444ce4378edd35a4ed40",
+    "r2": "f9a971e9d043304154d693c1f355865fa915ed78",
+    "r3": "0f409c282cc8a1275bb465967d6981ea551dabc3",
+    "r4": "969e10fe05b32e5f1eb53b8fb19dbde04057a05b",
+    "r5": "a390b840e8623c5f60ee7e3315119b7e7bac4e98",
+    "r6": "e061ba0f5c934f2652cb3ed9bb07853c6af1dd39",
+    "r7": "3f53e7f938f2a75ea63d5432a5c2278a5b648736",
+    "r8": "404d714a855dc2ff9c476e017df51bc3c1c02b86"
+  },
+  "objectVerification": {
+    "allAssignmentCommitValuesExist": true,
+    "allAssignmentCommitValuesAreCommitObjects": true,
+    "uniqueCommitObjectCount": 13,
+    "a3IsAncestorOfR8": true,
+    "b3IsAncestorOfR8": true,
+    "oa3IsAncestorOfR8": true,
+    "shortPinsExpanded": {
+      "266a9f43": "266a9f43107fd1ced95be1be607ca8cd52a76437",
+      "3f53e7f9": "3f53e7f938f2a75ea63d5432a5c2278a5b648736",
+      "404d714a": "404d714a855dc2ff9c476e017df51bc3c1c02b86"
+    }
+  },
+  "digestVerification": {
+    "a3Manifest": {
+      "expected": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+      "recomputed": "39431e5be163e0b0f1f552b761bd182581dab6e34497a17212279d3bb97fc7c6",
+      "match": true
+    },
+    "a3FrozenTarget": {
+      "expected": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "recomputed": "dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "match": true
+    },
+    "mal1Contract": {
+      "expected": "f7e9ff8e6872570a549f06ecf54c67254498077ad6e6ae1229e5ec5ee699cd0d",
+      "recomputed": "f7e9ff8e6872570a549f06ecf54c67254498077ad6e6ae1229e5ec5ee699cd0d",
+      "match": true
+    },
+    "r8CandidateManifest": {
+      "expected": "f9a2aa121b59360e274650c9dfe7b193a48deba671f90b191f4fccab989896d7",
+      "recomputed": "f9a2aa121b59360e274650c9dfe7b193a48deba671f90b191f4fccab989896d7",
+      "match": true
+    }
+  },
+  "subjectByteSource": "git show <commit>:<path>",
+  "workingTreeSubjectPathsUsedOnlyForExecution": true,
+  "workingTreeSubjectPathsByteEquivalentToR8": true
+}

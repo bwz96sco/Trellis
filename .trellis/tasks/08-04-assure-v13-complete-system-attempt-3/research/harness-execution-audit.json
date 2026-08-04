@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "result": "pass",
+  "subjectCommit": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
+  "frozenAndExpansionRegistry": {
+    "explicitRegistrySha256": "e3a24209f2d0db687cfa34e29e46aece6db37485a89525675ebac386ad21d062",
+    "sha256AtR5": "e3a24209f2d0db687cfa34e29e46aece6db37485a89525675ebac386ad21d062",
+    "sha256AtR6": "e3a24209f2d0db687cfa34e29e46aece6db37485a89525675ebac386ad21d062",
+    "sha256AtR8": "e3a24209f2d0db687cfa34e29e46aece6db37485a89525675ebac386ad21d062",
+    "byteStableR5ThroughR8": true,
+    "frozen": {"expected":229,"unique":229,"passed":229,"failed":0,"unexecuted":0,"criticalPassed":212,"nonCriticalPassed":17},
+    "expansion": {"expected":38,"unique":38,"passed":38,"failed":0,"unexecuted":0},
+    "completenessOk": true,
+    "command": "pnpm exec node scripts/research-methodology-differential.mjs all",
+    "exitCode": 0
+  },
+  "v13DeltaDomain": {
+    "domainSha256": "ce15564943fc8b5bc5da41974ef2b7e8e3afb6a0cb436345e8f7afbe6857e6fc",
+    "testSha256": "f366dae3c73fc31b14766dd138712647fa637c9d904c0ee582da0c30beddd121",
+    "contractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "declaredCaseCount": 116,
+    "observedCaseCount": 116,
+    "uniqueCaseIds": 116,
+    "allCaseIdsV13Namespaced": true,
+    "fixtureClasses": {"base":29,"critical-negative":29,"inapplicable":29,"positive":29},
+    "all116ExecutedAgainstShippedProductionOperations": true,
+    "criticalNegativeFailClosedZeroWrite": true,
+    "frozenRegistryNotRelabeled": true,
+    "command": "pnpm vitest run test/research-methodology-harness/v13-delta-domain.test.ts",
+    "cwd": "packages/cli",
+    "exitCode": 0,
+    "testFilesPassed": 1,
+    "testsPassed": 3,
+    "testsFailed": 0
+  },
+  "registryTest": {
+    "command": "pnpm vitest run test/research-methodology-harness/differential-harness.test.ts",
+    "cwd": "packages/cli",
+    "exitCode": 0,
+    "testFilesPassed": 1,
+    "testsPassed": 4,
+    "testsFailed": 0
+  }
+}

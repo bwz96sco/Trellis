@@ -3,7 +3,7 @@
   "name": "assure-v13-complete-system-attempt-3",
   "title": "CS3 — Complete-system MAL-1 assurance",
   "description": "Fresh MAL-1 runtime distinct from B3 reviews full system subject commits.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -11,7 +11,7 @@
   "creator": "grok",
   "assignee": "codex-mal1-cs3-fresh",
   "createdAt": "2026-08-04",
-  "completedAt": null,
+  "completedAt": "2026-08-04",
   "branch": null,
   "base_branch": "variant/research-workflow",
   "worktree_path": null,
@@ -21,7 +21,7 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "CS3-0 assignment bound to HEAD 404d714a855d; distinct from B3; nine complete-system outputs; repairAuthority:false.",
+  "notes": "CS3-1 MAL-1 complete-system pass via fresh Codex thread 019fcda8-f80d-74f3-9551-058dff0b6d8a; nine outputs; verdict=pass; no repair; no activation.",
   "meta": {
     "attempt": 3,
     "assuranceModel": "MAL-1",
@@ -33,6 +33,13 @@
       "oa3": "266a9f43107fd1ced95be1be607ca8cd52a76437",
       "r8": "404d714a855dc2ff9c476e017df51bc3c1c02b86",
       "repairAuthority": false
+    },
+    "assurance": {
+      "wave": "CS3-1",
+      "verdict": "pass",
+      "codexThreadId": "019fcda8-f80d-74f3-9551-058dff0b6d8a",
+      "assignmentCommit": "0ceaaee237d6c11035caabd8186d0378baab442a",
+      "subjectHead": "404d714a855dc2ff9c476e017df51bc3c1c02b86"
     }
   }
 }

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "assuranceLevel": "MAL-1",
+  "result": "pass",
+  "reviewOnly": true,
+  "repairAuthority": false,
+  "reviewer": {
+    "identity": "fresh Codex MAL-1 complete-system reviewer",
+    "runtime": "Codex",
+    "model": "GPT-5 family",
+    "providerBuild": null,
+    "sessionId": null,
+    "providerBuildAvailable": false,
+    "sessionIdAvailable": false
+  },
+  "independence": {
+    "freshSession": true,
+    "noResume": true,
+    "noPriorSessionResumed": true,
+    "distinctFromA3AuthorGrok": true,
+    "distinctFromB3ContractReviewer": true,
+    "b3ReviewerThread": "019fcd6a-374b-7f41-bac2-b5e10a6d27b6",
+    "distinctFromGrokR1ThroughR8Implementer": true,
+    "sharedAuthorScratchUsed": false,
+    "sharedAuthorTranscriptUsed": false,
+    "a3BuilderImported": false,
+    "a3BuilderExecuted": false,
+    "candidateOrProductionRepairPerformed": false,
+    "reviewExactGitObjectsOnly": true,
+    "subjectEvidenceFromGitObjectsOnly": true,
+    "dirtyWorkingTreeCandidateBytesUsedAsEvidence": false
+  },
+  "executionQualification": {
+    "requiredTestsRanFromCheckout": true,
+    "checkoutRelevantTrackedPathsMatchedR8": true,
+    "dirtyPathsExcluded": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "docs-site",
+      "marketplace"
+    ]
+  },
+  "attestation": "Fresh Codex review. No resumed session. Reviewer is neither Grok A3/R1-R8 author-implementer nor B3 reviewer. Conclusions bind exact committed Git objects; only required test execution used a checkout first verified equivalent to R8 for packages/core, packages/cli, A3 evidence, and R8 evidence."
+}
