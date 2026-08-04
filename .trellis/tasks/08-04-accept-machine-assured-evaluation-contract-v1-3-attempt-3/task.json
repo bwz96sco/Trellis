@@ -1,15 +1,15 @@
 {
   "id": "accept-machine-assured-evaluation-contract-v1-3-attempt-3",
   "name": "accept-machine-assured-evaluation-contract-v1-3-attempt-3",
-  "title": "OA3 \u2014 Operator accept machine-only A3/B3 assurance",
+  "title": "OA3 — Operator accept machine-only A3/B3 assurance",
   "description": "Operator accept/reject binding exact A3/B3 digests with humanReviewed:false. Only accept unlocks R1+.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
   "priority": "P1",
   "creator": "grok",
-  "assignee": null,
+  "assignee": "operator-goal",
   "createdAt": "2026-08-04",
   "completedAt": null,
   "branch": null,
@@ -21,9 +21,15 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "Does not authorize activation/release/push.",
+  "notes": "OA3-0 activated after committed B3 MAL-1 pass 064844af. Decision commit separate.",
   "meta": {
     "attempt": 3,
-    "assuranceModel": "MAL-1"
+    "assuranceModel": "MAL-1",
+    "activation": {
+      "wave": "OA3-0",
+      "b3Commit": "064844af8317f90a2eb484f877f7be16462725dc",
+      "a3Commit": "5ca3b5cf819944efd88bb5074fea7a5bb3a30fd4",
+      "precondition": "committed-A3 + committed-MAL-1-B3-pass"
+    }
   }
 }
