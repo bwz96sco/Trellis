@@ -1,7 +1,9 @@
 import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
+  LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
   buildMethodologyReport,
   deriveMethodologyValidatorFacts,
+  loadResearchMethodologyContractFromProcedure,
   runMethodologyValidators,
   validateMethodologyArtifacts,
   type MethodologyArtifactContract,
@@ -102,6 +104,12 @@ export function loadArtifactContractsFromProcedure(
     procedure.packageSchemaVersion !== 2 ||
     procedure.supportPack === undefined
   ) {
+    return Object.freeze([]);
+  }
+  if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
+    // Parse and validate the complete frozen family contract without coercing its
+    // checkpoint union into the older path/media lifecycle primitive.
+    loadResearchMethodologyContractFromProcedure(procedure);
     return Object.freeze([]);
   }
   const contracts: MethodologyArtifactContract[] = [];

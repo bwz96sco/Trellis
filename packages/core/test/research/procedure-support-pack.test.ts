@@ -299,4 +299,55 @@ describe("procedure support pack", () => {
     });
     expect(ok.entries[0]?.workerVisibility).toBe("root-only");
   });
+
+  it("binds 2.0.3 to evaluation-contract-v1.3.0 attempt-2 digests and rejects v1.2 on 2.0.3", () => {
+    const fileA = encoder.encode("# stage\n");
+    const baseEntry = {
+      path: "instructions/stage.md",
+      role: "instructions" as const,
+      mediaType: "text/markdown",
+      contractVersion: "1",
+      provenanceId: "SRC-TEST",
+      sha256: sha256Hex(fileA),
+      maxBytes: 10_000,
+      workerVisibility: "root-only" as const,
+    };
+    expect(() =>
+      parseSupportPackManifest({
+        packJsonBytes: encoder.encode(
+          serializeSupportPackManifest({
+            schemaVersion: 1,
+            procedureId: capability.procedure.id,
+            procedureVersion: "2.0.3",
+            methodologyContractVersion: "evaluation-contract-v1.2.0",
+            methodologyContractDigest:
+              "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb",
+            entries: [baseEntry],
+          }),
+        ),
+        procedureId: capability.procedure.id,
+        procedureVersion: "2.0.3",
+      }),
+    ).toThrow(/evaluation-contract-v1\.3\.0 attempt-2/);
+
+    const ok = parseSupportPackManifest({
+      packJsonBytes: encoder.encode(
+        serializeSupportPackManifest({
+          schemaVersion: 1,
+          procedureId: capability.procedure.id,
+          procedureVersion: "2.0.3",
+          methodologyContractVersion: "evaluation-contract-v1.3.0",
+          methodologyContractDigest:
+            "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+          entries: [baseEntry],
+        }),
+      ),
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.3",
+    });
+    expect(ok.methodologyContractVersion).toBe("evaluation-contract-v1.3.0");
+    expect(ok.methodologyContractDigest).toBe(
+      "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166",
+    );
+  });
 });

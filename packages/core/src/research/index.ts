@@ -108,6 +108,47 @@ export type {
 } from "./stage-capabilities.js";
 
 export {
+  FROZEN_ARTIFACT_LIFECYCLE_CHECKPOINT_COUNT,
+  FROZEN_METHODOLOGY_CHECKPOINT_COUNT,
+  FROZEN_METHODOLOGY_DERIVABILITY_MATRIX_DIGEST,
+  FROZEN_METHODOLOGY_FAMILY_COUNT,
+  FROZEN_ORDERED_STAGE_COUNT,
+  HISTORICAL_INVALID_PHASE2_CHECKPOINT_FIXTURE,
+  LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+  ResearchMethodologyContractError,
+  loadResearchMethodologyContractFromProcedure,
+  parseResearchMethodologyDerivabilityMatrix,
+  parseResearchMethodologyFamilyContract,
+  parseResearchMethodologyFreeze,
+  verifyResearchMethodologyDerivabilityMatrixConformance,
+  verifyResearchMethodologyFreezeConformance,
+} from "./methodology-contract.js";
+export type {
+  ResearchArtifactLifecycleCheckpoint,
+  ResearchMethodologyCardinality,
+  ResearchMethodologyCheckpoint,
+  ResearchMethodologyCheckpointKind,
+  ResearchMethodologyFamilyContract,
+  ResearchMethodologyFieldRequirement,
+  ResearchMethodologyFieldType,
+  ResearchMethodologyFixtureObligations,
+  ResearchMethodologyFreeze,
+  ResearchMethodologyFreezeConformance,
+  ResearchMethodologyCompatibilityRoutingExtension,
+  ResearchMethodologyDerivabilityFamily,
+  ResearchMethodologyDerivabilityMatrix,
+  ResearchMethodologyDerivabilityMatrixConformance,
+  ResearchMethodologyDerivabilityMatrixInput,
+  ResearchMethodologyDerivabilityOwner,
+  ResearchMethodologyDerivabilityRow,
+  ResearchMethodologyDerivabilitySourceFile,
+  ResearchMethodologyDerivabilitySourceLocation,
+  ResearchMethodologyPlanned203Destinations,
+  ResearchMethodologyStableErrorCode,
+  ResearchOrderedStageCheckpoint,
+} from "./methodology-contract.js";
+
+export {
   validateMethodologyArtifacts,
 } from "./methodology-artifacts.js";
 export type {
@@ -136,7 +177,10 @@ export type { MethodologyDeterministicReport } from "./methodology-reports.js";
 
 export { buildWorkerMethodologyProjectionV2 } from "./methodology-worker-context.js";
 export type {
+  LegacyWorkerArtifactRequirement,
+  WorkerCheckpointRequirement,
   WorkerMethodologyProjectionV2,
+  WorkerMethodologyRequirement,
   WorkerVisibleSupportEntry,
 } from "./methodology-worker-context.js";
 
@@ -187,9 +231,14 @@ export {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   PROCEDURE_DIGEST_DOMAIN_V2,
   SupportPackError,
+  V13_ATTEMPT2_AUTHORING_COMMIT,
+  V13_METHODOLOGY_CANDIDATE_MANIFEST_DIGEST,
+  V13_METHODOLOGY_CONTRACT_DIGEST,
+  V13_METHODOLOGY_CONTRACT_VERSION,
   buildSupportPackInventory,
   computeResearchProcedureDigestV2,
   parseSupportPackManifest,
+  resolveMethodologyContractBinding,
   resolveProcedurePackageSchemaVersion,
   serializeSupportPackInventoryForDigest,
   serializeSupportPackManifest,

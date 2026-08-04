@@ -6,6 +6,11 @@
 
 import { createHash } from "node:crypto";
 
+import {
+  LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+  loadResearchMethodologyContractFromProcedure,
+  type ResearchMethodologyFieldRequirement,
+} from "./methodology-contract.js";
 import type { ParsedResearchProcedure } from "./procedure-policy.js";
 import type { SupportPackInventoryItem } from "./procedure-support-pack.js";
 
@@ -20,6 +25,31 @@ export interface WorkerVisibleSupportEntry {
   readonly text?: string;
 }
 
+export interface LegacyWorkerArtifactRequirement {
+  readonly id: string;
+  readonly pathPattern: string;
+  readonly mediaType: string;
+  readonly requiredness: string;
+  readonly cardinality: string;
+}
+
+export interface WorkerCheckpointRequirement {
+  readonly id: string;
+  readonly kind: "ordered_stage" | "artifact_lifecycle_checkpoint";
+  readonly artifact?: string;
+  readonly producer: string;
+  readonly consumer:
+    | "downstream_or_root"
+    | "next_stage_or_downstream_handoff";
+  readonly fields: readonly ResearchMethodologyFieldRequirement[];
+  readonly terminalApplicability: readonly string[];
+  readonly transitionConditions: Readonly<Record<string, string>>;
+}
+
+export type WorkerMethodologyRequirement =
+  | LegacyWorkerArtifactRequirement
+  | WorkerCheckpointRequirement;
+
 export interface WorkerMethodologyProjectionV2 {
   readonly schemaVersion: 2;
   readonly packageSchemaVersion: 2;
@@ -30,16 +60,10 @@ export interface WorkerMethodologyProjectionV2 {
   readonly allowedTerminalStates: readonly string[];
   readonly workerVisibleEntries: readonly WorkerVisibleSupportEntry[];
   /**
-   * Exact declarative artifact contracts from the support pack.
+   * Exact declarative requirements from the support pack.
    * Never synthesized from checkpoint name heuristics.
    */
-  readonly artifactRequirements: readonly {
-    readonly id: string;
-    readonly pathPattern: string;
-    readonly mediaType: string;
-    readonly requiredness: string;
-    readonly cardinality: string;
-  }[];
+  readonly artifactRequirements: readonly WorkerMethodologyRequirement[];
 }
 
 function decodeTextIfSafe(
@@ -74,12 +98,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function parseExactArtifactRequirements(
   raw: unknown,
-): WorkerMethodologyProjectionV2["artifactRequirements"][number][] {
+): LegacyWorkerArtifactRequirement[] {
   if (!isRecord(raw)) return [];
   const contracts = raw.contracts;
   if (!Array.isArray(contracts)) return [];
-  const out: WorkerMethodologyProjectionV2["artifactRequirements"][number][] =
-    [];
+  const out: LegacyWorkerArtifactRequirement[] = [];
   for (const item of contracts) {
     if (!isRecord(item)) {
       throw new Error(
@@ -123,6 +146,38 @@ function parseExactArtifactRequirements(
 function parseAllowedTerminalStates(raw: unknown): readonly string[] | undefined {
   if (!isRecord(raw) || !Array.isArray(raw.terminalStates)) return undefined;
   return Object.freeze(raw.terminalStates.map(String));
+}
+
+function buildLosslessWorkerRequirements(
+  procedure: ParsedResearchProcedure,
+): Readonly<{
+  terminalStates: readonly string[];
+  requirements: readonly WorkerCheckpointRequirement[];
+}> {
+  const contract = loadResearchMethodologyContractFromProcedure(procedure);
+  const requirements = contract.checkpoints.map((checkpoint) =>
+    Object.freeze({
+      id: checkpoint.id,
+      kind: checkpoint.kind,
+      ...(checkpoint.kind === "artifact_lifecycle_checkpoint"
+        ? { artifact: checkpoint.artifact }
+        : {}),
+      producer: checkpoint.producer,
+      consumer: checkpoint.consumer,
+      fields: checkpoint.fields,
+      terminalApplicability: checkpoint.terminal_applicability,
+      transitionConditions: Object.freeze({
+        ...checkpoint.transition_conditions,
+      }),
+    }),
+  );
+  return Object.freeze({
+    terminalStates: Object.freeze([
+      ...contract.terminal_states.asserted,
+      ...contract.terminal_states.unasserted_not_claimed,
+    ]),
+    requirements: Object.freeze(requirements),
+  });
 }
 
 /**
@@ -172,25 +227,30 @@ export function buildWorkerMethodologyProjectionV2(
     );
   }
 
-  const artifactRequirements: WorkerMethodologyProjectionV2["artifactRequirements"][number][] =
-    [];
+  const artifactRequirements: WorkerMethodologyRequirement[] = [];
   let terminalStates: readonly string[] | undefined;
-  for (const item of procedure.supportPack.workerVisibleInventory) {
-    if (item.role !== "artifacts" || item.mediaType !== "application/json") {
-      continue;
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(item.bytes));
-    } catch (error) {
-      throw new Error(
-        `Worker-visible artifact contract is not valid UTF-8 JSON: ${item.path}`,
-        { cause: error },
-      );
-    }
-    artifactRequirements.push(...parseExactArtifactRequirements(parsed));
-    if (terminalStates === undefined) {
-      terminalStates = parseAllowedTerminalStates(parsed);
+  if (procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION) {
+    const lossless = buildLosslessWorkerRequirements(procedure);
+    artifactRequirements.push(...lossless.requirements);
+    terminalStates = lossless.terminalStates;
+  } else {
+    for (const item of procedure.supportPack.workerVisibleInventory) {
+      if (item.role !== "artifacts" || item.mediaType !== "application/json") {
+        continue;
+      }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(
+          new TextDecoder("utf-8", { fatal: true }).decode(item.bytes),
+        );
+      } catch (error) {
+        throw new Error(
+          `Worker-visible artifact contract is not valid UTF-8 JSON: ${item.path}`,
+          { cause: error },
+        );
+      }
+      artifactRequirements.push(...parseExactArtifactRequirements(parsed));
+      terminalStates ??= parseAllowedTerminalStates(parsed);
     }
   }
 

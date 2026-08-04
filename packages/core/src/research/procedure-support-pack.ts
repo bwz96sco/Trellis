@@ -18,6 +18,66 @@ export const FROZEN_METHODOLOGY_CONTRACT_VERSION =
 export const FROZEN_METHODOLOGY_CONTRACT_DIGEST =
   "sha256:57d1956bf4453b497cce0e288c95d7194491ddac611570e8e0c8c0aefb7516bb" as const;
 
+/**
+ * Development-bound evaluation-contract-v1.3.0 identity from V13-A attempt-2
+ * authoring commit 4c49b8fd (frozen-migration-target digest).
+ * Not activated; V13-B agent assurance may still fail later.
+ */
+export const V13_METHODOLOGY_CONTRACT_VERSION =
+  "evaluation-contract-v1.3.0" as const;
+export const V13_METHODOLOGY_CONTRACT_DIGEST =
+  "sha256:76bf0a2402c8585e79499fdfdcc7afda2ff58d479c483fcf19f13e45d9318166" as const;
+export const V13_METHODOLOGY_CANDIDATE_MANIFEST_DIGEST =
+  "sha256:d8bc82e870d00593c738c7708528f99381e4d6b308bddf9256d5b4b99563e85f" as const;
+export const V13_ATTEMPT2_AUTHORING_COMMIT =
+  "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f" as const;
+
+/** Exact procedure-version → methodology contract binding (fail-closed). */
+export function resolveMethodologyContractBinding(procedureVersion: string): {
+  readonly version: string;
+  readonly digest: string;
+  readonly disposition:
+    | "immutable-exception-2.0.0"
+    | "historical-exception-2.0.1"
+    | "exact-v1.2"
+    | "exact-v1.3-attempt-2-development-binding"
+    | "unknown-fail-closed";
+} {
+  if (procedureVersion === "2.0.0") {
+    return {
+      version: FROZEN_METHODOLOGY_CONTRACT_VERSION,
+      digest: FROZEN_METHODOLOGY_CONTRACT_DIGEST,
+      disposition: "immutable-exception-2.0.0",
+    };
+  }
+  if (procedureVersion === "2.0.1") {
+    return {
+      version: FROZEN_METHODOLOGY_CONTRACT_VERSION,
+      digest: FROZEN_METHODOLOGY_CONTRACT_DIGEST,
+      disposition: "historical-exception-2.0.1",
+    };
+  }
+  if (procedureVersion === "2.0.2") {
+    return {
+      version: FROZEN_METHODOLOGY_CONTRACT_VERSION,
+      digest: FROZEN_METHODOLOGY_CONTRACT_DIGEST,
+      disposition: "exact-v1.2",
+    };
+  }
+  if (procedureVersion === "2.0.3") {
+    return {
+      version: V13_METHODOLOGY_CONTRACT_VERSION,
+      digest: V13_METHODOLOGY_CONTRACT_DIGEST,
+      disposition: "exact-v1.3-attempt-2-development-binding",
+    };
+  }
+  return {
+    version: "",
+    digest: "",
+    disposition: "unknown-fail-closed",
+  };
+}
+
 /** Local error type to avoid circular import with procedure-policy. */
 export class SupportPackError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -63,9 +123,11 @@ export interface SupportPackManifest {
   readonly procedureId: string;
   readonly procedureVersion: string;
   /**
-   * Frozen methodology contract identity. Optional on retained immutable 2.0.0
-   * fixtures; required for 2.0.1+ schema-v2 packs. 2.0.2+ must equal the frozen
-   * evaluation-contract-v1.2.0 identity exactly.
+   * Methodology contract identity. Optional on retained immutable 2.0.0
+   * fixtures; required for 2.0.1+ schema-v2 packs.
+   * Exact bindings: 2.0.2 → evaluation-contract-v1.2.0; 2.0.3 →
+   * evaluation-contract-v1.3.0 attempt-2 development digest. Unknown
+   * Procedure/contract/digest combinations fail closed.
    */
   readonly methodologyContractVersion?: string;
   readonly methodologyContractDigest?: string;
@@ -213,15 +275,28 @@ export function parseSupportPackManifest(input: {
       );
     }
   }
-  if (requiresStrictSchemaV2 || input.procedureVersion === "2.0.2") {
+  if (input.procedureVersion === "2.0.2") {
     if (
       methodologyContractVersion !== FROZEN_METHODOLOGY_CONTRACT_VERSION ||
       methodologyContractDigest !== FROZEN_METHODOLOGY_CONTRACT_DIGEST
     ) {
       fail(
-        "Support-pack 2.0.2+ methodology contract must equal frozen evaluation-contract-v1.2.0 identity",
+        "Support-pack 2.0.2 methodology contract must equal exact frozen evaluation-contract-v1.2.0 identity",
       );
     }
+  } else if (input.procedureVersion === "2.0.3") {
+    if (
+      methodologyContractVersion !== V13_METHODOLOGY_CONTRACT_VERSION ||
+      methodologyContractDigest !== V13_METHODOLOGY_CONTRACT_DIGEST
+    ) {
+      fail(
+        "Support-pack 2.0.3 methodology contract must equal exact evaluation-contract-v1.3.0 attempt-2 development binding",
+      );
+    }
+  } else if (requiresStrictSchemaV2) {
+    fail(
+      `Support-pack Procedure version ${input.procedureVersion} has no authorized methodology contract binding (fail closed)`,
+    );
   }
   if (!Array.isArray(value.entries)) {
     fail("Support-pack entries must be an array");

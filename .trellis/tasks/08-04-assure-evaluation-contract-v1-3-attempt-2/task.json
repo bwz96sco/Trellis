@@ -21,7 +21,7 @@
   "children": [],
   "parent": "07-29-migrate-research-methodology-to-procedures",
   "relatedFiles": [],
-  "notes": "Attempt-2 sibling. Intentionally unassigned until a second accountable human accepts reviewer assignment. Owns only this directory: planning, reviewer-assignment, and exactly nine future assurance outputs. Never repairs V13-A. Attempt-1 (08-03-assure) is immutable fail evidence.",
+  "notes": "User waived second-human gate (2026-08-04): no human reviewer; agent review after development. Task remains planning until an agent V13-B run is authorized. Does not claim pass. P2 authoring 4c49b8fd is the development binding target only.",
   "meta": {
     "attempt": 2,
     "predecessorFailedAttempt": "08-03-assure-evaluation-contract-v1-3",
@@ -44,6 +44,9 @@
       "research/privacy-mutation-audit.json",
       "research/execution-evidence-ledger.json",
       "research/assurance-verdict.json"
-    ]
+    ],
+    "humanReviewerWaived": true,
+    "reviewDisposition": "deferred-to-other-agents-after-development",
+    "p2AuthoringCommit": "4c49b8fd0ae5525d24f1d8d1944571b9d62f610f"
   }
 }
