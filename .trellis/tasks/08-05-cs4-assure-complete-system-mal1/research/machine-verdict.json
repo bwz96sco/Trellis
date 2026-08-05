@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "assuranceLevel": "MAL-1",
+  "humanReviewed": false,
+  "humanEquivalent": false,
+  "verdict": "fail",
+  "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "residualRisks": [
+    "Critical: loadArtifactContractsFromProcedure returns empty lifecycle-contract lists for all 30 non-literature Procedure 2.0.4/2.0.5 family-version pairs because shipped documents use checkpoints[] while loader accepts only contracts[].",
+    "Required test suites pass but do not detect the non-literature lifecycle schema/loader mismatch.",
+    "MAL-1 is machine-only assurance, not human review or human-equivalent assurance.",
+    "Test toolchain came from an existing local dependency installation; subject source and temp-built core bytes came from exact commit."
+  ],
+  "requiredFindings": {
+    "subjectCommitTreeAndCleanExtractionMatchFreezePins": true,
+    "procedure204BytesUnchanged": true,
+    "all17Procedure205TreesAndDigestsValid": true,
+    "canonicalClosureNotDerivedFromResultStatus": true,
+    "artifactContractsLoadForAllNonLiterature204And205WithoutDefaults": false,
+    "acceptedV13PackIdentityDerivedFromMembers": true,
+    "reportV2MaterializationRequiresMultifactorAuthority": true,
+    "harnessEvidencePathPortable": true,
+    "coreMethodologyV13RuntimeTestsPass": true,
+    "cliClosureAndHarnessTestsPass": true,
+    "dormantCandidateUnauthorizedAndLiveSelectionPreserved": true,
+    "supersessionGrantsNoActivationReleaseOrPush": true
+  }
+}

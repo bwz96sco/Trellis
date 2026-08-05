@@ -1,0 +1,621 @@
+{
+  "schemaVersion": 1,
+  "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
+  "contractVersion": "evaluation-contract-v1.3.0",
+  "acceptedContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+  "derivedMemberAggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
+  "identityDerivation": "sha256(domain 'trellis-accepted-v13-pack-members\\0' + ordered path\\0bytes\\0 for exact allowlist)",
+  "acceptedDigestCallerStamped": false,
+  "members": [
+    {
+      "path": "durable-output-disposition-v1.3.json",
+      "byteLength": 86073,
+      "sha256": "0d52d392a5da298f72b9e605b0fe2d04533e45b5674a12a7f125aa2ab95e3da9"
+    },
+    {
+      "path": "artifact-lifecycle-contract-v1.3.json",
+      "byteLength": 1148478,
+      "sha256": "1c45fdfb347ec00466cf420433397b9418aff1ce741d950de709e8387082105a"
+    },
+    {
+      "path": "validator-registry-v1.3.json",
+      "byteLength": 49941,
+      "sha256": "7f62559b429432b91dde8de1d6304a1873965a4dfd157e2143a8b3519cf3f83c"
+    },
+    {
+      "path": "validator-binding-matrix-v1.3.json",
+      "byteLength": 480385,
+      "sha256": "216326d3effe0f174509576a2308acd74501a5f2c093d88698e4ba61bc411c69"
+    },
+    {
+      "path": "differential-test-matrix-v1.3.json",
+      "byteLength": 628648,
+      "sha256": "5b5bb309466278ab6d5cb68be07e83a30a254257bce21c57a060375d29be1d3e"
+    },
+    {
+      "path": "derivability-provenance-matrix-v1.3.json",
+      "byteLength": 592874,
+      "sha256": "d9b548b82a5cd60c6d30535a69723b5ecf6ec8ac3575bbb950c04a8d6d73b121"
+    },
+    {
+      "path": "closure-contract-v1.3.json",
+      "byteLength": 20300,
+      "sha256": "99b5fb9711da93d2c9a3343f0769809eeec9d6c2673078cbec579aa2f9c0c9c0"
+    }
+  ],
+  "frozenTargetDigestMatchingFiles": [
+    ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/frozen-migration-target-v1.3.json"
+  ],
+  "procedure205Packs": [
+    {
+      "procedureId": "computation-case-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "41120fb91b84fcd311c2a2dfc7ea7ccd322b8db24691011df6d8a69fb35a3ba8",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "a9f4b29cda7e46a44180e9b606023a0a76054f7f53749cfe576be46717d64b57",
+          "byteLength": 13410,
+          "declaredSha256": "a9f4b29cda7e46a44180e9b606023a0a76054f7f53749cfe576be46717d64b57",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "18d400e1471894efec6ab2cb89ecec8e68770956a2859bce66db511e61a873e5",
+          "byteLength": 374,
+          "declaredSha256": "18d400e1471894efec6ab2cb89ecec8e68770956a2859bce66db511e61a873e5",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "experiment-campaign-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "b4418fba4daa1bcba1f4daaf427a7047ac846c2d0f8524571df448d928021b86",
+      "entryCount": 4,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "dc54c6e1c298adc0031bc405ec8199070f6a306d561d94d2c126d0352e570d61",
+          "byteLength": 18202,
+          "declaredSha256": "dc54c6e1c298adc0031bc405ec8199070f6a306d561d94d2c126d0352e570d61",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "50a76a25fce6daae4d11d80a84d5bcfaafaa832dae07b5952c2f02b1c2359a79",
+          "byteLength": 507,
+          "declaredSha256": "50a76a25fce6daae4d11d80a84d5bcfaafaa832dae07b5952c2f02b1c2359a79",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        },
+        {
+          "path": "closure/research-experiment.json",
+          "sha256": "4a42c2bf0ba9d3eb752e3329d11b6efdd55d0e785346a4bb367bb86c0266cf70",
+          "byteLength": 153,
+          "declaredSha256": "4a42c2bf0ba9d3eb752e3329d11b6efdd55d0e785346a4bb367bb86c0266cf70",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "experiment-round-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "0a4e35d30a243812d42b858edd36882061eab75e5ac00d0bcbaf316223b1745e",
+      "entryCount": 4,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "232e73c44e802284ce792f9bbe37fdd42ab73d763e86e063d85b3ade42568d69",
+          "byteLength": 16688,
+          "declaredSha256": "232e73c44e802284ce792f9bbe37fdd42ab73d763e86e063d85b3ade42568d69",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "2b85249f1e92b98dc16a864957a03b15986cea5db8c70865b14b87b33cbd8671",
+          "byteLength": 501,
+          "declaredSha256": "2b85249f1e92b98dc16a864957a03b15986cea5db8c70865b14b87b33cbd8671",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        },
+        {
+          "path": "closure/research-experiment.json",
+          "sha256": "4a42c2bf0ba9d3eb752e3329d11b6efdd55d0e785346a4bb367bb86c0266cf70",
+          "byteLength": 153,
+          "declaredSha256": "4a42c2bf0ba9d3eb752e3329d11b6efdd55d0e785346a4bb367bb86c0266cf70",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "figure-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "2bfa7d0a798667a9b6ceda7f6752de09e6a4c5b251e206b454cded23ac4241fb",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "79088f2c89b356d2f6e26afb32006b4703408787c36f0927a844ce40d547eb84",
+          "byteLength": 14068,
+          "declaredSha256": "79088f2c89b356d2f6e26afb32006b4703408787c36f0927a844ce40d547eb84",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "a46c127ef1ddd61fa1e88b058dde911bd605720afd349f57b922608e4b8915fc",
+          "byteLength": 624,
+          "declaredSha256": "a46c127ef1ddd61fa1e88b058dde911bd605720afd349f57b922608e4b8915fc",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "idea-evaluation-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "e3262f393e609fb1c23c8985df3d5e9ac921b996627d7ec4c33af130ccb1e38d",
+      "entryCount": 4,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "ba8c09b195b5f4af665302a8d7dcc4b9ee989d03d80afb59f8d8a4f98b55d859",
+          "byteLength": 10121,
+          "declaredSha256": "ba8c09b195b5f4af665302a8d7dcc4b9ee989d03d80afb59f8d8a4f98b55d859",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "bb64f7ed873ebab49b8edb95d12f73fb72d04993819d23d7c1c790fdb5879db9",
+          "byteLength": 539,
+          "declaredSha256": "bb64f7ed873ebab49b8edb95d12f73fb72d04993819d23d7c1c790fdb5879db9",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        },
+        {
+          "path": "closure/research-idea-evaluation.json",
+          "sha256": "a5f6b42266f840a5d504cb0e0237d9c84a0249229f6c895c8524649c050bd10b",
+          "byteLength": 158,
+          "declaredSha256": "a5f6b42266f840a5d504cb0e0237d9c84a0249229f6c895c8524649c050bd10b",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "idea-generation-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "e13fa6f71af6d2fd5f5a22e1a0d643c335d35a76a63c251cf9fbe35adfc8f3ee",
+      "entryCount": 4,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "cd0f8e04187fd229b1c48818e4d621559e619d738a8953b2cb477e90ab23a382",
+          "byteLength": 9774,
+          "declaredSha256": "cd0f8e04187fd229b1c48818e4d621559e619d738a8953b2cb477e90ab23a382",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "0cde52afb3b18c1ab08e691fcd7b9785792d488f100b6c22e06f06ad473517f4",
+          "byteLength": 509,
+          "declaredSha256": "0cde52afb3b18c1ab08e691fcd7b9785792d488f100b6c22e06f06ad473517f4",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        },
+        {
+          "path": "closure/research-ideation.json",
+          "sha256": "40bac2756edb456520992d730ed6fccf688c6de8ee9ebbbdc8c3cc3928129b6d",
+          "byteLength": 151,
+          "declaredSha256": "40bac2756edb456520992d730ed6fccf688c6de8ee9ebbbdc8c3cc3928129b6d",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "literature-review-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "eb28c453c2765cda1b61517549e72635238f2de7ebbac344b349963ca2dee740",
+      "entryCount": 4,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "23b14757f4adfcc1352582b8b35acbd8eb120f1c2547217b35e486311c59fc46",
+          "byteLength": 16398,
+          "declaredSha256": "23b14757f4adfcc1352582b8b35acbd8eb120f1c2547217b35e486311c59fc46",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "480b412dcf9d4fcc38cc431c81d4a1fd990b178be1f1197f349ed1656c3c1039",
+          "byteLength": 868,
+          "declaredSha256": "480b412dcf9d4fcc38cc431c81d4a1fd990b178be1f1197f349ed1656c3c1039",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        },
+        {
+          "path": "closure/research-literature.json",
+          "sha256": "3185fd5cf59cec464932be6e1156690961add1dfb7b23b2499e2c9e6162a286f",
+          "byteLength": 153,
+          "declaredSha256": "3185fd5cf59cec464932be6e1156690961add1dfb7b23b2499e2c9e6162a286f",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "literature-scan-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "f5ce1f8ea7b12c3c789e687213c98cca50d7c5d47c93886515ee29901c91fc73",
+      "entryCount": 4,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "57c710422861ab2afad6aaa476c4e49b8e0aedbff8ad0228d0f3166d821af02f",
+          "byteLength": 1375,
+          "declaredSha256": "57c710422861ab2afad6aaa476c4e49b8e0aedbff8ad0228d0f3166d821af02f",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "816a7d4ff47cc5802928f606877243d6901762d84f657c8a85bc731337bd4113",
+          "byteLength": 376,
+          "declaredSha256": "816a7d4ff47cc5802928f606877243d6901762d84f657c8a85bc731337bd4113",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        },
+        {
+          "path": "closure/research-literature.json",
+          "sha256": "3185fd5cf59cec464932be6e1156690961add1dfb7b23b2499e2c9e6162a286f",
+          "byteLength": 153,
+          "declaredSha256": "3185fd5cf59cec464932be6e1156690961add1dfb7b23b2499e2c9e6162a286f",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "project-setup-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "a5aa9b79a95439078e711598804f53785c6234e11527be9ef2174994f25eb836",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "e8e57bd9ed26bfe70e1d60d2c86055162d7406f1e4b8b3c385c0569558183450",
+          "byteLength": 13256,
+          "declaredSha256": "e8e57bd9ed26bfe70e1d60d2c86055162d7406f1e4b8b3c385c0569558183450",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "cd0ace918df9ef58a91229c56013a6930e115a9164b23ea9647415edbc7c23d3",
+          "byteLength": 392,
+          "declaredSha256": "cd0ace918df9ef58a91229c56013a6930e115a9164b23ea9647415edbc7c23d3",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "quest-admin-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "c6ef357c5fb7b743a33843ad8ce91da44fb66e3741dbd308b9b5a91ba05923d8",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "0d3f7d2d47496730c3355805dd49c2dc2cfdd5a4addc41a2aab4f31d3a8d6261",
+          "byteLength": 6379,
+          "declaredSha256": "0d3f7d2d47496730c3355805dd49c2dc2cfdd5a4addc41a2aab4f31d3a8d6261",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "3ec36a5e53d0e947b50777c3f6bc47c506d744525ad1a87079fdb2632df618d2",
+          "byteLength": 277,
+          "declaredSha256": "3ec36a5e53d0e947b50777c3f6bc47c506d744525ad1a87079fdb2632df618d2",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "quest-framing-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "0913cbaf1b9ffb0fd0c7e0a1186921ac63476d2cc0e5292f5da92f9e0262285d",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "ffe415561b921618eaa0103110f6186b539713265305225214db09904549a9e2",
+          "byteLength": 2213,
+          "declaredSha256": "ffe415561b921618eaa0103110f6186b539713265305225214db09904549a9e2",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "9c31da444f0e7a1ead8d2600f687f0a2a2c5177839aab2b238bbaad3eb1eae79",
+          "byteLength": 273,
+          "declaredSha256": "9c31da444f0e7a1ead8d2600f687f0a2a2c5177839aab2b238bbaad3eb1eae79",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "review-campaign-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "5cd9bb8f9e851bfc30dd94306b1feaa2685070cda75290bde8fdccdf9aeb6b22",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "fdd46919a3dd6199183520bd75cb1cb9cf2a524852eef3d1d93a88ed4d8db3dd",
+          "byteLength": 5098,
+          "declaredSha256": "fdd46919a3dd6199183520bd75cb1cb9cf2a524852eef3d1d93a88ed4d8db3dd",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "2270be335c33e5a0036587e522df7cfb75d05b997339a68d84d109f8e52bff0f",
+          "byteLength": 384,
+          "declaredSha256": "2270be335c33e5a0036587e522df7cfb75d05b997339a68d84d109f8e52bff0f",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "review-case-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "7c1d306d1683c377432dc53bb736d6c7ec62eaa67323149192f6c13917e4cd97",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "4cd2f9847ca51d90b134b6c6a26c1045634e3c2287e192df7750ce665420f588",
+          "byteLength": 17396,
+          "declaredSha256": "4cd2f9847ca51d90b134b6c6a26c1045634e3c2287e192df7750ce665420f588",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "59fa134fa20da188c8ef0e6f43a74d5559e28c4b207609576eeb02d1e419397f",
+          "byteLength": 382,
+          "declaredSha256": "59fa134fa20da188c8ef0e6f43a74d5559e28c4b207609576eeb02d1e419397f",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "slides-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "c97ffefbcd942a01f6b80ac509d603cb173c6b11e0106bfefc8aebe0687d2ca4",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "d73b3a7c6041c48a31680425a5bf7752a70d3e31dc13beb68fc11e78926c7300",
+          "byteLength": 11990,
+          "declaredSha256": "d73b3a7c6041c48a31680425a5bf7752a70d3e31dc13beb68fc11e78926c7300",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "b6f842ff6b4b7b32183fb23c7ab7c93ec23cffc60602364a8496c105e1ed654c",
+          "byteLength": 640,
+          "declaredSha256": "b6f842ff6b4b7b32183fb23c7ab7c93ec23cffc60602364a8496c105e1ed654c",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "survey-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "08bf4767930a5de921dc172699f519a3baeb1f6d511d5ef26cbe7df2e48c3afb",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "f2625f99e7439eaed617781a2e5da294a6629446ad266d50a11b35ec562b2da9",
+          "byteLength": 14068,
+          "declaredSha256": "f2625f99e7439eaed617781a2e5da294a6629446ad266d50a11b35ec562b2da9",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "f034b7541422d0e0f21972c3d6c3b786b2df1d1250ae57ab6eaa3c15f25366d4",
+          "byteLength": 765,
+          "declaredSha256": "f034b7541422d0e0f21972c3d6c3b786b2df1d1250ae57ab6eaa3c15f25366d4",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "theory-case-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "c7f7bf330922cd67dd1456b8804449d7f1d73deb501f6a1af449ca29f6002857",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "3aafc48fe162e9d521db995cf83c4d791eb7e2305961cd44a09bd1c4b65d73ea",
+          "byteLength": 16228,
+          "declaredSha256": "3aafc48fe162e9d521db995cf83c4d791eb7e2305961cd44a09bd1c4b65d73ea",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "a1ee47f476c37cef4846561bfeb9e5d23711c2d92cedaa45ce7167da0ac6b11f",
+          "byteLength": 378,
+          "declaredSha256": "a1ee47f476c37cef4846561bfeb9e5d23711c2d92cedaa45ce7167da0ac6b11f",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    },
+    {
+      "procedureId": "writing-case-v1",
+      "procedureVersion": "2.0.5",
+      "packSha256": "e639b10eded09f219237d45484dd7c03adb813e8cc72abf90c69dd970fd43d13",
+      "entryCount": 3,
+      "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      "entries": [
+        {
+          "path": "artifacts/artifact-contract.json",
+          "sha256": "74b17827587ff70aa65e2cab34f12d07a637ec5fc40b9baa9988afd34ec7d03f",
+          "byteLength": 18505,
+          "declaredSha256": "74b17827587ff70aa65e2cab34f12d07a637ec5fc40b9baa9988afd34ec7d03f",
+          "valid": true
+        },
+        {
+          "path": "instructions/checkpoints.md",
+          "sha256": "bbc2702f593f6ac4b027304560040a444c9141e2eb10249a856cbdf0f237cbf3",
+          "byteLength": 392,
+          "declaredSha256": "bbc2702f593f6ac4b027304560040a444c9141e2eb10249a856cbdf0f237cbf3",
+          "valid": true
+        },
+        {
+          "path": "validators/validators.json",
+          "sha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "byteLength": 529,
+          "declaredSha256": "61176baa8060c43db3d493c9f139fafe4ea3ed9c2a15be8b494e8cbc3bd2f766",
+          "valid": true
+        }
+      ],
+      "valid": true
+    }
+  ],
+  "allProcedure205PacksValid": true
+}

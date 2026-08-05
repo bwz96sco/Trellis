@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
+  "subjectTree": "2c180d1fd30903c3255938ba0c601518ab69932b",
+  "detachedHead": true,
+  "initialWorktreeClean": true,
+  "subjectFreeze": {
+    "path": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-exact-subject-freeze.json",
+    "sha256": "84644a202eeb1b3e90407bc30365786d9fcfb1eb130a62bfd3d0cc4d5deb4d7c",
+    "sidecarMatched": true,
+    "subjectHeadBeforeFreeze": "4a43afb416f89a33cbea503bd8192661a3ada166",
+    "headParent": "4a43afb416f89a33cbea503bd8192661a3ada166",
+    "pinsMatched": true
+  },
+  "includedWaves": [
+    {
+      "wave": "CS4-0",
+      "commit": "fcf2b98622b18c5e5c5ac677e89dbb3af9ac517d"
+    },
+    {
+      "wave": "CS4-1+2",
+      "commit": "bba6a2ce6fc19b34738024b8799cb12572ef85ca"
+    },
+    {
+      "wave": "CS4-3",
+      "commit": "ac7a6fd028d5316bd4682c2364759d399e9f6175"
+    },
+    {
+      "wave": "CS4-4",
+      "commit": "4a43afb416f89a33cbea503bd8192661a3ada166"
+    },
+    {
+      "wave": "freeze",
+      "commit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8"
+    }
+  ],
+  "allWaveCommitsAncestors": true,
+  "dirtyOverlaysExcluded": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "docs-site",
+    "marketplace"
+  ],
+  "dirtyOverlayPresentAtInitialReview": false,
+  "procedure204TreeComparison": {
+    "schemaVersion": 1,
+    "baselineCommit": "bba6a2ce6fc19b34738024b8799cb12572ef85ca",
+    "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
+    "baselinePathCount": 108,
+    "subjectPathCount": 108,
+    "added": [],
+    "deleted": [],
+    "changed": [],
+    "bytesUnchanged": true
+  },
+  "procedure205FamilyCount": 17,
+  "procedure205AllPacksValid": true,
+  "literatureScanResidualVersion": {
+    "procedureVersion": "2.0.5",
+    "packProcedureVersion": "2.0.5",
+    "containsLiteral2.0.3": false,
+    "ok": true
+  },
+  "attested": true
+}

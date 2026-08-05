@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "dormantCandidate": {
+    "path": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
+    "sha256": "c143c6192d1b9c2d48cf9c8c5e5cdbf7d55425a2339bc1b8a14fb0ff3fac1376",
+    "activationAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false
+  },
+  "liveSelection": {
+    "procedureVersion": "1.0.0",
+    "literatureDefault": "research.literature.scan",
+    "sourcePaths": [
+      "packages/core/src/research/stage-capabilities.ts"
+    ],
+    "preserved": true
+  },
+  "supersessionDisposition": {
+    "path": ".trellis/tasks/08-05-cs4-supersede-stale-complete-system-assurance/research/cs4-supersession-disposition.json",
+    "sha256": "818f704687af71313e20bf914bf1cfff64707857af9e3330e1b424d3bc2f1225",
+    "grantsActivation": false,
+    "grantsRelease": false,
+    "grantsPublication": false,
+    "grantsPush": false
+  },
+  "forbiddenActionsPerformed": {
+    "activation": false,
+    "release": false,
+    "publication": false,
+    "push": false,
+    "packageByteEdit": false,
+    "sourceEdit": false
+  },
+  "reviewOnly": true,
+  "contained": true
+}
