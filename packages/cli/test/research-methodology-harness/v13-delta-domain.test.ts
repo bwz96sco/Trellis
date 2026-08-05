@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -32,13 +33,20 @@ const a3Research = path.join(
   repoRoot,
   ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research",
 );
-// Retained under session scratch when available; otherwise local harness dir.
-const evidenceRoot =
-  process.env.TRELLIS_V13_DELTA_EVIDENCE_DIR ??
-  path.join(
-    "/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-1a5fd470bcd8/implementer",
-    "v13-delta-evidence",
-  );
+/**
+ * Evidence destination:
+ * - TRELLIS_V13_DELTA_EVIDENCE_DIR when explicitly configured (assurance runs)
+ * - otherwise os.tmpdir() + mkdtemp (ordinary tests; never machine-specific
+ *   hardcoded /var/folders/... paths)
+ */
+function resolveEvidenceRoot(): string {
+  const configured = process.env.TRELLIS_V13_DELTA_EVIDENCE_DIR;
+  if (typeof configured === "string" && configured.length > 0) {
+    fs.mkdirSync(configured, { recursive: true });
+    return configured;
+  }
+  return fs.mkdtempSync(path.join(os.tmpdir(), "trellis-v13-delta-"));
+}
 
 const LEAF_FILES: readonly V13LeafFileName[] = [
   "durable-output-disposition-v1.3.json",
@@ -412,6 +420,7 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
     const fingerprints = new Set<string>();
     const evidence: Array<Record<string, unknown>> = [];
 
+    const evidenceRoot = resolveEvidenceRoot();
     fs.mkdirSync(evidenceRoot, { recursive: true });
 
     for (const c of domain.cases) {
