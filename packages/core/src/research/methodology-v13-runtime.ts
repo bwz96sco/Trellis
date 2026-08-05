@@ -1100,27 +1100,19 @@ function evaluateNonArtifactSemanticRule(
   }
 
   if (fixtureClass === "critical-negative") {
-    // Mutation applied: production fail-closed with the rule's stable errors.
-    // Prefer binding stable errors; fall back to pack.deltaCases row for this rule.
-    let codes = [...new Set(boundErrors)];
-    if (codes.length === 0) {
-      // Contract-level rules encoded only on the delta row itself.
-      const deltaHit = pack.deltaCases.find((row) => {
-        const ruleKind =
-          typeof row.ruleKind === "string" ? row.ruleKind : undefined;
-        const fixture =
-          typeof row.fixtureClass === "string" ? row.fixtureClass : undefined;
-        return (
-          ruleKind === semanticRule && fixture === "critical-negative"
-        );
-      });
-      const stable = deltaHit?.expectedStableErrors;
-      if (Array.isArray(stable)) {
-        codes = stable.filter((e): e is string => typeof e === "string");
+    // Mutation applied: fail closed with binding stable errors, then fixed
+    // semantic-rule → code map. Never read expectedStableErrors from the
+    // delta row (test-oracle field, not production authority).
+    const ordered: string[] = [];
+    const seen = new Set<string>();
+    for (const code of boundErrors) {
+      if (!seen.has(code)) {
+        seen.add(code);
+        ordered.push(code);
       }
     }
+    let codes = ordered;
     if (codes.length === 0) {
-      // Last resort: known semantic-rule → code map for global integrity rules.
       const fallback: Record<string, string> = {
         "closure.schema": "V13_CLOSURE_SCHEMA_INVALID",
         "closure.evidence": "V13_CLOSURE_EVIDENCE_INVALID",
@@ -1305,22 +1297,9 @@ export function evaluateAcceptedV13DeltaCase(
         bindingIds,
       );
 
-  // Critical-negative: production fail-closed uses the pack-declared exact
-  // ordered stable-error vector when evaluation fails closed. The semantic
-  // evaluator must still fail; codes are the digest-bound pack authority.
-  let errorCodes = evaluated.errorCodes;
-  if (
-    fixtureClass === "critical-negative" &&
-    evaluated.outcome === "fail-closed" &&
-    Array.isArray(packCase.expectedStableErrors)
-  ) {
-    const expected = packCase.expectedStableErrors.filter(
-      (e): e is string => typeof e === "string",
-    );
-    if (expected.length > 0 && errorCodes.length > 0) {
-      errorCodes = expected;
-    }
-  }
+  // Actual codes only — never overwrite with packCase.expectedStableErrors
+  // (that field is oracle/test data, not production authority).
+  const errorCodes = evaluated.errorCodes;
 
   // Distinct fingerprint per case+mutation+outcome so non-distinct execution fails.
   const fingerprint = createHash("sha256")
