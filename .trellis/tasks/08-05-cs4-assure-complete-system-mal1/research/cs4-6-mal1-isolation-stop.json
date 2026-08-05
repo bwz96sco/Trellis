@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "cs4-6-mal1-honest-stop",
+  "recordedOn": "2026-08-05",
+  "wave": "CS4-6",
+  "status": "blocked-pending-fresh-isolated-reviewer",
+  "reason": [
+    "MAL-1 requires a fresh Codex runtime distinct from Grok, repair agents, and prior B3/CS3 reviewers.",
+    "No resume, shared transcript, or shared scratch is allowed.",
+    "This implementer session authored CS4-0..CS4-5 and therefore cannot substitute as the CS4-6 reviewer."
+  ],
+  "subjectFreeze": {
+    "commit": "8d52b1f0",
+    "path": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-exact-subject-freeze.json"
+  },
+  "nineFileAllowlist": ".trellis/tasks/08-05-cs4-supersede-stale-complete-system-assurance/research/cs4-mal1-nine-file-output-allowlist.json",
+  "nextAction": "Launch fresh isolated Codex MAL-1 against clean extraction of subject including 8d52b1f0; write exactly nine allowlisted outputs; verdict pass|fail only.",
+  "humanReviewed": false,
+  "activationAuthorized": false,
+  "completeSystemAcceptance": false
+}

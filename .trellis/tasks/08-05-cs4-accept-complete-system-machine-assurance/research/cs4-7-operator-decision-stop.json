@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "cs4-7-operator-honest-stop",
+  "recordedOn": "2026-08-05",
+  "wave": "CS4-7",
+  "status": "blocked-pending-machine-pass-and-genuine-operator",
+  "reason": [
+    "CS4-7 requires a genuine accountable operator accept/reject after a frozen MAL-1 pass.",
+    "No predetermined auto-accept is allowed.",
+    "Machine pass alone grants no complete-system acceptance."
+  ],
+  "prerequisite": "CS4-6 committed nine-file pass on exact subject",
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false
+}
