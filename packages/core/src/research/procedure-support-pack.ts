@@ -69,6 +69,7 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
     | "exact-v1.2"
     | "historical-unaccepted-2.0.3-not-authoritative"
     | "exact-v1.3-accepted"
+    | "exact-v1.3-accepted-2.0.5"
     | "unknown-fail-closed";
   readonly authoritative: boolean;
 } {
@@ -105,11 +106,14 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
       authoritative: false,
     };
   }
-  if (procedureVersion === "2.0.4") {
+  if (procedureVersion === "2.0.4" || procedureVersion === "2.0.5") {
     return {
       version: V13_ACCEPTED_CONTRACT_VERSION,
       digest: V13_ACCEPTED_CONTRACT_DIGEST,
-      disposition: "exact-v1.3-accepted",
+      disposition:
+        procedureVersion === "2.0.5"
+          ? "exact-v1.3-accepted-2.0.5"
+          : "exact-v1.3-accepted",
       authoritative: true,
     };
   }
@@ -345,13 +349,16 @@ export function parseSupportPackManifest(input: {
         "Support-pack 2.0.3 is historical-unaccepted; methodology digests must match rejected A2 identity only (not accepted authority)",
       );
     }
-  } else if (input.procedureVersion === "2.0.4") {
+  } else if (
+    input.procedureVersion === "2.0.4" ||
+    input.procedureVersion === "2.0.5"
+  ) {
     if (
       methodologyContractVersion !== V13_ACCEPTED_CONTRACT_VERSION ||
       methodologyContractDigest !== V13_ACCEPTED_CONTRACT_DIGEST
     ) {
       fail(
-        "Support-pack 2.0.4 requires exact accepted evaluation-contract-v1.3.0 frozen-target digest after OA3",
+        `Support-pack ${input.procedureVersion} requires exact accepted evaluation-contract-v1.3.0 frozen-target digest`,
       );
     }
   } else if (requiresStrictSchemaV2) {

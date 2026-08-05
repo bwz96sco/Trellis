@@ -210,9 +210,13 @@ describe("Research methodology contract (historical Phase-2 fixture + version di
       disposition: "exact-v1.3-accepted",
       authoritative: true,
     });
-    expect(resolveMethodologyContractBinding("2.0.5").disposition).toBe(
-      "unknown-fail-closed",
-    );
+    expect(resolveMethodologyContractBinding("2.0.5")).toEqual({
+      version: "evaluation-contract-v1.3.0",
+      digest:
+        "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      disposition: "exact-v1.3-accepted-2.0.5",
+      authoritative: true,
+    });
   });
 
   it("independently proves the historical 16/104 union and routing extension exclusion", () => {

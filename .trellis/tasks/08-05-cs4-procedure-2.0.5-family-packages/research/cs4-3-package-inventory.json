@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "procedureVersion": "2.0.5",
+  "familyCount": 17,
+  "methodologyContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+  "immutablePriorVersions": [
+    "1.0.0",
+    "2.0.0",
+    "2.0.1",
+    "2.0.2",
+    "2.0.3",
+    "2.0.4"
+  ],
+  "liveSelectionUnchanged": "1.0.0",
+  "activationAuthorized": false
+}
