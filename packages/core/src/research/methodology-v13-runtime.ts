@@ -137,6 +137,8 @@ export interface V13ContractPackCounts {
 export interface V13AcceptedContractPack {
   readonly contractVersion: typeof V13_ACCEPTED_CONTRACT_VERSION;
   readonly acceptedContractDigest: typeof V13_ACCEPTED_CONTRACT_DIGEST;
+  /** Member-tree aggregate derived from allowlisted bytes (not caller-stamped). */
+  readonly derivedMemberAggregateSha256: string;
   readonly counts: V13ContractPackCounts;
   readonly outputs: readonly Readonly<Record<string, unknown>>[];
   readonly artifacts: readonly V13ArtifactLifecycleRow[];
@@ -361,12 +363,28 @@ export function parseAcceptedV13ContractPack(input: {
     }
   }
 
-  const expectedDigest =
-    input.expectedContractDigest ?? V13_ACCEPTED_CONTRACT_DIGEST;
+  // Derive member identity from exact allowlisted bytes. Never stamp a
+  // caller-provided expected digest as the derived pack identity.
+  const derivedIdentity = deriveAcceptedV13PackIdentity({
+    leafBytes: input.leafBytes,
+  });
+  if (
+    input.expectedContractDigest !== undefined &&
+    input.expectedContractDigest !== V13_ACCEPTED_CONTRACT_DIGEST
+  ) {
+    fail(
+      "V13_PACK_DIGEST_MISMATCH",
+      "Caller expectedContractDigest does not match frozen accepted A3 digest",
+    );
+  }
+  // Frozen A3 digest remains the published identity only after member
+  // allowlist validation above succeeded (structure + exact counts).
+  const acceptedContractDigest = V13_ACCEPTED_CONTRACT_DIGEST;
 
   return Object.freeze({
     contractVersion: V13_ACCEPTED_CONTRACT_VERSION,
-    acceptedContractDigest: expectedDigest as typeof V13_ACCEPTED_CONTRACT_DIGEST,
+    acceptedContractDigest,
+    derivedMemberAggregateSha256: derivedIdentity.aggregateSha256,
     counts: Object.freeze({
       outputs: V13_OUTPUT_COUNT,
       enforceableArtifacts: V13_ENFORCEABLE_ARTIFACT_COUNT,
@@ -1159,5 +1177,292 @@ export function evaluateAcceptedV13DeltaCase(
     semanticRule: input.semanticRule,
     syntheticMutation: input.syntheticMutation,
     executionFingerprint: fingerprint,
+  });
+}
+
+
+/** Map Procedure id to accepted closure family (four applicable families only). */
+export function mapProcedureIdToClosureFamily(
+  procedureId: string,
+): string | undefined {
+  if (
+    procedureId === "literature-scan-v1" ||
+    procedureId === "literature-review-v1"
+  ) {
+    return "research-literature";
+  }
+  if (procedureId === "idea-generation-v1") {
+    return "research-ideation";
+  }
+  if (procedureId === "idea-evaluation-v1") {
+    return "research-idea-evaluation";
+  }
+  if (
+    procedureId === "experiment-campaign-v1" ||
+    procedureId === "experiment-round-v1"
+  ) {
+    return "research-experiment";
+  }
+  return undefined;
+}
+
+export interface ParsedCanonicalMethodologyClosure {
+  readonly schemaVersion: 1;
+  readonly family: string;
+  readonly selected: boolean;
+  readonly blocked: boolean;
+  readonly selectedEvidenceArtifactIds: readonly string[];
+  readonly blockedEvidenceArtifactIds: readonly string[];
+}
+
+export type CanonicalClosureParseResult =
+  | { readonly ok: true; readonly closure: ParsedCanonicalMethodologyClosure }
+  | {
+      readonly ok: false;
+      readonly code: string;
+      readonly message: string;
+    };
+
+const ARTIFACT_ID_RE =
+  /^art_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+/**
+ * Strict-parse the canonical closure artifact for one applicable family.
+ * Result.status is never consulted. Fail closed on schema, XOR, self-reference,
+ * duplicate, unbound evidence, or digest-agnostic structural defects.
+ */
+export function parseCanonicalMethodologyClosureArtifact(input: {
+  readonly bytes: Uint8Array;
+  readonly expectedFamily: string;
+  readonly closureArtifactId: string;
+  readonly boundArtifactIds: readonly string[];
+}): CanonicalClosureParseResult {
+  let parsed: unknown;
+  try {
+    parsed = parseStrictResearchJson(input.bytes);
+  } catch (error) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_SCHEMA_INVALID",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Closure artifact is not strict JSON",
+    };
+  }
+  if (!isRecord(parsed)) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_SCHEMA_INVALID",
+      message: "Closure artifact must be an object",
+    };
+  }
+  const keys = Object.keys(parsed).sort();
+  const allowed = ["blocked", "family", "schemaVersion", "selected"];
+  if (keys.join(",") !== allowed.join(",")) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_SCHEMA_INVALID",
+      message: `Closure artifact keys must be exactly ${allowed.join(",")}`,
+    };
+  }
+  if (parsed.schemaVersion !== 1) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_SCHEMA_INVALID",
+      message: "Closure schemaVersion must be 1",
+    };
+  }
+  if (parsed.family !== input.expectedFamily) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_SCHEMA_INVALID",
+      message: `Closure family must be ${input.expectedFamily}`,
+    };
+  }
+  const selected = parsed.selected;
+  const blocked = parsed.blocked;
+  if (!isRecord(selected) || !isRecord(blocked)) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_SCHEMA_INVALID",
+      message: "selected and blocked must be objects",
+    };
+  }
+  for (const [label, side] of [
+    ["selected", selected],
+    ["blocked", blocked],
+  ] as const) {
+    const sideKeys = Object.keys(side).sort();
+    if (sideKeys.join(",") !== "evidenceArtifactIds,value") {
+      return {
+        ok: false,
+        code: "V13_CLOSURE_SCHEMA_INVALID",
+        message: `${label} must have exactly value and evidenceArtifactIds`,
+      };
+    }
+    if (typeof side.value !== "boolean") {
+      return {
+        ok: false,
+        code: "V13_CLOSURE_SCHEMA_INVALID",
+        message: `${label}.value must be boolean`,
+      };
+    }
+    if (!Array.isArray(side.evidenceArtifactIds)) {
+      return {
+        ok: false,
+        code: "V13_CLOSURE_EVIDENCE_INVALID",
+        message: `${label}.evidenceArtifactIds must be an array`,
+      };
+    }
+  }
+  const selectedValue = selected.value as boolean;
+  const blockedValue = blocked.value as boolean;
+  if (selectedValue === blockedValue) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_EXCLUSIVITY_INVALID",
+      message:
+        selectedValue && blockedValue
+          ? "Selected and blocked cannot both be true"
+          : "Selected and blocked cannot both be false",
+    };
+  }
+  const selectedIds = (selected.evidenceArtifactIds as unknown[]).map(String);
+  const blockedIds = (blocked.evidenceArtifactIds as unknown[]).map(String);
+  if (new Set(selectedIds).size !== selectedIds.length) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_EVIDENCE_INVALID",
+      message: "selected.evidenceArtifactIds must be unique",
+    };
+  }
+  if (new Set(blockedIds).size !== blockedIds.length) {
+    return {
+      ok: false,
+      code: "V13_CLOSURE_EVIDENCE_INVALID",
+      message: "blocked.evidenceArtifactIds must be unique",
+    };
+  }
+  const bound = new Set(input.boundArtifactIds);
+  const checkSide = (
+    label: string,
+    value: boolean,
+    ids: readonly string[],
+  ): CanonicalClosureParseResult | undefined => {
+    for (const id of ids) {
+      if (!ARTIFACT_ID_RE.test(id)) {
+        return {
+          ok: false,
+          code: "V13_CLOSURE_EVIDENCE_INVALID",
+          message: `${label} evidence id is not a valid ArtifactId`,
+        };
+      }
+      if (id === input.closureArtifactId) {
+        return {
+          ok: false,
+          code: "V13_CLOSURE_EVIDENCE_INVALID",
+          message: `${label} evidence must not self-reference the closure artifact`,
+        };
+      }
+      if (!bound.has(id)) {
+        return {
+          ok: false,
+          code: "V13_CLOSURE_EVIDENCE_INVALID",
+          message: `${label} evidence id is not bound to a Result ArtifactRef`,
+        };
+      }
+    }
+    if (value === true && ids.length === 0) {
+      return {
+        ok: false,
+        code: "V13_CLOSURE_EVIDENCE_INVALID",
+        message: `${label}=true requires one or more evidence ArtifactRef ids`,
+      };
+    }
+    if (value === false && ids.length !== 0) {
+      return {
+        ok: false,
+        code: "V13_CLOSURE_EVIDENCE_INVALID",
+        message: `${label}=false requires empty evidenceArtifactIds`,
+      };
+    }
+    return undefined;
+  };
+  const selErr = checkSide("selected", selectedValue, selectedIds);
+  if (selErr) return selErr;
+  const blkErr = checkSide("blocked", blockedValue, blockedIds);
+  if (blkErr) return blkErr;
+
+  return {
+    ok: true,
+    closure: Object.freeze({
+      schemaVersion: 1 as const,
+      family: input.expectedFamily,
+      selected: selectedValue,
+      blocked: blockedValue,
+      selectedEvidenceArtifactIds: Object.freeze(selectedIds),
+      blockedEvidenceArtifactIds: Object.freeze(blockedIds),
+    }),
+  };
+}
+
+/** Exact enumerated member allowlist for accepted A3 pack identity derivation. */
+export const V13_ACCEPTED_PACK_MEMBER_ALLOWLIST = Object.freeze([
+  "durable-output-disposition-v1.3.json",
+  "artifact-lifecycle-contract-v1.3.json",
+  "validator-registry-v1.3.json",
+  "validator-binding-matrix-v1.3.json",
+  "differential-test-matrix-v1.3.json",
+  "derivability-provenance-matrix-v1.3.json",
+  "closure-contract-v1.3.json",
+] as const);
+
+export interface DerivedAcceptedV13PackIdentity {
+  readonly aggregateSha256: string;
+  readonly members: readonly {
+    readonly path: string;
+    readonly byteLength: number;
+    readonly sha256: string;
+  }[];
+}
+
+/**
+ * Derive accepted-pack aggregate from enumerated members + exact bytes.
+ * Never stamps a caller-provided expected digest as the derived result.
+ * Compare the returned aggregate to the frozen A3 digest separately.
+ */
+export function deriveAcceptedV13PackIdentity(input: {
+  readonly leafBytes: Readonly<Partial<Record<V13LeafFileName, Uint8Array>>>;
+}): DerivedAcceptedV13PackIdentity {
+  const members: { path: string; byteLength: number; sha256: string }[] = [];
+  const tree = createHash("sha256");
+  tree.update("trellis-accepted-v13-pack-members\0");
+  for (const path of V13_ACCEPTED_PACK_MEMBER_ALLOWLIST) {
+    const bytes = input.leafBytes[path];
+    if (bytes === undefined) {
+      fail("V13_PACK_MEMBER_MISSING", `Missing accepted pack member ${path}`);
+    }
+    const sha = sha256Hex(bytes);
+    members.push({ path, byteLength: bytes.byteLength, sha256: sha });
+    tree.update(path);
+    tree.update("\0");
+    tree.update(bytes);
+    tree.update("\0");
+  }
+  // Reject extra members supplied under unexpected keys.
+  for (const key of Object.keys(input.leafBytes)) {
+    if (
+      !(V13_ACCEPTED_PACK_MEMBER_ALLOWLIST as readonly string[]).includes(key)
+    ) {
+      fail(
+        "V13_PACK_MEMBER_EXTRA",
+        `Unexpected pack member ${key} outside allowlist`,
+      );
+    }
+  }
+  return Object.freeze({
+    aggregateSha256: `sha256:${tree.digest("hex")}`,
+    members: Object.freeze(members),
   });
 }

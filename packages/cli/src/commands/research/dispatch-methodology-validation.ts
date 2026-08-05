@@ -11,7 +11,6 @@ import {
   buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
   isAuthoritativeMethodologyProcedureVersion,
-  loadResearchMethodologyContractFromProcedure,
   runMethodologyValidators,
   shouldMaterializeMethodologyReportSidecar,
   validateMethodologyArtifacts,
@@ -118,28 +117,25 @@ export function loadArtifactContractsFromProcedure(
   }
   if (procedure.manifest.version === "2.0.3") {
     // Contained: 2.0.3 is historical-unaccepted; no family authority load.
-    // Lifecycle contracts[] may still be inspected for non-authority paths.
-  } else if (
-    procedure.manifest.version === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION
-  ) {
-    // Accepted 2.0.4 lossless family contracts (post-OA3 only).
-    if (procedure.manifest.id !== "literature-scan-v1") {
-      loadResearchMethodologyContractFromProcedure(procedure);
-      return Object.freeze([]);
-    }
+    return Object.freeze([]);
   }
+  // Accepted successor packs (2.0.4 / 2.0.5): load ALL lifecycle contracts from
+  // the pack. Never discard non-literature families with an empty list.
   const contracts: MethodologyArtifactContract[] = [];
   for (const item of procedure.supportPack.inventoryItems) {
     if (item.role !== "artifacts" || item.mediaType !== "application/json") {
       continue;
     }
+    // Skip closure JSON artifacts (role artifacts but no contracts[]).
     let parsed: unknown;
     try {
       parsed = JSON.parse(
         new TextDecoder("utf-8", { fatal: true }).decode(item.bytes),
       );
     } catch {
-      continue;
+      throw new Error(
+        `Support-pack artifacts entry is not valid UTF-8 JSON: ${item.path}`,
+      );
     }
     if (
       parsed === null ||
@@ -147,6 +143,7 @@ export function loadArtifactContractsFromProcedure(
       Array.isArray(parsed) ||
       !Array.isArray((parsed as { contracts?: unknown }).contracts)
     ) {
+      // Not a lifecycle contracts document (e.g. closure skeleton) — skip.
       continue;
     }
     for (const raw of (parsed as { contracts: unknown[] }).contracts) {
@@ -156,37 +153,46 @@ export function loadArtifactContractsFromProcedure(
         );
       }
       const row = raw as Record<string, unknown>;
+      // No invented defaults: every authority field required.
       if (
         typeof row.id !== "string" ||
+        row.id.length === 0 ||
+        typeof row.version !== "string" ||
+        row.version.length === 0 ||
         typeof row.pathPattern !== "string" ||
+        row.pathPattern.length === 0 ||
         typeof row.mediaType !== "string" ||
+        row.mediaType.length === 0 ||
         typeof row.requiredness !== "string" ||
-        typeof row.cardinality !== "string"
+        typeof row.cardinality !== "string" ||
+        typeof row.producer !== "string" ||
+        row.producer.length === 0 ||
+        !Array.isArray(row.consumers) ||
+        row.consumers.length === 0 ||
+        !Array.isArray(row.terminalApplicability) ||
+        row.terminalApplicability.length === 0 ||
+        !Array.isArray(row.validatorIds)
       ) {
         throw new Error(
-          `Support-pack artifact contract requires id/pathPattern/mediaType/requiredness/cardinality: ${item.path}`,
+          `Support-pack artifact contract requires id/version/pathPattern/mediaType/requiredness/cardinality/producer/consumers/terminalApplicability/validatorIds with no defaults: ${item.path}`,
         );
       }
       contracts.push(
         Object.freeze({
           id: row.id,
-          version: typeof row.version === "string" ? row.version : "1",
+          version: row.version,
           requiredness:
             row.requiredness as MethodologyArtifactContract["requiredness"],
           cardinality:
             row.cardinality as MethodologyArtifactContract["cardinality"],
           pathPattern: row.pathPattern,
           mediaType: row.mediaType,
-          producer: typeof row.producer === "string" ? row.producer : "worker",
-          consumers: Array.isArray(row.consumers)
-            ? row.consumers.map(String)
-            : Object.freeze(["root"]),
-          terminalApplicability: Array.isArray(row.terminalApplicability)
-            ? row.terminalApplicability.map(String)
-            : Object.freeze(["success", "completed", "partial"]),
-          validatorIds: Array.isArray(row.validatorIds)
-            ? row.validatorIds.map(String)
-            : Object.freeze([]),
+          producer: row.producer,
+          consumers: Object.freeze(row.consumers.map(String)),
+          terminalApplicability: Object.freeze(
+            row.terminalApplicability.map(String),
+          ),
+          validatorIds: Object.freeze(row.validatorIds.map(String)),
         }),
       );
     }
@@ -252,11 +258,13 @@ export function validateMethodologyBeforeRecord(input: {
     methodologyContractDigest === V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST ||
     methodologyContractDigest === V13_METHODOLOGY_CONTRACT_DIGEST;
 
-  // Explicit closure for accepted 2.0.4 only (OA3 A3 binding). Never derive
-  // selected/blocked from Result.status on that path.
+  // Explicit closure for accepted successor versions (2.0.4 / 2.0.5).
+  // Never derive selected/blocked from Result.status on that path.
+  const isSuccessorProcedureVersion =
+    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION ||
+    input.procedureVersion === "2.0.5";
   const requireExplicitClosure =
-    procedureAuthoritative &&
-    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+    procedureAuthoritative && isSuccessorProcedureVersion;
 
   const facts = deriveMethodologyValidatorFacts({
     resultStatus: input.resultStatus ?? input.terminalState,
@@ -297,10 +305,22 @@ export function validateMethodologyBeforeRecord(input: {
     };
   }
 
-  // Report-v2 only for accepted 2.0.4 after OA3; never for live 1.0.0 or 2.0.2/2.0.3.
+  // Report-v2 authority is never version-string-alone: requires exact-bound
+  // Procedure id/version/digest, accepted methodology digest, explicit
+  // closure facts, and successful validation. Materialization still needs batch.
   const reportV2Authorized =
     procedureAuthoritative &&
-    input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION;
+    isSuccessorProcedureVersion &&
+    typeof input.procedureId === "string" &&
+    input.procedureId.length > 0 &&
+    typeof input.procedureDigest === "string" &&
+    input.procedureDigest.length > 0 &&
+    typeof methodologyContractDigest === "string" &&
+    methodologyContractDigest.length > 0 &&
+    input.selected !== undefined &&
+    input.blocked !== undefined &&
+    mergedValidation.ok &&
+    !mergedValidation.criticalFailure;
 
   // When exact contracts exist on the pack, enforce artifact path/cardinality.
   // Skip for unaccepted 2.0.3 authority paths (already critical-failed above).

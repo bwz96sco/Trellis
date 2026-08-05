@@ -17,9 +17,12 @@ import {
   V13_TRUSTED_VALIDATOR_COUNT,
   V13_VALIDATOR_BINDING_COUNT,
   assertHistoricalPhase2FixtureIsNotV13Authority,
+  deriveAcceptedV13PackIdentity,
   evaluateAcceptedV13DeltaCase,
   expectedV13ContractCounts,
+  mapProcedureIdToClosureFamily,
   parseAcceptedV13ContractPack,
+  parseCanonicalMethodologyClosureArtifact,
   selectTrustedV13ValidatorDescriptors,
   type V13LeafFileName,
 } from "../../src/research/index.js";
@@ -257,4 +260,79 @@ describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
       }
     }
   });
+
+  it("parses canonical closure XOR and rejects status-free schema defects", () => {
+    const closureId = "art_11111111-1111-4111-8111-111111111111";
+    const evidenceId = "art_22222222-2222-4222-8222-222222222222";
+    const good = {
+      schemaVersion: 1,
+      family: "research-literature",
+      selected: { value: true, evidenceArtifactIds: [evidenceId] },
+      blocked: { value: false, evidenceArtifactIds: [] },
+    };
+    const ok = parseCanonicalMethodologyClosureArtifact({
+      bytes: new TextEncoder().encode(`${JSON.stringify(good)}\n`),
+      expectedFamily: "research-literature",
+      closureArtifactId: closureId,
+      boundArtifactIds: [closureId, evidenceId],
+    });
+    expect(ok.ok).toBe(true);
+    if (ok.ok) {
+      expect(ok.closure.selected).toBe(true);
+      expect(ok.closure.blocked).toBe(false);
+    }
+
+    const bothTrue = {
+      ...good,
+      selected: { value: true, evidenceArtifactIds: [evidenceId] },
+      blocked: { value: true, evidenceArtifactIds: [evidenceId] },
+    };
+    const badXor = parseCanonicalMethodologyClosureArtifact({
+      bytes: new TextEncoder().encode(`${JSON.stringify(bothTrue)}\n`),
+      expectedFamily: "research-literature",
+      closureArtifactId: closureId,
+      boundArtifactIds: [closureId, evidenceId],
+    });
+    expect(badXor.ok).toBe(false);
+    if (!badXor.ok) {
+      expect(badXor.code).toBe("V13_CLOSURE_EXCLUSIVITY_INVALID");
+    }
+
+    const selfRef = {
+      ...good,
+      selected: { value: true, evidenceArtifactIds: [closureId] },
+    };
+    const badSelf = parseCanonicalMethodologyClosureArtifact({
+      bytes: new TextEncoder().encode(`${JSON.stringify(selfRef)}\n`),
+      expectedFamily: "research-literature",
+      closureArtifactId: closureId,
+      boundArtifactIds: [closureId, evidenceId],
+    });
+    expect(badSelf.ok).toBe(false);
+    if (!badSelf.ok) {
+      expect(badSelf.code).toBe("V13_CLOSURE_EVIDENCE_INVALID");
+    }
+
+    expect(mapProcedureIdToClosureFamily("literature-scan-v1")).toBe(
+      "research-literature",
+    );
+    expect(mapProcedureIdToClosureFamily("quest-admin-v1")).toBeUndefined();
+  });
+
+  it("derives pack member aggregate without stamping caller expected digest", () => {
+    const leafBytes = loadA3LeafBytes();
+    const derived = deriveAcceptedV13PackIdentity({ leafBytes });
+    expect(derived.members).toHaveLength(7);
+    expect(derived.aggregateSha256.startsWith("sha256:")).toBe(true);
+    const pack = parseAcceptedV13ContractPack({ leafBytes });
+    expect(pack.derivedMemberAggregateSha256).toBe(derived.aggregateSha256);
+    expect(pack.acceptedContractDigest).toBe(V13_ACCEPTED_CONTRACT_DIGEST);
+    expect(() =>
+      parseAcceptedV13ContractPack({
+        leafBytes,
+        expectedContractDigest: "sha256:deadbeef",
+      }),
+    ).toThrow(/does not match frozen accepted A3 digest/);
+  });
 });
+
