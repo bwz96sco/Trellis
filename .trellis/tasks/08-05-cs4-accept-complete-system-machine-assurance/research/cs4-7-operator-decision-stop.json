@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "kind": "cs4-7-operator-honest-stop",
   "wave": "CS4-7",
-  "recordId": "cs4-7-operator-decision-post-mal1-pass-attempt-6",
+  "recordId": "cs4-7-operator-decision-post-mal1-pass-attempt-8",
   "recordedOn": "2026-08-05",
-  "recordedAt": "2026-08-05T06:57:41Z",
+  "recordedAt": "2026-08-05T07:22:49Z",
   "status": "honest-stop-no-complete-system-authority",
   "decision": null,
   "decisionReceived": false,
   "completeSystemMachineAssuranceAccepted": false,
   "reason": [
-    "CS4-6 machine-only MAL-1 pass attempt-6 is frozen and retained as evidence.",
+    "CS4-6 machine-only MAL-1 pass attempt-8 is frozen and retained as evidence (G6 schema gate green).",
     "CS4-7 requires a genuine accountable operator accept or reject; none provided this session.",
     "Plan forbids predetermined auto-accept."
   ],
@@ -18,20 +18,22 @@
   "humanReviewed": false,
   "bindings": {
     "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
-    "machineEvidenceCommit": "ed60c4f1992a1eedeab684f5115cc189dbb88b12",
+    "machineEvidenceCommit": "860141b414f1d5402a95a14caafc6993d92b05fc",
     "machineVerdict": "pass",
-    "attempt": 6,
+    "attempt": 8,
     "skepticNoStampE2E": "91aa3f87",
+    "reviewerSessionId": "019fd0c8-dd6f-7740-b85e-bc0b54017da4",
+    "reviewerModel": "gpt-5.6-sol",
     "nineOutputDigests": {
-      "exact-subject-attestation.json": "sha256:896fd73c40df6087b92030714233463735d6d4fdf9a0c8543e4c153dcdcd4329",
-      "reviewer-session-attestation.json": "sha256:7f4a865bb64490e01deb07725caccd599b4dcfc13cad6f0b5ac10c50e4b208ee",
-      "accepted-member-ledger.json": "sha256:6e1e4ef2797c451d622c9a87a6f4a158039a2bb5810219af33e6da994fe02c14",
-      "runtime-contract-audit.json": "sha256:e939b2ee36e35b39917761134a75045df5e3d054c4d0c524f6bade1d8314f63e",
-      "harness-case-evidence.jsonl": "sha256:8e30374b5abc681e9cae368493c47eb14bd5d69f3ca5dfdb15cade31fb5ca714",
-      "command-evidence-ledger.jsonl": "sha256:b5f4e112aa321f66f746848278f36b201779404a4b45759cbe6157866b0dc7cb",
-      "filesystem-mutation-audit.json": "sha256:56c05ace8051a8cfedf654e9eb6a6dd94340a9e94b147d2a597d8a8ab480c78b",
-      "containment-audit.json": "sha256:0bef5f87b4657785eb6f79363032a66e43ff07670cb63b569b97b454b4f86243",
-      "machine-verdict.json": "sha256:fed75089242b5e0713d75eb5fa7928b9c168c20cf15eba19b87ccd9e786cf471"
+      "exact-subject-attestation.json": "sha256:f18dc15ea057e45b4f0221bb3fb7866f75100e4154da120d2dad0c09a684ed86",
+      "reviewer-session-attestation.json": "sha256:a4bad100adcaca5c8a52ac47ece16a9aa9907c125bb37fbf2cc993b3a5a10c8a",
+      "accepted-member-ledger.json": "sha256:74f7858c182ec29a947121eabc952977a1396ac9800c8f30e505141124f5560c",
+      "runtime-contract-audit.json": "sha256:b023d501160f3336590c76dfcd673e19daab73040e0feec8c5922f0038534421",
+      "harness-case-evidence.jsonl": "sha256:43095ffebb9126bb2cda9e2d2fe6c04e02a41d5e13e9a1db97544989a7f065d6",
+      "command-evidence-ledger.jsonl": "sha256:826dad06626421f253f7a98965468f5f742f36aa006066d7a988a5014407811e",
+      "filesystem-mutation-audit.json": "sha256:7744aab0bb58d325c59f0c4f895612a829c5d2e2c4a26d499217c283ca53bda9",
+      "containment-audit.json": "sha256:44205e43ffa927a0fd44b83dc0711689059c3571f945d612b2e125003bc33218",
+      "machine-verdict.json": "sha256:5253e47b21979af5825afc85950af664b460c0d476d75196403818728f420dde"
     }
   },
   "authorityGranted": {
