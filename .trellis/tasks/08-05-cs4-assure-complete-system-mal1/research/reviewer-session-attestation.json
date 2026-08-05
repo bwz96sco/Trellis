@@ -2,25 +2,28 @@
   "schemaVersion": 1,
   "tool": "codex-cli",
   "version": "codex-cli 0.146.0",
-  "model": null,
-  "modelKnown": false,
+  "model": "GPT-5",
+  "modelKnown": true,
+  "modelSource": "session system identity",
+  "sessionId": "019fd02e-cab6-7c91-832d-534464a3f9bd",
+  "sessionIdSource": "CODEX_THREAD_ID",
   "freshSession": true,
   "noResume": true,
+  "noSharedTranscript": true,
+  "noSharedScratch": true,
   "distinctFrom": [
-    "grok-implementer-cs4",
-    "b3-reviewer",
-    "cs3-reviewer"
+    "Grok",
+    "CS4 repair author",
+    "prior B3 reviewer",
+    "prior CS3 reviewer"
   ],
   "humanReviewed": false,
   "humanEquivalent": false,
   "repairAuthority": false,
-  "sessionId": null,
-  "sessionIdAvailable": false,
+  "reviewOnly": true,
   "timestamps": {
-    "startedAt": "2026-08-05T04:00:00Z",
-    "attestedAt": "2026-08-05T04:14:00Z",
-    "completedAt": "2026-08-05T04:15:58Z",
-    "timezone": "UTC",
-    "startedAtNote": "Minute-level reconstruction from fresh-session command/test sequence"
+    "recordedOn": "2026-08-05",
+    "completedAt": "2026-08-05T04:42:40Z",
+    "timezone": "UTC"
   }
 }

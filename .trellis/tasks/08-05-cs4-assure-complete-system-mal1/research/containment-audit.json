@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
+  "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
   "activationAuthorized": false,
   "releaseAuthorized": false,
   "publicationAuthorized": false,
@@ -13,21 +13,27 @@
     "publicationAuthorized": false,
     "pushAuthorized": false
   },
+  "subjectFreeze": {
+    "activationAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false
+  },
   "liveSelection": {
     "procedureVersion": "1.0.0",
     "literatureDefault": "research.literature.scan",
-    "sourcePaths": [
-      "packages/core/src/research/stage-capabilities.ts"
-    ],
+    "sourcePath": "packages/core/src/research/stage-capabilities.ts",
+    "capabilityCount": 14,
     "preserved": true
   },
   "supersessionDisposition": {
     "path": ".trellis/tasks/08-05-cs4-supersede-stale-complete-system-assurance/research/cs4-supersession-disposition.json",
     "sha256": "818f704687af71313e20bf914bf1cfff64707857af9e3330e1b424d3bc2f1225",
-    "grantsActivation": false,
-    "grantsRelease": false,
-    "grantsPublication": false,
-    "grantsPush": false
+    "activationAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false,
+    "grantsNoAuthority": true
   },
   "forbiddenActionsPerformed": {
     "activation": false,

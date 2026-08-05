@@ -1,721 +1,115 @@
 {
   "schemaVersion": 1,
-  "subjectCommit": "8d52b1f081f864f4614feb6a3781ccd6ee6248b8",
-  "overall": "fail",
-  "criticalFindings": [
-    {
-      "id": "RUNTIME-CONTRACT-EMPTY-NONLITERATURE",
-      "severity": "critical",
-      "requiredCheck": 5,
-      "summary": "loadArtifactContractsFromProcedure returns an empty list for every non-literature Procedure 2.0.4/2.0.5 family.",
-      "cause": "Loader accepts only top-level parsed.contracts[]; shipped non-literature artifact-contract.json documents expose checkpoints[] and no contracts[] array.",
-      "affectedFamilyVersionCount": 30,
-      "affectedNonLiteratureFamilies": 15,
-      "versions": [
-        "2.0.4",
-        "2.0.5"
-      ],
-      "repairPerformed": false
-    }
-  ],
+  "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
   "checks": {
-    "canonicalClosureParserExists": true,
-    "canonicalClosureParserUsedByRecordResult": true,
-    "successorClosureIgnoresResultStatus": true,
-    "nonLiteratureArtifactContractsNonEmpty": false,
-    "noInventedLifecycleDefaultsInLoader": true,
-    "acceptedPackIdentityDerivedFromMemberBytes": true,
-    "acceptedDigestNotBlindCallerStamp": true,
-    "reportV2MaterializationMultifactor": true,
-    "harnessPortableEvidenceRoot": true
-  },
-  "artifactContractAudit": {
-    "loaderAlgorithm": "iterate supportPack.inventoryItems role=artifacts mediaType=application/json; accept only parsed.contracts array",
-    "nonLiteratureRows": 30,
-    "emptyReturnRows": 30,
-    "allWouldReturnEmpty": true,
-    "allFieldsExplicitNoDefaults": true,
-    "affected": [
-      {
-        "procedureId": "computation-case-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "experiment-campaign-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "experiment-round-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "figure-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "idea-evaluation-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "idea-generation-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "project-setup-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "quest-admin-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "quest-framing-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "review-campaign-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "review-case-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "slides-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "survey-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "theory-case-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "writing-case-v1",
-        "procedureVersion": "2.0.4",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "computation-case-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "experiment-campaign-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "experiment-round-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "figure-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "idea-evaluation-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "idea-generation-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "project-setup-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "quest-admin-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "quest-framing-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "review-campaign-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "review-case-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "slides-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "survey-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "theory-case-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      },
-      {
-        "procedureId": "writing-case-v1",
-        "procedureVersion": "2.0.5",
-        "loaderContractCount": 0,
-        "topLevelKeys": [
-          "acceptedA3Commit",
-          "authority_boundaries",
-          "checkpointCount",
-          "checkpoints",
-          "composition_edges",
-          "contractVersion",
-          "handoffs",
-          "implementationOwner",
-          "intended_target",
-          "methodologyContractDigest",
-          "package",
-          "procedureVersion",
-          "terminal_states"
-        ]
-      }
-    ]
-  },
-  "sourceEvidence": [
-    {
+    "lifecycleLoader": {
+      "symbol": "loadArtifactContractsFromProcedure",
       "path": "packages/cli/src/commands/research/dispatch-methodology-validation.ts",
-      "lines": "109-201",
-      "finding": "Loader filters artifacts JSON to parsed.contracts[]; required fields have no defaults."
+      "contractsPreferred": true,
+      "checkpointFallbackWhenContractsAbsent": true,
+      "emptyReturnForAcceptedFreezeFamilies": false,
+      "directProbe": [
+        {
+          "procedureId": "figure-v1",
+          "version": "2.0.4",
+          "contractCount": 6,
+          "nonEmpty": true,
+          "source": "checkpoints[] mapping"
+        },
+        {
+          "procedureId": "figure-v1",
+          "version": "2.0.5",
+          "contractCount": 6,
+          "nonEmpty": true,
+          "source": "contracts[]"
+        },
+        {
+          "procedureId": "idea-generation-v1",
+          "version": "2.0.4",
+          "contractCount": 4,
+          "nonEmpty": true,
+          "source": "checkpoints[] mapping"
+        },
+        {
+          "procedureId": "idea-generation-v1",
+          "version": "2.0.5",
+          "contractCount": 4,
+          "nonEmpty": true,
+          "source": "contracts[]"
+        }
+      ],
+      "probeTestsPassed": 4
+    },
+    "canonicalClosure": {
+      "parser": "parseCanonicalMethodologyClosureArtifact",
+      "parserExported": true,
+      "recordResultPathUsesParser": true,
+      "resultStatusUsedAsClosureAuthority": false,
+      "explicitSelectedBlockedXorRequired": true,
+      "digestBoundArtifactRefRequired": true,
+      "testPassed": true
+    },
+    "acceptedPackIdentity": {
+      "derivedFromExactMemberBytes": true,
+      "callerExpectedDigestNotStamped": true,
+      "memberCount": 7,
+      "aggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef"
+    },
+    "reportV2": {
+      "versionStringAloneAuthorizes": false,
+      "requiredFactors": [
+        "authoritative procedure binding",
+        "successor version",
+        "procedure id",
+        "procedure digest",
+        "accepted methodology digest",
+        "explicit selected",
+        "explicit blocked",
+        "successful validation",
+        "successful batch commit for materialization"
+      ],
+      "multiFactor": true,
+      "testPassed": true
+    },
+    "harnessPath": {
+      "hardcodedMachinePath": false,
+      "environmentOverride": "TRELLIS_V13_DELTA_EVIDENCE_DIR",
+      "fallback": "os.tmpdir()+mkdtemp",
+      "portable": true
+    }
+  },
+  "requiredTests": [
+    {
+      "command": "pnpm --filter @mindfoldhq/trellis-core exec vitest run test/research/methodology-v13-runtime.test.ts",
+      "passed": true,
+      "testFiles": 1,
+      "tests": 10,
+      "notes": "Exact command passed with transient writable package node_modules cache overlay; original symlink restored."
     },
     {
-      "path": "packages/cli/src/commands/research/dispatch-command.ts",
-      "lines": "1210-1312",
-      "finding": "Record-result reads, digest-checks, parses canonical closure; selected/blocked originate only from parsed closure."
-    },
-    {
-      "path": "packages/core/src/research/methodology-v13-runtime.ts",
-      "lines": "1234-1430",
-      "finding": "Strict canonical closure parser exists and enforces schema/XOR/evidence."
-    },
-    {
-      "path": "packages/core/src/research/methodology-v13-runtime.ts",
-      "lines": "1435-1472",
-      "finding": "Accepted pack identity derived from exact member bytes and allowlist."
-    },
-    {
-      "path": "packages/cli/src/commands/research/dispatch-methodology-validation.ts",
-      "lines": "311-425",
-      "finding": "Report-v2 materialization requires authority, successor version, bound identity/digest, explicit closure, successful validation, and committed batch."
-    },
-    {
-      "path": "packages/cli/test/research-methodology-harness/v13-delta-domain.test.ts",
-      "lines": "38-49",
-      "finding": "Evidence root uses TRELLIS_V13_DELTA_EVIDENCE_DIR or os.tmpdir()+mkdtemp; no executable /var/folders literal."
+      "command": "TRELLIS_V13_DELTA_EVIDENCE_DIR=/tmp/cs4-mal1-a2 pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-methodology-closure-cs4.test.ts test/research-methodology-harness/v13-delta-domain.test.ts",
+      "passed": true,
+      "testFiles": 2,
+      "tests": 7,
+      "harnessCases": 116,
+      "notes": "Exact command passed with transient writable package node_modules cache overlay; original symlink restored."
     }
   ],
-  "requiredTests": {
-    "core": {
-      "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis-core",
-        "exec",
-        "vitest",
-        "run",
-        "test/research/methodology-v13-runtime.test.ts"
-      ],
-      "exitCode": 0,
-      "stdoutSha256": "341545223efd400da037e32cc7de63b376641c10b1284fa3dd60afcf7280757c",
-      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "summary": "1 file, 10 tests passed"
-    },
-    "cli": {
-      "argv": [
-        "pnpm",
-        "--filter",
-        "@mindfoldhq/trellis",
-        "exec",
-        "vitest",
-        "run",
-        "test/commands/research-methodology-closure-cs4.test.ts",
-        "test/research-methodology-harness/v13-delta-domain.test.ts"
-      ],
-      "env": {
-        "mode": "inherit",
-        "overrides": {
-          "TRELLIS_V13_DELTA_EVIDENCE_DIR": "/private/tmp/cs4-mal1-v13-evidence-8d52b1f081f864f4-codex-fresh"
-        }
-      },
-      "exitCode": 0,
-      "stdoutSha256": "47afc2b27b132b9f535cd6bfa35b801a8128078cbf8883df0d36a62d36a5c1b1",
-      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "summary": "2 files, 6 tests passed; 116 harness cases executed"
-    }
-  },
   "harnessSummary": {
-    "output": ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/harness-case-evidence.jsonl",
-    "sha256": "d37c7f14fe45ee89ca43d6258e58d98f32477b847101ea22dbe498301dacf926",
     "caseCount": 116,
     "distinctFingerprints": 116,
+    "outcomes": {
+      "fail-closed": 29,
+      "not-run": 29,
+      "pass": 40,
+      "pass-noncanonical-until-root-accept": 13,
+      "pass-noncanonical-until-root-decision": 5
+    },
     "allExpectedMatched": true,
     "allZeroWrite": true,
-    "treeDigest": "sha256:2efc035d108daef6b680b5db6a4fc6926a6c8998c0e3d06739d991681fc1a811"
-  }
+    "allWriteDiffsEmpty": true,
+    "beforeTreeDigest": "sha256:2efc035d108daef6b680b5db6a4fc6926a6c8998c0e3d06739d991681fc1a811",
+    "afterTreeDigest": "sha256:2efc035d108daef6b680b5db6a4fc6926a6c8998c0e3d06739d991681fc1a811"
+  },
+  "allRequiredChecksPassed": true
 }
