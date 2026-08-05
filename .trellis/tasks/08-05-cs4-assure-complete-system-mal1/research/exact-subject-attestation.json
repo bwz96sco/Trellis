@@ -1,19 +1,20 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-exact-subject-attestation",
-  "attempt": 4,
-  "reviewHead": "941ca54638c9cd7a19686b48043309d665b1d7f6",
+  "attempt": 5,
+  "reviewHead": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
+  "reviewHeadTree": "a0d43fdff8399e9b6208214ca098db157ccb2ca8",
   "reviewHeadDetached": true,
-  "freezeCommit": "941ca54638c9cd7a19686b48043309d665b1d7f6",
-  "subjectCommit": "ecc42cf523ad429c33e8bb85936fc3d0afa36ddd",
-  "subjectTree": "63c5dc53ca3f77e2e8db53d2028c2da7a76d1c7b",
-  "freezeAttestationPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-4.json",
-  "freezeAttestationSha256": "a8267bb1fdca98ddb952ff451b79a064bc7a91c49284a85dceaa3f2536a7aa7d",
+  "freezeCommit": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
+  "subjectCommit": "85a05fc36ae1b35266912188e9b5bec627d9801c",
+  "subjectTree": "ed9bba2643a755fa8822ac9101e00b5f38d274d2",
+  "freezeAttestationPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-5.json",
+  "freezeAttestationSha256": "1c5e07d0e446b23f9da768f0693dc6f42fa121e4ae389ba5edb96338f86c767b",
   "freezeAttestationSidecarMatches": true,
   "candidateManifestPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
-  "candidateManifestSha256": "13d56cb3cae403e81b379561482cc2759b8acf75ade5ef8cfc509e50b216e514",
-  "candidateManifestSidecarDeclaredSha256": "c143c6192d1b9c2d48cf9c8c5e5cdbf7d55425a2339bc1b8a14fb0ff3fac1376",
-  "candidateManifestSidecarMatches": false,
+  "candidateManifestSha256": "c68f052175fb5197a5581b030fc3886c83836b599d7732635fbf3b33044a00ff",
+  "candidateManifestSidecarDeclaredSha256": "c68f052175fb5197a5581b030fc3886c83836b599d7732635fbf3b33044a00ff",
+  "candidateManifestSidecarMatches": true,
   "cleanExtraction": true,
   "cleanExtractionBasis": {
     "trackedSubjectBytesMatchHeadOutsideNineOutputAllowlist": true,
@@ -23,6 +24,7 @@
       "packages/cli/node_modules",
       "packages/core/node_modules"
     ],
+    "dependencyBootstrapPathsAreExternalSymlinks": true,
     "packageOrSourceOverlayDetected": false
   },
   "procedure204": {
@@ -30,7 +32,7 @@
     "comparisonPathspec": "packages/cli/src/templates/research/procedures/*/2.0.4/**",
     "bytesUnchanged": true
   },
-  "subjectPinsMatchAttempt4": true,
+  "subjectPinsMatchAttempt5": true,
   "humanReviewed": false,
   "repairAuthority": false,
   "activationAuthorized": false

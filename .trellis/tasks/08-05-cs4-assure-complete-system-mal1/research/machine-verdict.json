@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-machine-verdict",
-  "attempt": 4,
-  "verdict": "fail",
+  "attempt": 5,
+  "verdict": "pass",
   "humanReviewed": false,
   "activationAuthorized": false,
   "repairAuthority": false,
-  "subjectCommit": "941ca54638c9cd7a19686b48043309d665b1d7f6",
-  "failureCodes": ["CS4_CANDIDATE_MANIFEST_DIGEST_SIDECAR_MISMATCH"],
-  "summary": "All 17 candidate Procedure 2.0.5 packSha256 pins and mandated runtime/harness checks pass, but cs4-dormant-candidate-2.0.5.sha256 still declares the pre-recompute digest c143c619... while exact manifest bytes hash to 13d56cb3..."
+  "subjectCommit": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
+  "failureCodes": [],
+  "summary": "Frozen attempt-5 subject passes exact-byte integrity, 17-family Procedure 2.0.5 pack checks, accepted A3 validator/contract/runtime gates, 116-case zero-write harness checks, mandated tests, and dormant/live containment."
 }
