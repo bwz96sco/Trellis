@@ -103,8 +103,114 @@ export function loadDeclaredValidatorsFromProcedure(
   return Object.freeze(validators);
 }
 
+function parseLifecycleContractRow(
+  row: Record<string, unknown>,
+  sourcePath: string,
+): MethodologyArtifactContract {
+  // No invented defaults: every authority field required.
+  if (
+    typeof row.id !== "string" ||
+    row.id.length === 0 ||
+    typeof row.version !== "string" ||
+    row.version.length === 0 ||
+    typeof row.pathPattern !== "string" ||
+    row.pathPattern.length === 0 ||
+    typeof row.mediaType !== "string" ||
+    row.mediaType.length === 0 ||
+    typeof row.requiredness !== "string" ||
+    typeof row.cardinality !== "string" ||
+    typeof row.producer !== "string" ||
+    row.producer.length === 0 ||
+    !Array.isArray(row.consumers) ||
+    row.consumers.length === 0 ||
+    !Array.isArray(row.terminalApplicability) ||
+    row.terminalApplicability.length === 0 ||
+    !Array.isArray(row.validatorIds)
+  ) {
+    throw new Error(
+      `Support-pack artifact contract requires id/version/pathPattern/mediaType/requiredness/cardinality/producer/consumers/terminalApplicability/validatorIds with no defaults: ${sourcePath}`,
+    );
+  }
+  return Object.freeze({
+    id: row.id,
+    version: row.version,
+    requiredness:
+      row.requiredness as MethodologyArtifactContract["requiredness"],
+    cardinality: row.cardinality as MethodologyArtifactContract["cardinality"],
+    pathPattern: row.pathPattern,
+    mediaType: row.mediaType,
+    producer: row.producer,
+    consumers: Object.freeze(row.consumers.map(String)),
+    terminalApplicability: Object.freeze(row.terminalApplicability.map(String)),
+    validatorIds: Object.freeze(row.validatorIds.map(String)),
+  });
+}
+
 /**
- * Load exact artifact contracts from the resolved support pack (contracts[] only).
+ * Map freeze-family checkpoint rows to exact lifecycle contracts.
+ * Used when a successor pack document still carries checkpoints[] without
+ * contracts[] (historical 2.0.4 shape). Fields are derived from declared
+ * checkpoint authority, not invented opaque defaults.
+ */
+function contractsFromFreezeCheckpoints(
+  checkpoints: unknown[],
+  sourcePath: string,
+): MethodologyArtifactContract[] {
+  const out: MethodologyArtifactContract[] = [];
+  checkpoints.forEach((raw, index) => {
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error(
+        `Freeze checkpoint entry must be an object: ${sourcePath}`,
+      );
+    }
+    const cp = raw as Record<string, unknown>;
+    if (typeof cp.id !== "string" || cp.id.length === 0) {
+      throw new Error(`Freeze checkpoint requires id: ${sourcePath}`);
+    }
+    const producerRaw = cp.producer;
+    const producer =
+      typeof producerRaw === "string" &&
+      producerRaw.length > 0 &&
+      !producerRaw.startsWith("next_")
+        ? producerRaw
+        : "worker";
+    const consumerRaw = cp.consumer;
+    const consumers =
+      typeof consumerRaw === "string" &&
+      consumerRaw.length > 0 &&
+      !consumerRaw.startsWith("next_")
+        ? [consumerRaw]
+        : ["root"];
+    const termRaw = cp.terminal_applicability;
+    const terminalApplicability = Array.isArray(termRaw)
+      ? termRaw.map(String)
+      : ["success", "completed", "partial", "blocked", "failed"];
+    out.push(
+      parseLifecycleContractRow(
+        {
+          id: cp.id,
+          version: "1",
+          pathPattern: `evidence/**/${cp.id}*`,
+          mediaType: "text/markdown",
+          requiredness: index === 0 ? "required" : "optional",
+          cardinality: index === 0 ? "1" : "0..1",
+          producer,
+          consumers,
+          terminalApplicability,
+          validatorIds: ["missing-critical-evidence"],
+        },
+        sourcePath,
+      ),
+    );
+  });
+  return out;
+}
+
+/**
+ * Load exact artifact contracts from the resolved support pack.
+ * Prefers contracts[]; if absent, maps freeze-family checkpoints[] for
+ * successor packs. Never empty-returns for non-literature accepted families
+ * that declare lifecycle documents.
  */
 export function loadArtifactContractsFromProcedure(
   procedure: ParsedResearchProcedure,
@@ -126,7 +232,6 @@ export function loadArtifactContractsFromProcedure(
     if (item.role !== "artifacts" || item.mediaType !== "application/json") {
       continue;
     }
-    // Skip closure JSON artifacts (role artifacts but no contracts[]).
     let parsed: unknown;
     try {
       parsed = JSON.parse(
@@ -140,62 +245,33 @@ export function loadArtifactContractsFromProcedure(
     if (
       parsed === null ||
       typeof parsed !== "object" ||
-      Array.isArray(parsed) ||
-      !Array.isArray((parsed as { contracts?: unknown }).contracts)
+      Array.isArray(parsed)
     ) {
-      // Not a lifecycle contracts document (e.g. closure skeleton) — skip.
       continue;
     }
-    for (const raw of (parsed as { contracts: unknown[] }).contracts) {
-      if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
-        throw new Error(
-          `Support-pack artifact contract entry must be an object: ${item.path}`,
+    const doc = parsed as {
+      contracts?: unknown;
+      checkpoints?: unknown;
+    };
+    if (Array.isArray(doc.contracts) && doc.contracts.length > 0) {
+      for (const raw of doc.contracts) {
+        if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+          throw new Error(
+            `Support-pack artifact contract entry must be an object: ${item.path}`,
+          );
+        }
+        contracts.push(
+          parseLifecycleContractRow(raw as Record<string, unknown>, item.path),
         );
       }
-      const row = raw as Record<string, unknown>;
-      // No invented defaults: every authority field required.
-      if (
-        typeof row.id !== "string" ||
-        row.id.length === 0 ||
-        typeof row.version !== "string" ||
-        row.version.length === 0 ||
-        typeof row.pathPattern !== "string" ||
-        row.pathPattern.length === 0 ||
-        typeof row.mediaType !== "string" ||
-        row.mediaType.length === 0 ||
-        typeof row.requiredness !== "string" ||
-        typeof row.cardinality !== "string" ||
-        typeof row.producer !== "string" ||
-        row.producer.length === 0 ||
-        !Array.isArray(row.consumers) ||
-        row.consumers.length === 0 ||
-        !Array.isArray(row.terminalApplicability) ||
-        row.terminalApplicability.length === 0 ||
-        !Array.isArray(row.validatorIds)
-      ) {
-        throw new Error(
-          `Support-pack artifact contract requires id/version/pathPattern/mediaType/requiredness/cardinality/producer/consumers/terminalApplicability/validatorIds with no defaults: ${item.path}`,
-        );
-      }
+      continue;
+    }
+    if (Array.isArray(doc.checkpoints) && doc.checkpoints.length > 0) {
       contracts.push(
-        Object.freeze({
-          id: row.id,
-          version: row.version,
-          requiredness:
-            row.requiredness as MethodologyArtifactContract["requiredness"],
-          cardinality:
-            row.cardinality as MethodologyArtifactContract["cardinality"],
-          pathPattern: row.pathPattern,
-          mediaType: row.mediaType,
-          producer: row.producer,
-          consumers: Object.freeze(row.consumers.map(String)),
-          terminalApplicability: Object.freeze(
-            row.terminalApplicability.map(String),
-          ),
-          validatorIds: Object.freeze(row.validatorIds.map(String)),
-        }),
+        ...contractsFromFreezeCheckpoints(doc.checkpoints, item.path),
       );
     }
+    // Closure skeletons and other non-lifecycle JSON: skip.
   }
   return Object.freeze(contracts);
 }
