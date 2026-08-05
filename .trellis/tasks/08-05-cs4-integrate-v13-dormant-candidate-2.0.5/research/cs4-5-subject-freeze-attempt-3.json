@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "cs4-5-subject-freeze",
+  "attempt": 3,
+  "recordedOn": "2026-08-05",
+  "recordedAt": "2026-08-05T05:14:06Z",
+  "subjectCommit": "7be3caad990e98a8dac96eafb244baaa7d02b6b0",
+  "subjectTree": "e4e077b3701b9d58095a8a0dac54e91090794a80",
+  "includes": {
+    "skepticResidualRepair": "7be3caad",
+    "lifecycleRepair": "a530b9dd",
+    "procedure205": "ac7a6fd0",
+    "runtimeClosure": "bba6a2ce",
+    "supersession": "fcf2b986"
+  },
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "liveSelection": "1.0.0",
+  "note": "Re-freeze after skeptic residual: 20/876 wire, no checkpoint invent, report-v2 multi-factor, real E2E harness. No machine-review outputs in subject."
+}
