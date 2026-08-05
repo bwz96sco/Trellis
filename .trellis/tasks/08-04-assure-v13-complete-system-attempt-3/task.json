@@ -1,7 +1,7 @@
 {
   "id": "assure-v13-complete-system-attempt-3",
   "name": "assure-v13-complete-system-attempt-3",
-  "title": "CS3 — Complete-system MAL-1 assurance",
+  "title": "CS3 \u2014 Complete-system MAL-1 assurance",
   "description": "Fresh MAL-1 runtime distinct from B3 reviews full system subject commits.",
   "status": "completed",
   "dev_type": null,
@@ -40,6 +40,12 @@
       "codexThreadId": "019fcda8-f80d-74f3-9551-058dff0b6d8a",
       "assignmentCommit": "0ceaaee237d6c11035caabd8186d0378baab442a",
       "subjectHead": "404d714a855dc2ff9c476e017df51bc3c1c02b86"
+    },
+    "cs4Supersession": {
+      "completeSystemAuthoritySuperseded": true,
+      "successorCampaign": "cs4-forward-repair",
+      "successorGovernanceTask": "08-05-cs4-supersede-stale-complete-system-assurance",
+      "note": "Historical evidence retained; not rewritten. Complete-system authority moves to CS4 after fresh MAL-1 + genuine operator decision."
     }
   }
 }

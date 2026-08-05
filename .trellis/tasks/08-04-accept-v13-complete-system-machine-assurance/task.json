@@ -47,6 +47,12 @@
       "releaseAuthorized": false,
       "publicationAuthorized": false,
       "pushAuthorized": false
+    },
+    "cs4Supersession": {
+      "completeSystemAuthoritySuperseded": true,
+      "successorCampaign": "cs4-forward-repair",
+      "successorGovernanceTask": "08-05-cs4-supersede-stale-complete-system-assurance",
+      "note": "Historical evidence retained; not rewritten. Complete-system authority moves to CS4 after fresh MAL-1 + genuine operator decision."
     }
   }
 }

@@ -456,3 +456,14 @@ Machine pass alone is not authority. Authority = committed A3 + committed B3 pas
 | CS3-OA | `.trellis/tasks/08-04-accept-v13-complete-system-machine-assurance/**` |
 
 A2/B2 directories remain immutable historical evidence; additive disposition only.
+
+## Additive amendment — CS4 forward repair (2026-08-05)
+
+Status: CS4-0 governance only. See `.trellis/tasks/08-05-cs4-supersede-stale-complete-system-assurance/research/cs4-path-ownership-map.md`.
+
+### Supersession
+
+- CS3 subject `404d714a` / verdict `b4c0c72d` / OA `13656285`: historical; complete-system authority superseded
+- `b97a8066`: unassured development evidence outside CS3 subject
+- Procedure corrections: **2.0.5** only (2.0.4 immutable)
+- Live selection remains 1.0.0; activationAuthorized remains false until separately authorized

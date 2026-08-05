@@ -432,3 +432,13 @@ R0 remains addressability/planning evidence. R1 post-freeze semantics remain non
 4. B3 fresh Codex MAL-1; stop if isolation unavailable.
 5. OA3 operator accept unlocks R1+.
 6. 2.0.4 packages only; never rewrite 2.0.3 bytes.
+
+## Additive overlay — CS4 forward repair (2026-08-05)
+
+1. CS4-0 governance supersession + task tree + nine-file allowlist.
+2. CS4-1/2 runtime repair (closure, lifecycle, validators, pack identity, report-v2).
+3. CS4-3 immutable 2.0.5 packages only.
+4. CS4-4 registry-driven 116-case E2E evidence.
+5. CS4-5 dormant integrate + subject freeze.
+6. CS4-6 fresh MAL-1 nine outputs.
+7. CS4-7 genuine operator accept/reject (or honest stop).

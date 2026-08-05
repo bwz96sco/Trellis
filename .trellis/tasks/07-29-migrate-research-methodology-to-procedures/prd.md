@@ -180,3 +180,7 @@ Attempt-1 (`4d36ecda`, V13-B fail at `867954ae`) is immutable failure evidence. 
 ## Additive overlay — MAL-1 attempt-3 forward repair (2026-08-04)
 
 A2 (`4c49b8fd`) is unaccepted. B2 never executed; waiver claim invalid. Unassured commits `1c0f942d`–`7a33838e` are development evidence only. Prospective assurance model is MAL-1 (machine-only; not human-equivalent). Live v1 containment required before new A3. Corrected packages use Procedure **2.0.4**. No activation/release/push.
+
+## Additive overlay — CS4 forward repair (2026-08-05)
+
+CS3 subject `404d714a` and CS3-OA auto-accept are historical only; complete-system authority is superseded by CS4. Post-CS3 commit `b97a8066` is unassured development evidence. Corrected packages use Procedure **2.0.5**. Live v1 containment unchanged. No activation/release/push.

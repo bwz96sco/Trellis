@@ -1,0 +1,32 @@
+{
+  "id": "cs4-remediate-v13-delta-harness-evidence",
+  "name": "cs4-remediate-v13-delta-harness-evidence",
+  "title": "CS4-4 \u2014 Registry-driven 116-case E2E harness and retained evidence",
+  "description": "Replace overstated harness; registry-only semantics; FS byte snapshots; portable evidence destination.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": null,
+  "createdAt": "2026-08-05",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "CS4-4 planned under CS4 forward repair. Historical CS3 tasks remain informative only.",
+  "meta": {
+    "attempt": 4,
+    "assuranceModel": "MAL-1",
+    "wave": "CS4-4",
+    "supersedesCompleteSystemAuthority": true,
+    "cs4Campaign": "cs4-forward-repair"
+  }
+}

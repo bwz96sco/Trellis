@@ -429,3 +429,7 @@ P0 preserves attempt-1 fail package. P1 anchors portable C0 + archives + A2/B2 p
 ## Additive overlay — MAL-1 attempt-3 (2026-08-04)
 
 G0 governance → Q0/Q1 containment → A3 candidate → B3 MAL-1 → OA3 accept → R1–R8 / 2.0.4 / CS3. Forward-only history.
+
+## Additive overlay — CS4 forward repair (2026-08-05)
+
+CS4-0 supersession → CS4-1/2 runtime (canonical closure + 65/20/876 + derived pack identity + report-v2 authority) → CS4-3 Procedure 2.0.5 → CS4-4 E2E harness → CS4-5 dormant subject freeze → CS4-6 fresh MAL-1 → CS4-7 genuine operator decision. Forward-only history.

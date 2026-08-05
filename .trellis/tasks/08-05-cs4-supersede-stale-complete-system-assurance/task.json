@@ -1,0 +1,32 @@
+{
+  "id": "cs4-supersede-stale-complete-system-assurance",
+  "name": "cs4-supersede-stale-complete-system-assurance",
+  "title": "CS4-0 \u2014 Supersede stale CS3/OA complete-system authority",
+  "description": "Additive governance: pin CS3/OA/b97a8066, supersede semantic authority, plan CS4 child topology and nine-file MAL-1 allowlist. Grants no runtime/package/activation authority.",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": "cli",
+  "priority": "P1",
+  "creator": "grok",
+  "assignee": "grok",
+  "createdAt": "2026-08-05",
+  "completedAt": "2026-08-05",
+  "branch": null,
+  "base_branch": "variant/research-workflow",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "07-29-migrate-research-methodology-to-procedures",
+  "relatedFiles": [],
+  "notes": "CS4-0 governance committed: supersession pins CS3/OA/b97a8066; child topology + nine-file allowlist; no authority grants.",
+  "meta": {
+    "attempt": 4,
+    "assuranceModel": "MAL-1",
+    "wave": "CS4-0",
+    "supersedesCompleteSystemAuthority": false,
+    "cs4Campaign": "cs4-forward-repair"
+  }
+}
