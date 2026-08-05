@@ -1,115 +1,63 @@
 {
   "schemaVersion": 1,
-  "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-  "checks": {
-    "lifecycleLoader": {
-      "symbol": "loadArtifactContractsFromProcedure",
-      "path": "packages/cli/src/commands/research/dispatch-methodology-validation.ts",
-      "contractsPreferred": true,
-      "checkpointFallbackWhenContractsAbsent": true,
-      "emptyReturnForAcceptedFreezeFamilies": false,
-      "directProbe": [
-        {
-          "procedureId": "figure-v1",
-          "version": "2.0.4",
-          "contractCount": 6,
-          "nonEmpty": true,
-          "source": "checkpoints[] mapping"
-        },
-        {
-          "procedureId": "figure-v1",
-          "version": "2.0.5",
-          "contractCount": 6,
-          "nonEmpty": true,
-          "source": "contracts[]"
-        },
-        {
-          "procedureId": "idea-generation-v1",
-          "version": "2.0.4",
-          "contractCount": 4,
-          "nonEmpty": true,
-          "source": "checkpoints[] mapping"
-        },
-        {
-          "procedureId": "idea-generation-v1",
-          "version": "2.0.5",
-          "contractCount": 4,
-          "nonEmpty": true,
-          "source": "contracts[]"
-        }
-      ],
-      "probeTestsPassed": 4
-    },
-    "canonicalClosure": {
-      "parser": "parseCanonicalMethodologyClosureArtifact",
-      "parserExported": true,
-      "recordResultPathUsesParser": true,
-      "resultStatusUsedAsClosureAuthority": false,
-      "explicitSelectedBlockedXorRequired": true,
-      "digestBoundArtifactRefRequired": true,
-      "testPassed": true
-    },
-    "acceptedPackIdentity": {
-      "derivedFromExactMemberBytes": true,
-      "callerExpectedDigestNotStamped": true,
-      "memberCount": 7,
-      "aggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef"
-    },
-    "reportV2": {
-      "versionStringAloneAuthorizes": false,
-      "requiredFactors": [
-        "authoritative procedure binding",
-        "successor version",
-        "procedure id",
-        "procedure digest",
-        "accepted methodology digest",
-        "explicit selected",
-        "explicit blocked",
-        "successful validation",
-        "successful batch commit for materialization"
-      ],
-      "multiFactor": true,
-      "testPassed": true
-    },
-    "harnessPath": {
-      "hardcodedMachinePath": false,
-      "environmentOverride": "TRELLIS_V13_DELTA_EVIDENCE_DIR",
-      "fallback": "os.tmpdir()+mkdtemp",
-      "portable": true
-    }
+  "kind": "cs4-mal1-runtime-contract-audit",
+  "attempt": 3,
+  "subjectCommit": "08b3d5abaf43bd459832196e6273220ef453d42f",
+  "validatorSelection": {
+    "status": "pass",
+    "procedure": "figure-v1@2.0.5",
+    "loader": "loadDeclaredValidatorsFromProcedure",
+    "selectionFunctions": ["selectApplicableV13ValidatorsFromBindings", "selectTrustedV13ValidatorDescriptors"],
+    "trustedValidatorCount": 20,
+    "bindingCount": 876,
+    "allBindingsTrusted": true,
+    "allTrustedValidatorsBound": true,
+    "selectedIdsAreTrellisNamespace": true,
+    "legacyFourOnly": false
   },
-  "requiredTests": [
-    {
-      "command": "pnpm --filter @mindfoldhq/trellis-core exec vitest run test/research/methodology-v13-runtime.test.ts",
-      "passed": true,
-      "testFiles": 1,
-      "tests": 10,
-      "notes": "Exact command passed with transient writable package node_modules cache overlay; original symlink restored."
-    },
-    {
-      "command": "TRELLIS_V13_DELTA_EVIDENCE_DIR=/tmp/cs4-mal1-a2 pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-methodology-closure-cs4.test.ts test/research-methodology-harness/v13-delta-domain.test.ts",
-      "passed": true,
-      "testFiles": 2,
-      "tests": 7,
-      "harnessCases": 116,
-      "notes": "Exact command passed with transient writable package node_modules cache overlay; original symlink restored."
-    }
-  ],
-  "harnessSummary": {
+  "artifactContracts": {
+    "status": "pass",
+    "loader": "loadArtifactContractsFromProcedure",
+    "figure205ContractsCount": 6,
+    "figure205NonEmpty": true,
+    "figure204ContractsCount": 0,
+    "figure204InventedCheckpointDefaults": false
+  },
+  "reportV2Authorization": {
+    "status": "pass",
+    "versionAloneAuthorized": false,
+    "requiredFactors": [
+      "authoritative procedure version",
+      "procedure id and digest",
+      "accepted methodology digest",
+      "support inventory digest",
+      "activation id",
+      "dispatch id",
+      "capability id",
+      "request digest",
+      "policy digest",
+      "scope hash",
+      "explicit selected and blocked closure facts",
+      "successful validation"
+    ]
+  },
+  "deltaEvaluator": {
+    "status": "pass",
+    "function": "evaluateAcceptedV13DeltaCase",
+    "callerSuppliedKeys": ["caseId", "pack", "sandboxRoot"],
+    "callerSuppliedSemanticAuthority": false,
     "caseCount": 116,
-    "distinctFingerprints": 116,
-    "outcomes": {
-      "fail-closed": 29,
-      "not-run": 29,
-      "pass": 40,
-      "pass-noncanonical-until-root-accept": 13,
-      "pass-noncanonical-until-root-decision": 5
-    },
-    "allExpectedMatched": true,
+    "distinctExecutionFingerprints": 116,
+    "exactOrderedErrorVectorMismatchCount": 0,
     "allZeroWrite": true,
-    "allWriteDiffsEmpty": true,
-    "beforeTreeDigest": "sha256:2efc035d108daef6b680b5db6a4fc6926a6c8998c0e3d06739d991681fc1a811",
-    "afterTreeDigest": "sha256:2efc035d108daef6b680b5db6a4fc6926a6c8998c0e3d06739d991681fc1a811"
+    "zeroWriteProof": "beforeSandboxDigest equals afterSandboxDigest for every case",
+    "executionLedgerSha256": "sha256:d9354f880e77b18c2323ddfb4d6b3c8ee2d21011b2bec5354caed51914901a1b"
   },
-  "allRequiredChecksPassed": true
+  "tests": [
+    {"scope":"core methodology v1.3 runtime","files":1,"tests":10,"passed":10},
+    {"scope":"CLI closure and delta harness","files":2,"tests":10,"passed":10}
+  ],
+  "runtimeChecksPass": true,
+  "completeSystemPass": false,
+  "completeSystemFailure": "candidate manifest has 16 stale 2.0.5 pack digest pins"
 }

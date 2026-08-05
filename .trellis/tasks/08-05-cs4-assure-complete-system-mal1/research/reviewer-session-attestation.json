@@ -1,29 +1,20 @@
 {
   "schemaVersion": 1,
+  "kind": "cs4-mal1-reviewer-session-attestation",
+  "attempt": 3,
   "tool": "codex-cli",
-  "version": "codex-cli 0.146.0",
-  "model": "GPT-5",
-  "modelKnown": true,
-  "modelSource": "session system identity",
-  "sessionId": "019fd02e-cab6-7c91-832d-534464a3f9bd",
-  "sessionIdSource": "CODEX_THREAD_ID",
+  "model": "gpt-5",
+  "sessionId": "019fd05b-075a-7b90-ab99-da7fc6277135",
   "freshSession": true,
+  "reviewerRole": "MAL-1 review-only",
+  "notGrok": true,
+  "notRepairAuthor": true,
   "noResume": true,
   "noSharedTranscript": true,
   "noSharedScratch": true,
-  "distinctFrom": [
-    "Grok",
-    "CS4 repair author",
-    "prior B3 reviewer",
-    "prior CS3 reviewer"
-  ],
+  "independentReexecution": true,
   "humanReviewed": false,
   "humanEquivalent": false,
   "repairAuthority": false,
-  "reviewOnly": true,
-  "timestamps": {
-    "recordedOn": "2026-08-05",
-    "completedAt": "2026-08-05T04:42:40Z",
-    "timezone": "UTC"
-  }
+  "activationAuthorized": false
 }

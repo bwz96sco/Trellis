@@ -1,53 +1,34 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-exact-subject-attestation",
-  "attempt": 2,
-  "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-  "subjectTree": "f7c12d2c9c59efdc8f2e3d25a6951d19a3f599f9",
-  "detachedHead": true,
-  "subjectTrackedPathsOutsideNineOutputAllowlistClean": true,
-  "initialStatusDisposition": {
-    "expectedResetOutputDeletions": 9,
-    "providedUntrackedNodeModulesSymlinks": [
+  "attempt": 3,
+  "reviewHead": "08b3d5abaf43bd459832196e6273220ef453d42f",
+  "reviewHeadDetached": true,
+  "freezeCommit": "08b3d5abaf43bd459832196e6273220ef453d42f",
+  "subjectCommit": "7be3caad990e98a8dac96eafb244baaa7d02b6b0",
+  "subjectTree": "e4e077b3701b9d58095a8a0dac54e91090794a80",
+  "freezeAttestationPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-3.json",
+  "freezeAttestationSha256": "805d7f9e3e4dccb2e39ca2ff29b968a7a3ed81890a44e12b6c4d6f9ad0d88dd0",
+  "candidateManifestPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
+  "candidateManifestSha256": "33b8ccfaf1a3b831e3ca542289ede478b0d1c5525f96b5f7a20e8076cde6287d",
+  "cleanExtraction": true,
+  "cleanExtractionBasis": {
+    "trackedSubjectBytesMatchHeadOutsideNineOutputAllowlist": true,
+    "initialTrackedDifferences": "nine allowlisted reviewer outputs absent for fresh replacement",
+    "initialUntrackedBootstrapPaths": [
       "node_modules",
       "packages/cli/node_modules",
       "packages/core/node_modules"
     ],
-    "otherTrackedDiffPaths": [],
-    "otherUntrackedPaths": []
+    "packageOrSourceOverlayDetected": false
   },
-  "subjectFreeze": {
-    "path": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-exact-subject-freeze.json",
-    "sha256": "f600dcc69d67037967007cec95f70a7ddb1dc7a20b4b0e0e9e3e9c2fa7c4cbe4",
-    "sidecarMatched": true,
-    "attempt": 2,
-    "repairCommit": "a530b9dd1afcccfedf2d03d843380fb30936b0af",
-    "headParent": "a530b9dd1afcccfedf2d03d843380fb30936b0af",
-    "pinsMatched": true
-  },
-  "includedWaveCommitsAllAncestors": true,
-  "dirtyOverlaysExcluded": [
-    "AGENTS.md",
-    "CLAUDE.md",
-    "docs-site",
-    "marketplace"
-  ],
-  "dirtyOverlaysAbsent": true,
-  "procedure204TreeComparison": {
-    "baselineCommit": "bba6a2ce6fc19b34738024b8799cb12572ef85ca",
-    "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-    "baselinePathCount": 108,
-    "subjectPathCount": 108,
+  "procedure204": {
+    "referenceCommit": "3f53e7f938f2a75ea63d5432a5c2278a5b648736",
+    "comparisonPathspec": "packages/cli/src/templates/research/procedures/*/2.0.4/**",
     "bytesUnchanged": true
   },
-  "procedure205FamilyCount": 17,
-  "procedure205AllPresent": true,
-  "procedure205AllEntryDigestsValid": true,
-  "procedure205AllContractsNonEmpty": true,
-  "literatureScanResidualVersion": {
-    "procedureVersion": "2.0.5",
-    "packProcedureVersion": "2.0.5",
-    "ok": true
-  },
-  "attested": true
+  "subjectPinsMatchAttempt3": true,
+  "humanReviewed": false,
+  "repairAuthority": false,
+  "activationAuthorized": false
 }

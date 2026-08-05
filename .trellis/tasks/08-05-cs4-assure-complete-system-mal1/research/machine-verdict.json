@@ -1,31 +1,12 @@
 {
   "schemaVersion": 1,
-  "assuranceLevel": "MAL-1",
-  "attempt": 2,
-  "verdict": "pass",
+  "kind": "cs4-mal1-machine-verdict",
+  "attempt": 3,
+  "verdict": "fail",
   "humanReviewed": false,
-  "humanEquivalent": false,
   "activationAuthorized": false,
-  "releaseAuthorized": false,
-  "publicationAuthorized": false,
-  "pushAuthorized": false,
   "repairAuthority": false,
-  "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-  "requiredFindings": {
-    "subjectPinsMatchFreezeAndExtractionContained": true,
-    "procedure204BytesUnchanged": true,
-    "all17Procedure205PresentVersionsAndDigestsValid": true,
-    "figureAndIdeaGenerationContractsNonEmpty204And205": true,
-    "canonicalClosureUsesParserNotResultStatus": true,
-    "acceptedPackIdentityDerivedFromMembers": true,
-    "reportV2RequiresMultiFactorAuthority": true,
-    "harnessEvidencePathPortable": true,
-    "requiredCoreTestPassed": true,
-    "requiredCliAndHarnessTestsPassed": true,
-    "dormantCandidateUnauthorizedAndLive100Preserved": true,
-    "supersessionGrantsNoActivation": true
-  },
-  "limitations": [
-    "Machine-only MAL-1 review; no human review or activation authority."
-  ]
+  "subjectCommit": "08b3d5abaf43bd459832196e6273220ef453d42f",
+  "failureCodes": ["CS4_205_PACK_DIGEST_PIN_MISMATCH"],
+  "summary": "16 of 17 candidate-declared Procedure 2.0.5 packSha256 pins do not match exact methodology/pack.json bytes; runtime and harness checks otherwise pass"
 }

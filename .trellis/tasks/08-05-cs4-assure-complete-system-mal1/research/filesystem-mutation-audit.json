@@ -1,74 +1,29 @@
 {
   "schemaVersion": 1,
-  "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-  "initialState": {
-    "detached": true,
-    "expectedResetOutputDeletions": 9,
-    "trackedDiffPathsOutsideNineOutputAllowlist": [],
-    "providedNodeModuleSymlinks": [
-      "node_modules",
-      "packages/cli/node_modules",
-      "packages/core/node_modules"
-    ],
-    "otherUntrackedPaths": []
-  },
-  "permanentWriteAllowlist": [
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/exact-subject-attestation.json",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/reviewer-session-attestation.json",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/accepted-member-ledger.json",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/runtime-contract-audit.json",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/harness-case-evidence.jsonl",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/command-evidence-ledger.jsonl",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/filesystem-mutation-audit.json",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/containment-audit.json",
-    ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/machine-verdict.json"
+  "kind": "cs4-mal1-filesystem-mutation-audit",
+  "attempt": 3,
+  "allowedResearchOutputs": [
+    "exact-subject-attestation.json",
+    "reviewer-session-attestation.json",
+    "accepted-member-ledger.json",
+    "runtime-contract-audit.json",
+    "harness-case-evidence.jsonl",
+    "command-evidence-ledger.jsonl",
+    "filesystem-mutation-audit.json",
+    "containment-audit.json",
+    "machine-verdict.json"
   ],
-  "expectedPermanentWriteCount": 9,
-  "productionOrSourceWrites": [],
-  "transientMutations": {
-    "packageNodeModulesCacheOverlays": [
-      {
-        "path": "packages/core/node_modules",
-        "originalSymlinkRestored": true
-      },
-      {
-        "path": "packages/cli/node_modules",
-        "originalSymlinkRestored": true
-      }
-    ],
-    "tempEvidenceRoot": "/tmp/cs4-mal1-a2",
-    "tempProbeFiles": [
-      "/tmp/cs4-contract-loader.test.ts",
-      "/tmp/cs4-vitest.config.mjs",
-      "/tmp/cs4-pack-audit.mjs"
-    ],
-    "reason": "Sandbox denied Vite cache writes through read-only external node_modules symlink; writable overlays forwarded dependencies and were restored."
+  "outputCount": 9,
+  "trackedWritesOutsideAllowlist": [],
+  "packageOrSourceWrites": [],
+  "activationReleasePublicationPushWrites": [],
+  "testEvidenceDirectory": "/tmp/cs4-mal1-a3",
+  "testEvidenceFileCount": 118,
+  "temporaryDependencyOverlay": {
+    "reason": "sandbox denied Vite cache writes through external node_modules symlinks",
+    "trackedBytesChanged": false,
+    "originalCliSymlinkRestored": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/cli/node_modules",
+    "originalCoreSymlinkRestored": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core/node_modules"
   },
-  "cleanup": {
-    "method": "exact-target find -depth -delete for directories; unlink for files",
-    "removedTemporaryEvidenceFiles": 117,
-    "removedTemporaryProbeFiles": 3,
-    "removedTemporaryOverlayDirectories": 4,
-    "removedUvCache": true,
-    "allEnumeratedTemporaryPathsAbsent": true
-  },
-  "finalState": {
-    "writtenPaths": [
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/exact-subject-attestation.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/reviewer-session-attestation.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/accepted-member-ledger.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/runtime-contract-audit.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/harness-case-evidence.jsonl",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/command-evidence-ledger.jsonl",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/filesystem-mutation-audit.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/containment-audit.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/machine-verdict.json"
-    ],
-    "reviewOutputWriteCount": 9,
-    "onlyAllowlistedPermanentMutationPaths": true,
-    "nodeModuleSymlinksRestored": true,
-    "temporaryPathsCleaned": true,
-    "allNineOutputsJsonOrJsonlValid": true
-  },
-  "compliant": true
+  "mutationScopeCompliant": true
 }
