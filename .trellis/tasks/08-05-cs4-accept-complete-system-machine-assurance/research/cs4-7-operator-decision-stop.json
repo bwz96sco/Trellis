@@ -2,94 +2,51 @@
   "schemaVersion": 1,
   "kind": "cs4-7-operator-honest-stop",
   "wave": "CS4-7",
-  "recordId": "cs4-7-operator-decision-post-mal1-pass",
+  "recordId": "cs4-7-operator-decision-post-mal1-pass-attempt-5",
   "recordedOn": "2026-08-05",
-  "recordedAt": "2026-08-05T04:50:55Z",
+  "recordedAt": "2026-08-05T06:19:55Z",
   "status": "honest-stop-no-complete-system-authority",
   "decision": null,
   "decisionReceived": false,
   "completeSystemMachineAssuranceAccepted": false,
   "reason": [
-    "CS4-6 machine-only MAL-1 pass is frozen and retained as evidence.",
-    "CS4-7 requires a genuine accountable operator accept or reject; none has been provided in this session.",
-    "Plan forbids predetermined auto-accept. Machine pass alone does not create complete-system acceptance.",
-    "If an accountable operator later decides, write a separate forward-only accept/reject record bound to the same subject and evidence commits."
+    "CS4-6 machine-only MAL-1 pass attempt-5 is frozen and retained as evidence.",
+    "CS4-7 requires a genuine accountable operator accept or reject; none provided this session.",
+    "Plan forbids predetermined auto-accept."
   ],
   "assuranceLevel": "MAL-1",
-  "scope": "complete-system",
   "humanReviewed": false,
-  "humanEquivalent": false,
   "bindings": {
-    "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-    "machineEvidenceCommit": "636f3fb384e9ee3790efac12aaefad31ff22d815",
+    "subjectCommit": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
+    "machineEvidenceCommit": "76a929e2f6d90805366180a763f133dfc380f748",
     "machineVerdict": "pass",
-    "lifecycleRepairCommit": "a530b9dd",
-    "supersessionCommit": "fcf2b986",
-    "supersedes": {
-      "cs3Subject": "404d714a",
-      "cs3VerdictCommit": "b4c0c72d",
-      "cs3OaAcceptCommit": "13656285",
-      "note": "CS3/OA complete-system authority remains superseded; CS4 machine pass does not revive CS3."
-    },
-    "reviewerSessionId": "019fd02e-cab6-7c91-832d-534464a3f9bd",
-    "reviewerTool": "codex-cli",
-    "reviewerModel": "GPT-5",
+    "attempt": 5,
+    "skepticResidualRepair": "7be3caad",
     "nineOutputDigests": {
-      "exact-subject-attestation.json": "sha256:afb2cffc66bfce11b5127a8e25b7bfffc8ae4aaa35dd4d884bdacdce849e7635",
-      "reviewer-session-attestation.json": "sha256:a862be75d467e2144a80ab6ff3a9015bdf2e2f2fef09d3cf11a0719a519224eb",
-      "accepted-member-ledger.json": "sha256:8d66b78c21c597701e4be43253718fcd7a9cda9212227b0d214c033028ce9b4b",
-      "runtime-contract-audit.json": "sha256:616a560bfafe806deceb8307dca04f4199cbf083ae947b3aef5d523f4574e419",
-      "harness-case-evidence.jsonl": "sha256:fa66b723176c83fcba02fd9f87e8923dd0b8e9c033991f0aabe89cef57f1e4c9",
-      "command-evidence-ledger.jsonl": "sha256:353b8a1a70b3fd6552e2073ac4a7f302867f2337a9ffbc9d4dce0da5232e648e",
-      "filesystem-mutation-audit.json": "sha256:96cabf566685701f75c29c2b97e1c069d55fd811500c082cfdbb14976bc85ceb",
-      "containment-audit.json": "sha256:f0f69fce4f2a3788f1b4a9d7f09316935c962d3d5203c1710e5b5e4e23fc880b",
-      "machine-verdict.json": "sha256:7f3505c5fbe9d13ad816c096eec48d50294ba1c6f46b7b3e5bbcbba2e2ac65dc"
+      "exact-subject-attestation.json": "sha256:f2fdf531b553cd6ec778911f8e348ddb0c8324ee2b9cebe0fdbfd41f526dc9bf",
+      "reviewer-session-attestation.json": "sha256:d074455afc357ef235f0aa94a52822766899681404f2c1cf8e308c5e3b8ae067",
+      "accepted-member-ledger.json": "sha256:48dd5c321ffaf68a1f06275fa27be848e03c03d20b479b87b6759fd7b6efaa5b",
+      "runtime-contract-audit.json": "sha256:5f8c1d748e71e363dd712f432ef6ea9aed688364dda5b9d231cef99705d575da",
+      "harness-case-evidence.jsonl": "sha256:e75bb7997a09a0b74bfb892362e09a149815e736fab19ba6d1eec98bada4a914",
+      "command-evidence-ledger.jsonl": "sha256:0374390ea5d4ecbabad8cb9510126969d56687bb7f7b1d452191dfd5806e48cd",
+      "filesystem-mutation-audit.json": "sha256:930893a7620160ce6b3263833ca68496bc397809956849bf5b3c8485a36baec0",
+      "containment-audit.json": "sha256:8149ad55c975f5af6fa23cd809115a098ab78fc259b3c89fd464fc958842e2be",
+      "machine-verdict.json": "sha256:4b206b72d8344a5887ec939bf74fe2e6d9798b352c71147d0a75031ecec3e38e"
     }
-  },
-  "containment": {
-    "activationAuthorized": false,
-    "releaseAuthorized": false,
-    "publicationAuthorized": false,
-    "pushAuthorized": false,
-    "liveSelection": {
-      "procedureVersion": "1.0.0",
-      "literatureDefault": "research.literature.scan",
-      "sourcePath": "packages/core/src/research/stage-capabilities.ts",
-      "capabilityCount": 14,
-      "preserved": true
-    },
-    "dormantCandidate": {
-      "path": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
-      "sha256": "c143c6192d1b9c2d48cf9c8c5e5cdbf7d55425a2339bc1b8a14fb0ff3fac1376",
-      "activationAuthorized": false,
-      "releaseAuthorized": false,
-      "publicationAuthorized": false,
-      "pushAuthorized": false
-    },
-    "contained": true
   },
   "authorityGranted": {
     "activationAuthorized": false,
     "releaseAuthorized": false,
     "publicationAuthorized": false,
     "pushAuthorized": false,
-    "archiveAuthorized": false,
-    "completeSystemMachineAssuranceAccepted": false,
-    "note": "Honest stop: no accept decision recorded. Machine evidence retained only."
+    "completeSystemMachineAssuranceAccepted": false
   },
   "excludes": [
     "activation",
     "release",
     "publication",
     "push",
-    "archive",
     "auto-accept"
-  ],
-  "residualRisks": [
-    "MAL-1 is machine-only and not human-equivalent review.",
-    "No genuine operator accept/reject has been bound; complete-system authority is not established under CS4.",
-    "Procedure 2.0.5 remains dormant with activationAuthorized:false; live selection remains 1.0.0.",
-    "Historical CS3 residual harness/package caveats are superseded as authority but remain historical evidence."
   ],
   "operatorPrompt": {
     "requiredReply": [
@@ -97,10 +54,6 @@
       "reject",
       "stop"
     ],
-    "bindTo": {
-      "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
-      "machineEvidenceCommit": "636f3fb384e9ee3790efac12aaefad31ff22d815"
-    },
-    "note": "Reply accept|reject with one-sentence rationale, or stop. Accept still excludes activation/release/publication/push."
+    "note": "Reply accept|reject with rationale, or stop. Accept still excludes activation/release/publication/push."
   }
 }
