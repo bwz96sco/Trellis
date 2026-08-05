@@ -1,114 +1,94 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-runtime-contract-audit",
-  "attempt": 6,
+  "attempt": 8,
   "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
-  "frozenRuntimeCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
-  "validatorSelection": {
-    "status": "pass",
-    "procedure": "figure-v1@2.0.5",
-    "loader": "loadDeclaredValidatorsFromProcedure",
-    "selectionFunctions": [
-      "selectApplicableV13ValidatorsFromBindings",
-      "selectTrustedV13ValidatorDescriptors"
-    ],
-    "trustedValidatorCount": 20,
-    "bindingCount": 876,
-    "selectedValidatorCount": 20,
-    "allBindingsTrusted": true,
-    "allTrustedValidatorsBound": true,
-    "selectedIdsAreTrellisNamespace": true,
-    "legacyFourOnly": false
+  "humanReviewed": false,
+  "repairAuthority": false,
+  "status": "pass",
+  "selectorsFound": {
+    "selectTrustedV13ValidatorDescriptors": true,
+    "selectApplicableV13ValidatorsFromBindings": true,
+    "loadArtifactContractsFromProcedure": true
   },
-  "artifactContracts": {
-    "status": "pass",
-    "loader": "loadArtifactContractsFromProcedure",
-    "figure205ContractsCount": 6,
-    "figure205CheckpointCount": 6,
-    "figure205NonEmpty": true,
-    "figure204ContractsCount": 0,
-    "figure204CheckpointCount": 6,
-    "figure204InventedCheckpointDefaults": false
-  },
-  "reportV2Authorization": {
-    "status": "pass",
-    "versionAloneAuthorized": false,
-    "requiredFactors": [
-      "authoritative procedure version",
-      "procedure id and digest",
-      "accepted methodology digest",
-      "support inventory digest",
-      "activation id",
-      "dispatch id",
-      "capability id",
-      "request digest",
-      "policy digest",
-      "scope hash",
-      "explicit selected and blocked closure facts",
-      "successful validation",
-      "committed batch before sidecar materialization"
-    ]
-  },
-  "deltaEvaluator": {
-    "status": "pass",
-    "function": "evaluateAcceptedV13DeltaCase",
-    "callerSuppliedKeys": [
-      "caseId",
-      "pack",
-      "optional sandboxRoot"
-    ],
-    "callerSuppliedSemanticAuthority": false,
-    "expectedStableErrorsUsedAsProductionErrorAuthority": false,
-    "actualErrorCodeSource": "evaluated.errorCodes",
-    "sourceExpectedStableErrorsOccurrences": "comments only",
-    "caseCount": 116,
-    "fixtureClassCounts": {
-      "positive": 29,
-      "base": 29,
-      "critical-negative": 29,
-      "inapplicable": 29
+  "noExpectedStableErrorsStamp": true,
+  "tests": {
+    "coreV13": {
+      "exitCode": 0,
+      "passed": true,
+      "stdoutSha256": "sha256:5788fefabb6209896c30a9a6fce2da07692f0a849c9ed4fec68963c75054f6fa"
     },
-    "distinctExecutionFingerprints": 116,
-    "exactOrderedOutcomeErrorMismatchCount": 0,
-    "semanticLabelMismatchCount": 0,
-    "allZeroWrite": true,
-    "writeDiffFailureCount": 0,
-    "materializesPackageBytes": true,
-    "executesProductionOperations": true,
-    "zeroWriteProof": "beforeProductionDigest equals afterProductionDigest for every materialized production sandbox",
-    "pureFunctionTheater": false,
-    "executionLedgerSha256": "sha256:ddc032b2853b47ee695460bb1720631068ac1608dfb35fc3f99a18c4de7d4ca2"
-  },
-  "recordResultPublicPath": {
-    "status": "pass",
-    "function": "recordApprovedResearchDispatchResult",
-    "cases": [
-      "missing closure ArtifactRef",
-      "digest-drifted closure ArtifactRef",
-      "ambiguous multi-family closure ArtifactRefs"
-    ],
-    "caseCount": 3,
-    "allFailClosed": true,
-    "fullTreeAndByteSnapshotEquality": true,
-    "methodologyReportV2AbsentOnFailure": true,
-    "testsPassed": true
-  },
-  "tests": [
-    {
-      "scope": "core methodology v1.3 runtime",
-      "command": "pnpm --filter @mindfoldhq/trellis-core exec vitest run test/research/methodology-v13-runtime.test.ts",
-      "files": 1,
-      "tests": 10,
-      "passed": 10
-    },
-    {
-      "scope": "CLI closure and delta harness",
-      "command": "TRELLIS_V13_DELTA_EVIDENCE_DIR=/tmp/cs4-mal1-a6 pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-methodology-closure-cs4.test.ts test/research-methodology-harness/v13-delta-domain.test.ts",
-      "files": 2,
-      "tests": 13,
-      "passed": 13
+    "cliHarness": {
+      "exitCode": 0,
+      "passed": true,
+      "stdoutSha256": "sha256:3c51e797a213eb3c21f46df8423194110fa6b9870289514311c2c90b24af787d",
+      "evidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence"
     }
-  ],
-  "runtimeChecksPass": true,
-  "completeSystemPass": true
+  },
+  "checks": {
+    "head": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+    "subjectTree": "0632a0b0080546ad7fe20a7665b2d72c4e9bef56",
+    "trackedDirty": [],
+    "freezeFile": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-6.json",
+    "freezeSubject": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
+    "procedure205Count": 17,
+    "procedure204Count": 17,
+    "procedure205Families": [
+      "computation-case-v1",
+      "experiment-campaign-v1",
+      "experiment-round-v1",
+      "figure-v1",
+      "idea-evaluation-v1",
+      "idea-generation-v1",
+      "literature-review-v1",
+      "literature-scan-v1",
+      "project-setup-v1",
+      "quest-admin-v1",
+      "quest-framing-v1",
+      "review-campaign-v1",
+      "review-case-v1",
+      "slides-v1",
+      "survey-v1",
+      "theory-case-v1",
+      "writing-case-v1"
+    ],
+    "candidateActivationFalseHits": 0,
+    "candidateActivationTrueHits": 0,
+    "liveSelectionSearchExit": 1,
+    "noStampAssignment": true,
+    "coreV13Tests": {
+      "exitCode": 0,
+      "passed": true,
+      "stdoutSha256": "sha256:5788fefabb6209896c30a9a6fce2da07692f0a849c9ed4fec68963c75054f6fa"
+    },
+    "cliHarnessTests": {
+      "exitCode": 0,
+      "passed": true,
+      "stdoutSha256": "sha256:3c51e797a213eb3c21f46df8423194110fa6b9870289514311c2c90b24af787d",
+      "evidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence"
+    },
+    "harnessEvidenceFiles": [
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-REPOSITORYARTIFACTREFRELATION-CRITICAL-NEGATIVE-D7A2609429.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-REPOSITORYARTIFACTREFRELATION-INAPPLICABLE-3AD3DBB1AA.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/execution-ledger.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-DIFFERENTIAL-DOMAINS-BASE-DEB89D3FCB.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-DIFFERENTIAL-DOMAINS-CRITICAL-NEGATIVE-4D107F7D56.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-COMPATIBILITY-POSITIVE-AFACAB726A.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-BASE-6DCE572F55.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-POSITIVE-C3941F767C.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-PRODUCER-BASE-04890A00C7.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-CRITICAL-NEGATIVE-1438117615.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CANONICAL-BYTES-CRITICAL-NEGATIVE-DF324D8442.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-WORKER-AUTHORITY-BOUNDARY-INAPPLICABLE-787172E395.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-VALIDATOR-BINDING-INTEGRITY-CRITICAL-NEGATIVE-2DA3B5503C.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-CONSUMERS-BASE-1CE705BFA1.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-INAPPLICABLE-FAE936A5D7.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-WORKER-AUTHORITY-BOUNDARY-CRITICAL-NEGATIVE-B62012E976.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-VALIDATOR-BINDING-INTEGRITY-BASE-84A8C3EE65.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-COMPATIBILITY-CRITICAL-NEGATIVE-3D432853CB.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-CROSSARTIFACTCONSISTENCY-BASE-F06579FF03.json",
+      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-CLOSURE-WORKER-BOUNDARY-BASE-D59A491375.json"
+    ],
+    "vitestPassedMention": "2"
+  }
 }

@@ -1,35 +1,16 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-exact-subject-attestation",
-  "attempt": 6,
-  "reviewHead": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
-  "reviewHeadTree": "0632a0b0080546ad7fe20a7665b2d72c4e9bef56",
-  "reviewObjectDetachedFromWorkingTree": true,
-  "freezeCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
-  "subjectCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
-  "subjectTree": "81bf07154bab1daf06358598a75e1bc510d7d028",
-  "freezeAttestationPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-6.json",
-  "freezeAttestationSha256": "1740b5503e631189b53a44a54840065081768a85bc1e7e0244ceff423efaac43",
-  "freezeAttestationSidecarMatches": true,
-  "candidateManifestPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
-  "candidateManifestSha256": "c68f052175fb5197a5581b030fc3886c83836b599d7732635fbf3b33044a00ff",
-  "candidateManifestSidecarDeclaredSha256": "c68f052175fb5197a5581b030fc3886c83836b599d7732635fbf3b33044a00ff",
-  "candidateManifestSidecarMatches": true,
+  "attempt": 8,
+  "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+  "frozenRuntimeCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
+  "headAtReview": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+  "subjectTree": "0632a0b0080546ad7fe20a7665b2d72c4e9bef56",
+  "trackedDirty": [],
+  "procedure205Count": 17,
+  "procedure204Count": 17,
+  "freezeFile": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-6.json",
   "cleanExtraction": true,
-  "cleanExtractionBasis": {
-    "method": "git archive of exact reviewHead into /tmp/cs4-mal1-a6-subject",
-    "trackedSubjectBytesFromGitObjectOnly": true,
-    "priorAttempt5ReviewerOutputsIgnoredAsSuperseded": true,
-    "dependencyBootstrapAndCoreBuildConfinedToTemporaryExtraction": true,
-    "packageOrSourceOverlayDetected": false
-  },
-  "procedure204": {
-    "referenceCommit": "3f53e7f938f2a75ea63d5432a5c2278a5b648736",
-    "comparisonPathspec": "packages/cli/src/templates/research/procedures/*/2.0.4/**",
-    "bytesUnchanged": true
-  },
-  "subjectPinsMatchAttempt6": true,
   "humanReviewed": false,
-  "repairAuthority": false,
-  "activationAuthorized": false
+  "recordedAt": "2026-08-05T07:18:31Z"
 }

@@ -1,41 +1,74 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-filesystem-mutation-audit",
-  "attempt": 6,
-  "allowedResearchOutputs": [
-    "exact-subject-attestation.json",
-    "reviewer-session-attestation.json",
-    "accepted-member-ledger.json",
-    "runtime-contract-audit.json",
-    "harness-case-evidence.jsonl",
-    "command-evidence-ledger.jsonl",
-    "filesystem-mutation-audit.json",
-    "containment-audit.json",
-    "machine-verdict.json"
+  "attempt": 8,
+  "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+  "humanReviewed": false,
+  "commands": [
+    {
+      "seq": 1,
+      "purpose": "resolve HEAD commit",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    },
+    {
+      "seq": 2,
+      "purpose": "show frozen subject metadata",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    },
+    {
+      "seq": 3,
+      "purpose": "git status porcelain",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    },
+    {
+      "seq": 4,
+      "purpose": "grep live procedure 1.0.0 pins",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 1
+    },
+    {
+      "seq": 5,
+      "purpose": "sha256 methodology-v13-runtime.ts",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    },
+    {
+      "seq": 6,
+      "purpose": "core methodology-v13-runtime tests",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    },
+    {
+      "seq": 7,
+      "purpose": "CLI closure-cs4 + v13-delta 116 harness",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    },
+    {
+      "seq": 8,
+      "purpose": "count trusted validator descriptors in source",
+      "beforeFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "afterFsDigest": "sha256:666c62ba93ae5aa78d971662b3ecf15f322a06a63952b5db88438c362a23dc4c",
+      "unchanged": true,
+      "exitCode": 0
+    }
   ],
-  "outputCount": 9,
-  "trackedWritesOutsideAllowlist": [],
-  "packageOrSourceWrites": [],
-  "activationReleasePublicationPushWrites": [],
-  "testEvidenceDirectory": "/tmp/cs4-mal1-a6",
-  "testEvidenceFileCount": 118,
-  "cleanExtraction": {
-    "path": "/tmp/cs4-mal1-a6-subject",
-    "source": "git archive b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
-    "trackedBytesChanged": false
-  },
-  "temporaryDependencyBootstrap": {
-    "rootNodeModules": "external read-only dependency symlink",
-    "coreNodeModules": "writable copy inside temporary extraction",
-    "cliNodeModules": "writable copy inside temporary extraction",
-    "initialOverlayAttemptFailedBeforeTestExecution": true,
-    "initialFailure": "pnpm relative vitest link resolved outside package-local overlay",
-    "subjectPackageOrSourceBytesChanged": false
-  },
-  "temporaryCoreBuild": {
-    "path": "/tmp/cs4-mal1-a6-subject/packages/core/dist",
-    "reason": "CLI global setup requires built exact-subject core declarations and runtime",
-    "workspaceSubjectBytesChanged": false
-  },
-  "mutationScopeCompliant": true
+  "allUnchangedExcludingEvidence": true
 }
