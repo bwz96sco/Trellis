@@ -1,17 +1,106 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-7-operator-honest-stop",
-  "recordedOn": "2026-08-05",
   "wave": "CS4-7",
-  "status": "blocked-pending-machine-pass-and-genuine-operator",
+  "recordId": "cs4-7-operator-decision-post-mal1-pass",
+  "recordedOn": "2026-08-05",
+  "recordedAt": "2026-08-05T04:50:55Z",
+  "status": "honest-stop-no-complete-system-authority",
+  "decision": null,
+  "decisionReceived": false,
+  "completeSystemMachineAssuranceAccepted": false,
   "reason": [
-    "CS4-7 requires a genuine accountable operator accept/reject after a frozen MAL-1 pass.",
-    "No predetermined auto-accept is allowed.",
-    "Machine pass alone grants no complete-system acceptance."
+    "CS4-6 machine-only MAL-1 pass is frozen and retained as evidence.",
+    "CS4-7 requires a genuine accountable operator accept or reject; none has been provided in this session.",
+    "Plan forbids predetermined auto-accept. Machine pass alone does not create complete-system acceptance.",
+    "If an accountable operator later decides, write a separate forward-only accept/reject record bound to the same subject and evidence commits."
   ],
-  "prerequisite": "CS4-6 committed nine-file pass on exact subject",
-  "activationAuthorized": false,
-  "releaseAuthorized": false,
-  "publicationAuthorized": false,
-  "pushAuthorized": false
+  "assuranceLevel": "MAL-1",
+  "scope": "complete-system",
+  "humanReviewed": false,
+  "humanEquivalent": false,
+  "bindings": {
+    "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
+    "machineEvidenceCommit": "636f3fb384e9ee3790efac12aaefad31ff22d815",
+    "machineVerdict": "pass",
+    "lifecycleRepairCommit": "a530b9dd",
+    "supersessionCommit": "fcf2b986",
+    "supersedes": {
+      "cs3Subject": "404d714a",
+      "cs3VerdictCommit": "b4c0c72d",
+      "cs3OaAcceptCommit": "13656285",
+      "note": "CS3/OA complete-system authority remains superseded; CS4 machine pass does not revive CS3."
+    },
+    "reviewerSessionId": "019fd02e-cab6-7c91-832d-534464a3f9bd",
+    "reviewerTool": "codex-cli",
+    "reviewerModel": "GPT-5",
+    "nineOutputDigests": {
+      "exact-subject-attestation.json": "sha256:afb2cffc66bfce11b5127a8e25b7bfffc8ae4aaa35dd4d884bdacdce849e7635",
+      "reviewer-session-attestation.json": "sha256:a862be75d467e2144a80ab6ff3a9015bdf2e2f2fef09d3cf11a0719a519224eb",
+      "accepted-member-ledger.json": "sha256:8d66b78c21c597701e4be43253718fcd7a9cda9212227b0d214c033028ce9b4b",
+      "runtime-contract-audit.json": "sha256:616a560bfafe806deceb8307dca04f4199cbf083ae947b3aef5d523f4574e419",
+      "harness-case-evidence.jsonl": "sha256:fa66b723176c83fcba02fd9f87e8923dd0b8e9c033991f0aabe89cef57f1e4c9",
+      "command-evidence-ledger.jsonl": "sha256:353b8a1a70b3fd6552e2073ac4a7f302867f2337a9ffbc9d4dce0da5232e648e",
+      "filesystem-mutation-audit.json": "sha256:96cabf566685701f75c29c2b97e1c069d55fd811500c082cfdbb14976bc85ceb",
+      "containment-audit.json": "sha256:f0f69fce4f2a3788f1b4a9d7f09316935c962d3d5203c1710e5b5e4e23fc880b",
+      "machine-verdict.json": "sha256:7f3505c5fbe9d13ad816c096eec48d50294ba1c6f46b7b3e5bbcbba2e2ac65dc"
+    }
+  },
+  "containment": {
+    "activationAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false,
+    "liveSelection": {
+      "procedureVersion": "1.0.0",
+      "literatureDefault": "research.literature.scan",
+      "sourcePath": "packages/core/src/research/stage-capabilities.ts",
+      "capabilityCount": 14,
+      "preserved": true
+    },
+    "dormantCandidate": {
+      "path": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
+      "sha256": "c143c6192d1b9c2d48cf9c8c5e5cdbf7d55425a2339bc1b8a14fb0ff3fac1376",
+      "activationAuthorized": false,
+      "releaseAuthorized": false,
+      "publicationAuthorized": false,
+      "pushAuthorized": false
+    },
+    "contained": true
+  },
+  "authorityGranted": {
+    "activationAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false,
+    "archiveAuthorized": false,
+    "completeSystemMachineAssuranceAccepted": false,
+    "note": "Honest stop: no accept decision recorded. Machine evidence retained only."
+  },
+  "excludes": [
+    "activation",
+    "release",
+    "publication",
+    "push",
+    "archive",
+    "auto-accept"
+  ],
+  "residualRisks": [
+    "MAL-1 is machine-only and not human-equivalent review.",
+    "No genuine operator accept/reject has been bound; complete-system authority is not established under CS4.",
+    "Procedure 2.0.5 remains dormant with activationAuthorized:false; live selection remains 1.0.0.",
+    "Historical CS3 residual harness/package caveats are superseded as authority but remain historical evidence."
+  ],
+  "operatorPrompt": {
+    "requiredReply": [
+      "accept",
+      "reject",
+      "stop"
+    ],
+    "bindTo": {
+      "subjectCommit": "fb2d4921701cfb914d642acae926f8ed5752b849",
+      "machineEvidenceCommit": "636f3fb384e9ee3790efac12aaefad31ff22d815"
+    },
+    "note": "Reply accept|reject with one-sentence rationale, or stop. Accept still excludes activation/release/publication/push."
+  }
 }
