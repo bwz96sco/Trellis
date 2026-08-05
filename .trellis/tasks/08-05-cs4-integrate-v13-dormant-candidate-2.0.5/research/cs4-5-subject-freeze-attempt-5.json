@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "kind": "cs4-5-subject-freeze",
+  "attempt": 5,
+  "recordedOn": "2026-08-05",
+  "recordedAt": "2026-08-05T06:02:24Z",
+  "subjectCommit": "85a05fc36ae1b35266912188e9b5bec627d9801c",
+  "subjectTree": "ed9bba2643a755fa8822ac9101e00b5f38d274d2",
+  "includes": {
+    "sidecarRepair": "HEAD",
+    "packDigestRepair": "ecc42cf5",
+    "skepticResidual": "7be3caad"
+  },
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "liveSelection": "1.0.0",
+  "note": "Re-freeze after candidate sidecar digest recompute. No machine-review outputs."
+}
