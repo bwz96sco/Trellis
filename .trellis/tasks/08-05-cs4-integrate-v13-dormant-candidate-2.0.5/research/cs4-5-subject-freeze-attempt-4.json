@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "kind": "cs4-5-subject-freeze",
+  "attempt": 4,
+  "recordedOn": "2026-08-05",
+  "recordedAt": "2026-08-05T05:40:12Z",
+  "subjectCommit": "ecc42cf523ad429c33e8bb85936fc3d0afa36ddd",
+  "subjectTree": "63c5dc53ca3f77e2e8db53d2028c2da7a76d1c7b",
+  "includes": {
+    "packDigestRepair": "ecc42cf5",
+    "skepticResidualRepair": "7be3caad",
+    "lifecycleRepair": "a530b9dd"
+  },
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "liveSelection": "1.0.0",
+  "note": "Re-freeze after dormant packSha256 recompute. No machine-review outputs in subject."
+}
