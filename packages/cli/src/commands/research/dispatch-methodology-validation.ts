@@ -1,9 +1,12 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
+  V13_ACCEPTED_CONTRACT_DIGEST,
   V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   bindMethodologyArtifactPath,
@@ -11,7 +14,11 @@ import {
   buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
   isAuthoritativeMethodologyProcedureVersion,
+  parseAcceptedV13ContractPack,
   runMethodologyValidators,
+  selectApplicableV13ValidatorsFromBindings,
+  selectTrustedV13ValidatorDescriptors,
+  serializeSupportPackInventoryForDigest,
   shouldMaterializeMethodologyReportSidecar,
   validateMethodologyArtifacts,
   type MethodologyArtifactContract,
@@ -20,6 +27,8 @@ import {
   type MethodologyDeterministicReportV2,
   type MethodologyValidatorDescriptor,
   type ParsedResearchProcedure,
+  type V13AcceptedContractPack,
+  type V13LeafFileName,
 } from "@mindfoldhq/trellis-core/research";
 
 const DEFAULT_SCHEMA_V1_VALIDATORS: readonly MethodologyValidatorDescriptor[] =
@@ -30,11 +39,83 @@ const DEFAULT_SCHEMA_V1_VALIDATORS: readonly MethodologyValidatorDescriptor[] =
     { id: "closure-exclusivity", version: "1", severity: "critical" },
   ]);
 
+const V13_LEAF_FILES: readonly V13LeafFileName[] = [
+  "durable-output-disposition-v1.3.json",
+  "artifact-lifecycle-contract-v1.3.json",
+  "validator-registry-v1.3.json",
+  "validator-binding-matrix-v1.3.json",
+  "differential-test-matrix-v1.3.json",
+  "derivability-provenance-matrix-v1.3.json",
+  "closure-contract-v1.3.json",
+];
+
 /**
- * Load exact validator descriptors from a resolved schema-v2 support pack.
+ * Resolve accepted A3 leaf directory (monorepo research path or explicit env).
+ * Fail closed when successor procedures cannot load the accepted pack.
+ */
+export function resolveAcceptedV13ContractLeafDir(): string | undefined {
+  const configured = process.env.TRELLIS_V13_ACCEPTED_CONTRACT_DIR;
+  if (typeof configured === "string" && configured.length > 0) {
+    return configured;
+  }
+  const relativeLeaf =
+    ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research";
+  const candidates: string[] = [path.resolve(process.cwd(), relativeLeaf)];
+  // Walk up from this module and cwd for monorepo / worktree layouts.
+  let cursor = path.dirname(fileURLToPath(import.meta.url));
+  for (let i = 0; i < 12; i += 1) {
+    candidates.push(path.join(cursor, relativeLeaf));
+    const parent = path.dirname(cursor);
+    if (parent === cursor) break;
+    cursor = parent;
+  }
+  cursor = process.cwd();
+  for (let i = 0; i < 8; i += 1) {
+    candidates.push(path.join(cursor, relativeLeaf));
+    const parent = path.dirname(cursor);
+    if (parent === cursor) break;
+    cursor = parent;
+  }
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, "validator-registry-v1.3.json"))) {
+      return dir;
+    }
+  }
+  return undefined;
+}
+
+export function loadAcceptedV13ContractPackFromLeaves(
+  leafDir?: string,
+): V13AcceptedContractPack {
+  const dir = leafDir ?? resolveAcceptedV13ContractLeafDir();
+  if (dir === undefined) {
+    throw new Error(
+      "Accepted evaluation-contract-v1.3.0 leaves not found; set TRELLIS_V13_ACCEPTED_CONTRACT_DIR",
+    );
+  }
+  const leafBytes: Partial<Record<V13LeafFileName, Uint8Array>> = {};
+  for (const name of V13_LEAF_FILES) {
+    leafBytes[name] = fs.readFileSync(path.join(dir, name));
+  }
+  return parseAcceptedV13ContractPack({
+    leafBytes,
+    expectedContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
+  });
+}
+
+/**
+ * Load exact validator descriptors.
+ * - schema-v1 / non-v2: four legacy validators only.
+ * - schema-v2 2.0.3: pack validators.json (contained/unaccepted path).
+ * - schema-v2 2.0.4/2.0.5 accepted path: A3 20-validator registry selected
+ *   via the 876-row binding matrix (selectTrustedV13ValidatorDescriptors).
  */
 export function loadDeclaredValidatorsFromProcedure(
   procedure: ParsedResearchProcedure,
+  options?: {
+    readonly acceptedPack?: V13AcceptedContractPack;
+    readonly leafDir?: string;
+  },
 ): readonly MethodologyValidatorDescriptor[] {
   if (
     procedure.packageSchemaVersion !== 2 ||
@@ -42,6 +123,49 @@ export function loadDeclaredValidatorsFromProcedure(
   ) {
     return DEFAULT_SCHEMA_V1_VALIDATORS;
   }
+
+  const version = procedure.manifest.version;
+  const isSuccessor = version === "2.0.4" || version === "2.0.5";
+  const digest = procedure.supportPack.manifest.methodologyContractDigest ?? "";
+  if (isSuccessor && digest === V13_ACCEPTED_CONTRACT_DIGEST) {
+    const pack =
+      options?.acceptedPack ??
+      loadAcceptedV13ContractPackFromLeaves(options?.leafDir);
+    const declared = selectApplicableV13ValidatorsFromBindings({
+      pack,
+      procedureId: procedure.manifest.id,
+    });
+    // When family filter yields a subset, still require every selected row is
+    // trusted; if empty, fall back to full registry (never pack 4-legacy).
+    const candidate =
+      declared.length > 0
+        ? declared
+        : pack.validators.map((v) => ({
+            id: v.identity.id,
+            version: v.identity.version,
+            severity: "critical" as const,
+          }));
+    const selected = selectTrustedV13ValidatorDescriptors({
+      pack,
+      declared: candidate,
+    });
+    if (!selected.ok || selected.selected.length === 0) {
+      throw new Error(
+        `Accepted v1.3 validator selection failed: ${selected.findings.map((f) => f.code).join(",")}`,
+      );
+    }
+    return Object.freeze(
+      selected.selected.map((v) =>
+        Object.freeze({
+          id: v.id,
+          version: v.version,
+          severity: v.severity,
+        }),
+      ),
+    );
+  }
+
+  // Historical / unaccepted schema-v2: load pack validators.json only.
   const validators: MethodologyValidatorDescriptor[] = [];
   for (const item of procedure.supportPack.inventoryItems) {
     if (item.role !== "validators" || item.mediaType !== "application/json") {
@@ -147,70 +271,11 @@ function parseLifecycleContractRow(
 }
 
 /**
- * Map freeze-family checkpoint rows to exact lifecycle contracts.
- * Used when a successor pack document still carries checkpoints[] without
- * contracts[] (historical 2.0.4 shape). Fields are derived from declared
- * checkpoint authority, not invented opaque defaults.
- */
-function contractsFromFreezeCheckpoints(
-  checkpoints: unknown[],
-  sourcePath: string,
-): MethodologyArtifactContract[] {
-  const out: MethodologyArtifactContract[] = [];
-  checkpoints.forEach((raw, index) => {
-    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
-      throw new Error(
-        `Freeze checkpoint entry must be an object: ${sourcePath}`,
-      );
-    }
-    const cp = raw as Record<string, unknown>;
-    if (typeof cp.id !== "string" || cp.id.length === 0) {
-      throw new Error(`Freeze checkpoint requires id: ${sourcePath}`);
-    }
-    const producerRaw = cp.producer;
-    const producer =
-      typeof producerRaw === "string" &&
-      producerRaw.length > 0 &&
-      !producerRaw.startsWith("next_")
-        ? producerRaw
-        : "worker";
-    const consumerRaw = cp.consumer;
-    const consumers =
-      typeof consumerRaw === "string" &&
-      consumerRaw.length > 0 &&
-      !consumerRaw.startsWith("next_")
-        ? [consumerRaw]
-        : ["root"];
-    const termRaw = cp.terminal_applicability;
-    const terminalApplicability = Array.isArray(termRaw)
-      ? termRaw.map(String)
-      : ["success", "completed", "partial", "blocked", "failed"];
-    out.push(
-      parseLifecycleContractRow(
-        {
-          id: cp.id,
-          version: "1",
-          pathPattern: `evidence/**/${cp.id}*`,
-          mediaType: "text/markdown",
-          requiredness: index === 0 ? "required" : "optional",
-          cardinality: index === 0 ? "1" : "0..1",
-          producer,
-          consumers,
-          terminalApplicability,
-          validatorIds: ["missing-critical-evidence"],
-        },
-        sourcePath,
-      ),
-    );
-  });
-  return out;
-}
-
-/**
  * Load exact artifact contracts from the resolved support pack.
- * Prefers contracts[]; if absent, maps freeze-family checkpoints[] for
- * successor packs. Never empty-returns for non-literature accepted families
- * that declare lifecycle documents.
+ * Only contracts[] with full authority fields are accepted — never invent
+ * producer/consumers/terminalApplicability/mediaType/pathPattern defaults from
+ * freeze-family checkpoints[]. Historical 2.0.4 packs without contracts[]
+ * yield an empty list (no invented lifecycle authority).
  */
 export function loadArtifactContractsFromProcedure(
   procedure: ParsedResearchProcedure,
@@ -225,8 +290,7 @@ export function loadArtifactContractsFromProcedure(
     // Contained: 2.0.3 is historical-unaccepted; no family authority load.
     return Object.freeze([]);
   }
-  // Accepted successor packs (2.0.4 / 2.0.5): load ALL lifecycle contracts from
-  // the pack. Never discard non-literature families with an empty list.
+  // Accepted successor packs (2.0.4 / 2.0.5): load ONLY explicit contracts[].
   const contracts: MethodologyArtifactContract[] = [];
   for (const item of procedure.supportPack.inventoryItems) {
     if (item.role !== "artifacts" || item.mediaType !== "application/json") {
@@ -251,7 +315,6 @@ export function loadArtifactContractsFromProcedure(
     }
     const doc = parsed as {
       contracts?: unknown;
-      checkpoints?: unknown;
     };
     if (Array.isArray(doc.contracts) && doc.contracts.length > 0) {
       for (const raw of doc.contracts) {
@@ -264,13 +327,8 @@ export function loadArtifactContractsFromProcedure(
           parseLifecycleContractRow(raw as Record<string, unknown>, item.path),
         );
       }
-      continue;
     }
-    if (Array.isArray(doc.checkpoints) && doc.checkpoints.length > 0) {
-      contracts.push(
-        ...contractsFromFreezeCheckpoints(doc.checkpoints, item.path),
-      );
-    }
+    // checkpoints[] alone are not lifecycle authority (no invented defaults).
     // Closure skeletons and other non-lifecycle JSON: skip.
   }
   return Object.freeze(contracts);
@@ -291,6 +349,12 @@ export function validateMethodologyBeforeRecord(input: {
   readonly capabilityId?: string;
   readonly dispatchId?: string;
   readonly activationId?: string;
+  /** Activation-bound request / policy / scope digests (report-v2 multi-factor). */
+  readonly requestDigest?: string;
+  readonly policyDigest?: string;
+  readonly scopeHash?: string;
+  /** Package inventory digest (support-pack inventory JSON domain). */
+  readonly supportInventoryDigest?: string;
   readonly terminalState?: string;
   readonly resultStatus?: string;
   readonly proposalStatus?: string;
@@ -300,6 +364,7 @@ export function validateMethodologyBeforeRecord(input: {
   readonly blocked?: boolean;
   readonly declaredValidators?: readonly MethodologyValidatorDescriptor[];
   readonly procedure?: ParsedResearchProcedure;
+  readonly acceptedV13Pack?: V13AcceptedContractPack;
   readonly artifactPaths?: readonly string[];
   readonly artifactDigests?: readonly { path: string; sha256: string }[];
   readonly batchCommitted?: boolean;
@@ -310,12 +375,6 @@ export function validateMethodologyBeforeRecord(input: {
   readonly reportV2: MethodologyDeterministicReportV2;
   readonly materializeSidecar: boolean;
 } {
-  const declaredValidators =
-    input.declaredValidators ??
-    (input.procedure !== undefined
-      ? loadDeclaredValidatorsFromProcedure(input.procedure)
-      : DEFAULT_SCHEMA_V1_VALIDATORS);
-
   const methodologyContractVersion =
     input.methodologyContractVersion ??
     input.procedure?.supportPack?.manifest.methodologyContractVersion ??
@@ -342,6 +401,88 @@ export function validateMethodologyBeforeRecord(input: {
   const requireExplicitClosure =
     procedureAuthoritative && isSuccessorProcedureVersion;
 
+  // Load accepted A3 pack for 2.0.4/2.0.5 accepted-digest path (20/876 authority).
+  let acceptedPack: V13AcceptedContractPack | undefined = input.acceptedV13Pack;
+  if (
+    acceptedPack === undefined &&
+    isSuccessorProcedureVersion &&
+    methodologyContractDigest === V13_ACCEPTED_CONTRACT_DIGEST
+  ) {
+    try {
+      acceptedPack = loadAcceptedV13ContractPackFromLeaves();
+    } catch {
+      acceptedPack = undefined;
+    }
+  }
+
+  let declaredValidators: readonly MethodologyValidatorDescriptor[];
+  try {
+    declaredValidators =
+      input.declaredValidators ??
+      (input.procedure !== undefined
+        ? loadDeclaredValidatorsFromProcedure(input.procedure, {
+            acceptedPack,
+          })
+        : DEFAULT_SCHEMA_V1_VALIDATORS);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "validator load failed";
+    const failedValidation = {
+      ok: false,
+      criticalFailure: true,
+      findings: Object.freeze([
+        {
+          validatorId: "validator-selection",
+          severity: "critical" as const,
+          code: "V13_VALIDATOR_SELECTION_FAILED",
+          message,
+        },
+      ]),
+    };
+    const report = buildMethodologyReport({
+      procedureId: input.procedureId,
+      procedureVersion: input.procedureVersion,
+      procedureDigest: input.procedureDigest,
+      methodologyContractVersion,
+      capabilityId: input.capabilityId,
+      dispatchId: input.dispatchId,
+      activationId: input.activationId,
+      terminalState: input.terminalState,
+      validation: failedValidation,
+      artifactDigests: input.artifactDigests,
+      zeroWrite: true,
+    });
+    const reportV2 = buildMethodologyReportV2({
+      reportV1: report,
+      closureSource: {
+        selected: input.selected,
+        blocked: input.blocked,
+        requireExplicitClosure,
+        resultStatusNotAuthority: true,
+        reportV2Authorized: false,
+      },
+    });
+    return {
+      ok: false,
+      criticalFailure: true,
+      report,
+      reportV2,
+      materializeSidecar: false,
+    };
+  }
+
+  // Support-pack inventory digest: exact inventory JSON domain (not procedure digest alone).
+  let supportInventoryDigest = input.supportInventoryDigest;
+  if (
+    supportInventoryDigest === undefined &&
+    input.procedure?.supportPack !== undefined
+  ) {
+    const invJson = serializeSupportPackInventoryForDigest(
+      input.procedure.supportPack.inventoryItems,
+    );
+    supportInventoryDigest = `sha256:${createHash("sha256").update(invJson).digest("hex")}`;
+  }
+
   const facts = deriveMethodologyValidatorFacts({
     resultStatus: input.resultStatus ?? input.terminalState,
     proposalStatus: input.proposalStatus,
@@ -361,6 +502,10 @@ export function validateMethodologyBeforeRecord(input: {
     artifactPaths: input.artifactPaths ?? [],
     declaredValidators,
     facts,
+    acceptedV13BindingCount: acceptedPack?.bindings.length,
+    acceptedV13TrustedValidatorCount: acceptedPack?.validators.length,
+    acceptedV13ContractDigest: acceptedPack?.acceptedContractDigest,
+    supportInventoryDigest,
   });
 
   if (input.procedureVersion === "2.0.3" || usesRejectedA2Digest) {
@@ -382,8 +527,9 @@ export function validateMethodologyBeforeRecord(input: {
   }
 
   // Report-v2 authority is never version-string-alone: requires exact-bound
-  // Procedure id/version/digest, accepted methodology digest, explicit
-  // closure facts, and successful validation. Materialization still needs batch.
+  // Procedure id/version/digest, package inventory digest, accepted methodology
+  // digest, activation/request/policy/scope bindings, explicit closure facts,
+  // and successful validation. Materialization still needs batch.
   const reportV2Authorized =
     procedureAuthoritative &&
     isSuccessorProcedureVersion &&
@@ -393,6 +539,21 @@ export function validateMethodologyBeforeRecord(input: {
     input.procedureDigest.length > 0 &&
     typeof methodologyContractDigest === "string" &&
     methodologyContractDigest.length > 0 &&
+    methodologyContractDigest === V13_ACCEPTED_CONTRACT_DIGEST &&
+    typeof supportInventoryDigest === "string" &&
+    supportInventoryDigest.length > 0 &&
+    typeof input.activationId === "string" &&
+    input.activationId.length > 0 &&
+    typeof input.dispatchId === "string" &&
+    input.dispatchId.length > 0 &&
+    typeof input.capabilityId === "string" &&
+    input.capabilityId.length > 0 &&
+    typeof input.requestDigest === "string" &&
+    input.requestDigest.length > 0 &&
+    typeof input.policyDigest === "string" &&
+    input.policyDigest.length > 0 &&
+    typeof input.scopeHash === "string" &&
+    input.scopeHash.length > 0 &&
     input.selected !== undefined &&
     input.blocked !== undefined &&
     mergedValidation.ok &&
@@ -470,11 +631,14 @@ export function validateMethodologyBeforeRecord(input: {
   });
 
   // Always construct report-v2 object for API stability, but never authorize
-  // sidecar materialization unless reportV2Authorized (accepted 2.0.4 only).
+  // sidecar materialization unless reportV2Authorized (accepted multi-factor).
   const reportV2 = buildMethodologyReportV2({
     reportV1: report,
     methodologyContractDigest: reportV2Authorized
       ? methodologyContractDigest
+      : undefined,
+    supportInventoryDigest: reportV2Authorized
+      ? supportInventoryDigest
       : undefined,
     closureSource: {
       selected: facts.selected,

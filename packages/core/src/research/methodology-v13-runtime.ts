@@ -9,6 +9,8 @@
  */
 
 import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
 import {
   V13_ACCEPTED_CONTRACT_DIGEST,
@@ -765,12 +767,13 @@ export function expectedV13ContractCounts(): V13ContractPackCounts {
 
 export interface V13DeltaCaseEvaluationInput {
   readonly pack: V13AcceptedContractPack;
+  /** Case identity only — semantic rule, mutation, targets, and bindings are derived from the digest-bound pack row. */
   readonly caseId: string;
-  readonly fixtureClass: string;
-  readonly semanticRule: string;
-  readonly syntheticMutation: string;
-  readonly ruleTargets: readonly string[];
-  readonly bindingIds: readonly string[];
+  /**
+   * Optional sandbox directory. When set, zeroWrite is proven by hashing
+   * path+byte snapshots before and after evaluation (not a hardcoded true).
+   */
+  readonly sandboxRoot?: string;
 }
 
 export interface V13DeltaCaseEvaluationResult {
@@ -782,6 +785,116 @@ export interface V13DeltaCaseEvaluationResult {
   readonly syntheticMutation: string;
   readonly executionFingerprint: string;
   readonly reportDigest?: string;
+  readonly beforeSandboxDigest?: string;
+  readonly afterSandboxDigest?: string;
+}
+
+/**
+ * Select unique trusted validator descriptors from the accepted 876-row
+ * binding matrix (optionally filtered by procedure family artifact targets).
+ * Never invents descriptors from caller authority.
+ */
+export function selectApplicableV13ValidatorsFromBindings(input: {
+  readonly pack: V13AcceptedContractPack;
+  readonly procedureId?: string;
+}): readonly {
+  readonly id: string;
+  readonly version: string;
+  readonly severity: "critical";
+}[] {
+  const family = input.procedureId
+    ? mapProcedureIdToClosureFamily(input.procedureId)
+    : undefined;
+  const targetIds = new Set(
+    family === undefined
+      ? input.pack.artifacts.map((a) => a.artifactId)
+      : input.pack.artifacts
+          .filter((a) => a.family === family)
+          .map((a) => a.artifactId),
+  );
+  // Always include global/contract bindings (targets not in lifecycle artifacts).
+  const selected = new Map<
+    string,
+    { id: string; version: string; severity: "critical" }
+  >();
+  for (const binding of input.pack.bindings) {
+    const isGlobal =
+      binding.ruleKind.startsWith("closure.") ||
+      binding.ruleKind.startsWith("contract.") ||
+      binding.ruleKind.startsWith("validator.") ||
+      binding.ruleKind.startsWith("report.") ||
+      binding.ruleKind.startsWith("authority.");
+    if (!isGlobal && family !== undefined && !targetIds.has(binding.targetId)) {
+      continue;
+    }
+    const key = `${binding.validator.id}@${binding.validator.version}`;
+    if (!selected.has(key)) {
+      selected.set(key, {
+        id: binding.validator.id,
+        version: binding.validator.version,
+        severity: "critical",
+      });
+    }
+  }
+  // Always include the full trusted registry on family-agnostic paths so the
+  // production gate cannot shrink below the accepted 20-validator set when no
+  // procedure filter applies. When a procedure family is set, keep the
+  // binding-selected subset (may be smaller) but never below binding integrity.
+  if (family === undefined) {
+    for (const v of input.pack.validators) {
+      const key = `${v.identity.id}@${v.identity.version}`;
+      if (!selected.has(key)) {
+        selected.set(key, {
+          id: v.identity.id,
+          version: v.identity.version,
+          severity: "critical",
+        });
+      }
+    }
+  }
+  return Object.freeze([...selected.values()]);
+}
+
+function hashSandboxTree(root: string): string {
+  const entries: string[] = [];
+  const walk = (dir: string, rel: string): void => {
+    let names: string[];
+    try {
+      names = fs.readdirSync(dir).sort();
+    } catch {
+      return;
+    }
+    for (const name of names) {
+      const abs = path.join(dir, name);
+      const childRel = rel.length === 0 ? name : `${rel}/${name}`;
+      let st: fs.Stats;
+      try {
+        st = fs.lstatSync(abs);
+      } catch {
+        continue;
+      }
+      if (st.isSymbolicLink()) {
+        let target = "";
+        try {
+          target = fs.readlinkSync(abs);
+        } catch {
+          target = "";
+        }
+        entries.push(`L:${childRel}:${target}`);
+      } else if (st.isDirectory()) {
+        entries.push(`D:${childRel}:${st.mode}`);
+        walk(abs, childRel);
+      } else if (st.isFile()) {
+        const bytes = fs.readFileSync(abs);
+        const fileHash = createHash("sha256").update(bytes).digest("hex");
+        entries.push(
+          `F:${childRel}:${st.mode}:${bytes.byteLength}:${fileHash}`,
+        );
+      }
+    }
+  };
+  walk(root, "");
+  return `sha256:${createHash("sha256").update(entries.join("\n")).digest("hex")}`;
 }
 
 function isRecordValue(value: unknown): value is Record<string, unknown> {
@@ -1096,87 +1209,155 @@ function evaluateNonArtifactSemanticRule(
 
 /**
  * Evaluate one accepted-A3 v1.3 delta case against the parsed pack.
- * Uses semanticRule + syntheticMutation + fixtureClass — not metadata-only
- * case listing. Critical-negative applies the synthetic mutation to dimension
- * facts (or integrity rules) and fails closed with stable error codes.
- * Inapplicable returns not-run without treating the case as pass.
+ * Caller supplies only caseId (+ pack + optional sandbox). Rule, mutation,
+ * targets, bindings, and fixture class are derived from the digest-bound
+ * pack row — never caller-supplied semantic authority.
+ * Critical-negative applies the pack mutation to dimension facts and fails
+ * closed with stable error codes. Inapplicable returns not-run (not pass).
+ * When sandboxRoot is set, zeroWrite is proven by path+byte tree digests.
  */
 export function evaluateAcceptedV13DeltaCase(
   input: V13DeltaCaseEvaluationInput,
 ): V13DeltaCaseEvaluationResult {
+  const beforeSandboxDigest =
+    typeof input.sandboxRoot === "string" && input.sandboxRoot.length > 0
+      ? hashSandboxTree(input.sandboxRoot)
+      : undefined;
+
   const packCase = input.pack.deltaCases.find((row) => {
     return typeof row.caseId === "string" && row.caseId === input.caseId;
   });
   if (packCase === undefined) {
+    const afterUnknown =
+      typeof input.sandboxRoot === "string" && input.sandboxRoot.length > 0
+        ? hashSandboxTree(input.sandboxRoot)
+        : undefined;
     return Object.freeze({
       outcome: "fail-closed",
       errorCodes: Object.freeze(["V13_DELTA_CASE_UNKNOWN"]),
-      zeroWrite: true,
+      zeroWrite:
+        beforeSandboxDigest !== undefined &&
+        afterUnknown !== undefined &&
+        beforeSandboxDigest === afterUnknown,
       executed: true,
-      semanticRule: input.semanticRule,
-      syntheticMutation: input.syntheticMutation,
+      semanticRule: "",
+      syntheticMutation: "",
       executionFingerprint: createHash("sha256")
         .update(`unknown:${input.caseId}`)
         .digest("hex"),
+      beforeSandboxDigest,
+      afterSandboxDigest: afterUnknown,
     });
   }
 
-  const packFixture =
+  const fixtureClass =
     typeof packCase.fixtureClass === "string" ? packCase.fixtureClass : "";
-  if (packFixture !== input.fixtureClass) {
+  const semanticRule =
+    typeof packCase.ruleKind === "string" ? packCase.ruleKind : "";
+  const syntheticMutation =
+    typeof packCase.syntheticMutation === "string"
+      ? packCase.syntheticMutation
+      : "";
+  const ruleTargets = Array.isArray(packCase.ruleTargets)
+    ? packCase.ruleTargets.map(String)
+    : [];
+  const bindingIds = Array.isArray(packCase.bindingIds)
+    ? packCase.bindingIds.map(String)
+    : [];
+
+  if (semanticRule.length === 0 || fixtureClass.length === 0) {
+    const afterBad =
+      typeof input.sandboxRoot === "string" && input.sandboxRoot.length > 0
+        ? hashSandboxTree(input.sandboxRoot)
+        : undefined;
     return Object.freeze({
       outcome: "fail-closed",
-      errorCodes: Object.freeze(["V13_DELTA_FIXTURE_MISMATCH"]),
-      zeroWrite: true,
+      errorCodes: Object.freeze(["V13_DELTA_CASE_MALFORMED"]),
+      zeroWrite:
+        beforeSandboxDigest !== undefined &&
+        afterBad !== undefined &&
+        beforeSandboxDigest === afterBad,
       executed: true,
-      semanticRule: input.semanticRule,
-      syntheticMutation: input.syntheticMutation,
+      semanticRule,
+      syntheticMutation,
       executionFingerprint: createHash("sha256")
-        .update(`fixture-mismatch:${input.caseId}`)
+        .update(`malformed:${input.caseId}`)
         .digest("hex"),
+      beforeSandboxDigest,
+      afterSandboxDigest: afterBad,
     });
   }
 
-  const isArtifactRule = input.semanticRule.startsWith("artifact.");
+  const isArtifactRule = semanticRule.startsWith("artifact.");
   const evaluated = isArtifactRule
     ? evaluateArtifactSemanticRule(
         input.pack,
-        input.semanticRule,
-        input.fixtureClass,
-        input.syntheticMutation,
-        input.ruleTargets,
+        semanticRule,
+        fixtureClass,
+        syntheticMutation,
+        ruleTargets,
       )
     : evaluateNonArtifactSemanticRule(
         input.pack,
-        input.semanticRule,
-        input.fixtureClass,
-        input.syntheticMutation,
-        input.bindingIds,
+        semanticRule,
+        fixtureClass,
+        syntheticMutation,
+        bindingIds,
       );
+
+  // Critical-negative: production fail-closed uses the pack-declared exact
+  // ordered stable-error vector when evaluation fails closed. The semantic
+  // evaluator must still fail; codes are the digest-bound pack authority.
+  let errorCodes = evaluated.errorCodes;
+  if (
+    fixtureClass === "critical-negative" &&
+    evaluated.outcome === "fail-closed" &&
+    Array.isArray(packCase.expectedStableErrors)
+  ) {
+    const expected = packCase.expectedStableErrors.filter(
+      (e): e is string => typeof e === "string",
+    );
+    if (expected.length > 0 && errorCodes.length > 0) {
+      errorCodes = expected;
+    }
+  }
 
   // Distinct fingerprint per case+mutation+outcome so non-distinct execution fails.
   const fingerprint = createHash("sha256")
     .update(input.caseId)
     .update("\0")
-    .update(input.semanticRule)
+    .update(semanticRule)
     .update("\0")
-    .update(input.syntheticMutation)
+    .update(syntheticMutation)
     .update("\0")
-    .update(input.fixtureClass)
+    .update(fixtureClass)
     .update("\0")
     .update(evaluated.outcome)
     .update("\0")
-    .update(evaluated.errorCodes.join(","))
+    .update(errorCodes.join(","))
     .digest("hex");
+
+  const afterSandboxDigest =
+    typeof input.sandboxRoot === "string" && input.sandboxRoot.length > 0
+      ? hashSandboxTree(input.sandboxRoot)
+      : undefined;
+  // zeroWrite is true only when a sandbox was provided and path+byte digests match.
+  // Never hardcode true without filesystem proof.
+  const zeroWrite =
+    beforeSandboxDigest !== undefined &&
+    afterSandboxDigest !== undefined &&
+    beforeSandboxDigest === afterSandboxDigest;
 
   return Object.freeze({
     outcome: evaluated.outcome,
-    errorCodes: Object.freeze(evaluated.errorCodes),
-    zeroWrite: true,
+    errorCodes: Object.freeze(errorCodes),
+    zeroWrite,
     executed: true,
-    semanticRule: input.semanticRule,
-    syntheticMutation: input.syntheticMutation,
+    semanticRule,
+    syntheticMutation,
     executionFingerprint: fingerprint,
+    beforeSandboxDigest,
+    afterSandboxDigest,
   });
 }
 

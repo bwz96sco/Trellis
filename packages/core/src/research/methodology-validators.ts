@@ -20,6 +20,14 @@ export interface MethodologyValidationContext {
   readonly declaredValidators: readonly MethodologyValidatorDescriptor[];
   /** Opaque facts supplied by root from Result/Proposal inspection */
   readonly facts: Readonly<Record<string, unknown>>;
+  /**
+   * Optional accepted v1.3 pack binding count / digest facts for A3 validators.
+   * Never invents authority: only exact caller-supplied values are used.
+   */
+  readonly acceptedV13BindingCount?: number;
+  readonly acceptedV13TrustedValidatorCount?: number;
+  readonly acceptedV13ContractDigest?: string;
+  readonly supportInventoryDigest?: string;
 }
 
 export interface MethodologyValidatorFinding {
@@ -174,10 +182,270 @@ export function deriveMethodologyValidatorFacts(input: {
   return Object.freeze(facts);
 }
 
+/**
+ * Accepted evaluation-contract-v1.3.0 (A3) trusted validators.
+ * Implementations consume explicit facts + optional pack counters; they do not
+ * invent lifecycle defaults or call into HIGH/CRITICAL shared primitives.
+ */
+const A3_REGISTRY: Record<string, ValidatorFn> = {
+  "trellis.closure.xor@1.0.0": (ctx) => REGISTRY["closure-exclusivity"]!(ctx),
+  "trellis.closure.status-inference@1.0.0": (ctx) => {
+    if (ctx.facts.requireExplicitClosure === true && "selected" in ctx.facts) {
+      // selected/blocked present only via explicit fields under requireExplicitClosure.
+      return [];
+    }
+    if (
+      ctx.facts.requireExplicitClosure === true &&
+      !("selected" in ctx.facts)
+    ) {
+      return [
+        {
+          validatorId: "trellis.closure.status-inference",
+          severity: "critical",
+          code: "V13_CLOSURE_STATUS_INFERENCE_FORBIDDEN",
+          message: "Closure must not be inferred from Result.status on v1.3",
+        },
+      ];
+    }
+    return [];
+  },
+  "trellis.closure.schema@1.0.0": (ctx) => {
+    if (ctx.facts.closureSchemaInvalid === true) {
+      return [
+        {
+          validatorId: "trellis.closure.schema",
+          severity: "critical",
+          code: "V13_CLOSURE_SCHEMA_INVALID",
+          message: "Canonical closure schema invalid",
+        },
+      ];
+    }
+    return [];
+  },
+  "trellis.closure.evidence@1.0.0": (ctx) => {
+    if (ctx.facts.closureEvidenceInvalid === true) {
+      return [
+        {
+          validatorId: "trellis.closure.evidence",
+          severity: "critical",
+          code: "V13_CLOSURE_EVIDENCE_INVALID",
+          message: "Canonical closure evidence bindings invalid",
+        },
+      ];
+    }
+    return [];
+  },
+  "trellis.artifact.requiredness@1.0.0": (ctx) =>
+    ctx.facts.missingCriticalEvidence === true
+      ? [
+          {
+            validatorId: "trellis.artifact.requiredness",
+            severity: "critical",
+            code: "V13_ARTIFACT_REQUIRED_MISSING",
+            message: "Required methodology artifact missing",
+          },
+        ]
+      : [],
+  "trellis.artifact.cardinality@1.0.0": (ctx) =>
+    ctx.facts.artifactCardinalityInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.cardinality",
+            severity: "critical",
+            code: "V13_ARTIFACT_CARDINALITY_INVALID",
+            message: "Artifact cardinality violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.media-type@1.0.0": (ctx) =>
+    ctx.facts.artifactMediaTypeInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.media-type",
+            severity: "critical",
+            code: "V13_ARTIFACT_MEDIA_TYPE_INVALID",
+            message: "Artifact media type violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.authority@1.0.0": (ctx) =>
+    ctx.facts.forbiddenMutation === true
+      ? [
+          {
+            validatorId: "trellis.artifact.authority",
+            severity: "critical",
+            code: "V13_ARTIFACT_AUTHORITY_INVALID",
+            message: "Artifact producer/consumer authority violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.ref-binding@1.0.0": (ctx) =>
+    ctx.facts.artifactRefBindingInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.ref-binding",
+            severity: "critical",
+            code: "V13_ARTIFACT_REF_BINDING_INVALID",
+            message: "Artifact ref binding violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.stable-id@1.0.0": (ctx) =>
+    ctx.facts.idDrift === true || ctx.facts.provenanceDrift === true
+      ? [
+          {
+            validatorId: "trellis.artifact.stable-id",
+            severity: "critical",
+            code: "V13_ARTIFACT_STABLE_ID_INVALID",
+            message: "Artifact stable id drift",
+          },
+        ]
+      : [],
+  "trellis.artifact.provenance@1.0.0": (ctx) =>
+    ctx.facts.provenanceDrift === true
+      ? [
+          {
+            validatorId: "trellis.artifact.provenance",
+            severity: "critical",
+            code: "V13_ARTIFACT_PROVENANCE_INVALID",
+            message: "Artifact provenance drift",
+          },
+        ]
+      : [],
+  "trellis.artifact.dependencies@1.0.0": (ctx) =>
+    ctx.facts.artifactDependenciesInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.dependencies",
+            severity: "critical",
+            code: "V13_ARTIFACT_DEPENDENCIES_INVALID",
+            message: "Artifact dependencies violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.immutability@1.0.0": (ctx) =>
+    ctx.facts.artifactImmutabilityInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.immutability",
+            severity: "critical",
+            code: "V13_ARTIFACT_IMMUTABILITY_INVALID",
+            message: "Artifact immutability violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.transitions@1.0.0": (ctx) =>
+    ctx.facts.artifactTransitionsInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.transitions",
+            severity: "critical",
+            code: "V13_ARTIFACT_TRANSITIONS_INVALID",
+            message: "Artifact transitions violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.terminal-applicability@1.0.0": (ctx) =>
+    ctx.facts.artifactTerminalApplicabilityInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.terminal-applicability",
+            severity: "critical",
+            code: "V13_ARTIFACT_TERMINAL_APPLICABILITY_INVALID",
+            message: "Artifact terminal applicability violated",
+          },
+        ]
+      : [],
+  "trellis.artifact.cross-consistency@1.0.0": (ctx) =>
+    ctx.facts.artifactCrossConsistencyInvalid === true
+      ? [
+          {
+            validatorId: "trellis.artifact.cross-consistency",
+            severity: "critical",
+            code: "V13_ARTIFACT_CROSS_CONSISTENCY_INVALID",
+            message: "Artifact cross-consistency violated",
+          },
+        ]
+      : [],
+  "trellis.authority.worker-boundary@1.0.0": (ctx) =>
+    ctx.facts.forbiddenMutation === true
+      ? [
+          {
+            validatorId: "trellis.authority.worker-boundary",
+            severity: "critical",
+            code: "V13_WORKER_AUTHORITY_WIDENING",
+            message: "Worker authority boundary violated",
+          },
+        ]
+      : [],
+  "trellis.validator.binding-integrity@1.0.0": (ctx) => {
+    if (
+      typeof ctx.acceptedV13BindingCount === "number" &&
+      ctx.acceptedV13BindingCount !== 876
+    ) {
+      return [
+        {
+          validatorId: "trellis.validator.binding-integrity",
+          severity: "critical",
+          code: "V13_VALIDATOR_BINDING_INVALID",
+          message: `Expected 876 bindings, got ${ctx.acceptedV13BindingCount}`,
+        },
+      ];
+    }
+    if (
+      typeof ctx.acceptedV13TrustedValidatorCount === "number" &&
+      ctx.acceptedV13TrustedValidatorCount !== 20
+    ) {
+      return [
+        {
+          validatorId: "trellis.validator.binding-integrity",
+          severity: "critical",
+          code: "V13_VALIDATOR_BINDING_INVALID",
+          message: `Expected 20 trusted validators, got ${ctx.acceptedV13TrustedValidatorCount}`,
+        },
+      ];
+    }
+    return [];
+  },
+  "trellis.report.v2-binding@1.0.0": (ctx) => {
+    if (
+      typeof ctx.acceptedV13ContractDigest === "string" &&
+      ctx.acceptedV13ContractDigest.length > 0 &&
+      ctx.facts.reportV2DigestMismatch === true
+    ) {
+      return [
+        {
+          validatorId: "trellis.report.v2-binding",
+          severity: "critical",
+          code: "V13_REPORT_V2_BINDING_INVALID",
+          message: "Report-v2 authority binding invalid",
+        },
+      ];
+    }
+    return [];
+  },
+  "trellis.contract.integrity@1.0.0": (ctx) => {
+    if (ctx.facts.contractIntegrityInvalid === true) {
+      return [
+        {
+          validatorId: "trellis.contract.integrity",
+          severity: "critical",
+          code: "V13_CONTRACT_INTEGRITY_INVALID",
+          message: "Accepted contract integrity violated",
+        },
+      ];
+    }
+    return [];
+  },
+};
+
 /** Trusted implementations are keyed by exact (id, version). Unknown pairs are always critical. */
-const VERSIONED_REGISTRY: Record<string, ValidatorFn> = Object.fromEntries(
-  Object.entries(REGISTRY).map(([id, fn]) => [`${id}@1`, fn]),
-);
+const VERSIONED_REGISTRY: Record<string, ValidatorFn> = {
+  ...Object.fromEntries(
+    Object.entries(REGISTRY).map(([id, fn]) => [`${id}@1`, fn]),
+  ),
+  ...A3_REGISTRY,
+};
 
 export function runMethodologyValidators(
   ctx: MethodologyValidationContext,

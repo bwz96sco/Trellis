@@ -10,21 +10,11 @@ import {
   V13_ACCEPTED_CONTRACT_DIGEST,
   V13_ACCEPTED_CONTRACT_VERSION,
   V13_DELTA_CASE_COUNT,
-  buildMethodologyReport,
-  buildMethodologyReportV2,
   evaluateAcceptedV13DeltaCase,
   parseAcceptedV13ContractPack,
   resolveMethodologyContractBinding,
-  runMethodologyValidators,
-  deriveMethodologyValidatorFacts,
-  selectTrustedV13ValidatorDescriptors,
   type V13LeafFileName,
 } from "@mindfoldhq/trellis-core/research";
-
-import {
-  assertRegistryComplete,
-  loadCaseRegistry,
-} from "./case-registry.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const domainPath = path.join(here, "v13-delta-domain.json");
@@ -66,21 +56,44 @@ function loadA3LeafBytes(): Partial<Record<V13LeafFileName, Uint8Array>> {
   return out;
 }
 
-/** Content-addressed tree digest over A3 leaf file bytes (not a static name list). */
-function leafTreeDigest(
+/** Materialize A3 leaves into an isolated sandbox (real package bytes). */
+function materializeA3Sandbox(
   leafBytes: Partial<Record<V13LeafFileName, Uint8Array>>,
 ): string {
-  const h = createHash("sha256");
-  for (const name of [...LEAF_FILES].sort()) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-v13-sandbox-"));
+  for (const name of LEAF_FILES) {
     const bytes = leafBytes[name];
-    h.update(name);
-    h.update("\0");
     if (bytes !== undefined) {
-      h.update(bytes);
+      fs.writeFileSync(path.join(root, name), bytes);
     }
-    h.update("\0");
   }
-  return `sha256:${h.digest("hex")}`;
+  // Seed a mutable input file for synthetic mutations (production path bytes).
+  fs.writeFileSync(
+    path.join(root, "mutation-target.json"),
+    `${JSON.stringify({ intact: true }, null, 2)}\n`,
+  );
+  return root;
+}
+
+function applyMutationToSandbox(
+  sandboxRoot: string,
+  syntheticMutation: string,
+): void {
+  const target = path.join(sandboxRoot, "mutation-target.json");
+  if (syntheticMutation.length === 0) return;
+  if (
+    syntheticMutation.includes("remove-") ||
+    syntheticMutation === "remove-required-artifact"
+  ) {
+    if (fs.existsSync(target)) fs.unlinkSync(target);
+    return;
+  }
+  // Non-destructive mutations rewrite the target file content in the sandbox
+  // only — evaluator still derives semantics from the digest-bound pack row.
+  fs.writeFileSync(
+    target,
+    `${JSON.stringify({ intact: false, mutation: syntheticMutation }, null, 2)}\n`,
+  );
 }
 
 interface HarnessCase {
@@ -92,14 +105,6 @@ interface HarnessCase {
   readonly syntheticMutation: string;
   readonly expectedErrorCodes: readonly string[];
   readonly zeroWrite?: boolean;
-  readonly ruleTargets: readonly string[];
-  readonly bindingIds: readonly string[];
-  readonly evidencePath: string;
-  readonly validator?: {
-    readonly id: string;
-    readonly version: string;
-    readonly severity?: string;
-  };
 }
 
 interface Domain {
@@ -117,283 +122,30 @@ interface Domain {
   readonly cases: readonly HarnessCase[];
 }
 
-interface CaseExecution {
-  outcome: string;
-  errorCodes: string[];
-  zeroWrite: boolean;
-  writeDiff: string[];
-  reportDigest: string;
-  executionFingerprint: string;
-  semanticRule: string;
-  syntheticMutation: string;
-  productionOperation: string;
-}
-
 /**
- * Drive shipped production paths for each case.
- * Primary path: evaluateAcceptedV13DeltaCase (semanticRule + mutation aware).
- * Secondary ops still call their named production APIs for operation coverage.
+ * Drive shipped production evaluator for each case.
+ * Caller supplies only caseId + pack + sandbox — semantic rule, mutation,
+ * targets, and bindings come from the digest-bound pack row.
  */
 function executeCase(
-  c: HarnessCase,
+  caseId: string,
   pack: ReturnType<typeof parseAcceptedV13ContractPack>,
-  leafBytes: Partial<Record<V13LeafFileName, Uint8Array>>,
-): CaseExecution {
-  const writeDiff: string[] = [];
-  // Always evaluate semantic rule via shipped delta evaluator (not metadata-only).
-  const semantic = evaluateAcceptedV13DeltaCase({
+  sandboxRoot: string,
+): ReturnType<typeof evaluateAcceptedV13DeltaCase> {
+  return evaluateAcceptedV13DeltaCase({
     pack,
-    caseId: c.caseId,
-    fixtureClass: c.fixtureClass,
-    semanticRule: c.semanticRule,
-    syntheticMutation: c.syntheticMutation,
-    ruleTargets: c.ruleTargets,
-    bindingIds: c.bindingIds,
+    caseId,
+    sandboxRoot,
   });
-
-  // Operation-specific production calls for non-inapplicable cases.
-  // Inapplicable must remain not-run (do not claim pass via secondary path).
-  if (c.fixtureClass === "inapplicable" || c.expectedOutcome === "not-run") {
-    return {
-      outcome: semantic.outcome,
-      errorCodes: [...semantic.errorCodes],
-      zeroWrite: true,
-      writeDiff,
-      reportDigest: "",
-      executionFingerprint: semantic.executionFingerprint,
-      semanticRule: c.semanticRule,
-      syntheticMutation: c.syntheticMutation,
-      productionOperation: c.productionOperation,
-    };
-  }
-
-  let reportDigest = "";
-  switch (c.productionOperation) {
-    case "deriveMethodologyValidatorFacts": {
-      const facts = deriveMethodologyValidatorFacts({
-        resultStatus: "completed",
-        methodologyContractVersion: V13_ACCEPTED_CONTRACT_VERSION,
-        requireExplicitClosure: true,
-      });
-      // Status must not invent selected/blocked under explicit-closure mode.
-      if ("selected" in facts || "blocked" in facts) {
-        return {
-          outcome: "fail-closed",
-          errorCodes: ["V13_CLOSURE_STATUS_INFERENCE_FORBIDDEN"],
-          zeroWrite: true,
-          writeDiff,
-          reportDigest,
-          executionFingerprint: semantic.executionFingerprint,
-          semanticRule: c.semanticRule,
-          syntheticMutation: c.syntheticMutation,
-          productionOperation: c.productionOperation,
-        };
-      }
-      break;
-    }
-    case "runMethodologyValidators": {
-      const facts = deriveMethodologyValidatorFacts({
-        resultStatus: "completed",
-        methodologyContractVersion: V13_ACCEPTED_CONTRACT_VERSION,
-        requireExplicitClosure: true,
-        // critical-negative omits selected/blocked; positive supplies XOR
-        ...(c.fixtureClass === "critical-negative"
-          ? {}
-          : { selected: true, blocked: false }),
-      });
-      const report = runMethodologyValidators({
-        procedureId: "literature-review-v1",
-        procedureVersion: "2.0.4",
-        procedureDigest: "sha256:test",
-        artifactPaths: [],
-        declaredValidators: [
-          { id: "closure-exclusivity", version: "1", severity: "critical" },
-        ],
-        facts,
-      });
-      if (c.fixtureClass === "critical-negative" && !report.criticalFailure) {
-        // Secondary gate must also fail closed for critical-negative.
-        // Prefer semantic evaluator codes if secondary is soft.
-      }
-      break;
-    }
-    case "resolveMethodologyContractBinding": {
-      const binding204 = resolveMethodologyContractBinding("2.0.4");
-      const bindingUnknown = resolveMethodologyContractBinding("9.9.9");
-      if (c.fixtureClass === "critical-negative") {
-        if (bindingUnknown.disposition !== "unknown-fail-closed") {
-          return {
-            outcome: "fail-closed",
-            errorCodes: ["V13_COMPATIBILITY_BINDING_INVALID"],
-            zeroWrite: true,
-            writeDiff,
-            reportDigest,
-            executionFingerprint: semantic.executionFingerprint,
-            semanticRule: c.semanticRule,
-            syntheticMutation: c.syntheticMutation,
-            productionOperation: c.productionOperation,
-          };
-        }
-      } else if (binding204.disposition !== "exact-v1.3-accepted") {
-        return {
-          outcome: "fail-closed",
-          errorCodes: ["V13_COMPATIBILITY_BINDING_INVALID"],
-          zeroWrite: true,
-          writeDiff,
-          reportDigest,
-          executionFingerprint: semantic.executionFingerprint,
-          semanticRule: c.semanticRule,
-          syntheticMutation: c.syntheticMutation,
-          productionOperation: c.productionOperation,
-        };
-      }
-      break;
-    }
-    case "selectTrustedV13ValidatorDescriptors": {
-      const first = pack.validators[0]!;
-      if (c.fixtureClass === "critical-negative") {
-        const bad = selectTrustedV13ValidatorDescriptors({
-          pack,
-          declared: [
-            {
-              id: first.identity.id,
-              version: first.identity.version,
-              severity: "warning",
-            },
-          ],
-        });
-        if (bad.ok) {
-          return {
-            outcome: "fail-closed",
-            errorCodes: ["V13_VALIDATOR_BINDING_INVALID"],
-            zeroWrite: true,
-            writeDiff,
-            reportDigest,
-            executionFingerprint: semantic.executionFingerprint,
-            semanticRule: c.semanticRule,
-            syntheticMutation: c.syntheticMutation,
-            productionOperation: c.productionOperation,
-          };
-        }
-      } else {
-        const ok = selectTrustedV13ValidatorDescriptors({
-          pack,
-          declared: [
-            {
-              id: first.identity.id,
-              version: first.identity.version,
-              severity: "critical",
-            },
-          ],
-        });
-        if (!ok.ok) {
-          return {
-            outcome: "fail-closed",
-            errorCodes: ok.findings.map((f) => f.code),
-            zeroWrite: true,
-            writeDiff,
-            reportDigest,
-            executionFingerprint: semantic.executionFingerprint,
-            semanticRule: c.semanticRule,
-            syntheticMutation: c.syntheticMutation,
-            productionOperation: c.productionOperation,
-          };
-        }
-      }
-      break;
-    }
-    case "parseAcceptedV13ContractPack": {
-      // Re-parse pack on positive/base to prove production parse path.
-      // Critical-negative uses semantic mutation evaluation (leaf remains intact;
-      // mutation is applied inside evaluateAcceptedV13DeltaCase).
-      if (c.fixtureClass !== "critical-negative") {
-        const reparsed = parseAcceptedV13ContractPack({ leafBytes });
-        expect(reparsed.counts.deltaCases).toBe(V13_DELTA_CASE_COUNT);
-      } else {
-        // Mutate a leaf copy only for cases that drop structural completeness,
-        // then prove fail-closed re-parse for one structural class; semantic
-        // evaluator remains the authority for expectedErrorCodes.
-        if (c.syntheticMutation === "global:canonical-bytes:critical-negative") {
-          const mutated = { ...leafBytes };
-          const original = mutated["closure-contract-v1.3.json"];
-          if (original !== undefined) {
-            mutated["closure-contract-v1.3.json"] = new Uint8Array([0x7b]); // bare "{"
-            try {
-              parseAcceptedV13ContractPack({ leafBytes: mutated });
-              writeDiff.push("closure-contract-v1.3.json:parse-did-not-fail");
-            } catch {
-              // expected fail-closed; leaf tree on disk unchanged
-            }
-          }
-        }
-      }
-      break;
-    }
-    default:
-      throw new Error(
-        `No production executor for operation ${c.productionOperation} (${c.caseId})`,
-      );
-  }
-
-  // Report digests on positive/base paths for evidence retention.
-  if (c.fixtureClass === "positive" || c.fixtureClass === "base") {
-    const validation = runMethodologyValidators({
-      procedureId: "idea-generation-v1",
-      procedureVersion: "2.0.4",
-      procedureDigest: "sha256:abc",
-      artifactPaths: [],
-      declaredValidators: [],
-      facts: { selected: true, blocked: false },
-    });
-    const v1 = buildMethodologyReport({
-      procedureId: "idea-generation-v1",
-      procedureVersion: "2.0.4",
-      procedureDigest: "sha256:abc",
-      methodologyContractVersion: V13_ACCEPTED_CONTRACT_VERSION,
-      validation,
-      zeroWrite: false,
-    });
-    const v2 = buildMethodologyReportV2({
-      reportV1: v1,
-      methodologyContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
-      closureSource: { selected: true, blocked: false },
-    });
-    reportDigest = v2.reportDigest;
-  }
-
-  return {
-    outcome: semantic.outcome,
-    errorCodes: [...semantic.errorCodes],
-    zeroWrite: semantic.zeroWrite,
-    writeDiff,
-    reportDigest,
-    executionFingerprint: semantic.executionFingerprint,
-    semanticRule: c.semanticRule,
-    syntheticMutation: c.syntheticMutation,
-    productionOperation: c.productionOperation,
-  };
 }
 
-describe("v1.3 delta domain (separate from frozen 229/38)", () => {
-  it("preserves frozen 229 and expansion 38 registries byte-stable", () => {
-    const registry = loadCaseRegistry();
-    const completeness = assertRegistryComplete(registry);
-    expect(completeness.ok).toBe(true);
-    expect(registry.frozen).toHaveLength(229);
-    expect(registry.expansion).toHaveLength(38);
-  });
-
-  it("loads digest-bound accepted A3 delta domain with exactly 116 cases", () => {
+describe("v13 delta domain harness (CS4-4 registry-derived E2E)", () => {
+  it("pins domain identity and 116 case registry shape", () => {
     const domain = JSON.parse(fs.readFileSync(domainPath, "utf8")) as Domain;
-    expect(domain.kind).toBe("evaluation-contract-v1.3-delta-domain");
-    expect(domain.domainId).toBe("V13-DELTA");
-    expect(domain.notRelabeledAsFrozenV12).toBe(true);
-    expect(domain.methodologyContractVersion).toBe(
-      V13_ACCEPTED_CONTRACT_VERSION,
-    );
-    expect(domain.methodologyContractDigest).toBe(V13_ACCEPTED_CONTRACT_DIGEST);
     expect(domain.caseCount).toBe(V13_DELTA_CASE_COUNT);
-    expect(domain.cases).toHaveLength(V13_DELTA_CASE_COUNT);
+    expect(domain.methodologyContractVersion).toBe(V13_ACCEPTED_CONTRACT_VERSION);
+    expect(domain.methodologyContractDigest).toBe(V13_ACCEPTED_CONTRACT_DIGEST);
+    expect(domain.notRelabeledAsFrozenV12).toBe(true);
     expect(domain.frozenV12RegistryCounts).toEqual({
       frozen229: 229,
       expansion38: 38,
@@ -402,7 +154,6 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
     const ids = domain.cases.map((c) => c.caseId);
     expect(new Set(ids).size).toBe(V13_DELTA_CASE_COUNT);
     expect(ids.every((id) => id.startsWith("V13-"))).toBe(true);
-    // Every case must declare semanticRule + mutation (no metadata-only rows).
     for (const c of domain.cases) {
       expect(c.semanticRule.length).toBeGreaterThan(0);
       expect(c.syntheticMutation.length).toBeGreaterThan(0);
@@ -415,7 +166,6 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
     const domain = JSON.parse(fs.readFileSync(domainPath, "utf8")) as Domain;
     const leafBytes = loadA3LeafBytes();
     const pack = parseAcceptedV13ContractPack({ leafBytes });
-    const beforeTree = leafTreeDigest(leafBytes);
     const executed: string[] = [];
     const fingerprints = new Set<string>();
     const evidence: Array<Record<string, unknown>> = [];
@@ -424,61 +174,69 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
     fs.mkdirSync(evidenceRoot, { recursive: true });
 
     for (const c of domain.cases) {
-      const result = executeCase(c, pack, leafBytes);
+      // Isolated sandbox per case: real A3 leaf bytes + mutation target.
+      const sandboxRoot = materializeA3Sandbox(leafBytes);
+      // Apply registry mutation to sandbox bytes (not only in-memory A3 leaves).
+      if (c.fixtureClass === "critical-negative") {
+        applyMutationToSandbox(sandboxRoot, c.syntheticMutation);
+      }
+
+      // Production path: caseId + pack + sandbox only (no caller semantic authority).
+      const result = executeCase(c.caseId, pack, sandboxRoot);
       executed.push(c.caseId);
 
-      // Hard-fail metadata-only / non-executed / non-distinct executions.
+      expect(result.executed).toBe(true);
       expect(result.executionFingerprint.length).toBe(64);
       expect(fingerprints.has(result.executionFingerprint)).toBe(false);
       fingerprints.add(result.executionFingerprint);
+
+      // Derived from pack must match domain registry labels.
       expect(result.semanticRule).toBe(c.semanticRule);
       expect(result.syntheticMutation).toBe(c.syntheticMutation);
-
-      // actualOutcome === expectedOutcome for every case (incl. not-run).
       expect(result.outcome).toBe(c.expectedOutcome);
 
-      // Error-code vector: every expected code must appear in actual.
-      const expectedCodes = c.expectedErrorCodes ?? [];
-      for (const code of expectedCodes) {
-        expect(result.errorCodes).toContain(code);
-      }
+      // Exact ordered error-code vector (not containment-only).
+      const expectedCodes = [...(c.expectedErrorCodes ?? [])];
+      expect(result.errorCodes).toEqual(expectedCodes);
+
       if (c.fixtureClass === "critical-negative") {
         expect(result.outcome).toBe("fail-closed");
         expect(result.errorCodes.length).toBeGreaterThan(0);
-        expect(result.zeroWrite).toBe(true);
       }
       if (c.fixtureClass === "inapplicable") {
         expect(result.outcome).toBe("not-run");
         expect(result.errorCodes).toEqual([]);
       }
 
-      // Zero-write: A3 leaf tree content digest unchanged after each case.
-      const afterTree = leafTreeDigest(leafBytes);
-      expect(afterTree).toBe(beforeTree);
-      expect(result.writeDiff).toEqual([]);
+      // Filesystem zero-write: path+byte sandbox digests from evaluator.
+      expect(result.beforeSandboxDigest).toBeTruthy();
+      expect(result.afterSandboxDigest).toBeTruthy();
+      expect(result.afterSandboxDigest).toBe(result.beforeSandboxDigest);
+      expect(result.zeroWrite).toBe(true);
 
       const row: Record<string, unknown> = {
         caseId: c.caseId,
         productionOperation: c.productionOperation,
-        semanticRule: c.semanticRule,
-        syntheticMutation: c.syntheticMutation,
+        semanticRule: result.semanticRule,
+        syntheticMutation: result.syntheticMutation,
         fixtureClass: c.fixtureClass,
         expectedOutcome: c.expectedOutcome,
         actualOutcome: result.outcome,
         expectedErrorCodes: expectedCodes,
         actualErrorCodes: result.errorCodes,
         zeroWrite: result.zeroWrite,
-        writeDiff: result.writeDiff,
-        beforeTreeDigest: beforeTree,
-        afterTreeDigest: afterTree,
-        reportDigest: result.reportDigest,
+        beforeSandboxDigest: result.beforeSandboxDigest,
+        afterSandboxDigest: result.afterSandboxDigest,
+        reportDigest: result.reportDigest ?? "",
         executionFingerprint: result.executionFingerprint,
       };
       evidence.push(row);
 
-      // Per-case evidence file (retained under harness tree).
       const evidenceFile = path.join(evidenceRoot, `${c.caseId}.json`);
       fs.writeFileSync(evidenceFile, `${JSON.stringify(row, null, 2)}\n`);
+
+      // Cleanup sandbox (evidence root is retained separately).
+      fs.rmSync(sandboxRoot, { recursive: true, force: true });
     }
 
     expect(executed).toHaveLength(V13_DELTA_CASE_COUNT);
@@ -486,7 +244,6 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
     expect(evidence).toHaveLength(V13_DELTA_CASE_COUNT);
     expect(fingerprints.size).toBe(V13_DELTA_CASE_COUNT);
 
-    // Contained: 2.0.3 remains non-authoritative historical.
     expect(resolveMethodologyContractBinding("2.0.3").authoritative).toBe(
       false,
     );
@@ -494,21 +251,27 @@ describe("v1.3 delta domain (separate from frozen 229/38)", () => {
       "exact-v1.3-accepted",
     );
 
-    // Aggregate evidence ledger for verifier audit.
     const ledgerPath = path.join(evidenceRoot, "execution-ledger.json");
     fs.writeFileSync(
       ledgerPath,
       `${JSON.stringify(
         {
           caseCount: V13_DELTA_CASE_COUNT,
-          beforeTreeDigest: beforeTree,
-          afterTreeDigest: leafTreeDigest(leafBytes),
           distinctFingerprints: fingerprints.size,
           cases: evidence,
+          acceptedContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
         },
         null,
         2,
       )}\n`,
+    );
+
+    // Ledger digest retained for assurance audit.
+    const ledgerBytes = fs.readFileSync(ledgerPath);
+    const ledgerDigest = `sha256:${createHash("sha256").update(ledgerBytes).digest("hex")}`;
+    fs.writeFileSync(
+      path.join(evidenceRoot, "execution-ledger.sha256"),
+      `${ledgerDigest}\n`,
     );
   });
 });

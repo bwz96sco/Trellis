@@ -214,6 +214,7 @@ export {
   mapProcedureIdToClosureFamily,
   parseAcceptedV13ContractPack,
   parseCanonicalMethodologyClosureArtifact,
+  selectApplicableV13ValidatorsFromBindings,
   selectTrustedV13ValidatorDescriptors,
   V13_ACCEPTED_PACK_MEMBER_ALLOWLIST,
 } from "./methodology-v13-runtime.js";

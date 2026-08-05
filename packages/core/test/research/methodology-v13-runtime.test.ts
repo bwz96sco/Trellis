@@ -227,36 +227,35 @@ describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
     for (const row of requirednessCases) {
       const caseId = String(row.caseId);
       const fixtureClass = String(row.fixtureClass);
-      const ruleTargets = Array.isArray(row.ruleTargets)
-        ? row.ruleTargets.map(String)
-        : [];
-      const bindingIds = Array.isArray(row.bindingIds)
-        ? row.bindingIds.map(String)
-        : [];
-      const syntheticMutation = String(row.syntheticMutation ?? "");
-      const result = evaluateAcceptedV13DeltaCase({
-        pack,
-        caseId,
-        fixtureClass,
-        semanticRule: "artifact.requiredness",
-        syntheticMutation,
-        ruleTargets,
-        bindingIds,
-      });
-      expect(result.executed).toBe(true);
-      expect(result.zeroWrite).toBe(true);
-      expect(result.executionFingerprint.length).toBe(64);
-      if (fixtureClass === "positive") {
-        expect(result.outcome).toBe("pass");
-        expect(result.errorCodes).toEqual([]);
-      } else if (fixtureClass === "base") {
-        expect(result.outcome).toBe("pass-noncanonical-until-root-accept");
-      } else if (fixtureClass === "critical-negative") {
-        expect(result.outcome).toBe("fail-closed");
-        expect(result.errorCodes).toContain("V13_ARTIFACT_REQUIRED_MISSING");
-      } else if (fixtureClass === "inapplicable") {
-        expect(result.outcome).toBe("not-run");
-        expect(result.errorCodes).toEqual([]);
+      const sandboxRoot = fs.mkdtempSync(
+        path.join(path.dirname(fileURLToPath(import.meta.url)), ".v13-sandbox-"),
+      );
+      try {
+        fs.writeFileSync(path.join(sandboxRoot, "seed.txt"), "seed\n");
+        const result = evaluateAcceptedV13DeltaCase({
+          pack,
+          caseId,
+          sandboxRoot,
+        });
+        expect(result.executed).toBe(true);
+        expect(result.zeroWrite).toBe(true);
+        expect(result.beforeSandboxDigest).toBe(result.afterSandboxDigest);
+        expect(result.executionFingerprint.length).toBe(64);
+        expect(result.semanticRule).toBe("artifact.requiredness");
+        if (fixtureClass === "positive") {
+          expect(result.outcome).toBe("pass");
+          expect(result.errorCodes).toEqual([]);
+        } else if (fixtureClass === "base") {
+          expect(result.outcome).toBe("pass-noncanonical-until-root-accept");
+        } else if (fixtureClass === "critical-negative") {
+          expect(result.outcome).toBe("fail-closed");
+          expect(result.errorCodes).toEqual(["V13_ARTIFACT_REQUIRED_MISSING"]);
+        } else if (fixtureClass === "inapplicable") {
+          expect(result.outcome).toBe("not-run");
+          expect(result.errorCodes).toEqual([]);
+        }
+      } finally {
+        fs.rmSync(sandboxRoot, { recursive: true, force: true });
       }
     }
   });
