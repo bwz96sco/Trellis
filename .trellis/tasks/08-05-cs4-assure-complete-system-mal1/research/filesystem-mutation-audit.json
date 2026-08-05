@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-filesystem-mutation-audit",
-  "attempt": 3,
+  "attempt": 4,
   "allowedResearchOutputs": [
     "exact-subject-attestation.json",
     "reviewer-session-attestation.json",
@@ -17,13 +17,18 @@
   "trackedWritesOutsideAllowlist": [],
   "packageOrSourceWrites": [],
   "activationReleasePublicationPushWrites": [],
-  "testEvidenceDirectory": "/tmp/cs4-mal1-a3",
+  "testEvidenceDirectory": "/tmp/cs4-mal1-a4",
   "testEvidenceFileCount": 118,
   "temporaryDependencyOverlay": {
     "reason": "sandbox denied Vite cache writes through external node_modules symlinks",
     "trackedBytesChanged": false,
     "originalCliSymlinkRestored": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/cli/node_modules",
     "originalCoreSymlinkRestored": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core/node_modules"
+  },
+  "temporaryCoreBuild": {
+    "path": "/tmp/cs4-mal1-a4-core-package",
+    "reason": "CLI global setup requires built @mindfoldhq/trellis-core declarations and runtime; subject core compiled into writable temporary directory",
+    "subjectPackageBytesChanged": false
   },
   "mutationScopeCompliant": true
 }

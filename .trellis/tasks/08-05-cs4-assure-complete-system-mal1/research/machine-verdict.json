@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-machine-verdict",
-  "attempt": 3,
+  "attempt": 4,
   "verdict": "fail",
   "humanReviewed": false,
   "activationAuthorized": false,
   "repairAuthority": false,
-  "subjectCommit": "08b3d5abaf43bd459832196e6273220ef453d42f",
-  "failureCodes": ["CS4_205_PACK_DIGEST_PIN_MISMATCH"],
-  "summary": "16 of 17 candidate-declared Procedure 2.0.5 packSha256 pins do not match exact methodology/pack.json bytes; runtime and harness checks otherwise pass"
+  "subjectCommit": "941ca54638c9cd7a19686b48043309d665b1d7f6",
+  "failureCodes": ["CS4_CANDIDATE_MANIFEST_DIGEST_SIDECAR_MISMATCH"],
+  "summary": "All 17 candidate Procedure 2.0.5 packSha256 pins and mandated runtime/harness checks pass, but cs4-dormant-candidate-2.0.5.sha256 still declares the pre-recompute digest c143c619... while exact manifest bytes hash to 13d56cb3..."
 }

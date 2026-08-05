@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-runtime-contract-audit",
-  "attempt": 3,
-  "subjectCommit": "08b3d5abaf43bd459832196e6273220ef453d42f",
+  "attempt": 4,
+  "subjectCommit": "941ca54638c9cd7a19686b48043309d665b1d7f6",
   "validatorSelection": {
     "status": "pass",
     "procedure": "figure-v1@2.0.5",
@@ -10,6 +10,7 @@
     "selectionFunctions": ["selectApplicableV13ValidatorsFromBindings", "selectTrustedV13ValidatorDescriptors"],
     "trustedValidatorCount": 20,
     "bindingCount": 876,
+    "selectedValidatorCount": 20,
     "allBindingsTrusted": true,
     "allTrustedValidatorsBound": true,
     "selectedIdsAreTrellisNamespace": true,
@@ -21,6 +22,7 @@
     "figure205ContractsCount": 6,
     "figure205NonEmpty": true,
     "figure204ContractsCount": 0,
+    "figure204CheckpointCount": 6,
     "figure204InventedCheckpointDefaults": false
   },
   "reportV2Authorization": {
@@ -49,15 +51,16 @@
     "caseCount": 116,
     "distinctExecutionFingerprints": 116,
     "exactOrderedErrorVectorMismatchCount": 0,
+    "semanticLabelMismatchCount": 0,
     "allZeroWrite": true,
     "zeroWriteProof": "beforeSandboxDigest equals afterSandboxDigest for every case",
     "executionLedgerSha256": "sha256:d9354f880e77b18c2323ddfb4d6b3c8ee2d21011b2bec5354caed51914901a1b"
   },
   "tests": [
-    {"scope":"core methodology v1.3 runtime","files":1,"tests":10,"passed":10},
-    {"scope":"CLI closure and delta harness","files":2,"tests":10,"passed":10}
+    {"scope":"core methodology v1.3 runtime","command":"pnpm --filter @mindfoldhq/trellis-core exec vitest run test/research/methodology-v13-runtime.test.ts","files":1,"tests":10,"passed":10},
+    {"scope":"CLI closure and delta harness","command":"TRELLIS_V13_DELTA_EVIDENCE_DIR=/tmp/cs4-mal1-a4 pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-methodology-closure-cs4.test.ts test/research-methodology-harness/v13-delta-domain.test.ts","files":2,"tests":10,"passed":10}
   ],
   "runtimeChecksPass": true,
   "completeSystemPass": false,
-  "completeSystemFailure": "candidate manifest has 16 stale 2.0.5 pack digest pins"
+  "completeSystemFailure": "candidate manifest sha256 sidecar does not match recomputed candidate manifest bytes"
 }

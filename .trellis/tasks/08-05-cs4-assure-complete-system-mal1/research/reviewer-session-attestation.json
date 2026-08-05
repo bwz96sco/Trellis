@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-reviewer-session-attestation",
-  "attempt": 3,
+  "attempt": 4,
   "tool": "codex-cli",
   "model": "gpt-5",
-  "sessionId": "019fd05b-075a-7b90-ab99-da7fc6277135",
+  "sessionId": "019fd073-1ca2-7343-b953-d77736cc32d1",
   "freshSession": true,
   "reviewerRole": "MAL-1 review-only",
   "notGrok": true,
