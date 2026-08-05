@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-runtime-contract-audit",
-  "attempt": 8,
+  "attempt": 9,
   "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
   "humanReviewed": false,
   "repairAuthority": false,
@@ -16,13 +16,13 @@
     "coreV13": {
       "exitCode": 0,
       "passed": true,
-      "stdoutSha256": "sha256:5788fefabb6209896c30a9a6fce2da07692f0a849c9ed4fec68963c75054f6fa"
+      "stdoutSha256": "sha256:347075b8800759b872999fb8b24b9b8da4a82541249904d553f16ecbbf04e20d"
     },
     "cliHarness": {
       "exitCode": 0,
       "passed": true,
-      "stdoutSha256": "sha256:3c51e797a213eb3c21f46df8423194110fa6b9870289514311c2c90b24af787d",
-      "evidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence"
+      "stdoutSha256": "sha256:af4021ccf31778cdaba6be35d7827fdaa616a34683176e41c376408f15b9d9a6",
+      "evidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-9/v13-delta-evidence"
     }
   },
   "checks": {
@@ -59,36 +59,20 @@
     "coreV13Tests": {
       "exitCode": 0,
       "passed": true,
-      "stdoutSha256": "sha256:5788fefabb6209896c30a9a6fce2da07692f0a849c9ed4fec68963c75054f6fa"
+      "stdoutSha256": "sha256:347075b8800759b872999fb8b24b9b8da4a82541249904d553f16ecbbf04e20d"
     },
     "cliHarnessTests": {
       "exitCode": 0,
       "passed": true,
-      "stdoutSha256": "sha256:3c51e797a213eb3c21f46df8423194110fa6b9870289514311c2c90b24af787d",
-      "evidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence"
+      "stdoutSha256": "sha256:af4021ccf31778cdaba6be35d7827fdaa616a34683176e41c376408f15b9d9a6",
+      "evidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-9/v13-delta-evidence"
     },
-    "harnessEvidenceFiles": [
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-REPOSITORYARTIFACTREFRELATION-CRITICAL-NEGATIVE-D7A2609429.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-REPOSITORYARTIFACTREFRELATION-INAPPLICABLE-3AD3DBB1AA.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/execution-ledger.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-DIFFERENTIAL-DOMAINS-BASE-DEB89D3FCB.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-DIFFERENTIAL-DOMAINS-CRITICAL-NEGATIVE-4D107F7D56.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-COMPATIBILITY-POSITIVE-AFACAB726A.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-BASE-6DCE572F55.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-POSITIVE-C3941F767C.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-PRODUCER-BASE-04890A00C7.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-CRITICAL-NEGATIVE-1438117615.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CANONICAL-BYTES-CRITICAL-NEGATIVE-DF324D8442.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-WORKER-AUTHORITY-BOUNDARY-INAPPLICABLE-787172E395.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-VALIDATOR-BINDING-INTEGRITY-CRITICAL-NEGATIVE-2DA3B5503C.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-CONSUMERS-BASE-1CE705BFA1.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-CONDITIONAL-ARTIFACTS-INAPPLICABLE-FAE936A5D7.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-WORKER-AUTHORITY-BOUNDARY-CRITICAL-NEGATIVE-B62012E976.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-VALIDATOR-BINDING-INTEGRITY-BASE-84A8C3EE65.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-GLOBAL-GLOBAL-COMPATIBILITY-CRITICAL-NEGATIVE-3D432853CB.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-LIFECYCLE-CROSSARTIFACTCONSISTENCY-BASE-F06579FF03.json",
-      ".trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-8/v13-delta-evidence/V13-CLOSURE-WORKER-BOUNDARY-BASE-D59A491375.json"
-    ],
+    "harnessEvidenceDir": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-9/v13-delta-evidence",
+    "executionLedgerPath": "/private/var/folders/44/qbgxv8l56qqglzx368xcs13c0000gn/T/grok-goal-3852487b40ea/implementer/cs4-mal1-subject-wt7/.trellis/tasks/08-05-cs4-assure-complete-system-mal1/research/_captures-attempt-9/v13-delta-evidence/execution-ledger.json",
+    "executionLedgerCaseCount": 116,
+    "executionLedgerDistinctFingerprints": 116,
+    "executionLedgerAcceptedDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "harnessExactVectorMismatchCount": 0,
     "vitestPassedMention": "2"
   }
 }

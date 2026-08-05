@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-exact-subject-attestation",
-  "attempt": 8,
+  "attempt": 9,
   "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
   "frozenRuntimeCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
   "headAtReview": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
@@ -12,5 +12,5 @@
   "freezeFile": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-6.json",
   "cleanExtraction": true,
   "humanReviewed": false,
-  "recordedAt": "2026-08-05T07:18:31Z"
+  "recordedAt": "2026-08-05T07:39:11Z"
 }

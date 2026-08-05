@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-machine-verdict",
-  "attempt": 8,
+  "attempt": 9,
   "verdict": "pass",
   "humanReviewed": false,
   "activationAuthorized": false,
@@ -9,10 +9,10 @@
   "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
   "frozenRuntimeCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
   "failureCodes": [],
-  "sessionId": "019fd0c8-dd6f-7740-b85e-bc0b54017da4",
+  "sessionId": "019fd0db-13ba-70f3-aa87-1c62527de210",
   "model": "gpt-5.6-sol",
   "tool": "codex",
   "provider": "openai",
-  "summary": "Structured MAL-1 attempt-8 on frozen subject: head match, no-stamp source audit, core v13 + CLI closure/116 harness tests, dormant containment.",
-  "recordedAt": "2026-08-05T07:18:31Z"
+  "summary": "Structured MAL-1 attempt-9 on frozen subject: head match, no-stamp source audit, core v13 + CLI closure/116 harness tests, full A3 member reconstruction, real 116-case execution ledger, dormant containment.",
+  "recordedAt": "2026-08-05T07:39:11Z"
 }

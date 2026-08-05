@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-containment-audit",
-  "attempt": 8,
+  "attempt": 9,
   "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
   "humanReviewed": false,
   "repairAuthority": false,
