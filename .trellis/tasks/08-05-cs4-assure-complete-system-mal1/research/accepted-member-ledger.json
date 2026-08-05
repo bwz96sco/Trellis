@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-accepted-member-ledger",
-  "attempt": 5,
-  "subjectCommit": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
+  "attempt": 6,
+  "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
   "contractVersion": "evaluation-contract-v1.3.0",
   "acceptedContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
   "derivedMemberAggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
@@ -204,10 +204,10 @@
   },
   "ledgerPass": true,
   "freezeIntegrity": {
-    "freezeCommit": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
-    "frozenSubjectCommit": "85a05fc36ae1b35266912188e9b5bec627d9801c",
-    "frozenSubjectTree": "ed9bba2643a755fa8822ac9101e00b5f38d274d2",
-    "freezeAttestationSha256": "1c5e07d0e446b23f9da768f0693dc6f42fa121e4ae389ba5edb96338f86c767b",
+    "freezeCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+    "frozenSubjectCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
+    "frozenSubjectTree": "81bf07154bab1daf06358598a75e1bc510d7d028",
+    "freezeAttestationSha256": "1740b5503e631189b53a44a54840065081768a85bc1e7e0244ceff423efaac43",
     "freezeAttestationSidecarMatches": true
   },
   "failureCodes": []

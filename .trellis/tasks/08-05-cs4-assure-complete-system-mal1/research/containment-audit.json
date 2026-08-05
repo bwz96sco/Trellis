@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-containment-audit",
-  "attempt": 5,
+  "attempt": 6,
   "candidateProcedureVersion": "2.0.5",
   "candidateState": "dormant",
   "activationAuthorized": false,
@@ -10,8 +10,12 @@
   "pushAuthorized": false,
   "liveSelection": {
     "procedureVersion": "1.0.0",
+    "allCapabilityVersions": [
+      "1.0.0"
+    ],
     "capabilityCount": 14,
     "literatureDefault": "research.literature.scan",
+    "literatureProcedure": "literature-scan-v1@1.0.0",
     "sourceConstant": "RESEARCH_PROCEDURE_CURRENT_VERSION"
   },
   "activationPerformed": false,

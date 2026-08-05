@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-filesystem-mutation-audit",
-  "attempt": 5,
+  "attempt": 6,
   "allowedResearchOutputs": [
     "exact-subject-attestation.json",
     "reviewer-session-attestation.json",
@@ -17,20 +17,25 @@
   "trackedWritesOutsideAllowlist": [],
   "packageOrSourceWrites": [],
   "activationReleasePublicationPushWrites": [],
-  "testEvidenceDirectory": "/tmp/cs4-mal1-a5",
+  "testEvidenceDirectory": "/tmp/cs4-mal1-a6",
   "testEvidenceFileCount": 118,
-  "temporaryDependencyOverlay": {
-    "reason": "sandbox denied Vite cache writes through external package node_modules symlinks",
-    "trackedBytesChanged": false,
-    "coreOverlayPath": "/tmp/cs4-mal1-a5-core-overlay.*",
-    "cliOverlayPath": "/tmp/cs4-mal1-a5-cli-overlay.*",
-    "originalCliSymlinkRestored": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/cli/node_modules",
-    "originalCoreSymlinkRestored": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/packages/core/node_modules"
+  "cleanExtraction": {
+    "path": "/tmp/cs4-mal1-a6-subject",
+    "source": "git archive b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+    "trackedBytesChanged": false
+  },
+  "temporaryDependencyBootstrap": {
+    "rootNodeModules": "external read-only dependency symlink",
+    "coreNodeModules": "writable copy inside temporary extraction",
+    "cliNodeModules": "writable copy inside temporary extraction",
+    "initialOverlayAttemptFailedBeforeTestExecution": true,
+    "initialFailure": "pnpm relative vitest link resolved outside package-local overlay",
+    "subjectPackageOrSourceBytesChanged": false
   },
   "temporaryCoreBuild": {
-    "path": "/tmp/cs4-mal1-a5-cli-overlay.*/core-package",
-    "reason": "CLI global setup requires built @mindfoldhq/trellis-core declarations and runtime; subject core compiled into writable temporary directory",
-    "subjectPackageBytesChanged": false
+    "path": "/tmp/cs4-mal1-a6-subject/packages/core/dist",
+    "reason": "CLI global setup requires built exact-subject core declarations and runtime",
+    "workspaceSubjectBytesChanged": false
   },
   "mutationScopeCompliant": true
 }

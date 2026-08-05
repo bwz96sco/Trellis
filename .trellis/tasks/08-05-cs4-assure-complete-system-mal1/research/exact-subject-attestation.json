@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "kind": "cs4-mal1-exact-subject-attestation",
-  "attempt": 5,
-  "reviewHead": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
-  "reviewHeadTree": "a0d43fdff8399e9b6208214ca098db157ccb2ca8",
-  "reviewHeadDetached": true,
-  "freezeCommit": "6b6fd88043f5fd50d30c441b089669c57ba61e61",
-  "subjectCommit": "85a05fc36ae1b35266912188e9b5bec627d9801c",
-  "subjectTree": "ed9bba2643a755fa8822ac9101e00b5f38d274d2",
-  "freezeAttestationPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-5.json",
-  "freezeAttestationSha256": "1c5e07d0e446b23f9da768f0693dc6f42fa121e4ae389ba5edb96338f86c767b",
+  "attempt": 6,
+  "reviewHead": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+  "reviewHeadTree": "0632a0b0080546ad7fe20a7665b2d72c4e9bef56",
+  "reviewObjectDetachedFromWorkingTree": true,
+  "freezeCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+  "subjectCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
+  "subjectTree": "81bf07154bab1daf06358598a75e1bc510d7d028",
+  "freezeAttestationPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-5-subject-freeze-attempt-6.json",
+  "freezeAttestationSha256": "1740b5503e631189b53a44a54840065081768a85bc1e7e0244ceff423efaac43",
   "freezeAttestationSidecarMatches": true,
   "candidateManifestPath": ".trellis/tasks/08-05-cs4-integrate-v13-dormant-candidate-2.0.5/research/cs4-dormant-candidate-2.0.5.json",
   "candidateManifestSha256": "c68f052175fb5197a5581b030fc3886c83836b599d7732635fbf3b33044a00ff",
@@ -17,14 +17,10 @@
   "candidateManifestSidecarMatches": true,
   "cleanExtraction": true,
   "cleanExtractionBasis": {
-    "trackedSubjectBytesMatchHeadOutsideNineOutputAllowlist": true,
-    "initialTrackedDifferences": "nine allowlisted reviewer outputs absent for fresh replacement",
-    "initialUntrackedBootstrapPaths": [
-      "node_modules",
-      "packages/cli/node_modules",
-      "packages/core/node_modules"
-    ],
-    "dependencyBootstrapPathsAreExternalSymlinks": true,
+    "method": "git archive of exact reviewHead into /tmp/cs4-mal1-a6-subject",
+    "trackedSubjectBytesFromGitObjectOnly": true,
+    "priorAttempt5ReviewerOutputsIgnoredAsSuperseded": true,
+    "dependencyBootstrapAndCoreBuildConfinedToTemporaryExtraction": true,
     "packageOrSourceOverlayDetected": false
   },
   "procedure204": {
@@ -32,7 +28,7 @@
     "comparisonPathspec": "packages/cli/src/templates/research/procedures/*/2.0.4/**",
     "bytesUnchanged": true
   },
-  "subjectPinsMatchAttempt5": true,
+  "subjectPinsMatchAttempt6": true,
   "humanReviewed": false,
   "repairAuthority": false,
   "activationAuthorized": false
