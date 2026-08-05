@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "cs4-5-subject-freeze",
+  "attempt": 6,
+  "recordedOn": "2026-08-05",
+  "recordedAt": "2026-08-05T06:39:50Z",
+  "subjectCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
+  "subjectTree": "81bf07154bab1daf06358598a75e1bc510d7d028",
+  "includes": {
+    "skepticNoStampE2E": "91aa3f87",
+    "priorSkepticResidual": "7be3caad",
+    "packDigestRepair": "ecc42cf5",
+    "sidecarRepair": "85a05fc3"
+  },
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "liveSelection": "1.0.0",
+  "note": "Re-freeze after no-stamp evaluator + real E2E harness + record-result zero-write. No machine-review outputs."
+}
