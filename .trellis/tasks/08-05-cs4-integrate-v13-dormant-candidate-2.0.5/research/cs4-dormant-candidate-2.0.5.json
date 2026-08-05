@@ -151,5 +151,9 @@
     "reason": "MAL-1 attempt-3 fail CS4_205_PACK_DIGEST_PIN_MISMATCH after lifecycle contracts repair a530b9dd",
     "mismatchesRepaired": 16,
     "recomputedOn": "2026-08-05T05:36:30Z"
+  },
+  "sidecarDigestRepair": {
+    "reason": "MAL-1 attempt-4 fail CS4_CANDIDATE_MANIFEST_DIGEST_SIDECAR_MISMATCH",
+    "recomputedOn": "2026-08-05T05:59:25Z"
   }
 }
