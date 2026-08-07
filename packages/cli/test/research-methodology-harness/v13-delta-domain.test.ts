@@ -360,8 +360,7 @@ function executeCase(
     // Always exercise public CLI methodology gate + lifecycle loaders on
     // shipped 2.0.5 packages (record-result preflight surface).
     const procedure = loadFigure205ProcedureFromSandbox(sandboxRoot);
-    process.env.TRELLIS_V13_ACCEPTED_CONTRACT_DIR = leafDir;
-    const declared = loadDeclaredValidatorsFromProcedure(procedure);
+    const declared = loadDeclaredValidatorsFromProcedure(procedure, { leafDir });
     expect(declared.length).toBeGreaterThan(0);
     expect(declared.every((d) => d.id.startsWith("trellis."))).toBe(true);
     const contracts = loadArtifactContractsFromProcedure(procedure);
@@ -380,6 +379,7 @@ function executeCase(
       terminalState: "completed",
       batchCommitted: true,
       artifactPaths: [],
+      acceptedV13LeafDir: leafDir,
     });
     expect(incompleteGate.materializeSidecar).toBe(false);
     if (incompleteGate.materializeSidecar) {

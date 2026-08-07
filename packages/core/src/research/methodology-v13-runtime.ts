@@ -86,6 +86,12 @@ function requireString(value: unknown, label: string): string {
   return value;
 }
 
+function requireNumber(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    fail("V13_SCHEMA", `${label} must be a non-negative integer`);
+  }
+  return value;
+}
 function sha256Hex(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
@@ -152,6 +158,130 @@ export interface V13AcceptedContractPack {
   readonly memberDigests: Readonly<Record<string, string>>;
 }
 
+export const V13_ACCEPTED_MEMBER_AGGREGATE_SHA256 =
+  "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef" as const;
+
+export const V13_ACCEPTED_MEMBER_LEDGER_SCHEMA_VERSION = 1 as const;
+
+export interface V13AcceptedMemberLedgerRow {
+  /** Exact ordered relative path inside the bundle (allowlist order). */
+  readonly path: V13LeafFileName;
+  readonly role: string;
+  readonly mediaType: string;
+  readonly byteLength: number;
+  /** Lowercase hex SHA-256 of the exact member bytes. */
+  readonly sha256: string;
+}
+
+export interface V13AcceptedMemberLedger {
+  readonly schemaVersion: typeof V13_ACCEPTED_MEMBER_LEDGER_SCHEMA_VERSION;
+  readonly kind: string;
+  readonly contractVersion: typeof V13_ACCEPTED_CONTRACT_VERSION;
+  readonly memberCount: 7;
+  readonly aggregateDomain: string;
+  readonly aggregateSha256: typeof V13_ACCEPTED_MEMBER_AGGREGATE_SHA256;
+  readonly acceptedContractDigest: typeof V13_ACCEPTED_CONTRACT_DIGEST;
+  readonly members: readonly V13AcceptedMemberLedgerRow[];
+}
+
+/**
+ * Authenticate an installation member ledger against exact allowlisted leaf
+ * bytes. Rejects missing, extra, renamed, reordered, truncated, aliased, or
+ * modified members. The semantic contract digest is a separate ledger field;
+ * it is never conflated with the member aggregate.
+ */
+export function authenticateAcceptedV13MemberLedger(input: {
+  readonly ledger: unknown;
+  readonly leafBytes: Readonly<Partial<Record<V13LeafFileName, Uint8Array>>>;
+}): {
+  readonly memberDigests: Readonly<Record<string, string>>;
+  readonly aggregateSha256: string;
+} {
+  const ledger = requireRecord(input.ledger, "member-ledger");
+  if (ledger.schemaVersion !== V13_ACCEPTED_MEMBER_LEDGER_SCHEMA_VERSION) {
+    fail("V13_LEDGER_SCHEMA", "Member ledger schemaVersion must be 1");
+  }
+  if (ledger.contractVersion !== V13_ACCEPTED_CONTRACT_VERSION) {
+    fail("V13_LEDGER_CONTRACT_VERSION", "Member ledger contractVersion mismatch");
+  }
+  if (ledger.memberCount !== 7) {
+    fail("V13_LEDGER_MEMBER_COUNT", "Member ledger must declare exactly 7 members");
+  }
+  if (ledger.acceptedContractDigest !== V13_ACCEPTED_CONTRACT_DIGEST) {
+    fail(
+      "V13_LEDGER_SEMANTIC_DIGEST",
+      "Member ledger acceptedContractDigest must equal the frozen accepted A3 semantic digest",
+    );
+  }
+  const rawMembers = requireArray(ledger.members, "ledger.members");
+  if (rawMembers.length !== REQUIRED_LEAF_FILES.length) {
+    fail(
+      "V13_LEDGER_MEMBER_COUNT",
+      `Member ledger members length must be ${REQUIRED_LEAF_FILES.length}`,
+    );
+  }
+  const memberDigests: Record<string, string> = {};
+  rawMembers.forEach((raw, index) => {
+    const row = requireRecord(raw, `ledger.members[${index}]`);
+    const memberPath = requireString(row.path, `ledger.members[${index}].path`);
+    if (memberPath !== REQUIRED_LEAF_FILES[index]) {
+      fail(
+        "V13_LEDGER_MEMBER_ORDER",
+        `Ledger member ${index} must be ${REQUIRED_LEAF_FILES[index]} (exact order)`,
+      );
+    }
+    requireString(row.role, `ledger.members[${index}].role`);
+    requireString(row.mediaType, `ledger.members[${index}].mediaType`);
+    const expectedLength = requireNumber(
+      row.byteLength,
+      `ledger.members[${index}].byteLength`,
+    );
+    const expectedSha = requireString(row.sha256, `ledger.members[${index}].sha256`);
+    const bytes = input.leafBytes[memberPath];
+    if (bytes === undefined) {
+      fail("V13_LEDGER_MEMBER_MISSING", `Ledger member ${memberPath} has no bytes`);
+    }
+    if (bytes.byteLength !== expectedLength) {
+      fail(
+        "V13_LEDGER_MEMBER_LENGTH",
+        `Ledger member ${memberPath} byteLength ${bytes.byteLength} != ${expectedLength}`,
+      );
+    }
+    const actualSha = sha256Hex(bytes);
+    if (actualSha !== expectedSha) {
+      fail(
+        "V13_LEDGER_MEMBER_HASH",
+        `Ledger member ${memberPath} sha256 drift`,
+      );
+    }
+    memberDigests[memberPath] = actualSha;
+  });
+  // Reject extra members supplied under unexpected keys.
+  for (const key of Object.keys(input.leafBytes)) {
+    if (!(REQUIRED_LEAF_FILES as readonly string[]).includes(key)) {
+      fail("V13_PACK_MEMBER_EXTRA", `Unexpected pack member ${key} outside allowlist`);
+    }
+  }
+  const derived = deriveAcceptedV13PackIdentity({ leafBytes: input.leafBytes });
+  if (ledger.aggregateSha256 !== V13_ACCEPTED_MEMBER_AGGREGATE_SHA256) {
+    fail(
+      "V13_LEDGER_AGGREGATE",
+      "Member ledger aggregateSha256 must equal the frozen accepted A3 aggregate",
+    );
+  }
+  if (derived.aggregateSha256 !== V13_ACCEPTED_MEMBER_AGGREGATE_SHA256) {
+    fail(
+      "V13_PACK_AGGREGATE_MISMATCH",
+      `Derived member aggregate ${derived.aggregateSha256} != frozen ${V13_ACCEPTED_MEMBER_AGGREGATE_SHA256}`,
+    );
+  }
+  return {
+    memberDigests: Object.freeze(memberDigests),
+    aggregateSha256: derived.aggregateSha256,
+  };
+}
+
+
 const REQUIRED_LEAF_FILES = Object.freeze([
   "durable-output-disposition-v1.3.json",
   "artifact-lifecycle-contract-v1.3.json",
@@ -171,6 +301,8 @@ export type V13LeafFileName = (typeof REQUIRED_LEAF_FILES)[number];
 export function parseAcceptedV13ContractPack(input: {
   readonly leafBytes: Readonly<Partial<Record<V13LeafFileName, Uint8Array>>>;
   readonly expectedContractDigest?: string;
+  /** Frozen member-tree aggregate; when supplied the derived aggregate must equal it. */
+  readonly expectedMemberAggregateSha256?: string;
 }): V13AcceptedContractPack {
   const memberDigests: Record<string, string> = {};
   const parsed: Record<string, unknown> = {};
@@ -365,8 +497,6 @@ export function parseAcceptedV13ContractPack(input: {
     }
   }
 
-  // Derive member identity from exact allowlisted bytes. Never stamp a
-  // caller-provided expected digest as the derived pack identity.
   const derivedIdentity = deriveAcceptedV13PackIdentity({
     leafBytes: input.leafBytes,
   });
@@ -377,6 +507,15 @@ export function parseAcceptedV13ContractPack(input: {
     fail(
       "V13_PACK_DIGEST_MISMATCH",
       "Caller expectedContractDigest does not match frozen accepted A3 digest",
+    );
+  }
+  if (
+    input.expectedMemberAggregateSha256 !== undefined &&
+    derivedIdentity.aggregateSha256 !== input.expectedMemberAggregateSha256
+  ) {
+    fail(
+      "V13_PACK_AGGREGATE_MISMATCH",
+      `Derived member aggregate ${derivedIdentity.aggregateSha256} != expected ${input.expectedMemberAggregateSha256}`,
     );
   }
   // Frozen A3 digest remains the published identity only after member

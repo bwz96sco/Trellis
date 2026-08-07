@@ -216,6 +216,9 @@ export {
   parseCanonicalMethodologyClosureArtifact,
   selectApplicableV13ValidatorsFromBindings,
   selectTrustedV13ValidatorDescriptors,
+  authenticateAcceptedV13MemberLedger,
+  V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+  V13_ACCEPTED_MEMBER_LEDGER_SCHEMA_VERSION,
   V13_ACCEPTED_PACK_MEMBER_ALLOWLIST,
 } from "./methodology-v13-runtime.js";
 export type {
@@ -223,6 +226,8 @@ export type {
   DerivedAcceptedV13PackIdentity,
   ParsedCanonicalMethodologyClosure,
   V13AcceptedContractPack,
+  V13AcceptedMemberLedger,
+  V13AcceptedMemberLedgerRow,
   V13ArtifactLifecycleRow,
   V13ContractPackCounts,
   V13DeltaCaseEvaluationInput,

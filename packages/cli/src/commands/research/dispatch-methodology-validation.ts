@@ -7,8 +7,10 @@ import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   LOSSLESS_METHODOLOGY_PROCEDURE_VERSION,
   V13_ACCEPTED_CONTRACT_DIGEST,
+  V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
   V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_DIGEST,
+  authenticateAcceptedV13MemberLedger,
   bindMethodologyArtifactPath,
   buildMethodologyReport,
   buildMethodologyReportV2,
@@ -31,6 +33,8 @@ import {
   type V13LeafFileName,
 } from "@mindfoldhq/trellis-core/research";
 
+import { parseStrictJsonInput } from "./strict-json-input.js";
+
 const DEFAULT_SCHEMA_V1_VALIDATORS: readonly MethodologyValidatorDescriptor[] =
   Object.freeze([
     { id: "missing-critical-evidence", version: "1", severity: "critical" },
@@ -38,6 +42,20 @@ const DEFAULT_SCHEMA_V1_VALIDATORS: readonly MethodologyValidatorDescriptor[] =
     { id: "forbidden-mutation", version: "1", severity: "critical" },
     { id: "closure-exclusivity", version: "1", severity: "critical" },
   ]);
+
+/**
+ * Resolve the package-owned accepted A3 bundle directory (installed assets
+ * under dist/templates or source templates). Production authority is the
+ * package itself — never an environment directory, never .trellis/tasks, and
+ * never a working-tree overlay. Tests may inject explicit bytes or a
+ * test-only leafDir dependency through loadAcceptedV13ContractPackFromLeaves.
+ */
+export function resolveAcceptedV13ContractLeafDir(): string {
+  return path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../templates/research/evaluation-contracts/1.3.0",
+  );
+}
 
 const V13_LEAF_FILES: readonly V13LeafFileName[] = [
   "durable-output-disposition-v1.3.json",
@@ -49,58 +67,65 @@ const V13_LEAF_FILES: readonly V13LeafFileName[] = [
   "closure-contract-v1.3.json",
 ];
 
-/**
- * Resolve accepted A3 leaf directory (monorepo research path or explicit env).
- * Fail closed when successor procedures cannot load the accepted pack.
- */
-export function resolveAcceptedV13ContractLeafDir(): string | undefined {
-  const configured = process.env.TRELLIS_V13_ACCEPTED_CONTRACT_DIR;
-  if (typeof configured === "string" && configured.length > 0) {
-    return configured;
+function readAcceptedV13LeafBytes(
+  dir: string,
+): Partial<Record<V13LeafFileName, Uint8Array>> {
+  const leafBytes: Partial<Record<V13LeafFileName, Uint8Array>> = {};
+  for (const name of V13_LEAF_FILES) {
+    const bytes = fs.readFileSync(path.join(dir, name));
+    leafBytes[name] = new Uint8Array(bytes);
   }
-  const relativeLeaf =
-    ".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research";
-  const candidates: string[] = [path.resolve(process.cwd(), relativeLeaf)];
-  // Walk up from this module and cwd for monorepo / worktree layouts.
-  let cursor = path.dirname(fileURLToPath(import.meta.url));
-  for (let i = 0; i < 12; i += 1) {
-    candidates.push(path.join(cursor, relativeLeaf));
-    const parent = path.dirname(cursor);
-    if (parent === cursor) break;
-    cursor = parent;
-  }
-  cursor = process.cwd();
-  for (let i = 0; i < 8; i += 1) {
-    candidates.push(path.join(cursor, relativeLeaf));
-    const parent = path.dirname(cursor);
-    if (parent === cursor) break;
-    cursor = parent;
-  }
-  for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, "validator-registry-v1.3.json"))) {
-      return dir;
-    }
-  }
-  return undefined;
+  return leafBytes;
 }
 
+/**
+ * Load and authenticate the accepted A3 pack.
+ * - leafDir omitted (production): resolve the package-owned installed bundle
+ *   and require member-ledger authentication (count/order/paths/roles/media
+ *   types/byte lengths/hashes/aggregate) before semantic parsing.
+ * - leafDir supplied (test-only injection): read the exact allowlisted leaves;
+ *   authenticate when a member-ledger.json is present beside them.
+ */
 export function loadAcceptedV13ContractPackFromLeaves(
   leafDir?: string,
 ): V13AcceptedContractPack {
   const dir = leafDir ?? resolveAcceptedV13ContractLeafDir();
-  if (dir === undefined) {
+  if (!fs.existsSync(path.join(dir, V13_LEAF_FILES[0]))) {
     throw new Error(
-      "Accepted evaluation-contract-v1.3.0 leaves not found; set TRELLIS_V13_ACCEPTED_CONTRACT_DIR",
+      "Accepted evaluation-contract-v1.3.0 installed bundle missing; package assets must ship the 1.3.0 member tree",
     );
   }
-  const leafBytes: Partial<Record<V13LeafFileName, Uint8Array>> = {};
-  for (const name of V13_LEAF_FILES) {
-    leafBytes[name] = fs.readFileSync(path.join(dir, name));
+  const leafBytes = readAcceptedV13LeafBytes(dir);
+  const ledgerPath = path.join(dir, "member-ledger.json");
+  if (fs.existsSync(ledgerPath)) {
+    let ledger: unknown;
+    try {
+      ledger = parseStrictJsonInput(
+        new Uint8Array(fs.readFileSync(ledgerPath)),
+      );
+    } catch (error) {
+      throw new Error(
+        `Accepted member ledger is not strict JSON: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    authenticateAcceptedV13MemberLedger({ ledger, leafBytes });
+    return parseAcceptedV13ContractPack({
+      leafBytes,
+      expectedContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
+      expectedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+    });
   }
-  return parseAcceptedV13ContractPack({
-    leafBytes,
-    expectedContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
-  });
+  if (leafDir !== undefined) {
+    // Test-injection mode: explicit bytes without a ledger still parse with
+    // the frozen semantic digest requirement.
+    return parseAcceptedV13ContractPack({
+      leafBytes,
+      expectedContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
+    });
+  }
+  throw new Error(
+    "Accepted evaluation-contract-v1.3.0 installed bundle lacks member-ledger.json; authentication required",
+  );
 }
 
 /**
@@ -365,6 +390,8 @@ export function validateMethodologyBeforeRecord(input: {
   readonly declaredValidators?: readonly MethodologyValidatorDescriptor[];
   readonly procedure?: ParsedResearchProcedure;
   readonly acceptedV13Pack?: V13AcceptedContractPack;
+  /** Test-only leaf injection; production never supplies this. */
+  readonly acceptedV13LeafDir?: string;
   readonly artifactPaths?: readonly string[];
   readonly artifactDigests?: readonly { path: string; sha256: string }[];
   readonly batchCommitted?: boolean;
@@ -409,7 +436,9 @@ export function validateMethodologyBeforeRecord(input: {
     methodologyContractDigest === V13_ACCEPTED_CONTRACT_DIGEST
   ) {
     try {
-      acceptedPack = loadAcceptedV13ContractPackFromLeaves();
+      acceptedPack = loadAcceptedV13ContractPackFromLeaves(
+        input.acceptedV13LeafDir,
+      );
     } catch {
       acceptedPack = undefined;
     }
