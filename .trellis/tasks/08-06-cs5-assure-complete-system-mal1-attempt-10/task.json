@@ -3,13 +3,13 @@
  "name": "cs5-assure-complete-system-mal1-attempt-10",
  "title": "CS5-7 \u2014 Fresh machine-only MAL-1 attempt 10",
  "description": "Fresh reviewer runtime distinct from all authors and prior reviewers. Exact immutable subject only; humanReviewed:false, repairAuthority:false; verdict exactly pass/fail; exact nine-file output commit (a..i); replay capsule embedded in runtime-contract-audit.json; no activation/release/publication/push on pass.",
- "status": "planning",
+ "status": "in_progress",
  "dev_type": null,
  "scope": null,
  "package": "cli",
  "priority": "P1",
  "creator": "operator-goal",
- "assignee": null,
+ "assignee": "cs5-reviewer-attempt-10-fresh",
  "createdAt": "2026-08-06",
  "completedAt": null,
  "branch": null,
@@ -22,5 +22,12 @@
  "parent": "08-06-cs5-authenticated-complete-system-runtime-correction",
  "relatedFiles": [],
  "notes": "Planning and unassigned until separately activated per CS5 activation order.",
- "meta": {}
+ "meta": {
+  "reviewerRuntime": "fresh subagent session; authored no CS5 source, packages, fixtures, or oracle",
+  "activation": "activated before attempt-10 execution per freeze record",
+  "humanReviewed": false,
+  "repairAuthority": false,
+  "subjectCommit": "916be0a8",
+  "outputCommitBoundary": "exactly nine MAL-1 outputs"
+ }
 }
