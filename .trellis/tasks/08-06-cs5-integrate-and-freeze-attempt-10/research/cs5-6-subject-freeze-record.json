@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "cs5-6-attempt-10-subject-freeze",
+  "campaign": "CS5",
+  "stage": "S",
+  "subjectIdentity": {
+    "attempt": 10,
+    "subjectCommit": "S-commit-hash-filled-at-freeze",
+    "runtimeCommit": "287d5fcd",
+    "runtimeCommitRole": "integrated dormant 2.0.6 candidate (commit I)",
+    "freezeRule": "Commit S is the exact attempt-10 review subject; any technical change after S invalidates the subject and requires a new integration/freeze cycle"
+  },
+  "frozenState": {
+    "procedure206Packages": 17,
+    "procedure204And205Trees": "byte-unchanged historical evidence",
+    "acceptedA3Leaves": "seven exact bytes authenticated via member ledger",
+    "acceptedContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "acceptedMemberAggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
+    "liveProcedure": "1.0.0",
+    "procedure206Dormant": true,
+    "authorityFlags": {
+      "activationAuthorized": false,
+      "releaseAuthorized": false,
+      "publicationAuthorized": false,
+      "pushAuthorized": false
+    },
+    "domains": {
+      "frozen229": "passed",
+      "expansion38": "passed",
+      "production116": "passed with evidence in CS5-5 research"
+    }
+  },
+  "reviewAssignment": {
+    "cs5_7_reviewer": "unassigned; must be a fresh reviewer runtime that authored no CS5 source, packages, fixtures, or oracle",
+    "reviewerActivationRequirement": "CS5-7 must be activated and assigned before attempt-10 execution"
+  },
+  "postFreeze": {
+    "noTechnicalChangeAllowed": true,
+    "activation": false,
+    "archive": false,
+    "release": false,
+    "publication": false,
+    "push": false
+  }
+}
