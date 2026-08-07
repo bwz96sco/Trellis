@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "cs6-0-baseline-containment-attestation",
+  "campaign": "CS6",
+  "baselineCommit": "f5249e7544aaa76b66b859433654e3a7d0f77d9e",
+  "gitNexus": {
+    "indexedCommit": "a593461",
+    "baselineCommitShort": "f5249e7",
+    "stale": true,
+    "analyzeAuthorized": false,
+    "reason": "npx gitnexus analyze would rewrite protected dirty AGENTS.md and CLAUDE.md; CS6-0 edits no symbols"
+  },
+  "historicalAttempt10": {
+    "subjectCommit": "916be0a877725f7f91836a3a97e480c1e104e533",
+    "subjectTreeDigest": "99b3b275699725f2c60c325b2d9d9aa477beb585d3be26986fe03e2ebc890863",
+    "evidenceCommit": "c951a2f82fa9c649ceb4a290e6896bd084ad70bd",
+    "verdict": "fail",
+    "preservation": "immutable historical evidence; no relabel or repair"
+  },
+  "acceptedContract": {
+    "identity": "evaluation-contract-v1.3.0",
+    "semanticDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "memberAggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
+    "memberCount": 7,
+    "mutable": false,
+    "semanticStatus": "provisionally retained pending CS6-1 independent audit"
+  },
+  "procedureContainment": {
+    "liveSelection": "1.0.0",
+    "correctionVersionIfLeavesSound": "2.0.7",
+    "historicalBlobInventories": {
+      "2.0.4": {"blobCount": 108, "lsTreeRowsSha256": "bf7a884421899e54dc30ba17fe603ddfeac48bad2ee7793add8fddd46e48c6e5"},
+      "2.0.5": {"blobCount": 108, "lsTreeRowsSha256": "50d1e2087f0030e1b1aad9518474bcd9743c0f8f79de8f5e37b5f6b8ff39dad1"},
+      "2.0.6": {"blobCount": 204, "lsTreeRowsSha256": "6c43200c3c6d1e5fdaf6fc16024350f36e004ae0163003efd37eda566255c106"}
+    },
+    "historicalVersionsMutable": false
+  },
+  "protectedDirtyPaths": {
+    "AGENTS.md": {
+      "contentSha256": "46ec2da5b9077e6c351dbf13066c7d14a796ca018f32d63963feefdd62ce3d31",
+      "gitDiffBinarySha256": "52251f91fe709a2c2b64fb9493b9816fff2740d6f74a1289f527314836c16e29",
+      "status": "modified-inherited"
+    },
+    "CLAUDE.md": {
+      "contentSha256": "707cc4e3d24165ab4cc91bc884f6b8ebf7ee2971c7f5edf2ac0b197f9f1d4f4b",
+      "gitDiffBinarySha256": "8c8140c3b44ac6bcb3cc78982b1b90c8a1328c3319af8c670ebb6825b66e71f0",
+      "status": "modified-inherited"
+    },
+    "docs-site": {
+      "commit": "be7684f2086abb9b8e24d4d35733a7dda3123a0f",
+      "gitDiffBinarySha256": "b346aebedc757ef1a00f43dceeba7f3123966d45b401bccd249c6cee55626421",
+      "statusLines": [
+        " M advanced/architecture.mdx",
+        " M docs.json",
+        " M zh/advanced/architecture.mdx",
+        "?? advanced/research-workflow.mdx",
+        "?? zh/advanced/research-workflow.mdx"
+      ]
+    },
+    "marketplace": {
+      "commit": "d7a18bb5411c700237d21483d6889ac296ef0301",
+      "gitDiffBinarySha256": "86ef92ab44be57a6b125be54ef485dd6f7997a08a3ae694ad95e4d1ba694c46a",
+      "statusLines": [" M workflows/native/workflow.md"]
+    },
+    "cs5OperatorState": {
+      "path": ".trellis/tasks/08-06-cs5-decide-complete-system-attempt-10/research/cs5-8-honest-stop-record.json",
+      "contentSha256": "3aebafbb76f6a256a9ee58fea39bca9c235e18e9df8cf36a1d057eaff6dc4282",
+      "gitTracked": false,
+      "status": "untracked-inherited"
+    }
+  },
+  "excluded": [
+    ".trellis/research/**",
+    "all CS5 task/evidence bytes",
+    "accepted A3 semantic leaves",
+    "Procedure 2.0.4-2.0.6",
+    "production source/tests/packages/specs in CS6-0"
+  ],
+  "authority": {
+    "humanReviewed": false,
+    "humanEquivalent": false,
+    "repairAuthority": false,
+    "completeSystemMachineAssuranceAccepted": false,
+    "operatorDecisionReceived": false,
+    "activationAuthorized": false,
+    "archiveAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false
+  }
+}

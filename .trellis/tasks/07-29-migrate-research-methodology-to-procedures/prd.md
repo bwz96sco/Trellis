@@ -184,3 +184,11 @@ A2 (`4c49b8fd`) is unaccepted. B2 never executed; waiver claim invalid. Unassure
 ## Additive overlay — CS4 forward repair (2026-08-05)
 
 CS3 subject `404d714a` and CS3-OA auto-accept are historical only; complete-system authority is superseded by CS4. Post-CS3 commit `b97a8066` is unassured development evidence. Corrected packages use Procedure **2.0.5**. Live v1 containment unchanged. No activation/release/push.
+
+## Additive overlay — CS6 successor governance (2026-08-07)
+
+CS5 attempt-10 subject `916be0a877725f7f91836a3a97e480c1e104e533`, tree digest `99b3b275699725f2c60c325b2d9d9aa477beb585d3be26986fe03e2ebc890863`, evidence `c951a2f82fa9c649ceb4a290e6896bd084ad70bd`, and verdict `fail` remain immutable history. The historical reviewer statement that no subject-byte defect was found is not conclusive successor authority.
+
+The additive CS6 campaign is `.trellis/tasks/08-07-cs6-complete-system-forward-correction/` with exactly CS6-0 through CS6-8. CS6-1 independently audits the seven accepted `evaluation-contract-v1.3.0` leaves: a contract defect stops technical work for a new `v1.3.1+` authoring/assurance cycle; a sound disposition retains exact semantic digest `sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f` and member aggregate `sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef` while correcting implementation/package conformance only.
+
+Any corrected packages use Procedure **2.0.7**. Procedures `2.0.4`–`2.0.6` remain immutable, live selection remains exactly `1.0.0`, workers remain Proposal-only, and human review/equivalence, repair authority, complete-system acceptance, operator decision, activation, archive, release, publication, and push remain false. Governance details are bound by the CS6-0 forward-governance record and exact path-ownership map.

@@ -433,3 +433,18 @@ G0 governance → Q0/Q1 containment → A3 candidate → B3 MAL-1 → OA3 accept
 ## Additive overlay — CS4 forward repair (2026-08-05)
 
 CS4-0 supersession → CS4-1/2 runtime (canonical closure + 65/20/876 + derived pack identity + report-v2 authority) → CS4-3 Procedure 2.0.5 → CS4-4 E2E harness → CS4-5 dormant subject freeze → CS4-6 fresh MAL-1 → CS4-7 genuine operator decision. Forward-only history.
+
+## Additive overlay — CS6 successor design (2026-08-07)
+
+CS6 separates historical S10/M10, semantic-audit disposition A11, integrated dormant candidate I11, frozen subject S11, reviewer assignment M0, machine evidence M11, and optional operator decision O11. No identity implies another's authority.
+
+```text
+CS6-0 governance
+  -> CS6-1 exact accepted-leaf audit
+       -> defect: stop for evaluation-contract-v1.3.1+
+       -> sound: CS6-2 core -> CS6-3 CLI -> CS6-4 Procedure 2.0.7
+                 -> CS6-5 production harness -> CS6-6 install/integrate/S11
+                 -> CS6-7 fresh MAL-1 M11 -> CS6-8 separate operator decision
+```
+
+Core corrections stay in methodology-local adapters; shared HIGH/CRITICAL events, reducers, stores, canonical ledgers, batch committers, locks, and hardened publication internals remain call-only. Integration uses real npm/pnpm tarballs and archive-safe historical blob locks, and S11 is a resolved one-file freeze record without self-hash placeholders. Attempt 11 writes exactly nine outputs, performs no repair, and cannot auto-accept or activate. See the CS6 campaign design and CS6-0 ownership map for normative detail.

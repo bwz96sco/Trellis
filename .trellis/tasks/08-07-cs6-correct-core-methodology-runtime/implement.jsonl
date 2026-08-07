@@ -1,0 +1,9 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Exact CS6-2 source/test ownership and protected call-only boundaries."}
+{"file":".trellis/tasks/08-07-cs6-complete-system-forward-correction/prd.md","reason":"Campaign semantic gate, compatibility, authority, and version requirements."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/artifact-lifecycle-contract-v1.3.json","reason":"Accepted artifact and lifecycle semantics implemented by the runtime."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/closure-contract-v1.3.json","reason":"Accepted canonical closure fields, evidence, and terminal applicability."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-registry-v1.3.json","reason":"Exact trusted validator triples."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-binding-matrix-v1.3.json","reason":"Exact validator applicability and binding facts."}
+{"file":".trellis/spec/core/backend/research-procedure-packages.md","reason":"Procedure package parsing, digest, path, and compatibility contract."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical Research authority and state compatibility rules."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"POSIX logical paths, canonical content, and cross-platform tests."}

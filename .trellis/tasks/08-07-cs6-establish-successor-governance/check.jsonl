@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/task.json","reason":"Verify the canonical parent links the CS6 campaign exactly once without altering prior child relationships."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/path-ownership-map.md","reason":"Verify the CS6 amendment is additive, disjoint, and preserves historical ownership sections."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/exact-subject-attestation.json","reason":"Independently verify the S10 identity copied into CS6 governance evidence."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/machine-verdict.json","reason":"Independently verify fail disposition and all false authority fields remain exact."}
+{"file":".trellis/tasks/08-06-cs5-integrate-and-freeze-attempt-10/research/cs5-6-subject-freeze-record.json","reason":"Check that CS6 uses a non-self-referential S11 rule and does not modify the historical placeholder."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check that persisted paths and command evidence use portable deterministic conventions."}

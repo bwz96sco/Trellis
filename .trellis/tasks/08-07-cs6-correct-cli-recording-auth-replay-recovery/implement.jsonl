@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Exact CS6-3 CLI/test ownership and protected call-only exclusions."}
+{"file":".trellis/tasks/08-07-cs6-complete-system-forward-correction/prd.md","reason":"Campaign authority, replay, compatibility, and sequencing requirements."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/accepted-member-ledger.json","reason":"Installed bundle member hashes, aggregate, and semantic identity."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/closure-contract-v1.3.json","reason":"Closure evidence required before record-result writes."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Research CLI command, authority, validation, and recording conventions."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical event/state/replay and authority boundaries."}
+{"file":".trellis/spec/core/backend/research-procedure-packages.md","reason":"Exact Procedure/package resolution and historical identity behavior."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Archive-independent paths, subprocess, encoding, and packed-install portability."}

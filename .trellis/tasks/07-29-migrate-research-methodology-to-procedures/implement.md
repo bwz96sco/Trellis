@@ -442,3 +442,17 @@ R0 remains addressability/planning evidence. R1 post-freeze semantics remain non
 5. CS4-5 dormant integrate + subject freeze.
 6. CS4-6 fresh MAL-1 nine outputs.
 7. CS4-7 genuine operator accept/reject (or honest stop).
+
+## Additive overlay — CS6 successor execution (2026-08-07)
+
+1. CS6-0 freezes reciprocal topology, exact ownership/dependencies, baseline containment, and false authority flags.
+2. CS6-1 independently audits the seven accepted v1.3.0 leaves. Any leaf defect stops CS6-2 through CS6-8 and opens `evaluation-contract-v1.3.1+`.
+3. On `leaves-sound`, CS6-2 corrects owned methodology-local core behavior after per-symbol impact analysis; protected HIGH/CRITICAL primitives remain call-only.
+4. CS6-3 corrects installed-bundle authentication, record-result orchestration, exact replay dependencies, and committed projection-recovery behavior.
+5. CS6-4 generates exactly 17 new dormant Procedure `2.0.7` trees; historical `2.0.4`–`2.0.6` remain immutable.
+6. CS6-5 executes exactly 116 production-reachable mutations and proves exact 17/65/13/20/876 coverage with measured filesystem effects.
+7. CS6-6 uses real npm/pnpm tarballs and external installs, integrates dormant I11, proves archive-safe historical locks, then creates a separate placeholder-free one-file S11 freeze.
+8. CS6-7 requires fresh M0 isolation and writes exactly nine M11 outputs from exact S11 without repair or auto-accept authority.
+9. CS6-8 remains inactive until committed M11 and a genuine separately authorized operator decision.
+
+Every task activation, commit boundary (G/A11/C2/C3/C4/C5/I11/S11/M0/M11/O11), assurance run, operator decision, activation, archive, release, publication, and push is separate. Current CS6-0 approval authorizes governance artifacts only and no commit.

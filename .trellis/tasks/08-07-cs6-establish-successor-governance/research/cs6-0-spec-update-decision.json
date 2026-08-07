@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "cs6-0-spec-update-decision",
+  "task": "08-07-cs6-establish-successor-governance",
+  "decision": "no-code-spec-update-required",
+  "rationale": [
+    "CS6-0 changed only Trellis task planning, governance, ownership, containment evidence, and a task-local validation script.",
+    "No production command, API signature, event schema, cross-layer request or response, database schema, environment key, runtime behavior, Procedure package, accepted contract leaf, registry, or code-spec contract changed.",
+    "All reusable CS6 governance decisions are already captured in the canonical Phase-2 parent overlays, CS6 campaign planning package, child planning packages, forward-governance record, and path-ownership map.",
+    "Adding a code-spec entry would incorrectly present governance-only planning constraints as an implemented runtime contract."
+  ],
+  "specPathsChanged": [],
+  "authority": {
+    "productionContractChanged": false,
+    "specificationAuthorityGranted": false,
+    "activationAuthorized": false,
+    "archiveAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false
+  }
+}

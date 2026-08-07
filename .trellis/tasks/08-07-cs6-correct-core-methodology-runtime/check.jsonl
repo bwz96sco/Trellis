@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Check only owned methodology-local symbols and tests changed."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/frozen-migration-target-v1.3.json","reason":"Check observable behavior matches the accepted target."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/closure-contract-v1.3.json","reason":"Check closure derivation avoids undeclared status heuristics."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-binding-matrix-v1.3.json","reason":"Check exact validator selection and applicability."}
+{"file":".trellis/spec/core/backend/research-procedure-packages.md","reason":"Check package identity, digest, and path safety compatibility."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check canonical authority and replay behavior remain unchanged."}

@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Check exactly the allowlisted new package paths changed."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/accepted-member-ledger.json","reason":"Check accepted digests and the exact 17 Procedure IDs."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-binding-matrix-v1.3.json","reason":"Check binding completeness and exact triples."}
+{"file":".trellis/spec/core/backend/research-procedure-packages.md","reason":"Check pack structure, digest, safety, and historical compatibility."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check deterministic regeneration is cross-platform safe."}

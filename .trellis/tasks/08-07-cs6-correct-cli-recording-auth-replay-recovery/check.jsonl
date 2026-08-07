@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Check only CS6-3 adapters/tests changed and protected primitives remained call-only."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/accepted-member-ledger.json","reason":"Check exact bundle authentication identities."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check command authority, stdin, recording, and error behavior."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check canonical write/replay/recovery semantics."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check external install and archive behavior is portable."}

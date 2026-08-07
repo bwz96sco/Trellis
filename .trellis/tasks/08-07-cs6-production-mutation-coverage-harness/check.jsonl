@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Check harness ownership and absence of production/package edits."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/differential-test-matrix-v1.3.json","reason":"Check all accepted mutation expectations are represented correctly."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-binding-matrix-v1.3.json","reason":"Check exact 876-row coverage without double counting."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check production reachability and write semantics."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check evidence and filesystem measurement portability."}

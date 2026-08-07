@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-0-forward-governance-record.json","reason":"Check semantic-audit ownership, stop gate, and false authority flags."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/accepted-member-ledger.json","reason":"Check exact inputs, seven hashes, aggregate, and package counts."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/frozen-migration-target-v1.3.json","reason":"Check the audit covers the accepted semantic target without runtime reinterpretation."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/contract-candidate-manifest-v1.3.json","reason":"Check exact accepted membership and digest identity."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check deterministic and portable audit evidence."}

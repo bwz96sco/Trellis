@@ -467,3 +467,20 @@ Status: CS4-0 governance only. See `.trellis/tasks/08-05-cs4-supersede-stale-com
 - `b97a8066`: unassured development evidence outside CS3 subject
 - Procedure corrections: **2.0.5** only (2.0.4 immutable)
 - Live selection remains 1.0.0; activationAuthorized remains false until separately authorized
+
+## Additive amendment — CS6 successor ownership (2026-08-07)
+
+Status: CS6-0 governance only. Normative exact ownership is frozen in `.trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md`; the forward-governance record is adjacent.
+
+- Canonical parent has exactly one child `08-07-cs6-complete-system-forward-correction`.
+- The CS6 campaign has exactly ordered children CS6-0 through CS6-8.
+- CS6-1 owns read-only accepted-leaf audit evidence; a contract defect stops technical work for `v1.3.1+`.
+- CS6-2 owns methodology-local core adapters/tests only; protected state/publication primitives remain call-only.
+- CS6-3 owns listed CLI authentication/recording/replay/recovery adapters/tests only.
+- CS6-4 owns the new generator/test and exactly 17 Procedure `2.0.7/**` trees only.
+- CS6-5 owns the production 116-case harness/tests/evidence only.
+- CS6-6 owns integration/install tests/scripts/evidence plus separate I11 and one-file S11 boundaries.
+- CS6-7 owns reviewer setup and exactly nine attempt-11 outputs; no repair paths.
+- CS6-8 owns one operator decision JSON only.
+
+Accepted v1.3.0 leaves, CS5 records, Procedure `2.0.4`–`2.0.6`, live `1.0.0`, `AGENTS.md`, `CLAUDE.md`, `docs-site`, `marketplace`, `.trellis/research/**`, and shared HIGH/CRITICAL primitives remain excluded. All later activations and commits are separately authorized.

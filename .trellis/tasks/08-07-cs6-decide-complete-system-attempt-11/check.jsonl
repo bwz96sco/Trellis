@@ -1,0 +1,3 @@
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-0-forward-governance-record.json","reason":"Check M11 dependency, explicit operator consent, allowlist, and false authority flags."}
+{"file":".trellis/tasks/08-06-cs5-decide-complete-system-attempt-10/research/cs5-8-honest-stop-record.json","reason":"Check the inherited untracked CS5 record remains untouched and unclaimed."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/machine-verdict.json","reason":"Check machine pass/fail is not treated as an operator decision."}

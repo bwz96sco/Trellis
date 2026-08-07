@@ -46,7 +46,8 @@
     "08-04-integrate-v13-dormant-candidate-attempt-3",
     "08-04-assure-v13-complete-system-attempt-3",
     "08-04-accept-v13-complete-system-machine-assurance",
-    "08-06-cs5-authenticated-complete-system-runtime-correction"
+    "08-06-cs5-authenticated-complete-system-runtime-correction",
+    "08-07-cs6-complete-system-forward-correction"
   ],
   "parent": null,
   "relatedFiles": [],

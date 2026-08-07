@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/task.json","reason":"Check the canonical parent links the CS6 campaign exactly once."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/path-ownership-map.md","reason":"Check CS6 ownership is additive, disjoint, and preserves all historical amendments."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/exact-subject-attestation.json","reason":"Check S10 subject and tree identities are copied exactly."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/machine-verdict.json","reason":"Check the historical verdict remains fail and grants no authority."}
+{"file":".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/accepted-member-ledger.json","reason":"Check accepted semantic and member aggregate identities remain exact."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check deterministic evidence and future assurance commands remain portable."}
