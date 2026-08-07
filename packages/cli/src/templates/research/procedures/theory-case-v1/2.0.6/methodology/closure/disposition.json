@@ -1,0 +1,1 @@
+{"code":"V13_CLOSURE_NOT_APPLICABLE_THEORY","kind":"notApplicable","procedureId":"theory-case-v1","rationale":"This Procedure family has no canonical closure artifact under the accepted A3 closure contract; closure is explicitly notApplicable and must never be derived from Result.status.","schemaVersion":1}

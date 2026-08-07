@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "figure-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:f1c9ea557075f233f148c482b3e1d61c5c599526f4de66a1549d7f423bbb6ea1",
+ "packJsonSha256": "sha256:e3768cfa62456e3d9347166edf098e004f0b83b9228338ca936909e1e30848b5",
+ "inventoryDigest": "sha256:33c14c58282d6f42106c7497ae2e3a0811286babfc54d8246c5b515abf6120fd"
+}

@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "idea-evaluation-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:d9523ad65f1293fa4365e9ac1e7aff9d3ffc63ca315d49cf6cfab2161d51eabb",
+ "packJsonSha256": "sha256:367619efc3667b7d66b12521509d01b41e964ad29f035f8cd1b8ff7ab5124051",
+ "inventoryDigest": "sha256:fc835558dfa40ab589da092a4079f2b5e3389bd41a0a45f064c85955dbb332e2"
+}

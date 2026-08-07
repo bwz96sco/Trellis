@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "quest-admin-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:a471a7f69dcc133b682255ab8c6c36952c89f28b88699a3780ed553fd30984b9",
+ "packJsonSha256": "sha256:4f3d908d6784727ed7d613cee30f95662430a17c3c0d57bf38ed2c3cac6922da",
+ "inventoryDigest": "sha256:143936549cc3761e11c9c61af93bd76ff04e22f1fc93ec6316f09e3953ebfec0"
+}

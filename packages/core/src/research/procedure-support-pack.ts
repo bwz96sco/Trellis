@@ -70,6 +70,7 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
     | "historical-unaccepted-2.0.3-not-authoritative"
     | "exact-v1.3-accepted"
     | "exact-v1.3-accepted-2.0.5"
+    | "exact-v1.3-accepted-2.0.6"
     | "unknown-fail-closed";
   readonly authoritative: boolean;
 } {
@@ -114,6 +115,14 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
         procedureVersion === "2.0.5"
           ? "exact-v1.3-accepted-2.0.5"
           : "exact-v1.3-accepted",
+      authoritative: true,
+    };
+  }
+  if (procedureVersion === "2.0.6") {
+    return {
+      version: V13_ACCEPTED_CONTRACT_VERSION,
+      digest: V13_ACCEPTED_CONTRACT_DIGEST,
+      disposition: "exact-v1.3-accepted-2.0.6",
       authoritative: true,
     };
   }
@@ -351,7 +360,8 @@ export function parseSupportPackManifest(input: {
     }
   } else if (
     input.procedureVersion === "2.0.4" ||
-    input.procedureVersion === "2.0.5"
+    input.procedureVersion === "2.0.5" ||
+    input.procedureVersion === "2.0.6"
   ) {
     if (
       methodologyContractVersion !== V13_ACCEPTED_CONTRACT_VERSION ||

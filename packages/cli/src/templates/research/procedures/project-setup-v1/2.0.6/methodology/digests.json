@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "project-setup-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:04357eef5e2530c6d3db6f878e630cdc12f989ad7e2d9008591efbec87dc7d45",
+ "packJsonSha256": "sha256:241fc604f216c2053555e875e51125e4ad784d77f03c8f57546df4d46ac55a9b",
+ "inventoryDigest": "sha256:84cc946a7d80bb9fb25c134d917d5faec02f122f3787afc7d5f4f8d32aa5da2d"
+}

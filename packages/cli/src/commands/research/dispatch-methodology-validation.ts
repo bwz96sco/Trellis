@@ -153,8 +153,9 @@ export function loadDeclaredValidatorsFromProcedure(
   }
 
   const version = procedure.manifest.version;
-  const isSuccessor = version === "2.0.4" || version === "2.0.5";
   const digest = procedure.supportPack.manifest.methodologyContractDigest ?? "";
+  const isSuccessor =
+    version === "2.0.4" || version === "2.0.5" || version === "2.0.6";
   if (isSuccessor && digest === V13_ACCEPTED_CONTRACT_DIGEST) {
     const pack =
       options?.acceptedPack ??

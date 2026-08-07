@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "quest-framing-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:3aeb5d75902bb1681e663d8232fbfbbf4acdf8a61cfaae65978974dae35cb057",
+ "packJsonSha256": "sha256:5f2a79a8c5e0f2a2e3867d32852adef8acafbe99efda33726312eca2b977f1d7",
+ "inventoryDigest": "sha256:8d3f8eec14b9540c3c087f1e7695a0a154021e2c86d10263e45f711849a47fcb"
+}

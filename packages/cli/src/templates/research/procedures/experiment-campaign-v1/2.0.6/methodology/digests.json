@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "experiment-campaign-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:b6daf09d1680aa1cc54329972970c949a758516946850a708be9c53feda364ec",
+ "packJsonSha256": "sha256:875e6426ca2b0b808311b08536cf146414961e20cb6cf31d2d016ab7f4d3ffe0",
+ "inventoryDigest": "sha256:c5409fd01e4b5936cf3b49d6376c014598d41501658f6c12e91dcf417fc23abd"
+}

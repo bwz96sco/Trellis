@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "review-campaign-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:16cea56b7ebe368790229efde3ab43cbcf5bc496b031451dda8e18b43b44ab46",
+ "packJsonSha256": "sha256:d525ef7740ce2f5e19d936b45d74e721d8b1d30ac01242e6563a628f2b61a194",
+ "inventoryDigest": "sha256:532e43ae4e13c9b3b823749f4922af91b086acb2f37ed4b3d9ff3315d65208a7"
+}

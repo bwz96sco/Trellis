@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "idea-generation-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:0d116194d72f98824df18047f2d48eae22e28bd14150629840105597bb5d9120",
+ "packJsonSha256": "sha256:d32e95e09683250f8d3345b39552fbc8a0c95b05af5d6295326ba8c7b45a5689",
+ "inventoryDigest": "sha256:49036122d1f7c61c72694b3281487d152e737ef787c0a135f5afd11b40ea7181"
+}

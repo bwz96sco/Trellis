@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "slides-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:d516e8fa87d1835c11e37ea4833f2f3a788b71f0b49396b19aef5e91ff4f82cb",
+ "packJsonSha256": "sha256:d19772b2ec92b642d67f33cd89df6f2c77d6f7edf47363e0d921d84e0385d746",
+ "inventoryDigest": "sha256:0331538e34ad2e17073e0a852a9efa3f4a7995cd03d4ae1827ea38193a4ef111"
+}

@@ -1,0 +1,8 @@
+{
+ "schemaVersion": 1,
+ "procedureId": "review-case-v1",
+ "procedureVersion": "2.0.6",
+ "procedureDigest": "sha256:716b9637235119bd22060545b09dff4f0991fc4abe0614fafbd4ef8f5a79c15b",
+ "packJsonSha256": "sha256:1e2547bd5fad3b74f8be481770b8e3d2745173ccf905e7b53fb74e265b87778e",
+ "inventoryDigest": "sha256:10ab49fb49112c8352fb346f6e5fea7e0314e1cb444a80ab9d4f442412f0430a"
+}
