@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "quest-framing-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:3aeb5d75902bb1681e663d8232fbfbbf4acdf8a61cfaae65978974dae35cb057",
- "packJsonSha256": "sha256:5f2a79a8c5e0f2a2e3867d32852adef8acafbe99efda33726312eca2b977f1d7",
- "inventoryDigest": "sha256:8d3f8eec14b9540c3c087f1e7695a0a154021e2c86d10263e45f711849a47fcb"
+ "procedureDigest": "sha256:f2dc4fcb479e9ff7aa1a81ce10b1cea487f62505378487e669d7ba4bc0988caa",
+ "packJsonSha256": "sha256:3f98fdf3ddba40ad958a014a077cfddae5199702edc453258e50e94e1b7aca88",
+ "inventoryDigest": "sha256:be3bd93a42bb231552e1fce32b91da803bc5853ce61698428d3f4f8b4d8b9743"
 }

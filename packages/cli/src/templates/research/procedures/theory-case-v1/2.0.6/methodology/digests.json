@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "theory-case-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:d8c67cc73281174a5cb2ba3b14280246444a3c8d98a31c0ada5965d109a21370",
- "packJsonSha256": "sha256:aaa07f0b79bceca1ddea99b75374c7583be263e1b2a624619cde58bf380286b4",
- "inventoryDigest": "sha256:fc2cf44b2440ddb727f381ff790680490e43e660124a7c71b1c98b5dbeb78ab7"
+ "procedureDigest": "sha256:06f425b98202762f52e2202e114d60822824c8ba689d924a3b18ffa876c20c4d",
+ "packJsonSha256": "sha256:2b8c2b2f522f454802b8d88bbc178a626aebc69b3ec660a349b16b009c7c5062",
+ "inventoryDigest": "sha256:891a5c0fc13198734bc9e42fabf0c12ae391789952fbbe6875192c26282b8758"
 }

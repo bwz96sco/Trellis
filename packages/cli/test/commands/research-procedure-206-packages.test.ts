@@ -89,7 +89,7 @@ describe("CS5-3 immutable Procedure 2.0.6 family packages", () => {
       const files: Record<string, Uint8Array> = {};
       for (const entry of manifest.entries) {
         files[entry.path] = new Uint8Array(
-          fs.readFileSync(path.join(dir, entry.path)),
+          fs.readFileSync(path.join(dir, "methodology", entry.path)),
         );
       }
       const inventoryItems = buildSupportPackInventory({ manifest, files });

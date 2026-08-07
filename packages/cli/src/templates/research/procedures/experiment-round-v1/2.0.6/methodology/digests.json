@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "experiment-round-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:08041e9a529515e14e9e222d13ec49f721d5b1368872551928a2b1b1cd552e34",
- "packJsonSha256": "sha256:e5a1d5dd9e8b56a08cb05b2059d9af2cb958f05eaf69f766889415aba7b8409a",
- "inventoryDigest": "sha256:550810420305e02a6464951b0c00ab0e817ffb90c9f9e270bd519b6b86bdada8"
+ "procedureDigest": "sha256:beba281f97f6a2a2e82082d625f8b10a5e5ba584c67798d59f6668f63caac156",
+ "packJsonSha256": "sha256:598159819bf01981925dd872e28f450bb22b54440f13a2897edf3308c3716334",
+ "inventoryDigest": "sha256:19c3beedca584c56e181604b7c67d1d5a9dc9da411e1bada1026ec1a73adbb83"
 }

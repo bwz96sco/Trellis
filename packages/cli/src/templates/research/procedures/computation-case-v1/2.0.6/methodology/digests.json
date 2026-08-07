@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "computation-case-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:51d8a2c1dea045d1ee2870088f17f2118c5125d422a455e5846d759df9bd7f0f",
- "packJsonSha256": "sha256:b95c3cf610f00e3bafd02e7952c1396687702a610562490953d002644affe785",
- "inventoryDigest": "sha256:febacd2482f874ff1a1c234fe1ab99a7fc767790165f3d0260915dc1513dc153"
+ "procedureDigest": "sha256:6c7257235bdb313b98e6b4fc7414cdf6033ebbd6b399b8325200eb335eb4ee9b",
+ "packJsonSha256": "sha256:fa06a84a194030e80b6f5c5171228059ea62827ca569e9f1ecc44d842192d51d",
+ "inventoryDigest": "sha256:97a71a82dffb31addd85313884d13bc44950b27b107bc7f4456645f15b42d26a"
 }

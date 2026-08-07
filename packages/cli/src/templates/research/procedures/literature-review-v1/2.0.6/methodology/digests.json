@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "literature-review-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:6207cd951a342ee52465948e5f6cbd64d38f56eb34181ce53721452f1debea30",
- "packJsonSha256": "sha256:c53d3fa6796d154eca8b4ffcedf06d7e6181f16d7c733be2fe2025f0338c6481",
- "inventoryDigest": "sha256:0c176c682d0a30fc7a203886ca05e3c300d0e10ca4cb76659e47ad4f9c175ab6"
+ "procedureDigest": "sha256:3be71e9713ac10428ec8ec23024a94db3268e92432bfb68a3b9826dba3d375d2",
+ "packJsonSha256": "sha256:3b41310cbd1ea7454af9ce90bc19cd0bc195897bf41b4c57f7c697b2426a9d77",
+ "inventoryDigest": "sha256:dad9a50182ea52f6b5b5cc439ca3add4ba5781b7ed82193d7307bb167d2e4b3a"
 }

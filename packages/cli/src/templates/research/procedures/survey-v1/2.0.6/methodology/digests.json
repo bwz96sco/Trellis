@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "survey-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:13c9ee6d39a3667dc968836cc6c7f067fa097e09b6c2c332431de159cafe4cf0",
- "packJsonSha256": "sha256:2ed8e633480457378c566917ab801b5d92a1ed24388101da68eeba1f82a2fb7b",
- "inventoryDigest": "sha256:2911e910bfda461f93b76503566ff6ab61b3eb32171b78a81289e5a5288b5063"
+ "procedureDigest": "sha256:9518a38bbecd566090a87acd5612846711f58fde169464d26a7ea899209d80bc",
+ "packJsonSha256": "sha256:4f224310142e9c6715f6f0381b6da0523bcfd2f60d8d6695e41ac44d2e8e0a7b",
+ "inventoryDigest": "sha256:283f35cee1132b09376b535ec235b27f113776a08bf1355ef453d17ae2ac0d78"
 }

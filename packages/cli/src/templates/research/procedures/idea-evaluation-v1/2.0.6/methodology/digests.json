@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "idea-evaluation-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:d9523ad65f1293fa4365e9ac1e7aff9d3ffc63ca315d49cf6cfab2161d51eabb",
- "packJsonSha256": "sha256:367619efc3667b7d66b12521509d01b41e964ad29f035f8cd1b8ff7ab5124051",
- "inventoryDigest": "sha256:fc835558dfa40ab589da092a4079f2b5e3389bd41a0a45f064c85955dbb332e2"
+ "procedureDigest": "sha256:7409eddc7606b6cd2d60edaa3f4f4da35c4fb83715909db5386203d712d26724",
+ "packJsonSha256": "sha256:2f866f25560e39fdc594d9d8ddd85de714ed24033d8a5f86c1e596b5c3620d08",
+ "inventoryDigest": "sha256:462a9c9b13eebf7dae9ad92a1616ea755d3d273357b17d98f0f9c0108142b9ce"
 }

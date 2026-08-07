@@ -136,16 +136,28 @@ export function deriveMethodologyValidatorFacts(input: {
    * explicit — Result.status is never used as closure authority.
    */
   readonly requireExplicitClosure?: boolean;
+  /** CS5-2: closure notApplicable for this Procedure; never derive, never require. */
+  readonly closureInapplicable?: boolean;
   readonly methodologyContractVersion?: string;
 }): Readonly<Record<string, unknown>> {
   const resultStatus = input.resultStatus;
+  // CS5-2: explicit closure is Procedure-disposition-driven. The version
+  // string alone never forces closure facts on notApplicable families.
   const requireExplicit =
     input.requireExplicitClosure === true ||
-    input.methodologyContractVersion === "evaluation-contract-v1.3.0";
+    // Direct API default: v1.3 contract versions require explicit closure
+    // facts unless the caller declares the disposition explicitly.
+    (input.closureInapplicable !== true &&
+      input.methodologyContractVersion === "evaluation-contract-v1.3.0");
 
   let selected: boolean | undefined;
   let blocked: boolean | undefined;
-  if (requireExplicit) {
+  if (input.closureInapplicable === true) {
+    // notApplicable families: closure facts are never present and never
+    // derived from Result.status.
+    selected = undefined;
+    blocked = undefined;
+  } else if (requireExplicit) {
     // Fail closed: omit selected/blocked unless both provided explicitly.
     // Never invent from Result.status under v1.3.
     if (input.selected !== undefined && input.blocked !== undefined) {

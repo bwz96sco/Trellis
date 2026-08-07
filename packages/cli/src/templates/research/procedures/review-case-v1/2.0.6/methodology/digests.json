@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "review-case-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:716b9637235119bd22060545b09dff4f0991fc4abe0614fafbd4ef8f5a79c15b",
- "packJsonSha256": "sha256:1e2547bd5fad3b74f8be481770b8e3d2745173ccf905e7b53fb74e265b87778e",
- "inventoryDigest": "sha256:10ab49fb49112c8352fb346f6e5fea7e0314e1cb444a80ab9d4f442412f0430a"
+ "procedureDigest": "sha256:bd39967c07aa9218b3cfaf7755046ac70e8f6c6f8ae8c4592956607ab48554c7",
+ "packJsonSha256": "sha256:278b82e80b00abfb4c0c91613fbe5cd1581f776eb3cbff11ffa8f86be60108c6",
+ "inventoryDigest": "sha256:1d5ce8c26b37ca51cde5a68a713e9b5a547eac6a1920bd346a20b828cef53b7c"
 }

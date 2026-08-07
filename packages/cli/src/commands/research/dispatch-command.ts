@@ -1093,13 +1093,9 @@ function deriveCanonicalClosureFacts(input: {
     throw new Error("unreachable: approvedResultError must throw");
   }
   const closureRef = closureRefs[0] as ArtifactRef;
-  if (closureRef.id !== disposition.closureContractId) {
-    approvedResultError(
-      "METHODOLOGY_VALIDATION_FAILED",
-      `Closure ArtifactRef id '${closureRef.id}' must equal the exact contract id '${disposition.closureContractId}'; zero-write enforced`,
-    );
-    throw new Error("unreachable: approvedResultError must throw");
-  }
+  // The closure contract identity is the exact family + canonical path (the
+  // lifecycle row's stable identity). The submitted ArtifactRef id is an
+  // art_ prefixed UUID by schema; contract binding is exact-path equality.
   if (closureRef.mediaType !== disposition.mediaType) {
     approvedResultError(
       "METHODOLOGY_VALIDATION_FAILED",
@@ -1568,9 +1564,12 @@ export async function recordApprovedResearchDispatchResult(
     },
   });
   if (methodologyGate.criticalFailure || !methodologyGate.ok) {
+    const codes = [
+      ...new Set(methodologyGate.report.validation.findings.map((f) => f.code)),
+    ].join(",");
     approvedResultError(
       "METHODOLOGY_VALIDATION_FAILED",
-      `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced`,
+      `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced; codes=${codes}`,
     );
   }
   // Capability-contained Proposal operations at recording time.

@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "idea-generation-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:0d116194d72f98824df18047f2d48eae22e28bd14150629840105597bb5d9120",
- "packJsonSha256": "sha256:d32e95e09683250f8d3345b39552fbc8a0c95b05af5d6295326ba8c7b45a5689",
- "inventoryDigest": "sha256:49036122d1f7c61c72694b3281487d152e737ef787c0a135f5afd11b40ea7181"
+ "procedureDigest": "sha256:e7ad282f2e4556496a7f50afd4ab85b07c569e39f64fff3b91bb7810396bd59b",
+ "packJsonSha256": "sha256:6fe53ad0d1cf477b0c7f2431b3c60473d92f1f84237002eb413a07996d4ddc9e",
+ "inventoryDigest": "sha256:87df090563be696361cdbac87a3b8513392ed9ca4cb05c7f1f8941be560a69de"
 }

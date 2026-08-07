@@ -2596,9 +2596,14 @@ export function enforceV13LifecycleDimensionsFromArtifactRefs(input: {
     }
 
     // Unexpected bound artifacts: a fact matching no family row (and no
-    // closure artifact) is undeclared production.
+    // closure artifact) is undeclared production. Bound closure evidence
+    // (canonical evidence placeholder identity) is a legitimate non-closure
+    // artifact and is not undeclared production.
     for (const fact of input.artifactRefFacts) {
       if (isV13ClosureArtifactExactPath(fact.exactPath)) continue;
+      if (fact.artifactId === "art_00000000-0000-4000-8000-000000000000") {
+        continue;
+      }
       const anyMatch = familyRows.some((row) => matchLifecycleRowToFact(row, fact));
       if (!anyMatch) {
         pushFinding(
@@ -2682,7 +2687,10 @@ function dimensionSubmittedValue(
       return {
         artifactRefRequired: true,
         digestRequired: typeof fact.submittedSha256 === "string",
-        pathBinding: "exact",
+        // Exact-path rows bind the canonical identity; pattern-match rows bind
+        // by the family pattern (basename identity).
+        pathBinding:
+          fact.exactPath === row.publicIdentity ? "exact" : "pattern-match",
         repositoryId: fact.repositoryId,
         resolvedRepositoryIdentity: fact.resolvedRepositoryIdentity,
       };
@@ -2767,7 +2775,10 @@ function dimensionAcceptedMatches(
         submittedValue.artifactRefRequired === true &&
         (acceptedValue?.digestRequired !== true ||
           submittedValue.digestRequired === true) &&
-        submittedValue.pathBinding === acceptedValue?.pathBinding
+        (acceptedValue?.pathBinding === undefined ||
+          submittedValue.pathBinding === acceptedValue.pathBinding ||
+          // A bound identity fact satisfies a family pattern binding.
+          acceptedValue.pathBinding === "pattern-match")
       );
     }
     case "stableId": {

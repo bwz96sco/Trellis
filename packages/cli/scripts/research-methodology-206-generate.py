@@ -102,10 +102,18 @@ def main() -> None:
         (v206 / "methodology/bindings").mkdir(parents=True)
         (v206 / "methodology/closure").mkdir(parents=True)
 
-        # procedure.json: 2.0.5 manifest with version -> 2.0.6 (canonical compact).
+        # procedure.json: 2.0.5 manifest with version -> 2.0.6 in the exact
+        # canonical key order of the Procedure serializer (schemaVersion first).
         p205 = json.loads((v205 / "procedure.json").read_text())
         p205["version"] = "2.0.6"
-        (v206 / "procedure.json").write_text(compact_json(p205) + "\n")
+        manifest_order = [
+            "schemaVersion", "id", "version", "stage", "kind", "inputs",
+            "outputs", "networkPolicy", "repositoryScope", "maxDurationMinutes",
+            "maxDispatches", "replaces", "packageSchemaVersion",
+        ]
+        ordered = {k: p205[k] for k in manifest_order if k in p205}
+        (v206 / "procedure.json").write_text(
+            json.dumps(ordered, separators=(",", ":")) + "\n")
 
         # PROCEDURE.md + checkpoints: byte-for-byte from 2.0.5.
         shutil.copyfile(v205 / "PROCEDURE.md", v206 / "PROCEDURE.md")
@@ -206,7 +214,10 @@ def main() -> None:
             closure = {
                 "schemaVersion": 1,
                 "family": family,
-                "selected": {"value": True, "evidenceArtifactIds": []},
+                # selected=true requires bound evidence under the strict closure
+                # parse; the fixture binds this canonical evidence placeholder.
+                "selected": {"value": True,
+                             "evidenceArtifactIds": ["art_00000000-0000-4000-8000-000000000000"]},
                 "blocked": {"value": False, "evidenceArtifactIds": []},
             }
             (v206 / "methodology/closure" / (family + ".json")).write_text(
@@ -255,23 +266,23 @@ def main() -> None:
 
         # pack.json manifest (closed 6-key shape) with entries.
         entry_specs = [
-            ("methodology/artifacts/artifact-contract.json", "artifacts", "application/json", "worker-visible", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}"),
-            ("methodology/instructions/checkpoints.md", "instructions", "text/markdown", "worker-visible", "1", f"PHASE2-206-{pid}"),
-            ("methodology/validators/validators.json", "validators", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}"),
-            ("methodology/lifecycle/lifecycle-rows.json", "other", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-lifecycle"),
-            ("methodology/bindings/bindings.json", "other", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-bindings"),
-            ("methodology/package-contract.json", "other", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-contract"),
+            ("artifacts/artifact-contract.json", "artifacts", "application/json", "worker-visible", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}"),
+            ("instructions/checkpoints.md", "instructions", "text/markdown", "worker-visible", "1", f"PHASE2-206-{pid}"),
+            ("validators/validators.json", "validators", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}"),
+            ("lifecycle/lifecycle-rows.json", "other", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-lifecycle"),
+            ("bindings/bindings.json", "other", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-bindings"),
+            ("package-contract.json", "other", "application/json", "root-only", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-contract"),
         ]
         if pid in REQUIRED:
             family, contract_id, exact_path = REQUIRED[pid]
-            entry_specs.append((exact_path, "artifacts", "application/json", "worker-visible",
+            entry_specs.append((exact_path.replace("methodology/", ""), "artifacts", "application/json", "worker-visible",
                                 ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-closure"))
         else:
-            entry_specs.append(("methodology/closure/disposition.json", "other", "application/json",
+            entry_specs.append(("closure/disposition.json", "other", "application/json",
                                 "worker-visible", ACCEPTED_CONTRACT_VERSION, f"PHASE2-206-{pid}-closure"))
         entries = []
         for rel, role, media, vis, cv, prov in entry_specs:
-            path = v206 / rel
+            path = v206 / "methodology" / rel
             b = path.read_bytes()
             entries.append({
                 "path": rel, "role": role, "mediaType": media, "contractVersion": cv,

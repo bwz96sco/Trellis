@@ -20,7 +20,7 @@ import {
   isAuthoritativeMethodologyProcedureVersion,
   parseAcceptedV13ContractPack,
   runMethodologyValidators,
-  selectApplicableV13ValidatorsFromBindings,
+  selectApplicableV13BindingsForProcedure,
   selectTrustedV13ValidatorDescriptors,
   serializeSupportPackInventoryForDigest,
   shouldMaterializeMethodologyReportSidecar,
@@ -161,10 +161,23 @@ export function loadDeclaredValidatorsFromProcedure(
     const pack =
       options?.acceptedPack ??
       loadAcceptedV13ContractPackFromLeaves(options?.leafDir);
-    const declared = selectApplicableV13ValidatorsFromBindings({
+    // CS5-2: declared validators come from the exact per-Procedure applicable
+    // binding set (closure bindings excluded for notApplicable families).
+    const applicable = selectApplicableV13BindingsForProcedure({
       pack,
       procedureId: procedure.manifest.id,
     });
+    // Per-binding applicability is authoritative; the declared validator list
+    // is the deduplicated identity set (invocation counts stay per-binding).
+    const seenDeclared = new Set<string>();
+    const declared = applicable
+      .map((row) => row.binding.validator)
+      .filter((v) => {
+        const key = `${v.id}@${v.version}`;
+        if (seenDeclared.has(key)) return false;
+        seenDeclared.add(key);
+        return true;
+      });
     // When family filter yields a subset, still require every selected row is
     // trusted; if empty, fall back to full registry (never pack 4-legacy).
     const candidate =
@@ -457,8 +470,14 @@ export function validateMethodologyBeforeRecord(input: {
     input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION ||
     input.procedureVersion === "2.0.5" ||
     input.procedureVersion === "2.0.6";
+  // CS5-2: explicit closure applies to the six closure-required Procedures.
+  // notApplicable families never require (or derive) closure, so status-
+  // inference/closure-exclusivity validators must not fire for them. A
+  // successor call WITHOUT a disposition is ambiguous and fails closed.
   const requireExplicitClosure =
-    procedureAuthoritative && isSuccessorProcedureVersion;
+    procedureAuthoritative &&
+    isSuccessorProcedureVersion &&
+    input.closureDisposition?.kind !== "notApplicable";
 
   // Load accepted A3 pack for 2.0.4/2.0.5 accepted-digest path (20/876 authority).
   let acceptedPack: V13AcceptedContractPack | undefined = input.acceptedV13Pack;
@@ -553,6 +572,7 @@ export function validateMethodologyBeforeRecord(input: {
     blocked: input.blocked,
     methodologyContractVersion,
     requireExplicitClosure,
+    closureInapplicable: input.closureDisposition?.kind === "notApplicable",
   });
 
   let mergedValidation = runMethodologyValidators({
@@ -743,6 +763,10 @@ export function validateMethodologyBeforeRecord(input: {
   // CS5-4: report-v2 authority is computed ONLY after every artifact, closure,
   // lifecycle, package, and binding check completes. Any failure forces
   // authority:false and prevents sidecar materialization.
+  const closureFactsComplete =
+    input.closureDisposition?.kind === "required"
+      ? input.selected !== undefined && input.blocked !== undefined
+      : input.closureDisposition?.kind === "notApplicable";
   const reportV2Authorized =
     procedureAuthoritative &&
     isSuccessorProcedureVersion &&
@@ -767,8 +791,7 @@ export function validateMethodologyBeforeRecord(input: {
     input.policyDigest.length > 0 &&
     typeof input.scopeHash === "string" &&
     input.scopeHash.length > 0 &&
-    input.selected !== undefined &&
-    input.blocked !== undefined &&
+    closureFactsComplete &&
     input.closureDisposition !== undefined &&
     typeof input.acceptedMemberAggregateSha256 === "string" &&
     input.acceptedMemberAggregateSha256.length > 0 &&

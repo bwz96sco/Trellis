@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "writing-case-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:673eaef255f4aa3f2454d1714d03639f19d78d7c39d098f3d2c2ff6cab8e2286",
- "packJsonSha256": "sha256:90cf19ac9bfb95b2f0bc4b7bb617657a11c18349a4b9b09588ecc2226c8a8bbf",
- "inventoryDigest": "sha256:aa5e92c5b283172214f250ffd82eb272c0b2d2277d9ac9f3f52ae45e530d11a8"
+ "procedureDigest": "sha256:3747f5d2cd5b7ce45de5cda1151a9040df5324f75c1a94f35335803923387027",
+ "packJsonSha256": "sha256:f7b3e5192d8d1ed086e4a424031444f5d494229bdaa98764cfa10d496a6848a0",
+ "inventoryDigest": "sha256:1df9570c9142f9d7e87b217ccc5effeee270ec11d0469e5c7f6789113060f720"
 }

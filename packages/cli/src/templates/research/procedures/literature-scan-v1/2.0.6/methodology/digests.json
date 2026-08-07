@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "procedureId": "literature-scan-v1",
  "procedureVersion": "2.0.6",
- "procedureDigest": "sha256:f3b6be901d7f6f9df27c2a667b1ee26b03b08c20ea08bee694ad9272beb2e983",
- "packJsonSha256": "sha256:43b4c3048d2a90c203647c4ea94d4b2809b49836416572f662cd09d8513f2356",
- "inventoryDigest": "sha256:8c82ebe216ceb29b3cdc0168a1f6ff72b2d251b98580532baa0605e61474e3d0"
+ "procedureDigest": "sha256:3fca3d744fee7df0f73400f226b091036932811a41ed0351583f39a6c68f3b0d",
+ "packJsonSha256": "sha256:3e5a02e4e931d9c686f5daf670b0aecf52c95d1277e376d1096d34b7b1a08c27",
+ "inventoryDigest": "sha256:32bea3e2a622c6f2ab600f3d3cc7059379b6065c937a7377edac64c16f866d75"
 }
