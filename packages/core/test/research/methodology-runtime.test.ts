@@ -5,9 +5,14 @@ import { describe, expect, it } from "vitest";
 import {
   FROZEN_COMPOSITION_EDGES,
   METHODOLOGY_REPORT_V2_DIGEST_DOMAIN,
+  V13_ACCEPTED_CONTRACT_DIGEST,
+  V13_ACCEPTED_CONTRACT_VERSION,
+  V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+  canonicalResearchJson,
   RESEARCH_CAPABILITY_REGISTRY,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
+  type MethodologyValidationReport,
   buildMethodologyReport,
   buildMethodologyReportV2,
   buildSupportPackInventory,
@@ -666,26 +671,39 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
     expect(v2.reportDigest.startsWith("sha256:")).toBe(true);
     expect(v2.zeroWriteDisposition).toBe("success-sidecar-allowed");
 
-    // Domain framing: trellis-evaluation-report-v2\0 + canonical JSON + LF.
+    // CS5-4 domain framing: trellis-evaluation-report-v2\0 + canonical JSON,
+    // recursive lexicographic keys, no trailing LF, digest field excluded.
+    // Independent oracle: a local serializer that does not call the
+    // production canonicalizer/digest helper.
+    const oracleCanonical = (value: unknown): string => {
+      if (value === null) return "null";
+      const type = typeof value;
+      if (type === "string") return JSON.stringify(value);
+      if (type === "boolean") return value ? "true" : "false";
+      if (type === "number") return JSON.stringify(value);
+      if (Array.isArray(value)) {
+        return `[${value.map(oracleCanonical).join(",")}]`;
+      }
+      const record = value as Record<string, unknown>;
+      const keys = Object.keys(record).sort();
+      return `{${keys
+        .map((key) => `${JSON.stringify(key)}:${oracleCanonical(record[key])}`)
+        .join(",")}}`;
+    };
     const body = {
       schemaVersion: 2 as const,
       reportV1: v1a,
       methodologyContractDigest: V13_METHODOLOGY_CONTRACT_DIGEST,
-      supportInventoryDigest: undefined,
-      policyDigest: undefined,
-      requestDigest: undefined,
-      scopeDigest: undefined,
-      runId: undefined,
       proposalIds: [] as string[],
       resultIds: [] as string[],
       approvalIds: [] as string[],
       closureSource: { selected: true, blocked: false },
       applicability: [] as string[],
       blockedByContract: [] as string[],
-      operationContainment: undefined,
       zeroWriteDisposition: "success-sidecar-allowed" as const,
     };
-    const canonical = `${JSON.stringify(body)}\n`;
+    const canonical = oracleCanonical(body);
+    expect(canonical.endsWith("\n")).toBe(false);
     expect(computeMethodologyReportV2DigestFromCanonicalBody(canonical)).toBe(
       v2.reportDigest,
     );
@@ -694,7 +712,6 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
     );
     // Non-self-referential: digest is not of a body that includes reportDigest.
     expect(canonical.includes(v2.reportDigest)).toBe(false);
-
     // Same-key recovery serialization is deterministic and ends with LF.
     const sidecar = serializeMethodologyReportV2Sidecar(v2);
     expect(sidecar.endsWith("\n")).toBe(true);
@@ -759,5 +776,95 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
       expect(planned.action.edgeId).toBe("COMP-001");
       expect(planned.action).not.toHaveProperty("launchWorker");
     }
+  });
+});
+
+describe("CS5-4 report-v2 canonicalization and digest framing", () => {
+  it("canonicalResearchJson orders keys lexicographically and preserves array order", () => {
+    const canonical = canonicalResearchJson({
+      zeta: 1,
+      alpha: "x",
+      nested: { b: [3, 1, 2], a: true },
+      list: ["b", "a"],
+    });
+    expect(canonical).toBe(
+      '{"alpha":"x","list":["b","a"],"nested":{"a":true,"b":[3,1,2]},"zeta":1}',
+    );
+    expect(canonical.endsWith("\n")).toBe(false);
+  });
+
+  it("rejects non-deterministically representable values", () => {
+    expect(() => canonicalResearchJson({ x: Number.NaN })).toThrow(
+      /Non-deterministic/,
+    );
+    expect(() => canonicalResearchJson({ x: Number.POSITIVE_INFINITY })).toThrow(
+      /Non-deterministic/,
+    );
+    expect(() => canonicalResearchJson({ x: 1n })).toThrow(/Non-deterministic/);
+    expect(() => canonicalResearchJson([undefined])).toThrow(
+      /Non-deterministic/,
+    );
+    expect(() => canonicalResearchJson({ fn: () => 1 })).toThrow(
+      /Non-deterministic/,
+    );
+    const cyclic: Record<string, unknown> = {};
+    cyclic.self = cyclic;
+    expect(() => canonicalResearchJson(cyclic)).toThrow(/Cyclic/);
+  });
+
+  it("digest body excludes the digest field and has no trailing LF", () => {
+    const validation: MethodologyValidationReport = {
+      ok: true,
+      criticalFailure: false,
+      findings: [],
+    };
+    const v1 = buildMethodologyReport({
+      procedureId: "figure-v1",
+      procedureVersion: "2.0.6",
+      procedureDigest: "sha256:abc",
+      methodologyContractVersion: V13_ACCEPTED_CONTRACT_VERSION,
+      validation,
+    });
+    const v2 = buildMethodologyReportV2({
+      reportV1: v1,
+      methodologyContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
+      acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+      bindingApplicableCount: 42,
+      bindingInvocationCount: 42,
+      bindingInvocationLedgerDigest: "sha256:ledger",
+      resultId: "res_1",
+      proposalId: "prp_1",
+      approvalId: "apr_1",
+      idempotencyKey: "key-1",
+      batchHeadSeq: 7,
+      batchCommitted: true,
+      closureSource: { selected: true, blocked: false },
+    });
+    expect(v2.reportDigest.startsWith("sha256:")).toBe(true);
+    expect(v2.bindingApplicableCount).toBe(42);
+    expect(v2.resultId).toBe("res_1");
+    expect(v2.batchCommitted).toBe(true);
+    // Sidecar serialization is canonical and ends with exactly one LF.
+    const sidecar = serializeMethodologyReportV2Sidecar(v2);
+    expect(sidecar.endsWith("\n")).toBe(true);
+    expect(sidecar.endsWith("\n\n")).toBe(false);
+    // The sidecar round-trips and its canonical bytes are the published form.
+    expect(JSON.parse(sidecar).reportDigest).toBe(v2.reportDigest);
+    // Digest equality is framing-independent: recomputing over the canonical
+    // body (digest field excluded by construction) reproduces reportDigest.
+    const withoutDigest = { ...v2 };
+    delete (withoutDigest as { reportDigest?: string }).reportDigest;
+    expect(
+      computeMethodologyReportV2DigestFromCanonicalBody(
+        canonicalResearchJson(withoutDigest),
+      ),
+    ).toBe(v2.reportDigest);
+    // Any change to a bound field changes the digest.
+    const v2b = buildMethodologyReportV2({
+      reportV1: v1,
+      methodologyContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
+      bindingApplicableCount: 43,
+    });
+    expect(v2b.reportDigest).not.toBe(v2.reportDigest);
   });
 });

@@ -3,7 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  serializeMethodologyReportV2Sidecar,
   stableResearchJson,
+  type MethodologyDeterministicReportV2,
   type Proposal,
   type ResearchActivation,
   type ResearchApprovalState,
@@ -335,9 +337,14 @@ function writeSidecar(input: {
   readonly headSeq: number;
   readonly segments: readonly string[];
   readonly fileName: string;
-  readonly value: unknown;
+  readonly value?: unknown;
+  /** Additive CS5-4: pre-serialized canonical bytes (e.g. report-v2). */
+  readonly preSerialized?: string;
   readonly recovery: string;
 }): string {
+  if (input.value === undefined && input.preSerialized === undefined) {
+    throw new Error("Research sidecar requires value or preSerialized bytes");
+  }
   const target = path.join(input.root, ...input.segments, input.fileName);
   try {
     validatePathComponent(input.fileName);
@@ -345,7 +352,10 @@ function writeSidecar(input: {
     const targetPath = path.join(selection.directoryPath, input.fileName);
     validateDirectorySelection(selection);
     const targetBefore = snapshotTarget(selection, targetPath, input.fileName);
-    const bytes = Buffer.from(stableResearchJson(input.value), "utf8");
+    const bytes =
+      input.preSerialized !== undefined
+        ? Buffer.from(input.preSerialized, "utf8")
+        : Buffer.from(stableResearchJson(input.value), "utf8");
     const stageName = `.${input.fileName}.${process.pid}.${randomUUID()}.stage`;
     const stagePath = path.join(selection.directoryPath, stageName);
     const noFollow =
@@ -534,5 +544,30 @@ export function materializeResearchProposal(input: {
     segments: [".trellis", "research", "dispatches", input.proposal.dispatchId],
     fileName: "proposal.json",
     value: input.proposal,
+  });
+}
+
+/**
+ * CS5-4: report-v2 is a recoverable projection published through the existing
+ * hardened sidecar interface (containment, non-symlink directory chain,
+ * staging/target identity checks, complete write + fsync, atomic publication,
+ * post-publication verification, equivalent-winner handling, cleanup). The
+ * sidecar bytes are the methodology-local canonical serialization; the digest
+ * body itself has no trailing LF.
+ */
+export function materializeMethodologyReportV2Sidecar(input: {
+  readonly root: string;
+  readonly headSeq: number;
+  readonly dispatchId: string;
+  readonly reportV2: MethodologyDeterministicReportV2;
+  readonly recovery: string;
+}): string {
+  return writeSidecar({
+    root: input.root,
+    headSeq: input.headSeq,
+    segments: [".trellis", "research", "dispatches", input.dispatchId],
+    fileName: "methodology-report-v2.json",
+    preSerialized: serializeMethodologyReportV2Sidecar(input.reportV2),
+    recovery: input.recovery,
   });
 }

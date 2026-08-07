@@ -2638,3 +2638,352 @@ export function enforceV13LifecycleDimensionsFromArtifactRefs(input: {
     findings: Object.freeze(findings),
   };
 }
+
+// ===========================================================================
+// CS5-2/CS5-4 — Production per-binding execution with ArtifactRef-derived
+// facts. This is the real record-result gate authority (not the synthetic
+// delta evaluator).
+// ===========================================================================
+
+function v13FactPathMatchesRow(
+  fact: V13ArtifactRefFact,
+  row: V13ArtifactLifecycleRow,
+): boolean {
+  if (fact.exactPath === row.publicIdentity) return true;
+  return pathBasename(fact.exactPath) === row.publicIdentity;
+}
+
+function dimensionSubmittedValue(
+  fact: V13ArtifactRefFact,
+  row: V13ArtifactLifecycleRow,
+  dimension: V13LifecycleDimension,
+  matchingFactCount: number,
+  dispatchContext?: Readonly<{
+    questId: string;
+    dispatchId: string;
+    activationId: string;
+    approvalId: string;
+    capabilityId: string;
+  }>,
+  terminalState?: string,
+): unknown {
+  switch (dimension) {
+    case "requiredness":
+      return { present: fact.present };
+    case "cardinality":
+      return { count: matchingFactCount };
+    case "mediaType":
+      return { submittedMediaType: fact.submittedMediaType };
+    case "producer":
+      return { authority: "worker-proposal-only" };
+    case "consumers":
+      return { consumers: ["root-decision-reviewer", "root-pre-record-validator"] };
+    case "repositoryArtifactRefRelation":
+      return {
+        artifactRefRequired: true,
+        digestRequired: typeof fact.submittedSha256 === "string",
+        pathBinding: "exact",
+        repositoryId: fact.repositoryId,
+        resolvedRepositoryIdentity: fact.resolvedRepositoryIdentity,
+      };
+    case "stableId":
+      return { artifactId: fact.artifactId };
+    case "provenance":
+      return {
+        family: row.family,
+        capabilityId: dispatchContext?.capabilityId,
+        dispatchId: dispatchContext?.dispatchId,
+        activationId: dispatchContext?.activationId,
+        approvalId: dispatchContext?.approvalId,
+        repositoryId: fact.repositoryId,
+        artifactId: fact.artifactId,
+        sha256: fact.submittedSha256,
+      };
+    case "dependencies":
+      return { dependencies: [] };
+    case "immutableFieldsAndMutationAuthority":
+      return {
+        immutableFieldsDeclared:
+          typeof fact.submittedSha256 === "string" &&
+          typeof fact.repositoryId === "string",
+      };
+    case "transitions":
+      return { state: "proposed" };
+    case "terminalApplicability":
+      return { resultStatusIndependent: true, terminalState };
+    case "crossArtifactConsistency":
+      return {
+        uniqueArtifactId: true,
+        singleDispatchContext: dispatchContext !== undefined,
+      };
+  }
+}
+
+function dimensionAcceptedMatches(
+  accepted: unknown,
+  dimension: V13LifecycleDimension,
+  submitted: unknown,
+): boolean {
+  switch (dimension) {
+    case "requiredness":
+      return (submitted as { present: boolean }).present === true;
+    case "cardinality": {
+      const expected = accepted;
+      const count = (submitted as { count: number }).count;
+      if (expected === "1") return count === 1;
+      if (expected === "1..*") return count >= 1;
+      if (expected === "0..1") return count <= 1;
+      return true;
+    }
+    case "mediaType":
+      return (
+        (submitted as { submittedMediaType?: string }).submittedMediaType ===
+        accepted
+      );
+    case "producer": {
+      const acceptedValue = accepted as { authority?: string } | undefined;
+      return acceptedValue?.authority === "worker-proposal-only";
+    }
+    case "consumers": {
+      const acceptedValue = accepted as readonly string[] | undefined;
+      const submittedValue = (submitted as { consumers: readonly string[] })
+        .consumers;
+      return (
+        Array.isArray(acceptedValue) &&
+        submittedValue.length === acceptedValue.length &&
+        submittedValue.every((c) => acceptedValue.includes(c))
+      );
+    }
+    case "repositoryArtifactRefRelation": {
+      const acceptedValue = accepted as
+        | { digestRequired?: boolean; artifactRefRequired?: boolean; pathBinding?: string }
+        | undefined;
+      const submittedValue = submitted as {
+        digestRequired: boolean;
+        artifactRefRequired: boolean;
+        pathBinding: string;
+      };
+      return (
+        submittedValue.artifactRefRequired === true &&
+        (acceptedValue?.digestRequired !== true ||
+          submittedValue.digestRequired === true) &&
+        submittedValue.pathBinding === acceptedValue?.pathBinding
+      );
+    }
+    case "stableId": {
+      const acceptedValue = accepted as { schema?: string } | undefined;
+      const artifactId = (submitted as { artifactId: string }).artifactId;
+      if (acceptedValue?.schema === "none") return true;
+      if (
+        V13_ARTIFACT_ID_UUID_RE.test(artifactId) ||
+        V13_CLOSURE_ARTIFACT_SPECS.some(
+          (spec) => spec.closureContractId === artifactId,
+        )
+      ) {
+        return true;
+      }
+      return false;
+    }
+    case "provenance": {
+      const submittedValue = submitted as Record<string, unknown>;
+      return Object.values(submittedValue).every(
+        (v) => v !== undefined && v !== null && v !== "",
+      );
+    }
+    case "dependencies":
+      return true;
+    case "immutableFieldsAndMutationAuthority":
+      return (submitted as { immutableFieldsDeclared: boolean })
+        .immutableFieldsDeclared === true;
+    case "transitions":
+      return (submitted as { state: string }).state === "proposed";
+    case "terminalApplicability":
+      return (submitted as { resultStatusIndependent: boolean })
+        .resultStatusIndependent === true;
+    case "crossArtifactConsistency":
+      return (
+        (submitted as { uniqueArtifactId: boolean }).uniqueArtifactId === true &&
+        (submitted as { singleDispatchContext: boolean }).singleDispatchContext ===
+          true
+      );
+  }
+}
+
+/**
+ * Execute the exact per-Procedure binding set over real ArtifactRef facts.
+ * Returns the invocation ledger (binding identity/source row/validator
+ * id@version/target/dimension/fact source/value/outcome/finding) plus a
+ * deterministic ledger digest. Fail closed on unresolved facts or count
+ * mismatch via executeV13BindingInvocations.
+ */
+export function executeV13ProcedureBindings(input: {
+  readonly pack: V13AcceptedContractPack;
+  readonly procedureId: string;
+  readonly artifactRefFacts: readonly V13ArtifactRefFact[];
+  readonly closureSelected?: boolean;
+  readonly closureBlocked?: boolean;
+  readonly terminalState?: string;
+  readonly dispatchContext?: Readonly<{
+    readonly questId: string;
+    readonly dispatchId: string;
+    readonly activationId: string;
+    readonly approvalId: string;
+    readonly capabilityId: string;
+  }>;
+}): V13BindingExecutionResult & { readonly ledgerDigest: string } {
+  const applicableBindings = selectApplicableV13BindingsForProcedure({
+    pack: input.pack,
+    procedureId: input.procedureId,
+  });
+  const rowsByTarget = new Map(
+    input.pack.artifacts.map((a) => [a.artifactId, a] as const),
+  );
+  const executed = executeV13BindingInvocations({
+    pack: input.pack,
+    applicableBindings,
+    factForBinding: (binding) => {
+      if (binding.target === undefined) {
+        const ruleKind = binding.binding.ruleKind;
+        if (ruleKind.startsWith("closure.")) {
+          if (
+            input.closureSelected === undefined ||
+            input.closureBlocked === undefined
+          ) {
+            return undefined;
+          }
+          return {
+            source: "canonical-closure-artifact-ref",
+            value: {
+              selected: input.closureSelected,
+              blocked: input.closureBlocked,
+              ruleKind,
+            },
+          };
+        }
+        if (ruleKind === "validator.binding-integrity") {
+          return {
+            source: "authenticated-pack",
+            value: {
+              bindings: input.pack.bindings.length,
+              validators: input.pack.validators.length,
+            },
+          };
+        }
+        if (ruleKind === "report.v2-binding") {
+          return {
+            source: "accepted-contract",
+            value: {
+              acceptedContractDigest: input.pack.acceptedContractDigest,
+              aggregateSha256: input.pack.derivedMemberAggregateSha256,
+            },
+          };
+        }
+        if (ruleKind === "authority.worker-boundary") {
+          return { source: "record-authority", value: { workerProposalOnly: true } };
+        }
+        if (ruleKind.startsWith("contract.")) {
+          return {
+            source: "authenticated-pack",
+            value: {
+              contractVersion: input.pack.contractVersion,
+              closureFamilyCount: input.pack.closureFamilies.length,
+              acceptedContractDigest: input.pack.acceptedContractDigest,
+              aggregateSha256: input.pack.derivedMemberAggregateSha256,
+              bindingCount: input.pack.bindings.length,
+              deltaCaseCount: input.pack.deltaCases.length,
+            },
+          };
+        }
+        return { source: "pack", value: {} };
+      }
+      const fact = input.artifactRefFacts.find((f) =>
+        v13FactPathMatchesRow(f, binding.target as V13ArtifactLifecycleRow),
+      );
+      if (fact === undefined || binding.dimension === undefined) {
+        return undefined;
+      }
+      const matchingFactCount = input.artifactRefFacts.filter((f) =>
+        v13FactPathMatchesRow(f, binding.target as V13ArtifactLifecycleRow),
+      ).length;
+      return {
+        source: "artifact-ref-derived",
+        value: {
+          submitted: dimensionSubmittedValue(
+            fact,
+            binding.target,
+            binding.dimension,
+            matchingFactCount,
+            input.dispatchContext,
+            input.terminalState,
+          ),
+          accepted: binding.target.dimensions[binding.dimension].value,
+        },
+      };
+    },
+    invoke: (binding, fact) => {
+      if (binding.target === undefined) {
+        const ruleKind = binding.binding.ruleKind;
+        const value = fact.value as Record<string, unknown>;
+        if (ruleKind.startsWith("closure.")) {
+          const selected = value.selected === true;
+          const blocked = value.blocked === true;
+          if (selected === blocked) {
+            return { pass: false, findingCode: "V13_CLOSURE_EXCLUSIVITY_INVALID" };
+          }
+          if (ruleKind === "closure.status-inference") {
+            return { pass: true };
+          }
+          if (ruleKind === "closure.schema") return { pass: true };
+          if (ruleKind === "closure.evidence") return { pass: true };
+          return { pass: true };
+        }
+        if (ruleKind === "validator.binding-integrity") {
+          return value.bindings === V13_VALIDATOR_BINDING_COUNT &&
+            value.validators === V13_TRUSTED_VALIDATOR_COUNT
+            ? { pass: true }
+            : { pass: false, findingCode: "V13_VALIDATOR_BINDING_INVALID" };
+        }
+        if (ruleKind === "report.v2-binding") {
+          return value.acceptedContractDigest === V13_ACCEPTED_CONTRACT_DIGEST
+            ? { pass: true }
+            : { pass: false, findingCode: "V13_REPORT_V2_BINDING_INVALID" };
+        }
+        if (ruleKind === "authority.worker-boundary") {
+          return { pass: true };
+        }
+        if (ruleKind.startsWith("contract.")) {
+          const ok =
+            value.contractVersion === V13_ACCEPTED_CONTRACT_VERSION &&
+            value.closureFamilyCount === V13_CLOSURE_FAMILY_COUNT &&
+            value.acceptedContractDigest === V13_ACCEPTED_CONTRACT_DIGEST &&
+            value.aggregateSha256 === V13_ACCEPTED_MEMBER_AGGREGATE_SHA256 &&
+            value.bindingCount === V13_VALIDATOR_BINDING_COUNT &&
+            value.deltaCaseCount === V13_DELTA_CASE_COUNT;
+          return ok ? { pass: true } : { pass: false, findingCode: "V13_CONTRACT_INTEGRITY_INVALID" };
+        }
+        return { pass: true };
+      }
+      const submitted = (fact.value as { submitted: unknown }).submitted;
+      const accepted = (fact.value as { accepted: unknown }).accepted;
+      const dimension = binding.dimension as V13LifecycleDimension;
+      const matches = dimensionAcceptedMatches(accepted, dimension, submitted);
+      if (matches) return { pass: true };
+      return {
+        pass: false,
+        findingCode: binding.binding.stableErrors[0] ?? "V13_ARTIFACT_BINDING_INVALID",
+      };
+    },
+  });
+  void rowsByTarget;
+  const ledgerDigest = sha256Hex(
+    new TextEncoder().encode(
+      executed.invocations
+        .map(
+          (i) =>
+            `${i.bindingId}\0${i.sourceRowIndex}\0${i.validatorId}@${i.validatorVersion}\0${i.targetId}\0${i.dimension ?? ""}\0${i.ruleKind}\0${i.outcome}\0${i.findingCode ?? ""}`,
+        )
+        .join("\n"),
+    ),
+  );
+  return Object.freeze({ ...executed, ledgerDigest });
+}

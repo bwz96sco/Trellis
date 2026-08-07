@@ -16,6 +16,7 @@ import {
   buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
   enforceV13LifecycleDimensionsFromArtifactRefs,
+  executeV13ProcedureBindings,
   isAuthoritativeMethodologyProcedureVersion,
   parseAcceptedV13ContractPack,
   runMethodologyValidators,
@@ -411,6 +412,20 @@ export function validateMethodologyBeforeRecord(input: {
   readonly artifactPaths?: readonly string[];
   readonly artifactDigests?: readonly { path: string; sha256: string }[];
   readonly batchCommitted?: boolean;
+  /** CS5-4 result identity bindings. */
+  readonly resultId?: string;
+  readonly proposalId?: string;
+  readonly approvalId?: string;
+  readonly idempotencyKey?: string;
+  readonly batchHeadSeq?: number;
+  readonly acceptedMemberAggregateSha256?: string;
+  /** Exact closure ArtifactRef captured by the closure gate. */
+  readonly closureArtifactRef?: Readonly<{
+    readonly artifactId: string;
+    readonly exactPath: string;
+    readonly sha256: string;
+    readonly mediaType: string;
+  }>;
 }): {
   readonly ok: boolean;
   readonly criticalFailure: boolean;
@@ -575,40 +590,22 @@ export function validateMethodologyBeforeRecord(input: {
   // Report-v2 authority is never version-string-alone: requires exact-bound
   // Procedure id/version/digest, package inventory digest, accepted methodology
   // digest, activation/request/policy/scope bindings, explicit closure facts,
-  // and successful validation. Materialization still needs batch.
-  const reportV2Authorized =
-    procedureAuthoritative &&
-    isSuccessorProcedureVersion &&
-    typeof input.procedureId === "string" &&
-    input.procedureId.length > 0 &&
-    typeof input.procedureDigest === "string" &&
-    input.procedureDigest.length > 0 &&
-    typeof methodologyContractDigest === "string" &&
-    methodologyContractDigest.length > 0 &&
-    methodologyContractDigest === V13_ACCEPTED_CONTRACT_DIGEST &&
-    typeof supportInventoryDigest === "string" &&
-    supportInventoryDigest.length > 0 &&
-    typeof input.activationId === "string" &&
-    input.activationId.length > 0 &&
-    typeof input.dispatchId === "string" &&
-    input.dispatchId.length > 0 &&
-    typeof input.capabilityId === "string" &&
-    input.capabilityId.length > 0 &&
-    typeof input.requestDigest === "string" &&
-    input.requestDigest.length > 0 &&
-    typeof input.policyDigest === "string" &&
-    input.policyDigest.length > 0 &&
-    typeof input.scopeHash === "string" &&
-    input.scopeHash.length > 0 &&
-    input.selected !== undefined &&
-    input.blocked !== undefined &&
-    mergedValidation.ok &&
-    !mergedValidation.criticalFailure;
+  // exact binding execution, and successful validation. Authority is computed
+  // ONLY after every artifact/closure/lifecycle/package/binding check completes
+  // (CS5-4); the legacy contract path below may still add failures.
+  // (reportV2Authorized is finalized after the enforcement blocks.)
 
   // CS5-2: exact ArtifactRef-derived lifecycle enforcement for accepted
   // successor paths. This replaces parallel path/digest authority when facts
   // are supplied; the legacy contract binding below remains only for
   // non-successor (v1.2) callers that pass artifactPaths directly.
+  let bindingExecution:
+    | {
+        readonly applicableCount: number;
+        readonly invocationCount: number;
+        readonly ledgerDigest: string;
+      }
+    | undefined;
   if (
     isSuccessorProcedureVersion &&
     acceptedPack !== undefined &&
@@ -633,6 +630,54 @@ export function validateMethodologyBeforeRecord(input: {
         ok: false,
         criticalFailure: true,
         findings: Object.freeze([...mergedValidation.findings, ...findings]),
+      };
+    }
+    // CS5-2/CS5-4: exact per-binding execution over ArtifactRef facts with a
+    // deterministic invocation ledger. Fail-closed on unresolved facts.
+    try {
+      const executed = executeV13ProcedureBindings({
+        pack: acceptedPack,
+        procedureId: input.procedureId,
+        artifactRefFacts: input.artifactRefFacts,
+        closureSelected: input.selected,
+        closureBlocked: input.blocked,
+        terminalState: input.terminalState,
+        dispatchContext: input.dispatchContext,
+      });
+      bindingExecution = {
+        applicableCount: executed.applicableCount,
+        invocationCount: executed.invocationCount,
+        ledgerDigest: `sha256:${executed.ledgerDigest}`,
+      };
+      if (!executed.ok) {
+        const findings = executed.invocations
+          .filter((i) => i.outcome === "fail-closed")
+          .map((i) => ({
+            validatorId: i.validatorId,
+            severity: "critical" as const,
+            code: i.findingCode ?? "V13_ARTIFACT_BINDING_INVALID",
+            message: `binding ${i.bindingId} ${i.ruleKind} ${i.targetId}: ${i.factSource}`,
+          }));
+        mergedValidation = {
+          ok: false,
+          criticalFailure: true,
+          findings: Object.freeze([...mergedValidation.findings, ...findings]),
+        };
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      mergedValidation = {
+        ok: false,
+        criticalFailure: true,
+        findings: Object.freeze([
+          ...mergedValidation.findings,
+          {
+            validatorId: "binding-execution",
+            severity: "critical" as const,
+            code: "V13_BINDING_EXECUTION_FAILED",
+            message,
+          },
+        ]),
       };
     }
   }
@@ -695,6 +740,48 @@ export function validateMethodologyBeforeRecord(input: {
     }
   }
 
+  // CS5-4: report-v2 authority is computed ONLY after every artifact, closure,
+  // lifecycle, package, and binding check completes. Any failure forces
+  // authority:false and prevents sidecar materialization.
+  const reportV2Authorized =
+    procedureAuthoritative &&
+    isSuccessorProcedureVersion &&
+    typeof input.procedureId === "string" &&
+    input.procedureId.length > 0 &&
+    typeof input.procedureDigest === "string" &&
+    input.procedureDigest.length > 0 &&
+    typeof methodologyContractDigest === "string" &&
+    methodologyContractDigest.length > 0 &&
+    methodologyContractDigest === V13_ACCEPTED_CONTRACT_DIGEST &&
+    typeof supportInventoryDigest === "string" &&
+    supportInventoryDigest.length > 0 &&
+    typeof input.activationId === "string" &&
+    input.activationId.length > 0 &&
+    typeof input.dispatchId === "string" &&
+    input.dispatchId.length > 0 &&
+    typeof input.capabilityId === "string" &&
+    input.capabilityId.length > 0 &&
+    typeof input.requestDigest === "string" &&
+    input.requestDigest.length > 0 &&
+    typeof input.policyDigest === "string" &&
+    input.policyDigest.length > 0 &&
+    typeof input.scopeHash === "string" &&
+    input.scopeHash.length > 0 &&
+    input.selected !== undefined &&
+    input.blocked !== undefined &&
+    input.closureDisposition !== undefined &&
+    typeof input.acceptedMemberAggregateSha256 === "string" &&
+    input.acceptedMemberAggregateSha256.length > 0 &&
+    input.artifactRefFacts !== undefined &&
+    bindingExecution !== undefined &&
+    typeof input.resultId === "string" &&
+    typeof input.proposalId === "string" &&
+    typeof input.approvalId === "string" &&
+    typeof input.idempotencyKey === "string" &&
+    typeof input.batchHeadSeq === "number" &&
+    mergedValidation.ok &&
+    !mergedValidation.criticalFailure;
+
   const report = buildMethodologyReport({
     procedureId: input.procedureId,
     procedureVersion: input.procedureVersion,
@@ -716,9 +803,15 @@ export function validateMethodologyBeforeRecord(input: {
     methodologyContractDigest: reportV2Authorized
       ? methodologyContractDigest
       : undefined,
+    acceptedMemberAggregateSha256: reportV2Authorized
+      ? input.acceptedMemberAggregateSha256
+      : undefined,
     supportInventoryDigest: reportV2Authorized
       ? supportInventoryDigest
       : undefined,
+    requestDigest: reportV2Authorized ? input.requestDigest : undefined,
+    policyDigest: reportV2Authorized ? input.policyDigest : undefined,
+    scopeDigest: reportV2Authorized ? input.scopeHash : undefined,
     closureSource: {
       selected: facts.selected,
       blocked: facts.blocked,
@@ -727,6 +820,30 @@ export function validateMethodologyBeforeRecord(input: {
       reportV2Authorized,
       closureDisposition: input.closureDisposition,
     },
+    closureArtifactRef: reportV2Authorized
+      ? input.closureArtifactRef
+      : undefined,
+    artifactRefCount: reportV2Authorized
+      ? input.artifactRefFacts?.length
+      : undefined,
+    lifecycleFindingCount: reportV2Authorized ? 0 : undefined,
+    bindingApplicableCount: reportV2Authorized
+      ? bindingExecution?.applicableCount
+      : undefined,
+    bindingInvocationCount: reportV2Authorized
+      ? bindingExecution?.invocationCount
+      : undefined,
+    bindingInvocationLedgerDigest: reportV2Authorized
+      ? bindingExecution?.ledgerDigest
+      : undefined,
+    resultId: reportV2Authorized ? input.resultId : undefined,
+    proposalId: reportV2Authorized ? input.proposalId : undefined,
+    approvalId: reportV2Authorized ? input.approvalId : undefined,
+    idempotencyKey: reportV2Authorized ? input.idempotencyKey : undefined,
+    batchHeadSeq: reportV2Authorized ? input.batchHeadSeq : undefined,
+    batchCommitted: reportV2Authorized
+      ? input.batchCommitted === true
+      : undefined,
   });
 
   const materializeSidecar =
@@ -747,26 +864,7 @@ export function validateMethodologyBeforeRecord(input: {
 }
 
 /**
- * Materialize report-v2 sidecar only after a successful atomic batch.
- * Path: .trellis/research/dispatches/<dispatchId>/methodology-report-v2.json
+ * Report-v2 sidecar publication now uses the hardened interface in
+ * dispatch-activation-materialization (CS5-4); re-exported for compatibility.
  */
-export function materializeMethodologyReportV2Sidecar(input: {
-  readonly root: string;
-  readonly dispatchId: string;
-  readonly reportV2: MethodologyDeterministicReportV2;
-}): string {
-  const dir = path.join(
-    input.root,
-    ".trellis",
-    "research",
-    "dispatches",
-    input.dispatchId,
-  );
-  fs.mkdirSync(dir, { recursive: true });
-  const filePath = path.join(dir, "methodology-report-v2.json");
-  const body = `${JSON.stringify(input.reportV2, null, 2)}\n`;
-  const tmp = `${filePath}.tmp-${process.pid}-${Date.now()}`;
-  fs.writeFileSync(tmp, body, "utf8");
-  fs.renameSync(tmp, filePath);
-  return filePath;
-}
+export { materializeMethodologyReportV2Sidecar } from "./dispatch-activation-materialization.js";

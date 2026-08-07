@@ -9,6 +9,7 @@ import {
   createDispatchId,
   isAuthoritativeMethodologyProcedureVersion,
   isV13ClosureArtifactExactPath,
+  V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
   normalizeArtifactPath,
   parseCanonicalMethodologyClosureArtifact,
   proposalOperationsToMutations,
@@ -17,6 +18,7 @@ import {
   readResearchState,
   reduceResearchEvents,
   resolveProcedureClosureDisposition,
+  serializeMethodologyReportV2Sidecar,
   resolveResearchCapability,
   resultSchema,
   stableResearchJson,
@@ -1042,6 +1044,143 @@ function parseApprovedResultInput(
   return { result, proposal };
 }
 
+/**
+ * CS5-2/CS5-4: derive canonical closure facts for accepted successor
+ * procedures (2.0.4/2.0.5/2.0.6) from the Result ArtifactRefs. Exact path
+ * equality, exact contract id, submitted media type, full closure ArtifactRef
+ * set rejection, digest verification, and closed disposition. Reused by the
+ * primary record path and by same-key replay reconstruction.
+ */
+function deriveCanonicalClosureFacts(input: {
+  readonly procedureId: string;
+  readonly procedureVersion: string;
+  readonly artifactRefs: readonly ArtifactRef[];
+  readonly artifactRepositoryRoots: Readonly<
+    Record<string, string | undefined>
+  >;
+}): {
+  readonly disposition?: V13ProcedureClosureDisposition;
+  readonly selected?: boolean;
+  readonly blocked?: boolean;
+  readonly closureArtifactRef?: Readonly<{
+    readonly artifactId: string;
+    readonly exactPath: string;
+    readonly sha256: string;
+    readonly mediaType: string;
+  }>;
+} {
+  const needsCanonicalClosure =
+    isAuthoritativeMethodologyProcedureVersion(input.procedureVersion) &&
+    (input.procedureVersion === "2.0.4" ||
+      input.procedureVersion === "2.0.5" ||
+      input.procedureVersion === "2.0.6");
+  if (!needsCanonicalClosure) {
+    return {};
+  }
+  const disposition = resolveProcedureClosureDisposition(input.procedureId);
+  if (disposition.kind === "notApplicable") {
+    // N/A families: no closure lookup; Result.status is never closure authority.
+    return { disposition };
+  }
+  const closureRefs = input.artifactRefs.filter(
+    (ref) => ref.path === disposition.exactPath,
+  );
+  if (closureRefs.length !== 1) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Canonical closure ArtifactRef for family '${disposition.family}' must be exactly one with exact path '${disposition.exactPath}' (count=${String(closureRefs.length)}); zero-write enforced`,
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  const closureRef = closureRefs[0] as ArtifactRef;
+  if (closureRef.id !== disposition.closureContractId) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Closure ArtifactRef id '${closureRef.id}' must equal the exact contract id '${disposition.closureContractId}'; zero-write enforced`,
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  if (closureRef.mediaType !== disposition.mediaType) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Closure ArtifactRef submitted mediaType '${closureRef.mediaType}' must equal '${disposition.mediaType}'; zero-write enforced`,
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  if (typeof closureRef.sha256 !== "string" || closureRef.sha256.length === 0) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      "Canonical closure ArtifactRef requires content digest; zero-write enforced",
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  const closurePathRefs = input.artifactRefs.filter((ref) =>
+    isV13ClosureArtifactExactPath(ref.path),
+  );
+  if (closurePathRefs.length !== 1 || closurePathRefs[0] !== closureRef) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Evidence must bind exactly one closure ArtifactRef (bound ${String(closurePathRefs.length)} closure-path refs); zero-write enforced`,
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  const closureSha256 = closureRef.sha256;
+  const repoRoot = input.artifactRepositoryRoots[closureRef.repositoryId];
+  if (repoRoot === undefined) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      "Canonical closure ArtifactRef repository root unresolved; zero-write enforced",
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  const closureAbs = path.join(repoRoot, closureRef.path);
+  let closureBytes: Buffer;
+  try {
+    closureBytes = fs.readFileSync(closureAbs);
+  } catch {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Canonical closure artifact unreadable at '${closureRef.path}'; zero-write enforced`,
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  const actualDigest = createHash("sha256").update(closureBytes).digest("hex");
+  if (actualDigest !== closureSha256) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      "Canonical closure artifact digest drift; zero-write enforced",
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  const parsedClosure = parseCanonicalMethodologyClosureArtifact({
+    bytes: new Uint8Array(closureBytes),
+    expectedFamily: disposition.family,
+    closureArtifactId: closureRef.id,
+    boundArtifactIds: input.artifactRefs.map((ref) => ref.id),
+    forbiddenClosureArtifactIds: input.artifactRefs
+      .filter((ref) => isV13ClosureArtifactExactPath(ref.path))
+      .map((ref) => ref.id),
+  });
+  if (!parsedClosure.ok) {
+    approvedResultError(
+      "METHODOLOGY_VALIDATION_FAILED",
+      `Canonical closure parse failed (${parsedClosure.code}): ${parsedClosure.message}; zero-write enforced`,
+    );
+    throw new Error("unreachable: approvedResultError must throw");
+  }
+  return {
+    disposition,
+    selected: parsedClosure.closure.selected,
+    blocked: parsedClosure.closure.blocked,
+    closureArtifactRef: {
+      artifactId: closureRef.id,
+      exactPath: closureRef.path,
+      sha256: closureSha256,
+      mediaType: closureRef.mediaType,
+    },
+  };
+}
+
 export async function recordApprovedResearchDispatchResult(
   options: RecordApprovedResearchDispatchResultOptions,
 ): Promise<RecordApprovedResearchDispatchResultResult> {
@@ -1084,6 +1223,166 @@ export async function recordApprovedResearchDispatchResult(
       approvalFile: null,
     };
     if (result.dryRun) return result;
+    // CS5-4: replay-before-clock/input — reconstruct report-v2 from canonical
+    // state ONLY for accepted successor procedures (2.0.4/2.0.5/2.0.6).
+    // Live 1.0.0 / historical replays keep their prior behavior untouched.
+    const replayActivationIdForVersion =
+      state.activationByDispatchId[preflight.dispatchId];
+    const replayActivationForVersion =
+      replayActivationIdForVersion === undefined
+        ? undefined
+        : state.activations[replayActivationIdForVersion];
+    const replayNeedsReportReconstruction =
+      replayActivationForVersion !== undefined &&
+      (replayActivationForVersion.procedure.version === "2.0.4" ||
+        replayActivationForVersion.procedure.version === "2.0.5" ||
+        replayActivationForVersion.procedure.version === "2.0.6");
+    if (!replayNeedsReportReconstruction) {
+      return {
+        ...result,
+        ...materializeApprovedResult({
+          root: preflight.root,
+          headSeq: result.headSeq,
+          idempotencyKey: result.idempotencyKey,
+          result: result.result,
+          proposal: result.proposal,
+          approval: result.approval,
+        }),
+      };
+    }
+    // (reconstruction below)
+    // state plus the authenticated package and ArtifactRefs. No ledger event;
+    // identical bytes are a no-op; missing or non-equivalent projections are
+    // atomically repaired through the hardened adapter. If bound artifacts or
+    // the authenticated package are unavailable or digest-drifted, recovery
+    // fails without altering canonical state.
+    let replayReportFile: string | null = null;
+    try {
+      const replayDispatch = state.dispatches[preflight.dispatchId];
+      if (replayDispatch === undefined) {
+        approvedResultError(
+          "DISPATCH_NOT_FOUND",
+          `Dispatch '${preflight.dispatchId}' was not found`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const replayActivationId =
+        state.activationByDispatchId[replayDispatch.id];
+      const replayActivation =
+        replayActivationId === undefined
+          ? undefined
+          : state.activations[replayActivationId];
+      if (replayActivation === undefined) {
+        approvedResultError(
+          "ACTIVATION_REQUIRED",
+          "Replayed Dispatch activation missing from canonical state",
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const replayCandidate = await revalidateDispatchActivationStaged({
+        root: preflight.root,
+        state,
+        dispatch: replayDispatch,
+        activation: replayActivation,
+      });
+      const replayRoots = await verifyArtifacts(
+        preflight.root,
+        canonical.result.artifactRefs,
+        false,
+      );
+      const replayClosure = deriveCanonicalClosureFacts({
+        procedureId: replayActivation.procedure.id,
+        procedureVersion: replayActivation.procedure.version,
+        artifactRefs: canonical.result.artifactRefs,
+        artifactRepositoryRoots: replayRoots,
+      });
+      const replayGate = validateMethodologyBeforeRecord({
+        procedureId: replayActivation.procedure.id,
+        procedureVersion: replayActivation.procedure.version,
+        procedureDigest: replayActivation.procedure.digest,
+        procedure: replayCandidate.procedure,
+        capabilityId: replayActivation.capabilityId,
+        dispatchId: replayDispatch.id,
+        activationId: replayActivation.id,
+        requestDigest: replayActivation.requestDigest,
+        policyDigest: replayActivation.policyDigest,
+        scopeHash: replayActivation.scopeHash,
+        terminalState: canonical.result.status,
+        resultStatus: canonical.result.status,
+        proposalStatus: canonical.proposal.status,
+        proposalOperationCount: canonical.proposal.operations.length,
+        selected: replayClosure.selected,
+        blocked: replayClosure.blocked,
+        closureDisposition: replayClosure.disposition,
+        closureArtifactRef: replayClosure.closureArtifactRef,
+        batchCommitted: true,
+        acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+        resultId: canonical.result.id,
+        proposalId: canonical.proposal.id,
+        approvalId: preflight.approvalId,
+        idempotencyKey: preflight.idempotencyKey,
+        batchHeadSeq: result.headSeq,
+        artifactRefFacts: canonical.result.artifactRefs.map((ref) => ({
+          artifactId: ref.id,
+          repositoryId: ref.repositoryId,
+          resolvedRepositoryIdentity: replayRoots[ref.repositoryId],
+          exactPath: ref.path,
+          submittedMediaType: ref.mediaType,
+          submittedSha256: ref.sha256,
+          present: true,
+        })),
+        dispatchContext: {
+          questId: replayDispatch.questId,
+          dispatchId: replayDispatch.id,
+          activationId: replayActivation.id,
+          approvalId: preflight.approvalId,
+          capabilityId: replayActivation.capabilityId,
+        },
+      });
+      if (replayGate.materializeSidecar) {
+        const expectedBytes = serializeMethodologyReportV2Sidecar(
+          replayGate.reportV2,
+        );
+        const targetPath = path.join(
+          preflight.root,
+          ".trellis",
+          "research",
+          "dispatches",
+          preflight.dispatchId,
+          "methodology-report-v2.json",
+        );
+        let existing: string | undefined;
+        try {
+          existing = fs.readFileSync(targetPath, "utf8");
+        } catch {
+          existing = undefined;
+        }
+        if (existing !== expectedBytes) {
+          replayReportFile = materializeMethodologyReportV2Sidecar({
+            root: preflight.root,
+            headSeq: result.headSeq,
+            dispatchId: preflight.dispatchId,
+            reportV2: replayGate.reportV2,
+            recovery: `trellis research dispatch record-result ${replayDispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
+          });
+        } else {
+          replayReportFile = path
+            .relative(preflight.root, targetPath)
+            .split(path.sep)
+            .join("/");
+        }
+      }
+    } catch (error) {
+      // Recovery failure leaves canonical state untouched: bound artifacts or
+      // the authenticated package are unavailable/drifted, or revalidation
+      // failed. Report projection-recovery status without a ledger change.
+      throw new ResearchDispatchFileError(
+        result.headSeq,
+        `.trellis/research/dispatches/${preflight.dispatchId}/methodology-report-v2.json`,
+        `trellis research dispatch record-result ${preflight.dispatchId} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
+        error,
+      );
+    }
     return {
       ...result,
       ...materializeApprovedResult({
@@ -1094,6 +1393,9 @@ export async function recordApprovedResearchDispatchResult(
         proposal: result.proposal,
         approval: result.approval,
       }),
+      ...(replayReportFile !== null
+        ? { methodologyReportFile: replayReportFile }
+        : {}),
     };
   }
 
@@ -1208,120 +1510,18 @@ export async function recordApprovedResearchDispatchResult(
     false,
   );
   const resultStatus = parsed.result.status;
-  let closureSelected: boolean | undefined;
-  let closureBlocked: boolean | undefined;
   const procedureVersion = activation.procedure.version;
   const procedureId = activation.procedure.id;
-  const needsCanonicalClosure =
-    isAuthoritativeMethodologyProcedureVersion(procedureVersion) &&
-    (procedureVersion === "2.0.4" ||
-      procedureVersion === "2.0.5" ||
-      procedureVersion === "2.0.6");
-  let closureDisposition: V13ProcedureClosureDisposition | undefined;
-  if (needsCanonicalClosure) {
-    closureDisposition = resolveProcedureClosureDisposition(procedureId);
-    const disposition = closureDisposition;
-    if (disposition.kind === "required") {
-      // Exact path equality only: no suffix, substring, or regex authority.
-      const closureRefs = parsed.result.artifactRefs.filter(
-        (ref) => ref.path === disposition.exactPath,
-      );
-      if (closureRefs.length !== 1) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          `Canonical closure ArtifactRef for family '${disposition.family}' must be exactly one with exact path '${disposition.exactPath}' (count=${String(closureRefs.length)}); zero-write enforced`,
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      const closureRef = closureRefs[0] as ArtifactRef;
-      if (closureRef.id !== disposition.closureContractId) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          `Closure ArtifactRef id '${closureRef.id}' must equal the exact contract id '${disposition.closureContractId}'; zero-write enforced`,
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      if (closureRef.mediaType !== disposition.mediaType) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          `Closure ArtifactRef submitted mediaType '${closureRef.mediaType}' must equal '${disposition.mediaType}'; zero-write enforced`,
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      if (
-        typeof closureRef.sha256 !== "string" ||
-        closureRef.sha256.length === 0
-      ) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          "Canonical closure ArtifactRef requires content digest; zero-write enforced",
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      // Full recognized closure ArtifactRef set: reject evidence pointing to
-      // the current or any other closure artifact (exact-path membership).
-      const closurePathRefs = parsed.result.artifactRefs.filter((ref) =>
-        isV13ClosureArtifactExactPath(ref.path),
-      );
-      if (closurePathRefs.length !== 1 || closurePathRefs[0] !== closureRef) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          `Evidence must bind exactly one closure ArtifactRef (bound ${String(closurePathRefs.length)} closure-path refs); zero-write enforced`,
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      const closureSha256 = closureRef.sha256;
-      const repoRoot = artifactRepositoryRoots[closureRef.repositoryId];
-      if (repoRoot === undefined) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          "Canonical closure ArtifactRef repository root unresolved; zero-write enforced",
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      const closureAbs = path.join(repoRoot, closureRef.path);
-      let closureBytes: Buffer;
-      try {
-        closureBytes = fs.readFileSync(closureAbs);
-      } catch {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          `Canonical closure artifact unreadable at '${closureRef.path}'; zero-write enforced`,
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      const actualDigest = createHash("sha256")
-        .update(closureBytes)
-        .digest("hex");
-      if (actualDigest !== closureSha256) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          "Canonical closure artifact digest drift; zero-write enforced",
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      const parsedClosure = parseCanonicalMethodologyClosureArtifact({
-        bytes: new Uint8Array(closureBytes),
-        expectedFamily: disposition.family,
-        closureArtifactId: closureRef.id,
-        boundArtifactIds: parsed.result.artifactRefs.map((ref) => ref.id),
-        forbiddenClosureArtifactIds: parsed.result.artifactRefs
-          .filter((ref) => isV13ClosureArtifactExactPath(ref.path))
-          .map((ref) => ref.id),
-      });
-      if (!parsedClosure.ok) {
-        approvedResultError(
-          "METHODOLOGY_VALIDATION_FAILED",
-          `Canonical closure parse failed (${parsedClosure.code}): ${parsedClosure.message}; zero-write enforced`,
-        );
-        throw new Error("unreachable: approvedResultError must throw");
-      }
-      closureSelected = parsedClosure.closure.selected;
-      closureBlocked = parsedClosure.closure.blocked;
-    }
-    // notApplicable families: no closure lookup; selected/blocked stay
-    // undefined and Result.status is never used as closure authority.
-  }
+  const closureFacts = deriveCanonicalClosureFacts({
+    procedureId,
+    procedureVersion,
+    artifactRefs: parsed.result.artifactRefs,
+    artifactRepositoryRoots,
+  });
+  const closureSelected = closureFacts.selected;
+  const closureBlocked = closureFacts.blocked;
+  const closureDisposition = closureFacts.disposition;
+  const closureArtifactRef = closureFacts.closureArtifactRef;
   // Live 1.0.0 / historical non-authoritative: do not invent v1.3 closure from status.
   // Only pass selected/blocked when canonical closure was parsed.
   const methodologyGate = validateMethodologyBeforeRecord({
@@ -1342,7 +1542,14 @@ export async function recordApprovedResearchDispatchResult(
     selected: closureSelected,
     blocked: closureBlocked,
     closureDisposition,
+    closureArtifactRef,
     batchCommitted: false,
+    acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+    resultId: parsed.result.id,
+    proposalId: parsed.proposal.id,
+    approvalId: preflight.approvalId,
+    idempotencyKey: preflight.idempotencyKey,
+    batchHeadSeq: state.projectedThroughSeq,
     artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
       artifactId: ref.id,
       repositoryId: ref.repositoryId,
@@ -1500,7 +1707,14 @@ export async function recordApprovedResearchDispatchResult(
     selected: closureSelected,
     blocked: closureBlocked,
     closureDisposition,
+    closureArtifactRef,
     batchCommitted: true,
+    acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+    resultId: parsed.result.id,
+    proposalId: parsed.proposal.id,
+    approvalId: preflight.approvalId,
+    idempotencyKey: preflight.idempotencyKey,
+    batchHeadSeq: result.headSeq,
     artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
       artifactId: ref.id,
       repositoryId: ref.repositoryId,
@@ -1521,8 +1735,10 @@ export async function recordApprovedResearchDispatchResult(
   if (postBatchGate.materializeSidecar) {
     materializeMethodologyReportV2Sidecar({
       root: preflight.root,
+      headSeq: result.headSeq,
       dispatchId: dispatch.id,
       reportV2: postBatchGate.reportV2,
+      recovery: `trellis research dispatch record-result ${dispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
     });
   }
   return {
