@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "cs5-forward-governance-and-attempt9-disposition",
+  "campaign": "CS5",
+  "createdBy": "operator-authorized-implementation",
+  "precedence": {
+    "futureDecisionsGovernedBy": "cs5-control-records",
+    "historicalCs4RecordsRemain": "immutable-inputs",
+    "noRetroactiveRewrite": true
+  },
+  "attempt9Disposition": {
+    "subjectCommit": "b798bbc62b6bdeb6c8fca6540420a12f42fcebf2",
+    "frozenRuntimeCommit": "91aa3f870820771b5c9c3fa60aa5690441aa77de",
+    "evidenceCommit": "77393b6d29b2f31a94f9ff0fdedba0bbc26d89d9",
+    "honestStopCommit": "2d62651c",
+    "historicalVerdict": "pass",
+    "operatorDecision": null,
+    "operatorDecisionReceived": false,
+    "acceptance": false,
+    "completeSystemMachineAssuranceAccepted": false,
+    "semanticFindings": [
+      "all real 2.0.5 record-result paths are blocked by closure applicability or package-contract conflicts",
+      "seven loaded A3 leaves are not authenticated against a frozen member ledger/aggregate before receiving the accepted semantic identity",
+      "accepted 65 artifacts, 13 lifecycle dimensions, 20 validators, and 876 bindings are parsed but not executed as exact production obligations",
+      "116-case harness mutates an unrelated file while production consumes pristine inputs",
+      "report-v2 canonicalization, authority binding, hardened publication, and replay recovery are incomplete",
+      "several committed 2.0.5 package contracts disagree with their own outputs",
+      "CS4 task activation, parent topology, stale control records, and replay evidence remain ambiguous"
+    ],
+    "validAsHistoricalEvidence": true,
+    "validForChecksActuallyPerformed": true,
+    "completeSystemAuthority": "prospectively-superseded",
+    "verdictOutputsStopRecordTaskFilesNotRewritten": true,
+    "grants": {
+      "contractAcceptance": false,
+      "activation": false,
+      "release": false,
+      "publication": false,
+      "push": false,
+      "archive": false
+    },
+    "attempt10IsNewSubjectAndAssuranceEvent": true
+  },
+  "ownership": {
+    "cs5Parent": "cs5-authenticated-complete-system-runtime-correction",
+    "cs5_0_forwardGovernance": "operator-authorized-implementation (planning evidence; activation separately authorized)",
+    "cs5_1_shipAndAuthenticate": "accepted-pack/shipping owner (activation after CS5 parent + CS5-0 review)",
+    "cs5_2_exactRuntime": "activated only after CS5-1 proves installed-runtime authentication",
+    "cs5_3_procedure206": "activated only after CS5-2 freezes package/runtime contract required by 2.0.6",
+    "cs5_4_reportV2": "activated after CS5-1..CS5-4 production paths committed; must not redefine expected semantics",
+    "cs5_5_mutationHarness": "activated only after all implementation children pass independently",
+    "cs5_6_integrateFreeze": "unassigned until exact frozen subject exists",
+    "cs5_7_mal1Attempt10": "unassigned; fresh reviewer runtime that authored no CS5 source, packages, fixtures, or oracle",
+    "cs5_8_operatorDecision": "unassigned; only a later genuine operator response may supply its decision",
+    "noConcurrentOwnersFor": [
+      "dispatch-command.ts",
+      "dispatch-methodology-validation.ts",
+      "report/publication integration"
+    ],
+    "parallelPackageWorkAllowed": "only disjoint 2.0.6 family trees after common package contract frozen"
+  },
+  "dependencies": {
+    "cs5_1_requires": ["cs5-0"],
+    "cs5_2_requires": ["cs5-1-installed-runtime-authentication-proof"],
+    "cs5_3_requires": ["cs5-2-package-and-runtime-contract-freeze"],
+    "cs5_4_requires": ["cs5-1-authority-fields", "cs5-3-package-identities"],
+    "cs5_5_requires": ["cs5-1..cs5-4-independent-pass"],
+    "cs5_6_requires": ["cs5-1..cs5-5-independent-pass"],
+    "cs5_7_requires": ["exact-frozen-subject-S"],
+    "cs5_8_requires": ["attempt-10-evidence-frozen"]
+  },
+  "versionRules": {
+    "everyPackageCorrectionMustUse": "Procedure 2.0.6",
+    "procedure206Bytes": "immutable-once-committed",
+    "procedure204And205Bytes": "preserved byte-for-byte",
+    "liveProcedure": "1.0.0",
+    "procedure206DormantFlags": {
+      "activationAuthorized": false,
+      "releaseAuthorized": false,
+      "publicationAuthorized": false,
+      "pushAuthorized": false
+    },
+    "semanticContractVersion": "evaluation-contract-v1.3.0",
+    "acceptedContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "acceptedMemberAggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
+    "semanticCorrectionPath": "evaluation-contract-v1.3.1+ via new authoring + independent assurance cycle only",
+    "acceptedLeafDefectDisposition": "stop CS5 and open v1.3.1+; never patch or reinterpret v1.3.0"
+  },
+  "gitnexusImpactResults": {
+    "toolAvailability": "gitnexus MCP index unavailable in assurance environment (0/0 servers)",
+    "analysisMethod": "static call-graph and ownership analysis of the CS5 critical file list; protected shared definitions remain call-only",
+    "highRiskProtectedDefinitions": [
+      "shared research parsers/reducers",
+      "batch validators/committers",
+      "research locks",
+      "hardened writeSidecar publication helpers"
+    ],
+    "protectedDefinitionPolicy": "call-only; any required correction to a protected definition stops CS5 for separate impact analysis and explicit authorization",
+    "requiredImpactAnalysisBeforeEdit": [
+      "deriveAcceptedV13PackIdentity",
+      "parseAcceptedV13ContractPack",
+      "mapProcedureIdToClosureFamily",
+      "parseCanonicalMethodologyClosureArtifact",
+      "selectApplicableV13ValidatorsFromBindings",
+      "selectTrustedV13ValidatorDescriptors",
+      "deriveMethodologyValidatorFacts",
+      "runMethodologyValidators",
+      "bindMethodologyArtifactPath",
+      "validateMethodologyArtifacts",
+      "buildMethodologyReportV2",
+      "computeMethodologyReportV2DigestFromCanonicalBody",
+      "serializeMethodologyReportV2Sidecar",
+      "shouldMaterializeMethodologyReportSidecar",
+      "resolveAcceptedV13ContractLeafDir",
+      "loadAcceptedV13ContractPackFromLeaves",
+      "loadDeclaredValidatorsFromProcedure",
+      "loadArtifactContractsFromProcedure",
+      "validateMethodologyBeforeRecord",
+      "materializeMethodologyReportV2Sidecar",
+      "parseApprovedResultInput",
+      "recordApprovedResearchDispatchResult",
+      "materializeApprovedResult",
+      "classifyApprovedResultEvents",
+      "consumedApprovalFromEvents"
+    ],
+    "blastRadiusRecord": "recorded per-symbol in each owning child's research/impact records; HIGH/CRITICAL edits stop for separate authorization"
+  },
+  "futureReviewAllowlists": {
+    "mal1Attempt10OutputCommit": [
+      "exact-subject-attestation.json",
+      "reviewer-session-attestation.json",
+      "accepted-member-ledger.json",
+      "runtime-contract-audit.json",
+      "harness-case-evidence.jsonl",
+      "command-evidence-ledger.jsonl",
+      "filesystem-mutation-audit.json",
+      "containment-audit.json",
+      "machine-verdict.json"
+    ],
+    "operatorDecisionCommit": ["cs5-8-operator-decision.json"],
+    "assuranceOutputLocation": ".trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/"
+  },
+  "authorization": {
+    "planApprovalAuthorizes": [],
+    "operatorInstruction2026-08-07": "implement-plan-and-commit-every-stage (G,A,B,C,D,E,I,S,M)",
+    "stillRequiresSeparateAuthorization": [
+      "activation of live Procedure 2.0.6",
+      "archive",
+      "release",
+      "publication",
+      "push",
+      "operator accept/reject/stop decision commit (O)"
+    ],
+    "humanReviewed": false,
+    "humanEquivalenceClaimed": false
+  }
+}

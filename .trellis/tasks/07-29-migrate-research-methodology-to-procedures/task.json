@@ -45,7 +45,8 @@
     "08-04-remediate-v13-delta-harness-attempt-3",
     "08-04-integrate-v13-dormant-candidate-attempt-3",
     "08-04-assure-v13-complete-system-attempt-3",
-    "08-04-accept-v13-complete-system-machine-assurance"
+    "08-04-accept-v13-complete-system-machine-assurance",
+    "08-06-cs5-authenticated-complete-system-runtime-correction"
   ],
   "parent": null,
   "relatedFiles": [],
