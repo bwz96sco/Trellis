@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "cs5-6-dormant-integration-record",
+  "campaign": "CS5",
+  "stage": "I",
+  "integratedCandidate": {
+    "procedure206Packages": 17,
+    "liveProcedure": "1.0.0",
+    "procedure206Dormant": true,
+    "authorityFlags": {
+      "activationAuthorized": false,
+      "releaseAuthorized": false,
+      "publicationAuthorized": false,
+      "pushAuthorized": false
+    },
+    "acceptedLeavesAuthenticated": true,
+    "memberAggregateSha256": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
+    "acceptedContractDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+  },
+  "verification": {
+    "exactly17PackagesWithRecomputedPins": "passed (research-cs5-integration.test.ts)",
+    "procedure204And205TreesByteUnchanged": "passed (git HEAD byte comparison for all 17 families x 2.0.4/2.0.5)",
+    "sevenLeavesAuthenticated": "passed (member ledger hashes + aggregate recomputation)",
+    "liveProcedureExactly100": "passed (RESEARCH_CAPABILITY_REGISTRY procedure.version === 1.0.0)",
+    "procedure206DormantFlagsFalse": "passed (package-contract authorityFlags)",
+    "frozen229AndExpansion38Domains": "passed (research-methodology differential harness suite)",
+    "production116Domains": "passed (research-methodology-116-production.test.ts; evidence in CS5-5 research)",
+    "cleanBuild": "passed (pnpm build core + cli)",
+    "realTarballInventory": "passed (17 dist 2.0.6 pack.json entries + evaluation-contracts bundle)",
+    "cleanExternalInstall": "passed (tar extraction into empty external dir)",
+    "installedRuntimeExecution": "passed (installed dist resolves package-owned bundle and authenticates aggregate/digest with no .trellis/tasks and no env override)",
+    "inheritedDirtyPathsExcluded": "passed (AGENTS.md, CLAUDE.md, docs-site, marketplace byte-identical, never staged)"
+  },
+  "commitBoundary": {
+    "commitI": "integrated dormant candidate: integration verification test + this record only",
+    "commitS": "subject freeze record binding commit I (separate commit)"
+  },
+  "postFreezeRule": "any technical change after S invalidates the subject and requires a new integration/freeze cycle",
+  "defectsDuringIntegration": "none; implementation children passed independently before I"
+}

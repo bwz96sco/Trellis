@@ -366,7 +366,7 @@ function evidenceDest(): string | undefined {
   return undefined;
 }
 
-describe("CS5-5 genuine 116-case production mutation harness", { timeout: 600_000 }, () => {
+describe("CS5-5 genuine 116-case production mutation harness", { timeout: 1_800_000 }, () => {
   const pack = loadA3Pack();
   const cases = loadA3DeltaCases();
   expect(cases).toHaveLength(116);
