@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "auditId": "cs5-mal1-attempt-10-containment-audit",
+  "reviewerIdentity": "cs5-reviewer-attempt-10-fresh",
+  "inheritedDirtyPaths": {
+    "AGENTS.md": {
+      "sha256Before": "46ec2da5b9077e6c351dbf13066c7d14a796ca018f32d63963feefdd62ce3d31",
+      "sha256After": "46ec2da5b9077e6c351dbf13066c7d14a796ca018f32d63963feefdd62ce3d31",
+      "unchanged": true
+    },
+    "CLAUDE.md": {
+      "sha256Before": "707cc4e3d24165ab4cc91bc884f6b8ebf7ee2971c7f5edf2ac0b197f9f1d4f4b",
+      "sha256After": "707cc4e3d24165ab4cc91bc884f6b8ebf7ee2971c7f5edf2ac0b197f9f1d4f4b",
+      "unchanged": true
+    },
+    "docs-site": {
+      "submoduleStatusBefore": " be7684f2086abb9b8e24d4d35733a7dda3123a0f docs-site (heads/main) [dirty m]",
+      "submoduleStatusAfter": " be7684f2086abb9b8e24d4d35733a7dda3123a0f docs-site (heads/main) [dirty m]",
+      "unchanged": true
+    },
+    "marketplace": {
+      "submoduleStatusBefore": " d7a18bb5411c700237d21483d6889ac296ef0301 marketplace (heads/main) [dirty m]",
+      "submoduleStatusAfter": " d7a18bb5411c700237d21483d6889ac296ef0301 marketplace (heads/main) [dirty m]",
+      "unchanged": true
+    }
+  },
+  "trellisResearchPreservation": {
+    "path": ".trellis/research/**",
+    "status": "no changes — git status --short shows no .trellis/research entries before or after; no reviewer command targeted .trellis/research; .trellis/research is read-only for this runtime",
+    "preserved": true
+  },
+  "writeScope": {
+    "allowed": [
+      "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research",
+      "/tmp/cs5-mal1-attempt10-scratch"
+    ],
+    "statement": "Every repository write is confined to the designated CS5-7 research output directory. All build/test/evidence activity runs under the scratch tree /tmp/cs5-mal1-attempt10-scratch (outside the repository). No repository path outside the output directory was written."
+  },
+  "symlinkAndContainmentChecks": {
+    "harness116Cases": "116 production cases (29 rule kinds x 4 fixture classes) exercise artifact lifecycle, closure, validator binding, report-v2, authority, output-disposition, canonical-bytes, compatibility, candidate-authority, differential-domain, and conditional-artifact rules through productionEntryPoint recordApprovedResearchDispatchResult; no case in the 116-row evidence set targets symlink/containment escapes directly",
+    "cliSuiteFilesystemSafety": "filesystem-safety, containment, symlink-escape, and zero-write checks are exercised by the CLI suite (e.g., research-only-surface.integration.test.ts, dispatch containment and parser-boundary tests); 78/80 files passed in the script run and 79/80 in the rerun, with the sole remaining failure being the no-.git extraction artifact, not a containment failure",
+    "repositoryContainment": "the review itself performed no symlink resolution on repository paths; all repository access was via git archive (subject extraction), read-only file reads, and git status/ls-tree/diff queries"
+  },
+  "verificationEvidence": {
+    "gitStatusBefore": [" M AGENTS.md", " M CLAUDE.md", " m docs-site", " m marketplace"],
+    "gitStatusAfter": [" M AGENTS.md", " M CLAUDE.md", " m docs-site", " m marketplace", "?? .trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/ (nine output files)"],
+    "conclusion": "Only the four pre-existing dirty paths and the new CS5-7 output files appear; nothing else changed."
+  }
+}

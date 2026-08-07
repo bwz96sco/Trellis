@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "verdictId": "cs5-mal1-attempt-10-machine-verdict",
+  "reviewerIdentity": "cs5-reviewer-attempt-10-fresh",
+  "subjectCommit": "916be0a877725f7f91836a3a97e480c1e104e533",
+  "subjectTreeDigest": "99b3b275699725f2c60c325b2d9d9aa477beb585d3be26986fe03e2ebc890863",
+  "verdict": "fail",
+  "humanReviewed": false,
+  "repairAuthority": false,
+  "completeSystemMachineAssuranceAccepted": false,
+  "activationAuthorized": false,
+  "releaseAuthorized": false,
+  "publicationAuthorized": false,
+  "pushAuthorized": false,
+  "passCriteriaEvaluation": {
+    "everyCorpusCommandInCommandEvidenceLedgerExitedZero": {
+      "result": "FAIL",
+      "evidence": "command-evidence-ledger.jsonl row cli-tests exit=1 (pnpm --filter @mindfoldhq/trellis exec vitest run; 2 tests failed / 980 passed in the script run). The script's set -e then aborted before differential-harness, production-116, bundle-authentication, package-206-pins, cs5-integration, and the python ledger step. Reviewer-continued runs: differential-harness exit 0, production-116 exit 0, bundle-authentication exit 0, package-206-pins exit 0, cs5-integration exit 1 (same deterministic failure), methodology-runtime exit 0, full cli-tests rerun exit 1 (1 test failed / 981 passed)."
+    },
+    "acceptedMemberLedger": {
+      "result": "PASS",
+      "evidence": "accepted-member-ledger.json: memberCount=7, aggregateMatches=true, membersAllMatchLedger=true, semanticDigestMatches=true, packageCount=17, packagePinsAllPresent=true; aggregateSha256 sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef; semantic digest sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+    },
+    "harnessCaseEvidence116Rows": {
+      "result": "PASS",
+      "evidence": "harness-case-evidence.jsonl has exactly 116 rows (29 rule kinds x 4 fixture classes; all procedureVersion 2.0.6; all zeroWrite=true; 17 rejected rows all zeroWrite=true)"
+    },
+    "reportCanonicalizationVectorVerifies": {
+      "result": "PASS",
+      "evidence": "independent recomputation sha256('trellis-evaluation-report-v2\\0' + canonical-json-body) = sha256:833c45286d662e96159f53e7143ff940522708c0ac7039c092edb7dc9b1c37ef (582-byte canonical body; cross-checked with a second serializer; array-order sensitivity confirmed); production test packages/core/test/research/methodology-runtime.test.ts 22/22 pass (exit 0)"
+    },
+    "noRepositoryWriteOutsideOutputDir": {
+      "result": "PASS",
+      "evidence": "git status --short before and after shows only the four pre-existing dirty paths (AGENTS.md, CLAUDE.md, docs-site, marketplace) plus the new CS5-7 research-dir outputs; .trellis/research untouched; AGENTS.md/CLAUDE.md sha256 unchanged; submodule statuses unchanged"
+    },
+    "live10AndDormant206AuthorityFlagsFalse": {
+      "result": "PASS",
+      "evidence": "RESEARCH_CAPABILITY_REGISTRY has 14 entries with RESEARCH_PROCEDURE_CURRENT_VERSION='1.0.0'; all 17 2.0.6 package-contract.json documents: dormant=true, liveSelection='1.0.0', authorityFlags={activationAuthorized:false, releaseAuthorized:false, publicationAuthorized:false, pushAuthorized:false}, acceptedContractDigest=sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+    }
+  },
+  "failingCriteria": [
+    {
+      "criterion": "every corpus command in command-evidence-ledger.jsonl exited 0",
+      "evidence": "cli-tests row exit=1 in command-evidence-ledger.jsonl (stdoutStderrDigest sha256:872fd9b6a896627735df398a9fef9cb40f4d28c2e1ea88cafbc4e7b750058d76; retained at /tmp/cs5-mal1-attempt10-scratch/out-cli-tests.log). Two failures in the script run: (1) test/cli/research-only-surface.integration.test.ts 'tl accepts approval-bound record-result stdin input' — built-tl subprocess exited 1; did NOT recur in isolation (pass, 1820ms), in full-file rerun (39/39), or in the full-suite rerun => parallel-run flake. (2) test/commands/research-cs5-integration.test.ts 'keeps 2.0.4 and 2.0.5 trees byte-unchanged and live Procedure at exactly 1.0.0' — gitHeadBytes() runs `git show HEAD:<path>` against the extraction, which contains no .git, so every lookup returns undefined; deterministic environment artifact; verified subject procedures tree is byte-identical to repo HEAD (git diff --quiet 916be0a8 HEAD -- packages/cli/src/templates/research/procedures/ => IDENTICAL). Full-suite rerun confirms exactly this one deterministic failure remains (1 failed / 981 passed)."
+    },
+    {
+      "criterion": "review script completed its full corpus",
+      "evidence": "cs5-7-review.sh aborted with exit 1 at the cli-tests step (set -e after log_cmd returned the failing code); differential-harness, production-116, bundle-authentication, package-206-pins, cs5-integration, and the python accepted-member-ledger step did not run under the script. Reviewer re-ran all of them against the same extraction (results above); the reviewer-continued cs5-integration run still fails the same deterministic no-.git test (3/4 pass)."
+    }
+  ],
+  "defectCharacterization": {
+    "noSubjectByteDefectFound": "All subject-level evidence that executed independently of the missing-.git environment artifact passed: core tests 647 passed / 1 skipped; differential harness exit 0; bundle authentication exit 0; 2.0.6 pins exit 0; production-116 exit 0 with 116 evidence rows; methodology-runtime 22/22; cs5-integration 3/4 (17 packages, seven-leaf authentication, real tarball inventory + external install all pass); accepted-member-ledger fully matches (7 members, aggregate + semantic digests); live 1.0.0 / dormant 2.0.6 state correct.",
+    "environmentArtifacts": [
+      "research-cs5-integration.test.ts 2.0.4/2.0.5 byte-unchanged test requires a git checkout at HEAD; the git-archive extraction has no .git, so the comparison cannot resolve (deterministic, reproduced on rerun).",
+      "research-only-surface.integration.test.ts record-result stdin subprocess failure appeared once under full-parallel corpus load and did not recur in isolation, file-level rerun, or full-suite rerun."
+    ],
+    "reviewerAction": "Recorded only; no repair performed. Per the mechanical pass criteria (every corpus command exit 0), the verdict is fail despite the subject-level evidence being otherwise clean."
+  },
+  "outputDigests": {
+    "command-evidence-ledger.jsonl": "sha256:ab5e3bc1e2bf1a4760f76744f90d5229bb54a0898dfc4a3cf7ffed712b39fb0d",
+    "accepted-member-ledger.json": "sha256:820f52478ef191cd8bb6ef7f7891cba2a45431ffde45c7349b5a6113ac11243b",
+    "harness-case-evidence.jsonl": "sha256:077dde5a2fcd7fff5b2ac5ac185a725a02556638470cbf228e0104ca090d8061",
+    "exact-subject-attestation.json": "sha256:0abebe1a3ba7011700062382d6386e8e7957213a76b768900edd647274ce6cb2",
+    "reviewer-session-attestation.json": "sha256:4ce50ae66a8d4916ea51cafcaab94cb5a4af43b6cc21889811075877acf3d2ea",
+    "runtime-contract-audit.json": "sha256:393e24cf57e6b53bc4abdc4d4fe9f2d3a8e369a5903bbd343955bf1891b5a71f",
+    "filesystem-mutation-audit.json": "sha256:0f8045bf43d2b24e548afb6ea47aa3ae2d4aa51515f0071f4380e4163b002a1a",
+    "machine-verdict.json": "self-digest not embeddable; reported externally by the reviewer runtime after final write"
+  },
+  "failureDisposition": "No accepted digest is published. Any re-run must start from the same frozen subject inputs or a new authorized subject; this runtime performs no repair and no further action."
+}

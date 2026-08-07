@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "auditId": "cs5-mal1-attempt-10-filesystem-mutation-audit",
+  "reviewerIdentity": "cs5-reviewer-attempt-10-fresh",
+  "snapshotAlgorithm": {
+    "command": "find /Users/zhangbowen/Projects/NewTools-Research/Trellis -type f -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' -print0 | sort -z | xargs -0 shasum -a 256 | shasum -a 256",
+    "exclusions": ["*/node_modules/*", "*/.git/*", "*/dist/*"],
+    "note": "The exact same command was used before and after; submodule working-tree files under docs-site/ and marketplace/ are included (unchanged by this review)."
+  },
+  "preReviewTreeDigest": "66860db88f40fa1c02cc754591bf218a3f0c2c40e6ebff638045667522f3e8cc",
+  "preReviewTreeDigestComputedAt": "2026-08-07T07:00:02Z",
+  "postReviewTreeDigest": "01ead7542e508212445551ca6e4d6cb20ce930f0fcafe6e2766d858df5c8a281",
+  "postReviewTreeDigestComputedAt": "2026-08-07T07:31:25Z",
+  "postReviewTreeDigestProtocol": "Computed over the repository tree containing the final bytes of the six evidence files written at that instant (command-evidence-ledger.jsonl, accepted-member-ledger.json, harness-case-evidence.jsonl, exact-subject-attestation.json, reviewer-session-attestation.json, runtime-contract-audit.json, containment-audit.json) plus all unchanged repository content. The two remaining allowlisted outputs (this file and machine-verdict.json) are written after the computation and are the only files not reflected in the recorded value; both are within the declared write allowlist, and their final sha256 values are recorded in machine-verdict.json.",
+  "prePostDeltaInterpretation": "The delta between the pre and post digests is exactly the nine allowlisted outputs in the CS5-7 research directory; git status --short before and after shows no other repository path changed.",
+  "harness116CaseZeroWriteStatistics": {
+    "evidenceFile": "harness-case-evidence.jsonl",
+    "totalRows": 116,
+    "zeroWriteTrue": 116,
+    "zeroWriteNotTrue": 0,
+    "rejectedRowsWithZeroWriteTrue": 17,
+    "committedRows": 99,
+    "productionPreventedTrue": 12,
+    "productionPreventedFalse": 104,
+    "fixtureClassDistribution": {"positive": 29, "base": 29, "critical-negative": 29, "inapplicable": 29},
+    "procedureVersionDistribution": {"2.0.6": 116},
+    "productionEntryPoint": "recordApprovedResearchDispatchResult (all 116 rows)"
+  },
+  "noWriteOutsideAllowlist": {
+    "statement": "No repository path outside the designated output directory (/Users/zhangbowen/Projects/NewTools-Research/Trellis/.trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research) and the scratch tree (/tmp/cs5-mal1-attempt10-scratch) was written by this runtime.",
+    "gitStatusBefore": [" M AGENTS.md", " M CLAUDE.md", " m docs-site", " m marketplace"],
+    "gitStatusAfter": [" M AGENTS.md", " M CLAUDE.md", " m docs-site", " m marketplace", "?? .trellis/tasks/08-06-cs5-assure-complete-system-mal1-attempt-10/research/<nine outputs>"],
+    "verification": "git status --short before and after shows only the four pre-existing dirty paths plus the new CS5-7 research-dir files; no other added, modified, or deleted path."
+  }
+}

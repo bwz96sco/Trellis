@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "auditId": "cs5-mal1-attempt-10-runtime-contract-audit",
+  "reviewerIdentity": "cs5-reviewer-attempt-10-fresh",
+  "subject": "replay capsule for evaluation-contract subject commit 916be0a877725f7f91836a3a97e480c1e104e533",
+  "replayCapsule": {
+    "subjectCommit": "916be0a877725f7f91836a3a97e480c1e104e533",
+    "subjectTreeDigest": "99b3b275699725f2c60c325b2d9d9aa477beb585d3be26986fe03e2ebc890863",
+    "runtimeCommitRepoHeadAtStart": "3a254d7b32f7efef8650260894bec6c77f7750ef",
+    "cleanExtractionProof": {
+      "method": "git -C /Users/zhangbowen/Projects/NewTools-Research/Trellis archive 916be0a877725f7f91836a3a97e480c1e104e533 | tar -x -C /tmp/cs5-mal1-attempt10-scratch/subject",
+      "digestLedgerRow": "subject-tree-digest => 99b3b275699725f2c60c325b2d9d9aa477beb585d3be26986fe03e2ebc890863 (exit 0)",
+      "noWorkingTreeOverlay": true,
+      "extractionTreeHasNoGitDir": true,
+      "gitDirAbsenceImplication": "The extracted tree contains no .git directory. Tests that resolve bytes via `git show HEAD:<path>` (research-cs5-integration.test.ts 'keeps 2.0.4 and 2.0.5 trees byte-unchanged') cannot resolve any path in the extraction and fail deterministically in this environment; verified subject procedures tree is byte-identical to repo HEAD (git diff --quiet 916be0a8 HEAD -- packages/cli/src/templates/research/procedures/ => IDENTICAL)."
+    },
+    "platform": {
+      "uname": "Darwin zhangbowens-MacBook-Pro.local 25.3.0 Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:15 PST 2026; root:xnu-12377.81.4~5/RELEASE_ARM64_T6000 arm64",
+      "node": "v24.17.0",
+      "pnpm": "10.32.1",
+      "python3": "3.14.6"
+    },
+    "tarballAndInstalledInventory": {
+      "evidenceSource": "/tmp/cs5-mal1-attempt10-scratch/out-cs5-integration.log (reviewer-continued run) and out-cli-tests-rerun.log",
+      "testName": "CS5-6 dormant integrated candidate > real tarball inventory ships the accepted bundle and 2.0.6 trees; external install authenticates",
+      "result": "PASS (7503ms) in reviewer-continued run; also PASSED inside the full cli-tests rerun",
+      "internalAssertions": "builds core+cli, pnpm pack both tarballs, asserts member-ledger.json present under templates/research/evaluation-contracts/1.3.0/, >=17 2.0.6/methodology/pack.json entries, exactly 17 under dist/templates/research/procedures, external tar install of both tarballs with no .trellis/tasks and no env override authenticates the accepted pack. Digest values are computed and asserted inside the test (not printed to the log); the test module digest is recorded under fixtureRunnerDigests.",
+      "logDigest": "sha256:7a5717569bec394a3365f70da7c103dae2c0ebe5bff3d808e120e9fb2a4a8c34"
+    },
+    "exactIdentities": {
+      "memberLeaves": 7,
+      "procedure206Packages": 17,
+      "enforceableArtifacts": 65,
+      "lifecycleDimensions": 13,
+      "trustedValidators": 20,
+      "bindings": 876,
+      "productionCases": 116,
+      "verificationMethod": "python3 json reads of the subject-extracted accepted leaves (.trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/*.json): artifact-lifecycle-contract-v1.3.json enforceableArtifactCount=65 artifacts=65 dimensionOrder len=13; validator-registry-v1.3.json validators=20 all severity {fixed:critical, downgradeAllowed:false, supportPackMayChange:false} with unique (id,version); validator-binding-matrix-v1.3.json bindings=876; differential-test-matrix-v1.3.json v13DeltaCases list len=116; accepted-member-ledger.json memberCount=7 packageCount=17"
+    },
+    "canonicalizationVectors": {
+      "domain": "trellis-evaluation-report-v2\\0 (UTF-8)",
+      "framing": "sha256(UTF8('trellis-evaluation-report-v2\\0') || canonical-json-body); canonical = strict UTF-8, recursive lexicographic key sort, array order preserved, no trailing LF, digest field excluded",
+      "independentVectorComputedByReviewer": {
+        "canonicalBodyLenBytes": 582,
+        "vector": "sha256:833c45286d662e96159f53e7143ff940522708c0ac7039c092edb7dc9b1c37ef",
+        "crossCheck": "identical canonical bytes via json.dumps(sort_keys=True, separators=(',',':')) ; digest equal",
+        "arrayOrderSensitivity": "confirmed (reordering an array changes the digest)",
+        "computedAt": "2026-08-07T07:2x:xxZ"
+      },
+      "productionTest": "packages/core/test/research/methodology-runtime.test.ts 'builds additive report-v2 without changing report-v1 digest semantics' — 22/22 tests pass (exit 0), asserts the same framing against an independent in-test oracle serializer"
+    },
+    "commands": {
+      "envAllowlist": ["PATH", "HOME=/Users/zhangbowen", "TERM=xterm-256color"],
+      "envNotes": "Script commands ran with the ambient environment; no additional env vars were set by the script. STEP 2 production-116 regeneration set TRELLIS_CS5_116_EVIDENCE_DIR=/tmp/cs5-mal1-attempt10-scratch/evidence (scratch-scoped).",
+      "signals": "none — every recorded termination was a process exit status; no signal terminations observed (ledger records exit codes only)",
+      "scriptLedger": [
+        {"command": "subject-rev-parse", "argv": "git -C /Users/zhangbowen/Projects/NewTools-Research/Trellis rev-parse --verify 916be0a8^{commit}", "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis", "exit": 0, "durationSec": 0, "stdoutStderrDigest": "sha256:b1f8a75fbfdae29e47e4695b6eaeb02948901077ee5a18220b6f621d62b7a93c", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-subject-rev-parse.log"},
+        {"command": "subject-tree-digest", "argv": "bash -c cd '/tmp/cs5-mal1-attempt10-scratch/subject' && find . -type f -print0 | sort -z | xargs -0 shasum -a 256 | shasum -a 256 | cut -d' ' -f1", "cwd": "/Users/zhangbowen/Projects/NewTools-Research/Trellis", "exit": 0, "durationSec": 1, "stdoutStderrDigest": "sha256:01472260800d354869e62b3c1cb6400095c1be55965a59828aa2c6606a60ff69", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-subject-tree-digest.log"},
+        {"command": "pnpm-install-offline", "argv": "pnpm install --offline --frozen-lockfile", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 3, "stdoutStderrDigest": "sha256:c3b672203c4c5b30555bef94ecc56e61ecc9bcddd22ee3b265bd277edc91a295", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-pnpm-install-offline.log"},
+        {"command": "build-core", "argv": "pnpm --filter @mindfoldhq/trellis-core build", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 2, "stdoutStderrDigest": "sha256:d918ae165fd9f607113d2996f4b6b9c742f2785fc97bb9983094033a0fbf9bee", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-build-core.log"},
+        {"command": "build-cli", "argv": "pnpm --filter @mindfoldhq/trellis build", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 3, "stdoutStderrDigest": "sha256:7020db1b6b45705b36cf67777326c282542b0a4a7f82a1f614882e39746ce714", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-build-cli.log"},
+        {"command": "core-tests", "argv": "pnpm --filter @mindfoldhq/trellis-core test", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 7, "stdoutStderrDigest": "sha256:a372647ea23d15c526ff2e045182a935555b7e30818c317e4d546e6bae728629", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-core-tests.log", "resultSummary": "40 files passed, 647 tests passed, 1 skipped"},
+        {"command": "cli-tests", "argv": "pnpm --filter @mindfoldhq/trellis exec vitest run", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 1, "durationSec": 476, "stdoutStderrDigest": "sha256:872fd9b6a896627735df398a9fef9cb40f4d28c2e1ea88cafbc4e7b750058d76", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-cli-tests.log", "resultSummary": "80 files: 2 failed / 78 passed; tests: 2 failed / 980 passed", "failures": [
+          {"test": "test/cli/research-only-surface.integration.test.ts > tl accepts approval-bound record-result stdin input", "assertion": "expect(result.status).toBe(0) — built tl subprocess exited 1", "characterization": "did NOT recur: passes in isolation (1820ms), passes in full-file rerun (39/39), absent from full-suite rerun => parallel-run flake under corpus load"},
+          {"test": "test/commands/research-cs5-integration.test.ts > keeps 2.0.4 and 2.0.5 trees byte-unchanged and live Procedure at exactly 1.0.0", "assertion": "computation-case-v1/2.0.4/PROCEDURE.md must match HEAD bytes: expected undefined to be defined", "characterization": "deterministic environment artifact: gitHeadBytes() runs `git show HEAD:<path>` but the git-archive extraction has no .git, so every lookup returns undefined; subject procedures tree verified byte-identical to repo HEAD"}
+        ]
+      }
+    ],
+    "scriptAbort": {
+        "aborted": true,
+        "cause": "cli-tests exited 1; log_cmd propagated the code and the script's `set -e` terminated it before differential-harness, production-116, bundle-authentication, package-206-pins, cs5-integration, and the python accepted-member-ledger step",
+        "reviewerContinuation": "Reviewer (read-only authority) re-ran the remaining corpus commands against the same extraction with identical evidence capture; results below"
+      },
+      "reviewerContinued": [
+        {"command": "differential-harness", "argv": "pnpm --filter @mindfoldhq/trellis exec vitest run test/research-methodology-harness/v13-delta-domain.test.ts test/commands/research-methodology-closure-cs4.test.ts", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 15, "stdoutStderrDigest": "sha256:267056d43844e9717235c593e3e11c158fb858503cdb0a30e605798968f4bb6d", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-differential-harness.log"},
+        {"command": "bundle-authentication", "argv": "pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-accepted-bundle-authentication.test.ts", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 3, "stdoutStderrDigest": "sha256:772f95d543b809b71805e8559eaa09b420c869013d363f3f4048b533e9724870", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-bundle-authentication.log"},
+        {"command": "package-206-pins", "argv": "pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-procedure-206-packages.test.ts", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 3, "stdoutStderrDigest": "sha256:44ebb10e0b516747844b0dfa5d2dd161f030e80eef090f5f19bd626d6e774a55", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-package-206-pins.log"},
+        {"command": "cs5-integration", "argv": "pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-cs5-integration.test.ts", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 1, "durationSec": 11, "stdoutStderrDigest": "sha256:7a5717569bec394a3365f70da7c103dae2c0ebe5bff3d808e120e9fb2a4a8c34", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-cs5-integration.log", "resultSummary": "3/4 pass (17 packages; seven leaves authenticated; real tarball inventory + external install); the single failure is the deterministic no-.git artifact"},
+        {"command": "production-116", "argv": "TRELLIS_CS5_116_EVIDENCE_DIR=/tmp/cs5-mal1-attempt10-scratch/evidence pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-methodology-116-production.test.ts", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 306, "stdoutStderrDigest": "sha256:c63dc5e24825c8f350544163e3ab1f434e600b8ad060b7bebb260ee8b91eb266", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-production-116.log", "resultSummary": "4 tests passed; produced exactly 116 evidence rows"},
+        {"command": "cli-tests-rerun-full", "argv": "pnpm --filter @mindfoldhq/trellis exec vitest run", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 1, "durationSec": 469, "stdoutStderrDigest": "sha256:435f73ccdbf05ff49842c0a67d9038226a379c6b20e8bc8ece110059eb11894d", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-cli-tests-rerun.log", "resultSummary": "80 files: 1 failed / 79 passed; tests: 1 failed / 981 passed; only the deterministic no-.git artifact remains; record-result flake did not recur"},
+        {"command": "methodology-runtime-vectors", "argv": "pnpm --filter @mindfoldhq/trellis-core exec vitest run test/research/methodology-runtime.test.ts", "cwd": "/tmp/cs5-mal1-attempt10-scratch/subject", "exit": 0, "durationSec": 1, "stdoutStderrDigest": "sha256:82714453a0527970807403d8d6b53077f3cc92da485577fc5832557310a6de48", "retainedAt": "/tmp/cs5-mal1-attempt10-scratch/out-methodology-runtime-vectors.log", "resultSummary": "22/22 tests passed"}
+      ]
+    },
+    "fixtureRunnerDigests": {
+      "reviewScript": "sha256:4e0e690e6b17879a2c22e4ebe302ac1567a96d94b5a61af67ca54b4d46872839",
+      "harnessModules": {
+        "packages/cli/test/research-methodology-harness/v13-delta-domain.test.ts": "sha256:552cbcafe9cfb88136ba4f42b4598df5ff413df22437117f681a8f6f5f80065b",
+        "packages/cli/test/commands/research-methodology-closure-cs4.test.ts": "sha256:018c5eeeeb304175a9ca3fdaee966b035a277dc4f168ffacb98af6e1abadf949",
+        "packages/cli/test/commands/research-methodology-116-production.test.ts": "sha256:2555f6731466cd03e4a8a2b20c74ccb99690c6fc5c45da781f12ce69d86e578e",
+        "packages/cli/test/commands/research-accepted-bundle-authentication.test.ts": "sha256:9cb8e991bd6cccd6f230028afa567333e32eb45254112f17baa26f6a8187f995",
+        "packages/cli/test/commands/research-procedure-206-packages.test.ts": "sha256:09293883e9362898bde729faf0843afa0d8b8436726f6334b67e70ff3839fe9d",
+        "packages/cli/test/commands/research-cs5-integration.test.ts": "sha256:537ae20e6b34f9dda62fec2c73e31ec84e372ae52b3cb4848cb152d1003b996e",
+        "packages/core/test/research/methodology-runtime.test.ts": "sha256:d98c5abcc0d90a898fb836d0a1573f6917138656cada2dcab55554d9ddd7cec4",
+        "packages/cli/test/cli/research-only-surface.integration.test.ts": "sha256:121c182c4d4145c2a01c247329831823f31af727dadca9aa05600c0001f96410"
+      }
+    },
+    "filesystemSnapshotAlgorithm": {
+      "command": "find /Users/zhangbowen/Projects/NewTools-Research/Trellis -type f -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' -print0 | sort -z | xargs -0 shasum -a 256 | shasum -a 256",
+      "exclusions": ["node_modules/**", ".git/**", "dist/**"],
+      "preReviewDigest": "66860db88f40fa1c02cc754591bf218a3f0c2c40e6ebff638045667522f3e8cc",
+      "postReviewDigest": "see filesystem-mutation-audit.json"
+    },
+    "liveAndDormantState": {
+      "liveProcedure": "1.0.0",
+      "liveEvidence": "packages/core/src/research/stage-capabilities.ts: RESEARCH_CAPABILITY_REGISTRY has exactly 14 entries; RESEARCH_PROCEDURE_CURRENT_VERSION = '1.0.0'",
+      "dormantProcedure": "2.0.6",
+      "dormantEvidence": "17 packages under packages/cli/src/templates/research/procedures/*/2.0.6; every package-contract.json: dormant=true, liveSelection='1.0.0', authorityFlags={activationAuthorized:false, releaseAuthorized:false, publicationAuthorized:false, pushAuthorized:false}, acceptedContractDigest=sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f (all 17 verified by python3)",
+      "bundleMemberLedger": "7 members; acceptedContractDigest sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f"
+    },
+    "explicitSuccessCriteria": [
+      "every corpus command in command-evidence-ledger.jsonl exited 0",
+      "accepted-member-ledger.json: memberCount=7, aggregateMatches=true, membersAllMatchLedger=true, semanticDigestMatches=true, packageCount=17, packagePinsAllPresent=true",
+      "harness-case-evidence.jsonl has exactly 116 rows",
+      "report-v2 canonicalization vector verifies (domain framing sha256('trellis-evaluation-report-v2\\0' + canonical body))",
+      "no repository write outside the designated output directory and scratch",
+      "live Procedure exactly 1.0.0; dormant 2.0.6 with every authority flag false"
+    ]
+  }
+}

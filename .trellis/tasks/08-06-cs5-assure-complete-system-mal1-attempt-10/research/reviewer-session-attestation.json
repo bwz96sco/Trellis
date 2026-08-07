@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "attestationId": "cs5-mal1-attempt-10-reviewer-session-attestation",
+  "reviewerIdentity": "cs5-reviewer-attempt-10-fresh",
+  "reviewerIdentitySource": "dispatch label assigned by the MAL-1 attempt-10 review coordinator; fresh runtime with no authoring history in this review",
+  "humanReviewed": false,
+  "repairAuthority": false,
+  "authoringStatement": "This runtime authored none of the CS5 source code, packages, fixtures, oracles, review script, or subject bytes under review. Its only writes are the nine MAL-1 outputs in the designated output directory and transient scratch files under /tmp/cs5-mal1-attempt10-scratch.",
+  "runtimeIdentity": {
+    "hostname": "zhangbowens-MacBook-Pro.local",
+    "platform": "Darwin zhangbowens-MacBook-Pro.local 25.3.0 Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:15 PST 2026; root:xnu-12377.81.4~5/RELEASE_ARM64_T6000 arm64",
+    "nodeVersion": "v24.17.0",
+    "pnpmVersion": "10.32.1",
+    "python3Version": "3.14.6",
+    "user": "zhangbowen",
+    "home": "/Users/zhangbowen",
+    "term": "xterm-256color"
+  },
+  "piEnvironment": {
+    "PI_MODEL": "deepseek-v4-flash",
+    "PI_PROVIDER": "opencode-go",
+    "PI_SESSION_ID": "019fdb05-3c4e-7da7-b833-9b45c8786e53",
+    "PI_REASONING_LEVEL": "max",
+    "PI_SUBAGENT_DEPTH": "1",
+    "PI_CODING_AGENT": "true",
+    "PI_CACHE_RETENTION": "long",
+    "TRELLIS_CONTEXT_ID": "claude_39a4875d-884e-4fe1-b021-68887427a4ea",
+    "TERM_PROGRAM": "ghostty"
+  },
+  "reviewStartUtc": "2026-08-07T07:00:02Z",
+  "reviewEndUtc": "2026-08-07T07:31:40Z",
+  "sessionNote": "Session identity variables are recorded for replay traceability; they are not used as assurance inputs."
+}
