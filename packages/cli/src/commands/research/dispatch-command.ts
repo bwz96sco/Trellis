@@ -8,7 +8,7 @@ import {
   createDecisionId,
   createDispatchId,
   isAuthoritativeMethodologyProcedureVersion,
-  mapProcedureIdToClosureFamily,
+  isV13ClosureArtifactExactPath,
   normalizeArtifactPath,
   parseCanonicalMethodologyClosureArtifact,
   proposalOperationsToMutations,
@@ -16,6 +16,7 @@ import {
   readResearchLedger,
   readResearchState,
   reduceResearchEvents,
+  resolveProcedureClosureDisposition,
   resolveResearchCapability,
   resultSchema,
   stableResearchJson,
@@ -41,6 +42,7 @@ import {
   type Result,
   type ResultId,
   type RunId,
+  type V13ProcedureClosureDisposition,
 } from "@mindfoldhq/trellis-core/research";
 
 import { writeFileAtomic } from "../../utils/atomic-write.js";
@@ -1205,9 +1207,6 @@ export async function recordApprovedResearchDispatchResult(
     parsed.result.artifactRefs,
     false,
   );
-  // Pack-driven methodology validation is fail-closed before any canonical
-  // write. For accepted successor Procedure versions, selected/blocked come
-  // ONLY from the canonical closure ArtifactRef (never Result.status).
   const resultStatus = parsed.result.status;
   let closureSelected: boolean | undefined;
   let closureBlocked: boolean | undefined;
@@ -1215,96 +1214,113 @@ export async function recordApprovedResearchDispatchResult(
   const procedureId = activation.procedure.id;
   const needsCanonicalClosure =
     isAuthoritativeMethodologyProcedureVersion(procedureVersion) &&
-    (procedureVersion === "2.0.4" || procedureVersion === "2.0.5");
+    (procedureVersion === "2.0.4" ||
+      procedureVersion === "2.0.5" ||
+      procedureVersion === "2.0.6");
+  let closureDisposition: V13ProcedureClosureDisposition | undefined;
   if (needsCanonicalClosure) {
-    const family = mapProcedureIdToClosureFamily(procedureId);
-    if (family === undefined) {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        `Procedure '${procedureId}' is not in the four accepted closure families; zero-write enforced`,
+    closureDisposition = resolveProcedureClosureDisposition(procedureId);
+    const disposition = closureDisposition;
+    if (disposition.kind === "required") {
+      // Exact path equality only: no suffix, substring, or regex authority.
+      const closureRefs = parsed.result.artifactRefs.filter(
+        (ref) => ref.path === disposition.exactPath,
       );
-      throw new Error("unreachable: approvedResultError must throw");
-    }
-    const closureRefs = parsed.result.artifactRefs.filter(
-      (ref) =>
-        ref.path.includes("methodology/closure/") ||
-        ref.path.endsWith("/closure/") ||
-        /closure\//.test(ref.path) ||
-        ref.path.includes("closure/"),
-    );
-    // Prefer exact identity path for family.
-    const familyFile =
-      family === "research-literature"
-        ? "research-literature.json"
-        : family === "research-ideation"
-          ? "research-ideation.json"
-          : family === "research-idea-evaluation"
-            ? "research-idea-evaluation.json"
-            : "research-experiment.json";
-    const exact = closureRefs.filter((ref) => ref.path.endsWith(familyFile));
-    const closureRef = exact.length === 1 ? exact[0] : undefined;
-    if (closureRef === undefined) {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        `Canonical closure ArtifactRef for family '${family}' missing or ambiguous (count=${String(exact.length)}); zero-write enforced`,
+      if (closureRefs.length !== 1) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          `Canonical closure ArtifactRef for family '${disposition.family}' must be exactly one with exact path '${disposition.exactPath}' (count=${String(closureRefs.length)}); zero-write enforced`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const closureRef = closureRefs[0] as ArtifactRef;
+      if (closureRef.id !== disposition.closureContractId) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          `Closure ArtifactRef id '${closureRef.id}' must equal the exact contract id '${disposition.closureContractId}'; zero-write enforced`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      if (closureRef.mediaType !== disposition.mediaType) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          `Closure ArtifactRef submitted mediaType '${closureRef.mediaType}' must equal '${disposition.mediaType}'; zero-write enforced`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      if (
+        typeof closureRef.sha256 !== "string" ||
+        closureRef.sha256.length === 0
+      ) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          "Canonical closure ArtifactRef requires content digest; zero-write enforced",
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      // Full recognized closure ArtifactRef set: reject evidence pointing to
+      // the current or any other closure artifact (exact-path membership).
+      const closurePathRefs = parsed.result.artifactRefs.filter((ref) =>
+        isV13ClosureArtifactExactPath(ref.path),
       );
-      throw new Error("unreachable: approvedResultError must throw");
+      if (closurePathRefs.length !== 1 || closurePathRefs[0] !== closureRef) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          `Evidence must bind exactly one closure ArtifactRef (bound ${String(closurePathRefs.length)} closure-path refs); zero-write enforced`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const closureSha256 = closureRef.sha256;
+      const repoRoot = artifactRepositoryRoots[closureRef.repositoryId];
+      if (repoRoot === undefined) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          "Canonical closure ArtifactRef repository root unresolved; zero-write enforced",
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const closureAbs = path.join(repoRoot, closureRef.path);
+      let closureBytes: Buffer;
+      try {
+        closureBytes = fs.readFileSync(closureAbs);
+      } catch {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          `Canonical closure artifact unreadable at '${closureRef.path}'; zero-write enforced`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const actualDigest = createHash("sha256")
+        .update(closureBytes)
+        .digest("hex");
+      if (actualDigest !== closureSha256) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          "Canonical closure artifact digest drift; zero-write enforced",
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      const parsedClosure = parseCanonicalMethodologyClosureArtifact({
+        bytes: new Uint8Array(closureBytes),
+        expectedFamily: disposition.family,
+        closureArtifactId: closureRef.id,
+        boundArtifactIds: parsed.result.artifactRefs.map((ref) => ref.id),
+        forbiddenClosureArtifactIds: parsed.result.artifactRefs
+          .filter((ref) => isV13ClosureArtifactExactPath(ref.path))
+          .map((ref) => ref.id),
+      });
+      if (!parsedClosure.ok) {
+        approvedResultError(
+          "METHODOLOGY_VALIDATION_FAILED",
+          `Canonical closure parse failed (${parsedClosure.code}): ${parsedClosure.message}; zero-write enforced`,
+        );
+        throw new Error("unreachable: approvedResultError must throw");
+      }
+      closureSelected = parsedClosure.closure.selected;
+      closureBlocked = parsedClosure.closure.blocked;
     }
-    if (
-      typeof closureRef.sha256 !== "string" ||
-      closureRef.sha256.length === 0
-    ) {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        "Canonical closure ArtifactRef requires content digest; zero-write enforced",
-      );
-      throw new Error("unreachable: approvedResultError must throw");
-    }
-    const closureSha256 = closureRef.sha256;
-    const repoRoot = artifactRepositoryRoots[closureRef.repositoryId];
-    if (repoRoot === undefined) {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        "Canonical closure ArtifactRef repository root unresolved; zero-write enforced",
-      );
-      throw new Error("unreachable: approvedResultError must throw");
-    }
-    const closureAbs = path.join(repoRoot, closureRef.path);
-    let closureBytes: Buffer;
-    try {
-      closureBytes = fs.readFileSync(closureAbs);
-    } catch {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        `Canonical closure artifact unreadable at '${closureRef.path}'; zero-write enforced`,
-      );
-      throw new Error("unreachable: approvedResultError must throw");
-    }
-    const actualDigest = createHash("sha256")
-      .update(closureBytes)
-      .digest("hex");
-    if (actualDigest !== closureSha256) {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        "Canonical closure artifact digest drift; zero-write enforced",
-      );
-      throw new Error("unreachable: approvedResultError must throw");
-    }
-    const parsedClosure = parseCanonicalMethodologyClosureArtifact({
-      bytes: new Uint8Array(closureBytes),
-      expectedFamily: family,
-      closureArtifactId: closureRef.id,
-      boundArtifactIds: parsed.result.artifactRefs.map((ref) => ref.id),
-    });
-    if (!parsedClosure.ok) {
-      approvedResultError(
-        "METHODOLOGY_VALIDATION_FAILED",
-        `Canonical closure parse failed (${parsedClosure.code}): ${parsedClosure.message}; zero-write enforced`,
-      );
-      throw new Error("unreachable: approvedResultError must throw");
-    }
-    closureSelected = parsedClosure.closure.selected;
-    closureBlocked = parsedClosure.closure.blocked;
+    // notApplicable families: no closure lookup; selected/blocked stay
+    // undefined and Result.status is never used as closure authority.
   }
   // Live 1.0.0 / historical non-authoritative: do not invent v1.3 closure from status.
   // Only pass selected/blocked when canonical closure was parsed.
@@ -1325,11 +1341,24 @@ export async function recordApprovedResearchDispatchResult(
     proposalOperationCount: parsed.proposal.operations.length,
     selected: closureSelected,
     blocked: closureBlocked,
+    closureDisposition,
     batchCommitted: false,
-    artifactPaths: parsed.result.artifactRefs.map((ref) => ref.path),
-    artifactDigests: parsed.result.artifactRefs
-      .filter((ref) => typeof ref.sha256 === "string")
-      .map((ref) => ({ path: ref.path, sha256: ref.sha256 as string })),
+    artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
+      artifactId: ref.id,
+      repositoryId: ref.repositoryId,
+      resolvedRepositoryIdentity: artifactRepositoryRoots[ref.repositoryId],
+      exactPath: ref.path,
+      submittedMediaType: ref.mediaType,
+      submittedSha256: ref.sha256,
+      present: true,
+    })),
+    dispatchContext: {
+      questId: dispatch.questId,
+      dispatchId: dispatch.id,
+      activationId: activation.id,
+      approvalId: preflight.approvalId,
+      capabilityId: activation.capabilityId,
+    },
   });
   if (methodologyGate.criticalFailure || !methodologyGate.ok) {
     approvedResultError(
@@ -1470,11 +1499,24 @@ export async function recordApprovedResearchDispatchResult(
     proposalOperationCount: parsed.proposal.operations.length,
     selected: closureSelected,
     blocked: closureBlocked,
+    closureDisposition,
     batchCommitted: true,
-    artifactPaths: parsed.result.artifactRefs.map((ref) => ref.path),
-    artifactDigests: parsed.result.artifactRefs
-      .filter((ref) => typeof ref.sha256 === "string")
-      .map((ref) => ({ path: ref.path, sha256: ref.sha256 as string })),
+    artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
+      artifactId: ref.id,
+      repositoryId: ref.repositoryId,
+      resolvedRepositoryIdentity: artifactRepositoryRoots[ref.repositoryId],
+      exactPath: ref.path,
+      submittedMediaType: ref.mediaType,
+      submittedSha256: ref.sha256,
+      present: true,
+    })),
+    dispatchContext: {
+      questId: dispatch.questId,
+      dispatchId: dispatch.id,
+      activationId: activation.id,
+      approvalId: preflight.approvalId,
+      capabilityId: activation.capabilityId,
+    },
   });
   if (postBatchGate.materializeSidecar) {
     materializeMethodologyReportV2Sidecar({

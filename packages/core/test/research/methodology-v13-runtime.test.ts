@@ -18,12 +18,21 @@ import {
   V13_VALIDATOR_BINDING_COUNT,
   assertHistoricalPhase2FixtureIsNotV13Authority,
   deriveAcceptedV13PackIdentity,
+  enforceV13LifecycleDimensionsFromArtifactRefs,
   evaluateAcceptedV13DeltaCase,
   expectedV13ContractCounts,
+  executeV13BindingInvocations,
+  isV13ClosureArtifactExactPath,
   mapProcedureIdToClosureFamily,
   parseAcceptedV13ContractPack,
   parseCanonicalMethodologyClosureArtifact,
+  resolveProcedureClosureDisposition,
+  resolveProcedureLifecycleFamily,
+  selectApplicableV13BindingsForProcedure,
   selectTrustedV13ValidatorDescriptors,
+  validateV13BindingCrossLinks,
+  V13_CLOSURE_ARTIFACT_SPECS,
+  V13_PROCEDURE_CLOSURE_DISPOSITIONS,
   type V13LeafFileName,
 } from "../../src/research/index.js";
 
@@ -335,3 +344,231 @@ describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
   });
 });
 
+
+describe("CS5-2 closed closure disposition and exact binding execution", () => {
+  function loadPack() {
+    return parseAcceptedV13ContractPack({
+      leafBytes: loadA3LeafBytes(),
+      expectedContractDigest: V13_ACCEPTED_CONTRACT_DIGEST,
+    });
+  }
+
+  it("declares exactly 17 Procedures: 6 required + 11 notApplicable", () => {
+    const entries = Object.entries(
+      V13_PROCEDURE_CLOSURE_DISPOSITIONS,
+    );
+    expect(entries).toHaveLength(17);
+    expect(entries.filter(([, d]) => d.kind === "required")).toHaveLength(6);
+    expect(entries.filter(([, d]) => d.kind === "notApplicable")).toHaveLength(11);
+    expect(V13_CLOSURE_ARTIFACT_SPECS).toHaveLength(4);
+    for (const [id, d] of entries) {
+      expect(d.procedureId).toBe(id);
+      if (d.kind === "required") {
+        expect(d.mediaType).toBe("application/json");
+        expect(d.exactPath).toBe(
+          `methodology/closure/${d.family}.json`,
+        );
+        expect(
+          V13_CLOSURE_ARTIFACT_SPECS.some(
+            (s) => s.family === d.family && s.exactPath === d.exactPath,
+          ),
+        ).toBe(true);
+      } else {
+        expect(d.code.startsWith("V13_CLOSURE_NOT_APPLICABLE_")).toBe(true);
+        expect(d.rationale.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("resolves the six required procedures with exact paths", () => {
+    const expected = new Map<string, string>([
+      ["literature-scan-v1", "research-literature"],
+      ["literature-review-v1", "research-literature"],
+      ["idea-generation-v1", "research-ideation"],
+      ["idea-evaluation-v1", "research-idea-evaluation"],
+      ["experiment-campaign-v1", "research-experiment"],
+      ["experiment-round-v1", "research-experiment"],
+    ]);
+    for (const [procedureId, family] of expected) {
+      const d = resolveProcedureClosureDisposition(procedureId);
+      expect(d.kind).toBe("required");
+      if (d.kind === "required") {
+        expect(d.family).toBe(family);
+        expect(isV13ClosureArtifactExactPath(d.exactPath)).toBe(true);
+      }
+    }
+  });
+
+  it("rejects unknown Procedures and non-exact closure paths", () => {
+    expect(() => resolveProcedureClosureDisposition("nope-v1")).toThrow(
+      MethodologyV13RuntimeError,
+    );
+    expect(isV13ClosureArtifactExactPath("methodology/closure/")).toBe(false);
+    expect(
+      isV13ClosureArtifactExactPath("x-methodology/closure/research-literature.json"),
+    ).toBe(false);
+    expect(
+      isV13ClosureArtifactExactPath("methodology/closure/research-literature.json"),
+    ).toBe(true);
+  });
+
+  it("validates all 876 binding cross-links", () => {
+    const pack = loadPack();
+    const result = validateV13BindingCrossLinks(pack);
+    expect(result.ok).toBe(true);
+    expect(result.findings).toEqual([]);
+  });
+
+  it("selects per-Procedure applicable bindings without shrinking the 876 set", () => {
+    const pack = loadPack();
+    for (const procedureId of Object.keys(V13_PROCEDURE_CLOSURE_DISPOSITIONS)) {
+      const applicable = selectApplicableV13BindingsForProcedure({
+        pack,
+        procedureId,
+      });
+      expect(applicable.length).toBeGreaterThan(0);
+      for (const row of applicable) {
+        expect(row.binding.validator.severity).toBe("critical");
+        if (!row.isGlobal) {
+          expect(row.target).toBeDefined();
+          expect(row.dimension).toBeDefined();
+        }
+      }
+    }
+    // Every binding is applicable to at least one Procedure (no dead authority).
+    const covered = new Set(
+      selectApplicableV13BindingsForProcedure({
+        pack,
+        procedureId: "review-case-v1",
+      }).map((r) => r.binding.bindingId),
+    );
+    expect(covered.size).toBeGreaterThan(0);
+  });
+
+  it("executes every applicable binding independently and fails closed on count mismatch", () => {
+    const pack = loadPack();
+    const applicable = selectApplicableV13BindingsForProcedure({
+      pack,
+      procedureId: "review-case-v1",
+    });
+    const executed = executeV13BindingInvocations({
+      pack,
+      applicableBindings: applicable,
+      factForBinding: () => ({ source: "test-fact", value: { ok: true } }),
+      invoke: () => ({ pass: true }),
+    });
+    expect(executed.applicableCount).toBe(applicable.length);
+    expect(executed.invocationCount).toBe(applicable.length);
+    expect(executed.ok).toBe(true);
+    expect(executed.invocations.every((i) => i.outcome === "pass")).toBe(true);
+    // Invocation rows carry binding identity + validator id@version + target.
+    const first = executed.invocations[0];
+    expect(first.validatorId.length).toBeGreaterThan(0);
+    expect(first.validatorVersion).toBe("1.0.0");
+    expect(first.bindingId.length).toBeGreaterThan(0);
+  });
+
+  it("fails closed when an applicable fact is unresolved", () => {
+    const pack = loadPack();
+    const applicable = selectApplicableV13BindingsForProcedure({
+      pack,
+      procedureId: "review-case-v1",
+    });
+    let caught: unknown;
+    try {
+      executeV13BindingInvocations({
+        pack,
+        applicableBindings: applicable,
+        factForBinding: () => undefined,
+        invoke: () => ({ pass: true }),
+      });
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(MethodologyV13RuntimeError);
+    expect((caught as MethodologyV13RuntimeError).code).toBe(
+      "V13_APPLICABLE_FACT_UNRESOLVED",
+    );
+  });
+
+  it("records fail-closed outcomes per binding", () => {
+    const pack = loadPack();
+    const applicable = selectApplicableV13BindingsForProcedure({
+      pack,
+      procedureId: "review-case-v1",
+    });
+    const executed = executeV13BindingInvocations({
+      pack,
+      applicableBindings: applicable,
+      factForBinding: () => ({ source: "mutated", value: { invalid: true } }),
+      invoke: () => ({ pass: false, findingCode: "V13_TEST_FAILURE" }),
+    });
+    expect(executed.ok).toBe(false);
+    expect(executed.criticalFailure).toBe(true);
+    expect(
+      executed.invocations.every(
+        (i) => i.outcome === "fail-closed" && i.findingCode === "V13_TEST_FAILURE",
+      ),
+    ).toBe(true);
+  });
+
+  it("enforces lifecycle dimensions from ArtifactRef facts", () => {
+    const pack = loadPack();
+    const procedureId = "review-case-v1";
+    const family = resolveProcedureLifecycleFamily(procedureId);
+    const rows = pack.artifacts.filter((a) => a.family === family);
+    expect(rows.length).toBe(21);
+    const facts = rows.map((row, index) => ({
+      artifactId: `art_11111111-1111-4111-8111-1111111111${index.toString().padStart(2, "0")}`,
+      repositoryId: "rep_11111111-1111-4111-8111-111111111111",
+      resolvedRepositoryIdentity: "repo-root",
+      exactPath: row.publicIdentity,
+      submittedMediaType: row.dimensions.mediaType.value as string,
+      submittedSha256: "a".repeat(64),
+      present: true,
+    }));
+    const ok = enforceV13LifecycleDimensionsFromArtifactRefs({
+      pack,
+      procedureId,
+      artifactRefFacts: facts,
+      terminalState: "completed",
+      dispatchContext: {
+        questId: "qst_1",
+        dispatchId: "dsp_1",
+        activationId: "act_1",
+        approvalId: "apr_1",
+        capabilityId: "research.review.campaign",
+      },
+    });
+    expect(ok.ok).toBe(true);
+    expect(ok.findings).toEqual([]);
+  });
+
+  it("rejects missing required artifacts and media type drift", () => {
+    const pack = loadPack();
+    const procedureId = "review-case-v1";
+    const rows = pack.artifacts.filter(
+      (a) => a.family === resolveProcedureLifecycleFamily(procedureId),
+    );
+    // Omit the last row (requiredness failure) and drift media type on the first.
+    const facts = rows.slice(0, -1).map((row, index) => ({
+      artifactId: `art_22222222-2222-4222-8222-2222222222${index.toString().padStart(2, "0")}`,
+      repositoryId: "rep_22222222-2222-4222-8222-222222222222",
+      resolvedRepositoryIdentity: "repo-root",
+      exactPath: row.publicIdentity,
+      submittedMediaType:
+        index === 0 ? "application/x-wrong" : (row.dimensions.mediaType.value as string),
+      submittedSha256: "b".repeat(64),
+      present: true,
+    }));
+    const result = enforceV13LifecycleDimensionsFromArtifactRefs({
+      pack,
+      procedureId,
+      artifactRefFacts: facts,
+    });
+    expect(result.ok).toBe(false);
+    const codes = new Set(result.findings.map((f) => f.code));
+    expect(codes.has("V13_ARTIFACT_REQUIRED_MISSING")).toBe(true);
+    expect(codes.has("V13_ARTIFACT_MEDIA_TYPE_INVALID")).toBe(true);
+  });
+});

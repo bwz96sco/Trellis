@@ -15,6 +15,7 @@ import {
   buildMethodologyReport,
   buildMethodologyReportV2,
   deriveMethodologyValidatorFacts,
+  enforceV13LifecycleDimensionsFromArtifactRefs,
   isAuthoritativeMethodologyProcedureVersion,
   parseAcceptedV13ContractPack,
   runMethodologyValidators,
@@ -30,7 +31,9 @@ import {
   type MethodologyValidatorDescriptor,
   type ParsedResearchProcedure,
   type V13AcceptedContractPack,
+  type V13ArtifactRefFact,
   type V13LeafFileName,
+  type V13ProcedureClosureDisposition,
 } from "@mindfoldhq/trellis-core/research";
 
 import { parseStrictJsonInput } from "./strict-json-input.js";
@@ -387,6 +390,18 @@ export function validateMethodologyBeforeRecord(input: {
   /** Explicit v1.3 closure fields (required for evaluation-contract-v1.3.0). */
   readonly selected?: boolean;
   readonly blocked?: boolean;
+  /** Closed 17-Procedure closure disposition (CS5-2). */
+  readonly closureDisposition?: V13ProcedureClosureDisposition;
+  /** Exact ArtifactRef-derived lifecycle facts (CS5-2, never parallel authority). */
+  readonly artifactRefFacts?: readonly V13ArtifactRefFact[];
+  /** Dispatch context for cross-artifact equal bindings (CS5-2). */
+  readonly dispatchContext?: Readonly<{
+    readonly questId: string;
+    readonly dispatchId: string;
+    readonly activationId: string;
+    readonly approvalId: string;
+    readonly capabilityId: string;
+  }>;
   readonly declaredValidators?: readonly MethodologyValidatorDescriptor[];
   readonly procedure?: ParsedResearchProcedure;
   readonly acceptedV13Pack?: V13AcceptedContractPack;
@@ -420,11 +435,12 @@ export function validateMethodologyBeforeRecord(input: {
     methodologyContractDigest === V13_ATTEMPT2_REJECTED_CONTRACT_DIGEST ||
     methodologyContractDigest === V13_METHODOLOGY_CONTRACT_DIGEST;
 
-  // Explicit closure for accepted successor versions (2.0.4 / 2.0.5).
+  // Explicit closure for accepted successor versions (2.0.4 / 2.0.5 / 2.0.6).
   // Never derive selected/blocked from Result.status on that path.
   const isSuccessorProcedureVersion =
     input.procedureVersion === LOSSLESS_METHODOLOGY_PROCEDURE_VERSION ||
-    input.procedureVersion === "2.0.5";
+    input.procedureVersion === "2.0.5" ||
+    input.procedureVersion === "2.0.6";
   const requireExplicitClosure =
     procedureAuthoritative && isSuccessorProcedureVersion;
 
@@ -588,12 +604,45 @@ export function validateMethodologyBeforeRecord(input: {
     mergedValidation.ok &&
     !mergedValidation.criticalFailure;
 
+  // CS5-2: exact ArtifactRef-derived lifecycle enforcement for accepted
+  // successor paths. This replaces parallel path/digest authority when facts
+  // are supplied; the legacy contract binding below remains only for
+  // non-successor (v1.2) callers that pass artifactPaths directly.
+  if (
+    isSuccessorProcedureVersion &&
+    acceptedPack !== undefined &&
+    input.artifactRefFacts !== undefined &&
+    methodologyContractDigest === V13_ACCEPTED_CONTRACT_DIGEST
+  ) {
+    const lifecycleResult = enforceV13LifecycleDimensionsFromArtifactRefs({
+      pack: acceptedPack,
+      procedureId: input.procedureId,
+      artifactRefFacts: input.artifactRefFacts,
+      terminalState: input.terminalState,
+      dispatchContext: input.dispatchContext,
+    });
+    if (!lifecycleResult.ok) {
+      const findings = lifecycleResult.findings.map((f) => ({
+        validatorId: "artifact-contract",
+        severity: "critical" as const,
+        code: f.code,
+        message: `${f.dimension} ${f.publicIdentity}: ${f.message}`,
+      }));
+      mergedValidation = {
+        ok: false,
+        criticalFailure: true,
+        findings: Object.freeze([...mergedValidation.findings, ...findings]),
+      };
+    }
+  }
+
   // When exact contracts exist on the pack, enforce artifact path/cardinality.
   // Skip for unaccepted 2.0.3 authority paths (already critical-failed above).
   if (
     input.procedure !== undefined &&
     input.procedureVersion !== "2.0.3" &&
-    !usesRejectedA2Digest
+    !usesRejectedA2Digest &&
+    !(isSuccessorProcedureVersion && input.artifactRefFacts !== undefined)
   ) {
     const contracts = loadArtifactContractsFromProcedure(input.procedure);
     if (contracts.length > 0) {
@@ -675,6 +724,7 @@ export function validateMethodologyBeforeRecord(input: {
       requireExplicitClosure,
       resultStatusNotAuthority: true,
       reportV2Authorized,
+      closureDisposition: input.closureDisposition,
     },
   });
 

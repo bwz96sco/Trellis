@@ -1535,6 +1535,8 @@ export function parseCanonicalMethodologyClosureArtifact(input: {
   readonly expectedFamily: string;
   readonly closureArtifactId: string;
   readonly boundArtifactIds: readonly string[];
+  /** Full recognized closure ArtifactRef ids (current family included). */
+  readonly forbiddenClosureArtifactIds?: readonly string[];
 }): CanonicalClosureParseResult {
   let parsed: unknown;
   try {
@@ -1644,6 +1646,7 @@ export function parseCanonicalMethodologyClosureArtifact(input: {
     };
   }
   const bound = new Set(input.boundArtifactIds);
+  const forbidden = new Set(input.forbiddenClosureArtifactIds ?? []);
   const checkSide = (
     label: string,
     value: boolean,
@@ -1662,6 +1665,13 @@ export function parseCanonicalMethodologyClosureArtifact(input: {
           ok: false,
           code: "V13_CLOSURE_EVIDENCE_INVALID",
           message: `${label} evidence must not self-reference the closure artifact`,
+        };
+      }
+      if (forbidden.has(id)) {
+        return {
+          ok: false,
+          code: "V13_CLOSURE_EVIDENCE_INVALID",
+          message: `${label} evidence must not reference any closure artifact (current or other family)`,
         };
       }
       if (!bound.has(id)) {
@@ -1764,4 +1774,867 @@ export function deriveAcceptedV13PackIdentity(input: {
     aggregateSha256: `sha256:${tree.digest("hex")}`,
     members: Object.freeze(members),
   });
+}
+
+// ===========================================================================
+// CS5-2 — Closed 17-Procedure closure disposition and exact ArtifactRef
+// lifecycle/binding execution (evaluation-contract-v1.3.0 accepted A3).
+// ===========================================================================
+
+export const V13_PROCEDURE_COUNT = 17 as const;
+export const V13_CLOSURE_REQUIRED_PROCEDURE_COUNT = 6 as const;
+export const V13_CLOSURE_NOT_APPLICABLE_PROCEDURE_COUNT = 11 as const;
+
+export interface V13ClosureArtifactRefSpec {
+  readonly family: string;
+  readonly closureContractId: string;
+  readonly exactPath: string;
+  readonly mediaType: string;
+}
+
+/** Exact canonical closure ArtifactRef set from the accepted A3 closure contract. */
+export const V13_CLOSURE_ARTIFACT_SPECS: readonly V13ClosureArtifactRefSpec[] =
+  Object.freeze([
+    Object.freeze({
+      family: "research-literature",
+      closureContractId:
+        "closure-artifact-research-literature-methodology-closure-research-literature-json-cc3fe05d40",
+      exactPath: "methodology/closure/research-literature.json",
+      mediaType: "application/json",
+    }),
+    Object.freeze({
+      family: "research-ideation",
+      closureContractId:
+        "closure-artifact-research-ideation-methodology-closure-research-ideation-json-bf5f473b0a",
+      exactPath: "methodology/closure/research-ideation.json",
+      mediaType: "application/json",
+    }),
+    Object.freeze({
+      family: "research-idea-evaluation",
+      closureContractId:
+        "closure-artifact-research-idea-evaluation-methodology-closure-research-idea-evaluation-js-99210b58f8",
+      exactPath: "methodology/closure/research-idea-evaluation.json",
+      mediaType: "application/json",
+    }),
+    Object.freeze({
+      family: "research-experiment",
+      closureContractId:
+        "closure-artifact-research-experiment-methodology-closure-research-experiment-json-4d9725b89a",
+      exactPath: "methodology/closure/research-experiment.json",
+      mediaType: "application/json",
+    }),
+  ]);
+
+export type V13ProcedureClosureDisposition =
+  | {
+      readonly kind: "required";
+      readonly procedureId: string;
+      readonly family: string;
+      readonly closureContractId: string;
+      readonly exactPath: string;
+      readonly mediaType: string;
+    }
+  | {
+      readonly kind: "notApplicable";
+      readonly procedureId: string;
+      readonly code: string;
+      readonly rationale: string;
+    };
+
+const NOT_APPLICABLE_RATIONALE =
+  "This Procedure family has no canonical closure artifact under the accepted A3 closure contract; closure is explicitly notApplicable and must never be derived from Result.status.";
+
+/** Closed 17-Procedure closure disposition map (exact, no fallback). */
+export const V13_PROCEDURE_CLOSURE_DISPOSITIONS: Readonly<
+  Record<string, V13ProcedureClosureDisposition>
+> = Object.freeze({
+  "literature-scan-v1": Object.freeze({
+    kind: "required",
+    procedureId: "literature-scan-v1",
+    family: "research-literature",
+    closureContractId:
+      "closure-artifact-research-literature-methodology-closure-research-literature-json-cc3fe05d40",
+    exactPath: "methodology/closure/research-literature.json",
+    mediaType: "application/json",
+  }),
+  "literature-review-v1": Object.freeze({
+    kind: "required",
+    procedureId: "literature-review-v1",
+    family: "research-literature",
+    closureContractId:
+      "closure-artifact-research-literature-methodology-closure-research-literature-json-cc3fe05d40",
+    exactPath: "methodology/closure/research-literature.json",
+    mediaType: "application/json",
+  }),
+  "idea-generation-v1": Object.freeze({
+    kind: "required",
+    procedureId: "idea-generation-v1",
+    family: "research-ideation",
+    closureContractId:
+      "closure-artifact-research-ideation-methodology-closure-research-ideation-json-bf5f473b0a",
+    exactPath: "methodology/closure/research-ideation.json",
+    mediaType: "application/json",
+  }),
+  "idea-evaluation-v1": Object.freeze({
+    kind: "required",
+    procedureId: "idea-evaluation-v1",
+    family: "research-idea-evaluation",
+    closureContractId:
+      "closure-artifact-research-idea-evaluation-methodology-closure-research-idea-evaluation-js-99210b58f8",
+    exactPath: "methodology/closure/research-idea-evaluation.json",
+    mediaType: "application/json",
+  }),
+  "experiment-campaign-v1": Object.freeze({
+    kind: "required",
+    procedureId: "experiment-campaign-v1",
+    family: "research-experiment",
+    closureContractId:
+      "closure-artifact-research-experiment-methodology-closure-research-experiment-json-4d9725b89a",
+    exactPath: "methodology/closure/research-experiment.json",
+    mediaType: "application/json",
+  }),
+  "experiment-round-v1": Object.freeze({
+    kind: "required",
+    procedureId: "experiment-round-v1",
+    family: "research-experiment",
+    closureContractId:
+      "closure-artifact-research-experiment-methodology-closure-research-experiment-json-4d9725b89a",
+    exactPath: "methodology/closure/research-experiment.json",
+    mediaType: "application/json",
+  }),
+  "project-setup-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "project-setup-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_PROJECT_SETUP",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "quest-framing-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "quest-framing-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_QUEST_FRAMING",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "quest-admin-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "quest-admin-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_QUEST_ADMIN",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "survey-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "survey-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_SURVEY",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "computation-case-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "computation-case-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_COMPUTATION",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "theory-case-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "theory-case-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_THEORY",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "review-case-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "review-case-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_REVIEW_CASE",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "review-campaign-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "review-campaign-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_REVIEW_CAMPAIGN",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "writing-case-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "writing-case-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_WRITING",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "figure-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "figure-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_FIGURE",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+  "slides-v1": Object.freeze({
+    kind: "notApplicable",
+    procedureId: "slides-v1",
+    code: "V13_CLOSURE_NOT_APPLICABLE_SLIDES",
+    rationale: NOT_APPLICABLE_RATIONALE,
+  }),
+});
+
+export function resolveProcedureClosureDisposition(
+  procedureId: string,
+): V13ProcedureClosureDisposition {
+  const disposition = V13_PROCEDURE_CLOSURE_DISPOSITIONS[procedureId];
+  if (disposition === undefined) {
+    fail(
+      "V13_UNKNOWN_PROCEDURE",
+      `Procedure '${procedureId}' is not in the closed 17-Procedure v1.3 set`,
+    );
+  }
+  return disposition;
+}
+
+/** Exact-path closure membership: no suffix, substring, or regex authority. */
+export function isV13ClosureArtifactExactPath(candidatePath: string): boolean {
+  return V13_CLOSURE_ARTIFACT_SPECS.some(
+    (spec) => spec.exactPath === candidatePath,
+  );
+}
+
+export function findV13ClosureArtifactSpecForFamily(
+  family: string,
+): V13ClosureArtifactRefSpec | undefined {
+  return V13_CLOSURE_ARTIFACT_SPECS.find((spec) => spec.family === family);
+}
+
+/**
+ * Closed 17-Procedure lifecycle-family mapping derived from the accepted A3
+ * artifact lifecycle contract. Families without lifecycle artifacts (survey,
+ * writing, figure, slides) are null — their artifact bindings are not
+ * applicable and must never be defaulted to a smaller authority set.
+ */
+export const V13_PROCEDURE_LIFECYCLE_FAMILIES: Readonly<
+  Record<string, string | null>
+> = Object.freeze({
+  "project-setup-v1": "research-project-setup",
+  "quest-framing-v1": "research-quest",
+  "quest-admin-v1": "research-quest-admin",
+  "literature-scan-v1": "research-literature",
+  "literature-review-v1": "research-literature",
+  "survey-v1": null,
+  "idea-generation-v1": "research-ideation",
+  "idea-evaluation-v1": "research-idea-evaluation",
+  "experiment-round-v1": "research-experiment",
+  "experiment-campaign-v1": "research-experiment-campaign",
+  "computation-case-v1": "research-computation",
+  "theory-case-v1": "research-computation",
+  "review-case-v1": "research-review-case",
+  "review-campaign-v1": "research-review-campaign",
+  "writing-case-v1": null,
+  "figure-v1": null,
+  "slides-v1": null,
+});
+
+export function resolveProcedureLifecycleFamily(
+  procedureId: string,
+): string | null {
+  if (!(procedureId in V13_PROCEDURE_LIFECYCLE_FAMILIES)) {
+    fail(
+      "V13_UNKNOWN_PROCEDURE",
+      `Procedure '${procedureId}' is not in the closed 17-Procedure v1.3 set`,
+    );
+  }
+  return V13_PROCEDURE_LIFECYCLE_FAMILIES[procedureId];
+}
+
+/**
+ * Exact ArtifactRef-derived lifecycle input (replaces parallel path/digest
+ * authority). The submitted media type and SHA-256 are never replaced with
+ * expected contract values.
+ */
+export interface V13ArtifactRefFact {
+  readonly artifactId: string;
+  readonly repositoryId?: string;
+  readonly resolvedRepositoryIdentity?: string;
+  readonly exactPath: string;
+  readonly submittedMediaType?: string;
+  readonly submittedSha256?: string;
+  readonly present: boolean;
+}
+
+const ALLOWED_V13_RULE_KINDS = Object.freeze([
+  ...V13_LIFECYCLE_DIMENSIONS.map((d) => `artifact.${d}`),
+  "closure.schema",
+  "closure.evidence",
+  "closure.xor",
+  "closure.status-inference",
+  "closure.worker-boundary",
+  "validator.binding-integrity",
+  "report.v2-binding",
+  "authority.worker-boundary",
+  "contract.output-disposition",
+  "contract.blocked-output-kind",
+  "contract.closure-applicability",
+  "contract.canonical-bytes",
+  "contract.compatibility",
+  "contract.candidate-authority",
+  "contract.differential-domains",
+  "contract.conditional-artifacts",
+] as const);
+
+function dimensionFromArtifactRuleKind(ruleKind: string): V13LifecycleDimension | undefined {
+  if (!ruleKind.startsWith("artifact.")) return undefined;
+  const name = ruleKind.slice("artifact.".length);
+  return (V13_LIFECYCLE_DIMENSIONS as readonly string[]).includes(name)
+    ? (name as V13LifecycleDimension)
+    : undefined;
+}
+
+/**
+ * Validate all 876 binding rows' cross-links: target identity, applicable rule
+ * kind, validator identity/version/severity, and duplicate logical bindings.
+ * Duplicate logical bindings (same targetId + ruleKind + validator key) are
+ * critical per the accepted binding-matrix disposition.
+ */
+export function validateV13BindingCrossLinks(pack: V13AcceptedContractPack): {
+  readonly ok: boolean;
+  readonly findings: readonly { bindingId: string; code: string; message: string }[];
+} {
+  const findings: { bindingId: string; code: string; message: string }[] = [];
+  const artifactsById = new Map(
+    pack.artifacts.map((a) => [a.artifactId, a] as const),
+  );
+  const validatorKeys = new Set(
+    pack.validators.map((v) => `${v.identity.id}@${v.identity.version}`),
+  );
+  const logical = new Set<string>();
+  for (const binding of pack.bindings) {
+    const ruleKind = binding.ruleKind;
+    if (!(ALLOWED_V13_RULE_KINDS as readonly string[]).includes(ruleKind)) {
+      findings.push({
+        bindingId: binding.bindingId,
+        code: "V13_BINDING_RULEKIND_INVALID",
+        message: `Binding ruleKind '${ruleKind}' is not an accepted v1.3 rule kind`,
+      });
+      continue;
+    }
+    if (ruleKind.startsWith("artifact.")) {
+      const target = artifactsById.get(binding.targetId);
+      if (target === undefined) {
+        findings.push({
+          bindingId: binding.bindingId,
+          code: "V13_BINDING_TARGET_UNRESOLVED",
+          message: `Binding artifact target '${binding.targetId}' is not a lifecycle artifact`,
+        });
+      }
+      if (dimensionFromArtifactRuleKind(ruleKind) === undefined) {
+        findings.push({
+          bindingId: binding.bindingId,
+          code: "V13_BINDING_DIMENSION_INVALID",
+          message: `Binding ruleKind '${ruleKind}' has no lifecycle dimension`,
+        });
+      }
+    }
+    const validatorKey = `${binding.validator.id}@${binding.validator.version}`;
+    if (!validatorKeys.has(validatorKey)) {
+      findings.push({
+        bindingId: binding.bindingId,
+        code: "V13_UNKNOWN_VALIDATOR",
+        message: `Binding references untrusted validator ${validatorKey}`,
+      });
+    }
+    if (binding.validator.severity !== "critical") {
+      findings.push({
+        bindingId: binding.bindingId,
+        code: "V13_SEVERITY_DOWNGRADE",
+        message: `Binding severity '${binding.validator.severity}' must be critical`,
+      });
+    }
+    const logicalKey = `${binding.targetId}\0${ruleKind}\0${validatorKey}`;
+    if (logical.has(logicalKey)) {
+      findings.push({
+        bindingId: binding.bindingId,
+        code: "V13_VALIDATOR_BINDING_INVALID",
+        message: `Duplicate logical binding target=${binding.targetId} ruleKind=${ruleKind} validator=${validatorKey}`,
+      });
+    }
+    logical.add(logicalKey);
+  }
+  return { ok: findings.length === 0, findings: Object.freeze(findings) };
+}
+
+export interface V13ApplicableBinding {
+  readonly binding: V13ValidatorBinding;
+  readonly sourceRowIndex: number;
+  readonly target?: V13ArtifactLifecycleRow;
+  readonly dimension?: V13LifecycleDimension;
+  readonly isGlobal: boolean;
+}
+
+/**
+ * Resolve bindings applicable to one exact Procedure. Artifact rules apply
+ * only when the Procedure's lifecycle family owns the target artifact; closure
+ * rules apply only to the six closure-required Procedures; global contract/
+ * validator/report/authority rules apply to every Procedure. Never
+ * deduplicates bindings into a smaller authority set.
+ */
+export function selectApplicableV13BindingsForProcedure(input: {
+  readonly pack: V13AcceptedContractPack;
+  readonly procedureId: string;
+}): readonly V13ApplicableBinding[] {
+  const crossLink = validateV13BindingCrossLinks(input.pack);
+  if (!crossLink.ok) {
+    fail(
+      "V13_BINDING_CROSSLINK_INVALID",
+      `Binding cross-link validation failed: ${crossLink.findings.map((f) => `${f.bindingId}:${f.code}`).join(",")}`,
+    );
+  }
+  const lifecycleFamily = resolveProcedureLifecycleFamily(input.procedureId);
+  const closureDisposition = resolveProcedureClosureDisposition(input.procedureId);
+  const familyTargetIds = new Set(
+    lifecycleFamily === null
+      ? []
+      : input.pack.artifacts
+          .filter((a) => a.family === lifecycleFamily)
+          .map((a) => a.artifactId),
+  );
+  const artifactsById = new Map(
+    input.pack.artifacts.map((a) => [a.artifactId, a] as const),
+  );
+  const selected: V13ApplicableBinding[] = [];
+  input.pack.bindings.forEach((binding, sourceRowIndex) => {
+    const ruleKind = binding.ruleKind;
+    const isGlobal = !ruleKind.startsWith("artifact.");
+    const isClosureRule = ruleKind.startsWith("closure.");
+    if (isClosureRule && closureDisposition.kind !== "required") {
+      return; // N/A family: closure bindings are not applicable.
+    }
+    if (!isGlobal) {
+      if (lifecycleFamily === null) return; // no lifecycle artifacts for this Procedure
+      if (!familyTargetIds.has(binding.targetId)) return;
+    }
+    const target = artifactsById.get(binding.targetId);
+    selected.push(
+      Object.freeze({
+        binding,
+        sourceRowIndex,
+        target,
+        dimension: dimensionFromArtifactRuleKind(ruleKind),
+        isGlobal,
+      }),
+    );
+  });
+  return Object.freeze(selected);
+}
+
+/**
+ * Invocation row for one binding executed independently (even when multiple
+ * rows share one validator implementation).
+ */
+export interface V13BindingInvocationRow {
+  readonly bindingId: string;
+  readonly sourceRowIndex: number;
+  readonly validatorId: string;
+  readonly validatorVersion: string;
+  readonly targetId: string;
+  readonly dimension?: V13LifecycleDimension;
+  readonly ruleKind: string;
+  readonly factSource: string;
+  readonly factValue: unknown;
+  readonly outcome: "pass" | "fail-closed";
+  readonly findingCode?: string;
+}
+
+export interface V13BindingExecutionResult {
+  readonly applicableCount: number;
+  readonly invocationCount: number;
+  readonly ok: boolean;
+  readonly criticalFailure: boolean;
+  readonly invocations: readonly V13BindingInvocationRow[];
+}
+
+/**
+ * Execute every applicable binding independently with an exact fact per
+ * binding. Fail closed when an applicable target is unresolved, a required
+ * fact is unresolved, a trusted validator implementation is missing, or the
+ * invocation count differs from the applicable binding count.
+ */
+export function executeV13BindingInvocations(input: {
+  readonly pack: V13AcceptedContractPack;
+  readonly applicableBindings: readonly V13ApplicableBinding[];
+  readonly factForBinding: (
+    binding: V13ApplicableBinding,
+  ) => { readonly source: string; readonly value: unknown } | undefined;
+  readonly invoke: (
+    binding: V13ApplicableBinding,
+    fact: { readonly source: string; readonly value: unknown },
+  ) => { readonly pass: boolean; readonly findingCode?: string };
+}): V13BindingExecutionResult {
+  const invocations: V13BindingInvocationRow[] = [];
+  const applicable = input.applicableBindings;
+  for (const applicableBinding of applicable) {
+    if (applicableBinding.binding.validator.severity !== "critical") {
+      fail("V13_SEVERITY_DOWNGRADE", "Applicable binding severity must be critical");
+    }
+    const fact = input.factForBinding(applicableBinding);
+    if (fact === undefined) {
+      fail(
+        "V13_APPLICABLE_FACT_UNRESOLVED",
+        `Applicable binding ${applicableBinding.binding.bindingId} has no required fact`,
+      );
+    }
+    const result = input.invoke(applicableBinding, fact);
+    invocations.push(
+      Object.freeze({
+        bindingId: applicableBinding.binding.bindingId,
+        sourceRowIndex: applicableBinding.sourceRowIndex,
+        validatorId: applicableBinding.binding.validator.id,
+        validatorVersion: applicableBinding.binding.validator.version,
+        targetId: applicableBinding.binding.targetId,
+        dimension: applicableBinding.dimension,
+        ruleKind: applicableBinding.binding.ruleKind,
+        factSource: fact.source,
+        factValue: fact.value,
+        outcome: result.pass ? ("pass" as const) : ("fail-closed" as const),
+        findingCode: result.findingCode,
+      }),
+    );
+  }
+  if (invocations.length !== applicable.length) {
+    fail(
+      "V13_INVOCATION_COUNT_MISMATCH",
+      `Invocation count ${invocations.length} != applicable binding count ${applicable.length}`,
+    );
+  }
+  const failed = invocations.filter((i) => i.outcome === "fail-closed");
+  const criticalFailure = failed.length > 0;
+  return Object.freeze({
+    applicableCount: applicable.length,
+    invocationCount: invocations.length,
+    ok: !criticalFailure,
+    criticalFailure,
+    invocations: Object.freeze(invocations),
+  });
+}
+
+// ===========================================================================
+// CS5-2 — ArtifactRef-derived lifecycle dimension enforcement.
+// ===========================================================================
+
+export interface V13LifecycleDimensionFinding {
+  readonly artifactId: string;
+  readonly publicIdentity: string;
+  readonly dimension: V13LifecycleDimension;
+  readonly code: string;
+  readonly message: string;
+}
+
+const V13_ARTIFACT_ID_UUID_RE =
+  /^art_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+function pathBasename(p: string): string {
+  const idx = p.lastIndexOf("/");
+  return idx === -1 ? p : p.slice(idx + 1);
+}
+
+function matchLifecycleRowToFact(
+  row: V13ArtifactLifecycleRow,
+  fact: V13ArtifactRefFact,
+): boolean {
+  if (fact.exactPath === row.publicIdentity) return true;
+  return pathBasename(fact.exactPath) === row.publicIdentity;
+}
+
+/**
+ * Enforce every accepted lifecycle dimension from authenticated A3 rows using
+ * exact ArtifactRef-derived facts. The submitted media type is never replaced
+ * with an expected contract value; Result.status is never consulted.
+ */
+export function enforceV13LifecycleDimensionsFromArtifactRefs(input: {
+  readonly pack: V13AcceptedContractPack;
+  readonly procedureId: string;
+  readonly artifactRefFacts: readonly V13ArtifactRefFact[];
+  readonly terminalState?: string;
+  readonly dispatchContext?: Readonly<{
+    readonly questId: string;
+    readonly dispatchId: string;
+    readonly activationId: string;
+    readonly approvalId: string;
+    readonly capabilityId: string;
+  }>;
+}): {
+  readonly ok: boolean;
+  readonly findings: readonly V13LifecycleDimensionFinding[];
+} {
+  const lifecycleFamily = resolveProcedureLifecycleFamily(input.procedureId);
+  const findings: V13LifecycleDimensionFinding[] = [];
+  const familyRows =
+    lifecycleFamily === null
+      ? []
+      : input.pack.artifacts.filter((a) => a.family === lifecycleFamily);
+
+  const pushFinding = (
+    artifactId: string,
+    publicIdentity: string,
+    dimension: V13LifecycleDimension,
+    code: string,
+    message: string,
+  ): void => {
+    findings.push(
+      Object.freeze({
+        artifactId,
+        publicIdentity,
+        dimension,
+        code,
+        message,
+      }),
+    );
+  };
+
+  // Stable identity: every fact must carry a unique valid artifact identity.
+  const seenArtifactIds = new Set<string>();
+  for (const fact of input.artifactRefFacts) {
+    if (seenArtifactIds.has(fact.artifactId)) {
+      pushFinding(
+        fact.artifactId,
+        fact.exactPath,
+        "crossArtifactConsistency",
+        "V13_ARTIFACT_CROSS_CONSISTENCY_INVALID",
+        `Duplicate artifactId '${fact.artifactId}' across ArtifactRefs (alias conflict)`,
+      );
+    }
+    seenArtifactIds.add(fact.artifactId);
+    const stableOk =
+      V13_ARTIFACT_ID_UUID_RE.test(fact.artifactId) ||
+      V13_CLOSURE_ARTIFACT_SPECS.some(
+        (spec) => spec.closureContractId === fact.artifactId,
+      );
+    if (!stableOk) {
+      pushFinding(
+        fact.artifactId,
+        fact.exactPath,
+        "stableId",
+        "V13_ARTIFACT_STABLE_ID_INVALID",
+        `ArtifactRef id '${fact.artifactId}' is not a valid v1.3 stable artifact id`,
+      );
+    }
+  }
+
+  // Alias conflict: the same exact path bound twice with different ids.
+  const pathToIds = new Map<string, string>();
+  for (const fact of input.artifactRefFacts) {
+    const existing = pathToIds.get(fact.exactPath);
+    if (existing !== undefined && existing !== fact.artifactId) {
+      pushFinding(
+        fact.artifactId,
+        fact.exactPath,
+        "crossArtifactConsistency",
+        "V13_ARTIFACT_CROSS_CONSISTENCY_INVALID",
+        `Alias conflict: exact path '${fact.exactPath}' bound to both '${existing}' and '${fact.artifactId}'`,
+      );
+    }
+    pathToIds.set(fact.exactPath, fact.artifactId);
+  }
+
+  if (lifecycleFamily === null) {
+    // Families without lifecycle artifacts: any bound family artifact is an
+    // undeclared/unauthorized production.
+    for (const fact of input.artifactRefFacts) {
+      const isClosure = isV13ClosureArtifactExactPath(fact.exactPath);
+      if (!isClosure) {
+        pushFinding(
+          fact.artifactId,
+          fact.exactPath,
+          "producer",
+          "V13_ARTIFACT_AUTHORITY_INVALID",
+          `Procedure '${input.procedureId}' has no lifecycle artifacts; bound path '${fact.exactPath}' is undeclared`,
+        );
+      }
+    }
+  } else {
+    const matched = new Set<string>();
+    for (const row of familyRows) {
+      const rowFacts = input.artifactRefFacts.filter((fact) =>
+        matchLifecycleRowToFact(row, fact),
+      );
+      matched.add(row.publicIdentity);
+      const dimensionRow = row.dimensions;
+
+      // requiredness: every enforceable artifact is required-before-root-record.
+      if (rowFacts.length === 0) {
+        pushFinding(
+          row.artifactId,
+          row.publicIdentity,
+          "requiredness",
+          "V13_ARTIFACT_REQUIRED_MISSING",
+          `Required lifecycle artifact '${row.publicIdentity}' has no bound ArtifactRef`,
+        );
+        continue;
+      }
+
+      // cardinality: 1 => exactly one fact; 1..* => one or more.
+      const cardinalityValue = dimensionRow.cardinality.value;
+      if (cardinalityValue === "1" && rowFacts.length !== 1) {
+        pushFinding(
+          row.artifactId,
+          row.publicIdentity,
+          "cardinality",
+          "V13_ARTIFACT_CARDINALITY_INVALID",
+          `Cardinality 1 requires exactly one ArtifactRef, got ${rowFacts.length}`,
+        );
+      }
+      if (cardinalityValue === "1..*" && rowFacts.length === 0) {
+        pushFinding(
+          row.artifactId,
+          row.publicIdentity,
+          "cardinality",
+          "V13_ARTIFACT_CARDINALITY_INVALID",
+          `Cardinality 1..* requires at least one ArtifactRef`,
+        );
+      }
+
+      for (const fact of rowFacts) {
+        // mediaType: submitted media type must equal the accepted row value;
+        // never replaced with an expected value.
+        const acceptedMediaType = dimensionRow.mediaType.value;
+        if (
+          typeof acceptedMediaType === "string" &&
+          fact.submittedMediaType !== acceptedMediaType
+        ) {
+          pushFinding(
+            row.artifactId,
+            row.publicIdentity,
+            "mediaType",
+            "V13_ARTIFACT_MEDIA_TYPE_INVALID",
+            `Submitted mediaType '${fact.submittedMediaType ?? "(missing)"}' != accepted '${acceptedMediaType}'`,
+          );
+        }
+
+        // repositoryArtifactRefRelation: artifactRef + digest required, exact
+        // path binding.
+        const relation = dimensionRow.repositoryArtifactRefRelation.value as
+          | Record<string, unknown>
+          | undefined;
+        if (
+          typeof relation?.artifactRefRequired === "boolean" &&
+          relation.artifactRefRequired === true &&
+          fact.present !== true
+        ) {
+          pushFinding(
+            row.artifactId,
+            row.publicIdentity,
+            "repositoryArtifactRefRelation",
+            "V13_ARTIFACT_REF_BINDING_INVALID",
+            "ArtifactRef required but fact is not present",
+          );
+        }
+        if (
+          typeof relation?.digestRequired === "boolean" &&
+          relation.digestRequired === true &&
+          typeof fact.submittedSha256 !== "string"
+        ) {
+          pushFinding(
+            row.artifactId,
+            row.publicIdentity,
+            "repositoryArtifactRefRelation",
+            "V13_ARTIFACT_REF_BINDING_INVALID",
+            "Content digest required but ArtifactRef has no sha256",
+          );
+        }
+
+        // provenance: required fields include repositoryId and sha256.
+        if (typeof fact.repositoryId !== "string") {
+          pushFinding(
+            row.artifactId,
+            row.publicIdentity,
+            "provenance",
+            "V13_ARTIFACT_PROVENANCE_INVALID",
+            "ArtifactRef provenance requires repositoryId",
+          );
+        }
+        if (fact.resolvedRepositoryIdentity === undefined) {
+          pushFinding(
+            row.artifactId,
+            row.publicIdentity,
+            "provenance",
+            "V13_ARTIFACT_PROVENANCE_INVALID",
+            "ArtifactRef repository root unresolved at record time",
+          );
+        }
+
+        // crossArtifactConsistency: equal bindings across refs are enforced
+        // through dispatch context equality (single dispatch context).
+        const context = input.dispatchContext;
+        if (context !== undefined) {
+          for (const field of [
+            ["questId", context.questId],
+            ["dispatchId", context.dispatchId],
+            ["activationId", context.activationId],
+            ["approvalId", context.approvalId],
+            ["capabilityId", context.capabilityId],
+            ["repositoryId", fact.repositoryId],
+          ] as const) {
+            if (field[1] === undefined || field[1] === null || field[1] === "") {
+              pushFinding(
+                row.artifactId,
+                row.publicIdentity,
+                "crossArtifactConsistency",
+                "V13_ARTIFACT_CROSS_CONSISTENCY_INVALID",
+                `Equal binding '${field[0]}' is unresolved for artifact '${row.publicIdentity}'`,
+              );
+            }
+          }
+        }
+
+        // immutableFieldsAndMutationAuthority: artifactRef identity fields are
+        // immutable; a mutated (post-authoring) id/path is rejected.
+        const immutable = dimensionRow.immutableFieldsAndMutationAuthority
+          .value as { immutableFields?: readonly unknown[] } | undefined;
+        if (
+          Array.isArray(immutable?.immutableFields) &&
+          immutable.immutableFields.includes("artifactRef.sha256") &&
+          typeof fact.submittedSha256 !== "string"
+        ) {
+          pushFinding(
+            row.artifactId,
+            row.publicIdentity,
+            "immutableFieldsAndMutationAuthority",
+            "V13_ARTIFACT_IMMUTABILITY_INVALID",
+            "Immutable artifactRef.sha256 must be declared on the ArtifactRef",
+          );
+        }
+      }
+    }
+
+    // Unexpected bound artifacts: a fact matching no family row (and no
+    // closure artifact) is undeclared production.
+    for (const fact of input.artifactRefFacts) {
+      if (isV13ClosureArtifactExactPath(fact.exactPath)) continue;
+      const anyMatch = familyRows.some((row) => matchLifecycleRowToFact(row, fact));
+      if (!anyMatch) {
+        pushFinding(
+          fact.artifactId,
+          fact.exactPath,
+          "producer",
+          "V13_ARTIFACT_AUTHORITY_INVALID",
+          `Bound path '${fact.exactPath}' matches no lifecycle artifact of family '${lifecycleFamily}'`,
+        );
+      }
+    }
+    void matched;
+  }
+
+  // terminalApplicability: resultStatusIndependent — Result.status never gates
+  // lifecycle enforcement. When a terminal state is supplied it must be
+  // consistent with the accepted closed terminal sets of every bound row.
+  if (lifecycleFamily !== null && input.terminalState !== undefined) {
+    for (const row of familyRows) {
+      const terminal = row.dimensions.terminalApplicability.value as
+        | { resultStatusIndependent?: boolean; appliesOn?: unknown }
+        | undefined;
+      if (terminal?.resultStatusIndependent !== true) {
+        pushFinding(
+          row.artifactId,
+          row.publicIdentity,
+          "terminalApplicability",
+          "V13_ARTIFACT_TERMINAL_APPLICABILITY_INVALID",
+          "Lifecycle enforcement must be Result.status-independent under v1.3",
+        );
+      }
+    }
+  }
+
+  return {
+    ok: findings.length === 0,
+    findings: Object.freeze(findings),
+  };
 }
