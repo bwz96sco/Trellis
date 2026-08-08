@@ -48,7 +48,8 @@
     "08-04-accept-v13-complete-system-machine-assurance",
     "08-06-cs5-authenticated-complete-system-runtime-correction",
     "08-07-cs6-complete-system-forward-correction",
-    "08-08-correct-evaluation-contract-v1-3-1-semantic-defects"
+    "08-08-correct-evaluation-contract-v1-3-1-semantic-defects",
+    "08-08-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-2"
   ],
   "parent": null,
   "relatedFiles": [],

@@ -465,3 +465,16 @@ A11 contract-defect
 The candidate corrects only four authority gaps: closed report-v2 schema, executable semantics for all 20 validators, reproducible global differential mutations/applicability, and a total Procedure/capability family mapping for all 845 lifecycle decisions. A JSON-pointer diff classifies every change; any fifth semantic change stops authoring. Acceptance can authorize only the semantic contract for a future campaign, never current runtime or operational changes.
 
 G131 freezes the closed JSON Schema 2020-12 subset including deterministic ECMA-262 11th-edition `pattern` semantics, `trellis-predicate-v1`, `trellis-mutation-v1`, exact population counts with 11 lifecycle artifact-family values distinct from 4 closure families, the ordered 17-tuple mapping domain without per-row assignments, finite exact-guarded propagation domains, literal digest framing, no-self-reference manifests, fresh reviewer/no-shared-scratch contract, operator identity/rationale/timestamp rules, and common false authority schema. CS6-2 through CS6-8 and C2/C3/C4/C5/I11/S11/M0/M11/O11 remain blocked and cannot be renamed or rebound.
+
+## Additive overlay — v1.3.1 attempt-2 mapping correction design (2026-08-08)
+
+```text
+G131/A131 immutable history
+  -> G132 sibling governance
+  -> future A132 fixed disposition-aware mapping authoring
+  -> future B132 complete 17 × 845 MAL-1 assurance
+  -> future O132 separate operator decision
+  -> STOP
+```
+
+The replacement row schema requires exactly `procedureId`, `procedureVersion`, `capabilityId`, `disposition`, and `artifactFamily`. Applicable rows require one frozen non-null family; not-applicable rows require null. Applicability is exactly the conjunction of applicable disposition and target-family equality. `experiment-campaign-v1` lifecycle family `research-experiment-campaign` remains independent from closure family `research-experiment`. G131 findings 001–003 and every unlisted finding-004 obligation remain immutable authority.

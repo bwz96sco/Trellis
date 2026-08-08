@@ -509,3 +509,16 @@ Canonical-parent changes are append-only campaign pointers. Accepted v1.3.0/A11,
 - O131-1: exactly one operator-decision JSON.
 
 The four task roots are disjoint exclusive ownership domains. Unknown output, overlap, child activation during G131, protected drift, count drift, or a fifth semantic change is a stop condition.
+
+## Additive amendment — evaluation-contract v1.3.1 attempt-2 ownership (2026-08-08)
+
+Status: G132 governance only. G131/A131/B131/O131 paths remain immutable and receive no new files.
+
+| Owner | Exclusive task path | Boundary |
+|---|---|---|
+| G132 governance | `.trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-2/**` | Planning, immutable pins, narrow finding-004 supersession, inventories, containment, validation |
+| A132 author | `.trellis/tasks/08-08-author-evaluation-contract-v1-3-1-attempt-2/**` | Future fixed-mapping seven-leaf authoring and exact 15-file evidence set |
+| B132 reviewer | `.trellis/tasks/08-08-assure-evaluation-contract-v1-3-1-mal1-attempt-2/**` | Future fresh MAL-1 assignment and exact 11-output assurance set; no repair |
+| O132 operator | `.trellis/tasks/08-08-decide-evaluation-contract-v1-3-1-attempt-2/**` | Future input attestation and one accept/reject/stop record |
+
+Canonical-parent changes are limited to the five G132 append-only overlays. Production, tests, registries, specifications, Procedure packages, harnesses, `.trellis/research/**`, inherited dirty paths, and all G131/A131/B131/O131 roots are excluded. Exact future counts are A132-0 2, A132-1 15, B132-0 2, B132-1 11, O132-0 2, and O132-1 1.

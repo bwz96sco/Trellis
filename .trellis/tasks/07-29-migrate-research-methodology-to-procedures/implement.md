@@ -467,3 +467,11 @@ Every task activation, commit boundary (G/A11/C2/C3/C4/C5/I11/S11/M0/M11/O11), a
 6. Stop after the operator decision. Any runtime, CLI, Procedure, harness, integration, live-selection, activation, release, publication, or push work requires a new campaign.
 
 G131 itself modifies exactly 36 planning/governance paths and writes seven campaign-local governance outputs. A131-0/A131-1/B131-0/B131-1/O131-0/O131-1 remain unauthorized and inactive. The current instruction authorizes G131 task execution and validation only; it does not authorize staging, commit, child activation, authoring, assurance, decision, or any technical work.
+
+## Additive overlay — v1.3.1 attempt-2 execution (2026-08-08)
+
+1. G132 authenticates A11 `3534529a36a10ea8015a51f71a93e2b78300a563`, G131 `15de62625685c32f00edf9aef8f2c1cf5a05d7bb`, A131-0 `9392f20ce0dd93107205ed7c28dc964b5879b7bc`, and Procedure evidence `0afef5adaea2a58c8c6cc5a3f1a51a054fa1a39d`.
+2. G132 creates exactly four planning packages, five append-only parent overlays, and seven governance outputs: exactly 36 paths.
+3. Future A132-0/A132-1, B132-0/B132-1, and O132-0/O132-1 remain separate and inactive.
+4. Future authoring must use the exact fixed 17-row conditional-nullability mapping and complete 14,365-decision matrix; no author family choice remains.
+5. Stop after G132 validation with no staging or commit and do not proceed to A132-0.
