@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "cs6-1-independent-semantic-auditor-assignment",
+  "assignmentId": "cs6-1-auditor-20260808-a",
+  "task": "08-07-cs6-audit-accepted-v13-semantic-leaves",
+  "governanceCommit": "27403e54fbe317b405400cbc9857a8537598130a",
+  "assignedRole": "independent-semantic-auditor",
+  "runtimeClass": {
+    "agentType": "trellis-research",
+    "freshContextRequired": true,
+    "conversationForkAllowed": false,
+    "modelClass": "opus"
+  },
+  "independenceBasis": {
+    "acceptedLeafAuthor": false,
+    "cs5TechnicalSubjectAuthor": false,
+    "cs5Attempt10Reviewer": false,
+    "cs6TechnicalRepairAuthor": false,
+    "mayEditAcceptedLeaves": false,
+    "mayEditProductionOrTests": false,
+    "mayRepairFindings": false,
+    "ownedWriteScope": ".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/**"
+  },
+  "auditInputs": {
+    "contract": "evaluation-contract-v1.3.0",
+    "semanticDigest": "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+    "memberAggregate": "sha256:83fdc8c292922173e4a67fa57deb65ff302ec107c202e3b793f7b4a93b23c7ef",
+    "memberCount": 7
+  },
+  "requiredDisposition": [
+    "leaves-sound",
+    "contract-defect"
+  ],
+  "authority": {
+    "humanReviewed": false,
+    "humanEquivalent": false,
+    "repairAuthority": false,
+    "completeSystemMachineAssuranceAccepted": false,
+    "operatorDecisionReceived": false,
+    "activationAuthorized": false,
+    "archiveAuthorized": false,
+    "releaseAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false
+  }
+}

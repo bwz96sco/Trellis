@@ -3,7 +3,7 @@
   "name": "cs6-audit-accepted-v13-semantic-leaves",
   "title": "CS6-1 — Audit accepted v1.3 semantic leaves",
   "description": "Independently audit the seven accepted evaluation-contract-v1.3.0 semantic leaves and stop for v1.3.1+ if any accepted leaf is defective.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
@@ -25,8 +25,12 @@
   "meta": {
     "campaign": "CS6",
     "wave": "CS6-1",
-    "ownerRole": "independent-semantic-auditor-unassigned",
-    "dependencies": ["CS6-0 committed governance", "separate task activation", "recorded auditor independence"],
+    "ownerRole": "independent-semantic-auditor:cs6-1-auditor-20260808-a",
+    "dependencies": [
+      "CS6-0 committed governance",
+      "separate task activation",
+      "recorded auditor independence"
+    ],
     "ownedPath": ".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/**",
     "activationGate": "CS6-0 frozen and separate user approval",
     "stopGate": "Any accepted-leaf defect or exact-input mismatch stops CS6 for v1.3.1+",
