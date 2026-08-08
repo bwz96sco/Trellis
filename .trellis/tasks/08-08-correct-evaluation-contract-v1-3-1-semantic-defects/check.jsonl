@@ -1,0 +1,9 @@
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Verify the new plan addresses every independently confirmed contract defect."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cross-leaf-consistency-audit.json","reason":"Preserve structural invariants that remained sound in v1.3.0."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/semantic-domain-reconciliation.json","reason":"Check counts and semantic domains remain fully reconciled."}
+{"file":".trellis/tasks/08-07-cs6-establish-successor-governance/research/cs6-path-ownership-map.md","reason":"Confirm CS6 remains stopped and successor ownership does not overlap technical children."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/task.json","reason":"Check reciprocal canonical-parent topology."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check deterministic and portable planning/evidence requirements."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-topology-and-path-ownership.json","reason":"Check reciprocal topology, exact path scope, child inactivity, and ownership disjointness."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-output-inventories.json","reason":"Check exact 36/2/15/2/11/2/1 inventories and seven-member continuity."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-validation.py","reason":"Check deterministic validation coverage, write scope, and read-only verification mode."}

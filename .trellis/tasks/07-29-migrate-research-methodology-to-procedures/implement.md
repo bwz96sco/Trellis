@@ -456,3 +456,14 @@ R0 remains addressability/planning evidence. R1 post-freeze semantics remain non
 9. CS6-8 remains inactive until committed M11 and a genuine separately authorized operator decision.
 
 Every task activation, commit boundary (G/A11/C2/C3/C4/C5/I11/S11/M0/M11/O11), assurance run, operator decision, activation, archive, release, publication, and push is separate. Current CS6-0 approval authorizes governance artifacts only and no commit.
+
+## Additive overlay — v1.3.1 successor execution (2026-08-08)
+
+1. Preserve A11 `3534529a36a10ea8015a51f71a93e2b78300a563`, all v1.3.0 bytes, and the CS6 stop disposition.
+2. G131 freezes reciprocal topology, exact ownership, four-finding allowlist, immutable pins, and all false authority flags.
+3. A131-0 separately activates/assigns the author; A131-1 writes exactly seven corrected normative leaves plus deterministic manifest, target, correction, and semantic-diff evidence.
+4. B131-0 separately assigns a fresh machine reviewer; B131-1 writes exactly the closed 11-output assurance allowlist and `pass`/`fail` verdict without repair.
+5. Any authenticated committed B131-1 `pass` or `fail` may proceed to separately instructed O131-0/O131-1. Acceptance requires `pass`; reject/stop may follow `pass` or `fail`.
+6. Stop after the operator decision. Any runtime, CLI, Procedure, harness, integration, live-selection, activation, release, publication, or push work requires a new campaign.
+
+G131 itself modifies exactly 36 planning/governance paths and writes seven campaign-local governance outputs. A131-0/A131-1/B131-0/B131-1/O131-0/O131-1 remain unauthorized and inactive. The current instruction authorizes G131 task execution and validation only; it does not authorize staging, commit, child activation, authoring, assurance, decision, or any technical work.

@@ -1,0 +1,11 @@
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-disposition.json","reason":"Authoritative A11 contract-defect stop disposition and downstream denial."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/semantic-audit-findings.json","reason":"Exact four accepted-contract defects and JSON pointers."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Independent verification that all four findings justify the stop gate."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/exact-input-attestation.json","reason":"Exact v1.3.0 member hashes, lengths, aggregate, and semantic digest."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/contract-candidate-manifest-v1.3.json","reason":"Historical accepted membership and manifest structure to preserve forward-only."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/frozen-migration-target-v1.3.json","reason":"Historical semantic target identity and digest framing."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/research/path-ownership-map.md","reason":"Canonical Phase-2 ownership and historical exclusions."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Portable deterministic evidence and strict serialization guidance."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-output-inventories.json","reason":"Exact G131 and future boundary path inventories."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-correction-and-propagation-allowlist.json","reason":"Closed four-finding corrections, executable profiles, populations, and no-fifth-change rules."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-authority-and-containment.json","reason":"Common authority denials, role isolation, decision eligibility, retry, digest, and terminal rules."}

@@ -448,3 +448,20 @@ CS6-0 governance
 ```
 
 Core corrections stay in methodology-local adapters; shared HIGH/CRITICAL events, reducers, stores, canonical ledgers, batch committers, locks, and hardened publication internals remain call-only. Integration uses real npm/pnpm tarballs and archive-safe historical blob locks, and S11 is a resolved one-file freeze record without self-hash placeholders. Attempt 11 writes exactly nine outputs, performs no repair, and cannot auto-accept or activate. See the CS6 campaign design and CS6-0 ownership map for normative detail.
+
+## Additive overlay — v1.3.1 semantic correction design (2026-08-08)
+
+A11 terminates the CS6 technical branch and opens a separate contract-only branch:
+
+```text
+A11 contract-defect
+  -> G131 governance
+  -> A131-0/A131-1 author exact seven-member v1.3.1 candidate
+  -> B131-0/B131-1 fresh machine-only semantic assurance
+  -> O131-0/O131-1 separate operator decision
+  -> STOP
+```
+
+The candidate corrects only four authority gaps: closed report-v2 schema, executable semantics for all 20 validators, reproducible global differential mutations/applicability, and a total Procedure/capability family mapping for all 845 lifecycle decisions. A JSON-pointer diff classifies every change; any fifth semantic change stops authoring. Acceptance can authorize only the semantic contract for a future campaign, never current runtime or operational changes.
+
+G131 freezes the closed JSON Schema 2020-12 subset including deterministic ECMA-262 11th-edition `pattern` semantics, `trellis-predicate-v1`, `trellis-mutation-v1`, exact population counts with 11 lifecycle artifact-family values distinct from 4 closure families, the ordered 17-tuple mapping domain without per-row assignments, finite exact-guarded propagation domains, literal digest framing, no-self-reference manifests, fresh reviewer/no-shared-scratch contract, operator identity/rationale/timestamp rules, and common false authority schema. CS6-2 through CS6-8 and C2/C3/C4/C5/I11/S11/M0/M11/O11 remain blocked and cannot be renamed or rebound.

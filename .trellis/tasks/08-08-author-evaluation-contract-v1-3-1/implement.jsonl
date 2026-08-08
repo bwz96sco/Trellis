@@ -1,0 +1,12 @@
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/semantic-audit-findings.json","reason":"Exact four correction requirements and affected JSON pointers."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Independent classification and missing-authority analysis."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/exact-input-attestation.json","reason":"Exact seven v1.3.0 member bytes and identities."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/artifact-lifecycle-contract-v1.3.json","reason":"Immutable lifecycle baseline for mapping correction."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-registry-v1.3.json","reason":"Immutable validator baseline for fact/predicate correction."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/validator-binding-matrix-v1.3.json","reason":"Immutable binding/report baseline for report-v2 schema correction."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/differential-test-matrix-v1.3.json","reason":"Immutable differential baseline for reproducible global mutations."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/derivability-provenance-matrix-v1.3.json","reason":"Immutable provenance baseline and propagation constraints."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Strict portable deterministic evidence conventions."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-correction-and-propagation-allowlist.json","reason":"Normative four-finding pointer allowlist, executable profiles, counts, and propagation rules."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-output-inventories.json","reason":"Exact A131-0 and 15-file A131-1 output inventories."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-authority-and-containment.json","reason":"Author role, digest framing, false authority, and retry boundary."}

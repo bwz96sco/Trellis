@@ -484,3 +484,28 @@ Status: CS6-0 governance only. Normative exact ownership is frozen in `.trellis/
 - CS6-8 owns one operator decision JSON only.
 
 Accepted v1.3.0 leaves, CS5 records, Procedure `2.0.4`–`2.0.6`, live `1.0.0`, `AGENTS.md`, `CLAUDE.md`, `docs-site`, `marketplace`, `.trellis/research/**`, and shared HIGH/CRITICAL primitives remain excluded. All later activations and commits are separately authorized.
+
+## Additive amendment — evaluation-contract v1.3.1 ownership (2026-08-08)
+
+Status: planning only. A11 `3534529a36a10ea8015a51f71a93e2b78300a563` is immutable `contract-defect` evidence; CS6 technical children remain blocked.
+
+| Owner | Exclusive task path | Boundary |
+|---|---|---|
+| Campaign governance | `.trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/**` | Planning, topology, pins, four-finding allowlist, ownership, authority denials |
+| Contract author | `.trellis/tasks/08-08-author-evaluation-contract-v1-3-1/**` | Seven v1.3.1 leaves, author tooling, manifest/target, correction and semantic-diff evidence |
+| Machine reviewer | `.trellis/tasks/08-08-assure-evaluation-contract-v1-3-1-mal1/**` | Fresh assignment plus exact semantic-assurance output allowlist; no repair |
+| Operator | `.trellis/tasks/08-08-decide-evaluation-contract-v1-3-1/**` | One separately instructed accept/reject/stop record only |
+
+Canonical-parent changes are append-only campaign pointers. Accepted v1.3.0/A11, production, tests, Procedure packages, registries, specifications, CS5/CS6 evidence, `.trellis/research/**`, inherited dirty paths, and every technical or operational authority are excluded. G131/A131-0/A131-1/B131-0/B131-1/O131-0/O131-1 remain separate future commit gates.
+
+### Exact v1.3.1 boundary inventories
+
+- G131: exactly 36 paths: the 24 four-package planning files, five canonical-parent overlays, and seven campaign governance outputs.
+- A131-0: exactly Author `task.json` plus one assignment/input-authorization JSON.
+- A131-1: exactly 15 Author research files, including seven normative leaves; fixtures are embedded in the differential leaf.
+- B131-0: exactly Assurance `task.json` plus one reviewer-assignment JSON.
+- B131-1: exactly 11 assurance outputs.
+- O131-0: exactly Decision `task.json` plus one decision-input attestation.
+- O131-1: exactly one operator-decision JSON.
+
+The four task roots are disjoint exclusive ownership domains. Unknown output, overlap, child activation during G131, protected drift, count drift, or a fifth semantic change is a stop condition.

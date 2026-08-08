@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Check all four defects are closed rather than renamed or deferred."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cross-leaf-consistency-audit.json","reason":"Preserve structural and referential invariants that passed A11."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/semantic-domain-reconciliation.json","reason":"Check exact population and terminal semantics."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/contract-candidate-manifest-v1.3.json","reason":"Compare member ordering, roles, media types, and manifest binding."}
+{"file":".trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research/frozen-migration-target-v1.3.json","reason":"Compare semantic target and digest separation."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/prd.md","reason":"Check exact scope, authority, and no-fifth-change rule."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-correction-and-propagation-allowlist.json","reason":"Check every changed pointer against the closed direct and propagation patterns."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-output-inventories.json","reason":"Check exact seven-member and 15-output author inventory."}

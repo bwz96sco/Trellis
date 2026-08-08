@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Check each former defect is independently closed, not self-certified."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/exact-input-attestation.json","reason":"Historical member identity baseline for forward comparison."}
+{"file":".trellis/tasks/08-04-assure-evaluation-contract-v1-3-attempt-3/research/closure-validator-audit.json","reason":"Ensure new assurance exceeds historical count/reference-only checks."}
+{"file":".trellis/tasks/08-04-accept-machine-assured-evaluation-contract-v1-3-attempt-3/research/oa3-accept-decision.json","reason":"Preserve machine-only and no-operational-authority decision boundaries."}
+{"file":".trellis/tasks/08-08-author-evaluation-contract-v1-3-1/design.md","reason":"Check the reviewer uses an independent oracle for each corrected surface."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check deterministic output and portable evidence design."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-correction-and-propagation-allowlist.json","reason":"Check exhaustive assurance coverage and closed semantic-diff classification."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-authority-and-containment.json","reason":"Check concrete reviewer inequality, no shared scratch, no repair, and exact decision eligibility."}

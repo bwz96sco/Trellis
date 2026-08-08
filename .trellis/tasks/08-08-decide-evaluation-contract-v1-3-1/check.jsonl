@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/08-04-accept-machine-assured-evaluation-contract-v1-3-attempt-3/research/oa3-accept-decision.json","reason":"Check no human-equivalence or operational authority is introduced."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Check the operator record binds the defect basis and does not relabel v1.3.0."}
+{"file":".trellis/tasks/08-08-assure-evaluation-contract-v1-3-1-mal1/design.md","reason":"Check pass/fail and immutable evidence eligibility rules."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/design.md","reason":"Check identity separation and terminal boundary."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Check canonical deterministic decision serialization."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-output-inventories.json","reason":"Check exact operator output allowlists."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-authority-and-containment.json","reason":"Check pass-only acceptance, pass/fail reject-or-stop, accountable rationale, false authority, and STOP."}

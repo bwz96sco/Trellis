@@ -1,0 +1,10 @@
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/cs6-1-independent-verification.json","reason":"Minimum independent challenge level required to avoid repeating v1.3.0 assurance gaps."}
+{"file":".trellis/tasks/08-07-cs6-audit-accepted-v13-semantic-leaves/research/semantic-audit-findings.json","reason":"Exact defect pointers and semantic failure conditions."}
+{"file":".trellis/tasks/08-04-assure-evaluation-contract-v1-3-attempt-3/research/closure-validator-audit.json","reason":"Historical assurance evidence whose structural checks were insufficient for executable validator semantics."}
+{"file":".trellis/tasks/08-04-assure-evaluation-contract-v1-3-attempt-3/research/assurance-verdict.json","reason":"Historical machine-only verdict structure and authority denials to review critically."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/prd.md","reason":"Campaign correction allowlist, role separation, and terminal boundary."}
+{"file":".trellis/tasks/08-08-author-evaluation-contract-v1-3-1/prd.md","reason":"Exact candidate semantics and author acceptance requirements."}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Portable deterministic evidence rules."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-correction-and-propagation-allowlist.json","reason":"Independent oracle requirements, executable profiles, counts, and no-fifth-change rules."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-output-inventories.json","reason":"Exact B131-0 and 11-file B131-1 output inventories."}
+{"file":".trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects/research/g131-authority-and-containment.json","reason":"Fresh reviewer identity, no-shared-scratch, no-repair, and pass/fail containment contract."}
