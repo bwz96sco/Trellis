@@ -522,3 +522,11 @@ Status: G132 governance only. G131/A131/B131/O131 paths remain immutable and rec
 | O132 operator | `.trellis/tasks/08-08-decide-evaluation-contract-v1-3-1-attempt-2/**` | Future input attestation and one accept/reject/stop record |
 
 Canonical-parent changes are limited to the five G132 append-only overlays. Production, tests, registries, specifications, Procedure packages, harnesses, `.trellis/research/**`, inherited dirty paths, and all G131/A131/B131/O131 roots are excluded. Exact future counts are A132-0 2, A132-1 15, B132-0 2, B132-1 11, O132-0 2, and O132-1 1.
+
+## Additive ownership — v1.3.1 Attempt-3 (2026-08-10)
+
+- G133 governance: `.trellis/tasks/08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3/**`
+- A133 author: `.trellis/tasks/08-10-author-evaluation-contract-v1-3-1-attempt-3/**`
+- B133 assurance: `.trellis/tasks/08-10-assure-evaluation-contract-v1-3-1-mal1-attempt-3/**`
+- O133 decision: `.trellis/tasks/08-10-decide-evaluation-contract-v1-3-1-attempt-3/**`
+- Canonical-parent changes are limited to the five G133 overlays: one child pointer plus this PRD, design, implementation, and ownership appendix. All historical roots, production paths, `.trellis/research/**`, and inherited dirty paths remain excluded.

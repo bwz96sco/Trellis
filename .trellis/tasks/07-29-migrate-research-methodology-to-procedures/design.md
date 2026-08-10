@@ -478,3 +478,7 @@ G131/A131 immutable history
 ```
 
 The replacement row schema requires exactly `procedureId`, `procedureVersion`, `capabilityId`, `disposition`, and `artifactFamily`. Applicable rows require one frozen non-null family; not-applicable rows require null. Applicability is exactly the conjunction of applicable disposition and target-family equality. `experiment-campaign-v1` lifecycle family `research-experiment-campaign` remains independent from closure family `research-experiment`. G131 findings 001–003 and every unlisted finding-004 obligation remain immutable authority.
+
+## Additive Attempt-3 recovery design (2026-08-10)
+
+Attempt-3 restores the omitted frozen-target surface and dependent evidence/digests without changing normative contract semantics. Ten A133 outputs remain byte-identical; five target-dependent outputs change. The fresh reviewer cannot repair the subject.

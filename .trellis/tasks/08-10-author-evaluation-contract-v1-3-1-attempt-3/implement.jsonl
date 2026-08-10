@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3/research/g133-governance-baseline-attestation.json","reason":"Exact immutable predecessor and protected baseline."}
+{"file":".trellis/tasks/08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3/research/g133-candidate-evidence-provenance-target-closure.json","reason":"Sole correction class, target schema, source namespaces, and invariant/change partition."}
+{"file":".trellis/tasks/08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3/research/g133-output-inventories.json","reason":"Exact G133/A133/B133/O133 path inventories."}
+{"file":".trellis/tasks/08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3/research/g133-authority-and-containment.json","reason":"Role separation, false authority, retries, and STOP boundary."}

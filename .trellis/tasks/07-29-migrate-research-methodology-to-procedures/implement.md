@@ -475,3 +475,10 @@ G131 itself modifies exactly 36 planning/governance paths and writes seven campa
 3. Future A132-0/A132-1, B132-0/B132-1, and O132-0/O132-1 remain separate and inactive.
 4. Future authoring must use the exact fixed 17-row conditional-nullability mapping and complete 14,365-decision matrix; no author family choice remains.
 5. Stop after G132 validation with no staging or commit and do not proceed to A132-0.
+
+## Additive overlay — v1.3.1 attempt-3 execution (2026-08-10)
+
+1. G133 freezes exact 36-path governance and only `candidate-evidence/provenance-target-closure`.
+2. A133-0 assigns a fresh author; A133-1 emits exactly 15 files with a ten-unchanged/five-changed partition.
+3. B133-0 assigns a fresh reviewer; B133-1 emits exactly 11 machine-only assurance files.
+4. Stop after B133-1. O133 and every technical/operational action remain unauthorized.

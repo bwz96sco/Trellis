@@ -204,3 +204,9 @@ G131 is limited to the exact 36-path governance set. Future boundary inventories
 ## Additive overlay — evaluation-contract v1.3.1 attempt-2 successor (2026-08-08)
 
 G131 `15de62625685c32f00edf9aef8f2c1cf5a05d7bb` and A131-0 `9392f20ce0dd93107205ed7c28dc964b5879b7bc` remain immutable first-attempt history. The sibling campaign `.trellis/tasks/08-08-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-2/` preserves contract identity `evaluation-contract-v1.3.1` and supersedes only finding `CS6-1-CONTRACT-004`'s universal non-null artifact-family assumption. Its exact disposition-aware 17-row mapping is derived from immutable Procedure 2.0.6 projections at `0afef5adaea2a58c8c6cc5a3f1a51a054fa1a39d`; 13 rows are applicable and four are not applicable with `artifactFamily:null`. The complete lifecycle matrix is 14,365 decisions with 975 positive and 13,390 negative. Findings 001–003 and all remaining G131 propagation, digest, guard, population, role, and no-fifth-change obligations remain unchanged. G132 is governance-only; A132/B132/O132, production, packages, live selection, activation, release, publication, and push remain unauthorized.
+
+## Additive Attempt-3 recovery boundary (2026-08-10)
+
+- Child `08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3` is the sole forward-only successor after committed O132 rejection.
+- It authorizes only `candidate-evidence/provenance-target-closure`; seven normative leaves and all historical attempts remain immutable.
+- Sequence: G133 -> A133-0 -> A133-1 -> B133-0 -> B133-1 -> STOP. O133 requires a later genuine instruction.
