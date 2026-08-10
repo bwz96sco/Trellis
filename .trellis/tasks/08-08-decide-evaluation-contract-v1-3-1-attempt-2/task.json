@@ -3,13 +3,13 @@
   "name": "decide-evaluation-contract-v1-3-1-attempt-2",
   "title": "Decide evaluation-contract v1.3.1 — attempt 2",
   "description": "Record a later separately instructed operator accept, reject, or stop decision after immutable assurance.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
   "priority": "P1",
   "creator": "claude",
-  "assignee": null,
+  "assignee": "project-user-operator-20260810-a",
   "createdAt": "2026-08-08",
   "completedAt": null,
   "branch": null,
@@ -21,16 +21,22 @@
   "children": [],
   "parent": "08-08-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-2",
   "relatedFiles": [],
-  "notes": "Inactive planning route. No decision is authorized by G132.",
+  "notes": "O132-0 authenticates committed B132-1 fail and the explicit reject-with-rationale instruction. O132-1 is authorized only for the exact decision path; no technical, runtime, activation, publication, or push authority is granted.",
   "meta": {
     "campaign": "evaluation-contract-v1.3.1-attempt-2",
     "targetContract": "evaluation-contract-v1.3.1",
-    "role": "operator-unassigned",
+    "role": "evaluation-contract-v1.3.1-attempt-2-accountable-operator",
     "dependencies": [
       "Committed A11 3534529a36a10ea8015a51f71a93e2b78300a563",
       "Committed G131 15de62625685c32f00edf9aef8f2c1cf5a05d7bb",
       "Committed A131-0 predecessor 9392f20ce0dd93107205ed7c28dc964b5879b7bc",
-      "Immutable Procedure 2.0.6 evidence 0afef5adaea2a58c8c6cc5a3f1a51a054fa1a39d"
+      "Immutable Procedure 2.0.6 evidence 0afef5adaea2a58c8c6cc5a3f1a51a054fa1a39d",
+      "Committed G132 9bb7ae65bc8118ce4e6d79b87dd0c952481fdf57",
+      "Committed A132-0 17cd058c47f73cbb85605a94aecdb81f40c09a3e",
+      "Committed A132-1 322b471f7a8ba00914f008f0dd5d8a01dbe01862",
+      "Committed B132-0 f79dc619fb744b8dc84bd4e2a46ba0865b80c070",
+      "Committed B132-1 fail 6459e8187aa8f70d06d978bb2c87c48d3bdde6c8",
+      "Fresh accountable operator instruction selecting reject-with-rationale and forward-only Attempt-3 retry"
     ],
     "activationGate": "Separate explicit authorization after the exact committed predecessor required by the boundary",
     "stopGate": "Any identity, projection, mapping, inventory, protected-byte, authority, or fifth-change mismatch",
@@ -38,7 +44,7 @@
       "O132-0",
       "O132-1"
     ],
-    "active": false,
+    "active": true,
     "taskExecutionAuthorized": false,
     "humanReviewed": false,
     "humanEquivalent": false,
@@ -55,6 +61,9 @@
     "publicationAuthorized": false,
     "pushAuthorized": false,
     "ownedPath": ".trellis/tasks/08-08-decide-evaluation-contract-v1-3-1-attempt-2/**",
-    "acceptanceGate": "accept-with-rationale requires verdict exactly pass; reject-with-rationale or stop may follow pass or fail"
+    "acceptanceGate": "accept-with-rationale requires verdict exactly pass; reject-with-rationale or stop may follow pass or fail",
+    "operatorInstructionGate": "sha256:3fceea040539dc195b76e265d52ad69edb3863d106a9133b7c443411d0df20a2",
+    "authorizedOutcome": "reject-with-rationale",
+    "forwardOnlyAttempt3RetryAuthorized": true
   }
 }
