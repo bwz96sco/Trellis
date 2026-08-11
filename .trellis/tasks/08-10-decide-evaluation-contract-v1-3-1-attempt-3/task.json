@@ -2,14 +2,14 @@
   "id": "08-10-decide-evaluation-contract-v1-3-1-attempt-3",
   "name": "08-10-decide-evaluation-contract-v1-3-1-attempt-3",
   "title": "Decide evaluation-contract v1.3.1 — attempt 3",
-  "description": "Record a later separately instructed operator decision after immutable B133 assurance.",
-  "status": "planning",
+  "description": "Authenticate exact committed G133/A133/B133 inputs after a genuine operator instruction; O133-1 outcome selection remains separately gated.",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",
   "priority": "P1",
   "creator": "claude",
-  "assignee": null,
+  "assignee": "project-user-operator-20260810-b",
   "createdAt": "2026-08-10",
   "completedAt": null,
   "branch": null,
@@ -21,11 +21,11 @@
   "children": [],
   "parent": "08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3",
   "relatedFiles": [],
-  "notes": "Forward-only Attempt-3 boundary. Historical Attempt-2 remains immutable. No technical, runtime, activation, publication, or push authority.",
+  "notes": "O133-0 authenticates exact committed Attempt-3 inputs and the genuine input-processing instruction. O133-1 outcome selection remains unauthorized; no technical, runtime, activation, publication, or push authority is granted.",
   "meta": {
     "campaign": "evaluation-contract-v1.3.1-attempt-3",
     "targetContract": "evaluation-contract-v1.3.1",
-    "role": "operator-unassigned",
+    "role": "evaluation-contract-v1.3.1-attempt-3-input-attestation-operator",
     "dependencies": [
       "Committed G132 9bb7ae65bc8118ce4e6d79b87dd0c952481fdf57",
       "Committed A132-0 17cd058c47f73cbb85605a94aecdb81f40c09a3e",
@@ -34,9 +34,12 @@
       "Committed B132-1 fail 6459e8187aa8f70d06d978bb2c87c48d3bdde6c8",
       "Committed O132-0 02c7cd1b0545606c7fedcb8d10219dded35040e4",
       "Committed O132-1 rejection 133ee3987c26dbe721062a3bbe2b33daab4863d6",
-      "Future committed G133 exact governance predecessor",
-      "Future committed A133-1 exact immutable candidate subject",
-      "Future committed B133-1 exact assurance verdict"
+      "Committed G133 599eadbae29764ae332fd7ef4dbe2e8bde6edc8f",
+      "Committed A133-0 45af4bc13838193d43dc5f59ddd5f1d304da0dc8",
+      "Committed A133-1 exact immutable candidate subject 5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3",
+      "Committed B133-0 e083039c3de5655a1a8806371a101586ae01efb4",
+      "Committed B133-1 pass exact assurance verdict 56277b874217a3b8a01b63a4905cf6b22708cb05",
+      "Genuine accountable operator instruction project-user-operator-20260810-b source sha256:a8d77bab02887656c3001d80a10567bea5d5aa2a0a0f87611190873b44e82209 authorizing O133-0 input processing only"
     ],
     "activationGate": "Exact separately committed predecessor and stage-specific assignment/control record",
     "stopGate": "Any identity, inventory, target closure, immutable-output, authority, role-separation, or canonical-byte mismatch",
@@ -49,9 +52,9 @@
       "O133-0",
       "O133-1"
     ],
-    "active": false,
+    "active": true,
     "ownedPath": ".trellis/tasks/08-10-decide-evaluation-contract-v1-3-1-attempt-3/**",
-    "taskExecutionAuthorized": false,
+    "taskExecutionAuthorized": true,
     "humanReviewed": false,
     "humanEquivalent": false,
     "repairAuthority": false,
@@ -65,6 +68,17 @@
     "archiveAuthorized": false,
     "releaseAuthorized": false,
     "publicationAuthorized": false,
-    "pushAuthorized": false
+    "pushAuthorized": false,
+    "authorizedBoundary": "O133-0-input-attestation-only",
+    "o1330InputAttestationAuthorized": true,
+    "operatorOutcomeSelectionAuthorized": false,
+    "o1331DecisionAuthorized": false,
+    "operatorInstructionGate": "sha256:a8d77bab02887656c3001d80a10567bea5d5aa2a0a0f87611190873b44e82209",
+    "eligibleOutcomesForPass": [
+      "accept-with-rationale",
+      "reject-with-rationale",
+      "stop"
+    ],
+    "decisionOutput": ".trellis/tasks/08-10-decide-evaluation-contract-v1-3-1-attempt-3/research/o133-1-operator-decision.json"
   }
 }
