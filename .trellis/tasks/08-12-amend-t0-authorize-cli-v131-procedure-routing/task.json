@@ -1,0 +1,138 @@
+{
+  "assignee": "claude-t0a-governance-amendment-author",
+  "base_branch": "evidence/v13-baseline",
+  "branch": null,
+  "children": [],
+  "commit": null,
+  "completedAt": null,
+  "createdAt": "2026-08-12",
+  "creator": "claude",
+  "description": "Authorize the exact CRITICAL T2 Procedure 2.0.7 activation-recorded schema-v2 routing edit while preserving historical routing, campaign topology, inventory, and operational denials.",
+  "dev_type": null,
+  "id": "amend-t0-authorize-cli-v131-procedure-routing",
+  "meta": {
+    "acceptedContract": "evaluation-contract-v1.3.1",
+    "acceptedSemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+    "activationAuthorized": false,
+    "archiveAuthorized": false,
+    "campaign": "A133-bound-technical-successor",
+    "cliImplementationAuthorized": false,
+    "commitAuthorized": true,
+    "commitBoundaries": [
+      "T0A"
+    ],
+    "completeSystemAcceptanceAuthorized": false,
+    "coreImplementationAuthorized": false,
+    "criticalImpactApprovalAuthorized": true,
+    "forwardOnly": true,
+    "governedCampaignTaskId": "implement-evaluation-contract-v1-3-1-technical-successor",
+    "harnessImplementationAuthorized": false,
+    "humanEquivalent": false,
+    "humanReviewed": false,
+    "incorporatedByReference": [
+      ".trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/research/g0-topology-ownership-and-stage-inventories.json",
+      ".trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/research/g0-authority-role-and-stop-routing.json",
+      ".trellis/tasks/08-12-conform-cli-to-evaluation-contract-v1-3-1/research/implementation-input-attestation.json",
+      ".trellis/tasks/08-12-conform-cli-to-evaluation-contract-v1-3-1/research/gitnexus-impact-ledger.json"
+    ],
+    "laterStageExecutionAuthorized": false,
+    "liveProcedure": "1.0.0",
+    "liveSelectionChangeAuthorized": false,
+    "normativeAuthorization": {
+      "effect": "prospective-T2-only",
+      "fallbackCondition": "every Procedure identity not matching all three route conditions",
+      "fallbackParser": "parseResearchProcedure",
+      "preservations": {
+        "bundledFallbackOnlyWhenExactProjectCandidateAbsent": true,
+        "coreIsSoleV131ProcedureParserAuthority": true,
+        "dormantProcedureVersion": "2.0.7",
+        "historicalReplayUsesRecordedProcedureIdentity": true,
+        "liveProcedureVersion": "1.0.0",
+        "presentInvalidProjectContentFailsClosed": true,
+        "projectFirstResolution": true,
+        "versionsUsingGenericParser": [
+          "1.0.0",
+          "2.0.0",
+          "2.0.1",
+          "2.0.2",
+          "2.0.3",
+          "2.0.4",
+          "2.0.5",
+          "2.0.6"
+        ]
+      },
+      "prohibitedGeneralizations": [
+        "all schema-v2 Procedures",
+        "all 2.x Procedures",
+        "registry-current Procedure",
+        "support-pack-only inference"
+      ],
+      "route": {
+        "allConditionsRequired": true,
+        "context": "activation-recorded",
+        "packageSchemaVersion": 2,
+        "parser": "parseAcceptedV131ResearchProcedure",
+        "parserInput": "already-read parser input",
+        "recordedProcedureVersion": "2.0.7"
+      },
+      "supportingEdit": {
+        "importKind": "named",
+        "importName": "parseAcceptedV131ResearchProcedure",
+        "module": "@mindfoldhq/trellis-core/research",
+        "sameFileOnly": true
+      },
+      "targetActor": "claude-t2-cli-implementer",
+      "targetPath": "packages/cli/src/commands/research/procedure-resolution.ts",
+      "targetSymbol": "parseSelectedProcedure"
+    },
+    "originalT0TaskId": "govern-evaluation-contract-v1-3-1-technical-successor",
+    "ownedPaths": [
+      ".trellis/tasks/08-12-amend-t0-authorize-cli-v131-procedure-routing/task.json",
+      ".trellis/tasks/08-12-amend-t0-authorize-cli-v131-procedure-routing/prd.md",
+      ".trellis/tasks/08-12-amend-t0-authorize-cli-v131-procedure-routing/design.md",
+      ".trellis/tasks/08-12-amend-t0-authorize-cli-v131-procedure-routing/implement.md",
+      ".trellis/tasks/08-12-amend-t0-authorize-cli-v131-procedure-routing/implement.jsonl",
+      ".trellis/tasks/08-12-amend-t0-authorize-cli-v131-procedure-routing/check.jsonl"
+    ],
+    "ownerRole": "claude-t0a-governance-amendment-author",
+    "procedurePackageAuthorized": false,
+    "productionImplementationAuthorized": false,
+    "providerExecutionAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false,
+    "releaseAuthorized": false,
+    "repairAuthority": false,
+    "runtimeActivationAuthorized": false,
+    "runtimeImplementationAuthorized": false,
+    "schemaImplementationAuthorized": false,
+    "stage": "T0A",
+    "stopGate": "Any change to the exact target actor, path, symbol, import, three-part route condition, generic fallback, preserved resolution/replay behavior, T2 inventory, eight-child topology, or operational denials requires another forward-only governance decision.",
+    "t2Inventory": {
+      "canonicalJsonSha256": "69c3d0c326f7a71e8422f3ec427240c1bf429c23839d7cc642f0af2c9800d786",
+      "count": 32,
+      "unchanged": true
+    },
+    "targetStage": "T2",
+    "targetTaskId": "conform-cli-to-evaluation-contract-v1-3-1",
+    "taskExecutionAuthorized": true,
+    "topology": {
+      "campaignChildCount": 8,
+      "standaloneAmendment": true,
+      "unchanged": true
+    },
+    "userAuthorization": "2026-08-12 approved lean T0A governance amendment execution and T0A-only commit authorization",
+    "workerAuthorityChangeAuthorized": false
+  },
+  "name": "amend-t0-authorize-cli-v131-procedure-routing",
+  "notes": "This task.json is the sole normative prospective authorization; the other five standard task files are explanatory and validating only. T0A may be committed separately, but this execution must not stage or commit. T2 remains a separate implementation and commit boundary.",
+  "package": "cli",
+  "parent": null,
+  "pr_url": null,
+  "priority": "P1",
+  "relatedFiles": [],
+  "scope": null,
+  "status": "in_progress",
+  "subtasks": [],
+  "title": "T0A — Authorize exact CRITICAL CLI Procedure 2.0.7 routing",
+  "worktree_path": null
+}
