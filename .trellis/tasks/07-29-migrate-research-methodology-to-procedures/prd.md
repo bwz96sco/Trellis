@@ -210,3 +210,9 @@ G131 `15de62625685c32f00edf9aef8f2c1cf5a05d7bb` and A131-0 `9392f20ce0dd93107205
 - Child `08-10-correct-evaluation-contract-v1-3-1-semantic-defects-attempt-3` is the sole forward-only successor after committed O132 rejection.
 - It authorizes only `candidate-evidence/provenance-target-closure`; seven normative leaves and all historical attempts remain immutable.
 - Sequence: G133 -> A133-0 -> A133-1 -> B133-0 -> B133-1 -> STOP. O133 requires a later genuine instruction.
+
+## Additive current outcome — A133 technical successor (2026-08-12)
+
+Attempt-1 is additively classified `superseded`, Attempt-2 is `rejected-terminal`, and exact Attempt-3 A133/B133/O133 is `accepted-terminal`; no historical task root or evidence is edited. Child `08-12-implement-evaluation-contract-v1-3-1-technical-successor` is the sole forward-only technical campaign bound to A133 commit `5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3`, B133 pass `56277b874217a3b8a01b63a4905cf6b22708cb05`, and O133 semantic acceptance `2253df9fb67f8ee84d470da23205e9610f8a4e3e`.
+
+Only G0/T0 governance and planning are active. T1-T7 remain planning-only, unassigned, inactive, and unauthorized. Procedure `2.0.7` is allocated only after all-ref collision proof; it remains absent and dormant, live selection remains `1.0.0`, CS6-2 through CS6-8 are not rebound, and all production, test, specification, assurance-run, operator-decision, activation, archive, release, publication, push, and provider operations require separate future authorization.

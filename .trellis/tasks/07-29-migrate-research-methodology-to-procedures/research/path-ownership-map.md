@@ -530,3 +530,11 @@ Canonical-parent changes are limited to the five G132 append-only overlays. Prod
 - B133 assurance: `.trellis/tasks/08-10-assure-evaluation-contract-v1-3-1-mal1-attempt-3/**`
 - O133 decision: `.trellis/tasks/08-10-decide-evaluation-contract-v1-3-1-attempt-3/**`
 - Canonical-parent changes are limited to the five G133 overlays: one child pointer plus this PRD, design, implementation, and ownership appendix. All historical roots, production paths, `.trellis/research/**`, and inherited dirty paths remain excluded.
+
+## Additive ownership — A133 technical successor (2026-08-12)
+
+- Campaign planning: `.trellis/tasks/08-12-implement-evaluation-contract-v1-3-1-technical-successor/**`.
+- G0/T0 governance: `.trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/**` plus exactly these five append-only canonical-parent overlays.
+- T1-T7 future path ownership is the closed, disjoint inventory in T0 `research/g0-topology-ownership-and-stage-inventories.json`; no wildcard ownership is implied.
+- Existing semantic attempts, CS5/CS6 roots, `.trellis/research/**`, Procedure `1.0.0` through `2.0.6`, live-selection paths, shared state/publication/worker-authority primitives, `packages/core/src/research/stage-capabilities.ts`, and inherited dirty paths are excluded.
+- Current G0/T0 creates planning and governance records only. Every future implementation, generation, assurance, operator, activation, archive, release, publication, push, and provider boundary is separately authorized.

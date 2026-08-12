@@ -482,3 +482,11 @@ G131 itself modifies exactly 36 planning/governance paths and writes seven campa
 2. A133-0 assigns a fresh author; A133-1 emits exactly 15 files with a ten-unchanged/five-changed partition.
 3. B133-0 assigns a fresh reviewer; B133-1 emits exactly 11 machine-only assurance files.
 4. Stop after B133-1. O133 and every technical/operational action remain unauthorized.
+
+## Additive execution — A133 technical successor (2026-08-12)
+
+1. G0/T0 additively reconciles the three immutable semantic attempts and authenticates exact A133/B133/O133 Git objects.
+2. G0/T0 freezes technical baseline `2253df9fb67f8ee84d470da23205e9610f8a4e3e`, package/lock/toolchain identities, Procedure history, exact `2.0.7` allocation, reciprocal T0-T7 topology, closed ownership, roles, authorities, commit boundaries, stop gates, and inherited dirt.
+3. Stop after read-only governance validation with no staging or commit.
+4. T1 Core, T2 CLI, T3 packages, T4 harness, T5 integration/freeze, T6 assurance, and T7 decision each require a committed predecessor plus fresh explicit authorization. No tree order alone grants execution authority.
+5. Stop after T7 regardless of outcome. P2-12 activation and every archive, release, publication, push, or provider operation remain separate.

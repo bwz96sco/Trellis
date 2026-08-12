@@ -482,3 +482,9 @@ The replacement row schema requires exactly `procedureId`, `procedureVersion`, `
 ## Additive Attempt-3 recovery design (2026-08-10)
 
 Attempt-3 restores the omitted frozen-target surface and dependent evidence/digests without changing normative contract semantics. Ten A133 outputs remain byte-identical; five target-dependent outputs change. The fresh reviewer cannot repair the subject.
+
+## Additive design — A133 technical successor (2026-08-12)
+
+The new child is a separate technical consumer of exact accepted A133 semantics, not a continuation or rebinding of CS6. Its ordered topology is T0 governance, T1 Core, T2 CLI, T3 dormant Procedure `2.0.7`, T4 production-reachable 116-case harness, T5 external install/integration and separate exact-subject freeze, T6 fresh machine-only complete-system MAL-1, and T7 separate operator technical decision.
+
+Semantic identity, technical baseline, integrated candidate, frozen subject, machine assurance, operator decision, and any future activation remain distinct. Closed ownership and output inventories govern every stage; shared state/publication/worker-authority primitives and `packages/core/src/research/stage-capabilities.ts` remain call-only or excluded. Current authority stops at G0/T0 planning and validation.
