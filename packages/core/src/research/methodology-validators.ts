@@ -148,7 +148,8 @@ export function deriveMethodologyValidatorFacts(input: {
     // Direct API default: v1.3 contract versions require explicit closure
     // facts unless the caller declares the disposition explicitly.
     (input.closureInapplicable !== true &&
-      input.methodologyContractVersion === "evaluation-contract-v1.3.0");
+      (input.methodologyContractVersion === "evaluation-contract-v1.3.0" ||
+        input.methodologyContractVersion === "evaluation-contract-v1.3.1"));
 
   let selected: boolean | undefined;
   let blocked: boolean | undefined;
@@ -200,7 +201,10 @@ export function deriveMethodologyValidatorFacts(input: {
  * invent lifecycle defaults or call into HIGH/CRITICAL shared primitives.
  */
 const A3_REGISTRY: Record<string, ValidatorFn> = {
-  "trellis.closure.xor@1.0.0": (ctx) => REGISTRY["closure-exclusivity"]!(ctx),
+  "trellis.closure.xor@1.0.0": (ctx) => {
+    const validator = REGISTRY["closure-exclusivity"];
+    return validator === undefined ? [] : validator(ctx);
+  },
   "trellis.closure.status-inference@1.0.0": (ctx) => {
     if (ctx.facts.requireExplicitClosure === true && "selected" in ctx.facts) {
       // selected/blocked present only via explicit fields under requireExplicitClosure.

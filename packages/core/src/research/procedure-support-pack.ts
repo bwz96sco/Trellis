@@ -59,6 +59,16 @@ export const V13_ACCEPTED_B3_COMMIT =
 export const V13_ACCEPTED_OA3_COMMIT =
   "266a9f43" as const;
 
+/** Accepted evaluation-contract-v1.3.1 A133 semantic identity. */
+export const V131_ACCEPTED_CONTRACT_VERSION =
+  "evaluation-contract-v1.3.1" as const;
+export const V131_ACCEPTED_CONTRACT_DIGEST =
+  "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af" as const;
+export const V131_ACCEPTED_CANDIDATE_MANIFEST_DIGEST =
+  "sha256:e3d4322ee5b73a319a3d777d38877345f82efdc253f1ca825df538a1300ecf1a" as const;
+export const V131_ACCEPTED_A133_COMMIT =
+  "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3" as const;
+
 /** Exact procedure-version → methodology contract binding (fail-closed). */
 export function resolveMethodologyContractBinding(procedureVersion: string): {
   readonly version: string;
@@ -71,6 +81,7 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
     | "exact-v1.3-accepted"
     | "exact-v1.3-accepted-2.0.5"
     | "exact-v1.3-accepted-2.0.6"
+    | "exact-v1.3.1-accepted-2.0.7"
     | "unknown-fail-closed";
   readonly authoritative: boolean;
 } {
@@ -123,6 +134,14 @@ export function resolveMethodologyContractBinding(procedureVersion: string): {
       version: V13_ACCEPTED_CONTRACT_VERSION,
       digest: V13_ACCEPTED_CONTRACT_DIGEST,
       disposition: "exact-v1.3-accepted-2.0.6",
+      authoritative: true,
+    };
+  }
+  if (procedureVersion === "2.0.7") {
+    return {
+      version: V131_ACCEPTED_CONTRACT_VERSION,
+      digest: V131_ACCEPTED_CONTRACT_DIGEST,
+      disposition: "exact-v1.3.1-accepted-2.0.7",
       authoritative: true,
     };
   }
@@ -369,6 +388,15 @@ export function parseSupportPackManifest(input: {
     ) {
       fail(
         `Support-pack ${input.procedureVersion} requires exact accepted evaluation-contract-v1.3.0 frozen-target digest`,
+      );
+    }
+  } else if (input.procedureVersion === "2.0.7") {
+    if (
+      methodologyContractVersion !== V131_ACCEPTED_CONTRACT_VERSION ||
+      methodologyContractDigest !== V131_ACCEPTED_CONTRACT_DIGEST
+    ) {
+      fail(
+        "Support-pack 2.0.7 requires exact accepted evaluation-contract-v1.3.1 semantic digest",
       );
     }
   } else if (requiresStrictSchemaV2) {

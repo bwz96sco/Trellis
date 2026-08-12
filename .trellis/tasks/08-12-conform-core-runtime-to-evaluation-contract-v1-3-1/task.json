@@ -1,1 +1,75 @@
-{"assignee":null,"base_branch":"evidence/v13-baseline","branch":null,"children":[],"commit":null,"completedAt":null,"createdAt":"2026-08-12","creator":"claude","description":"Implement a version-explicit Core runtime path that enforces the exact seven accepted v1.3.1 leaves and deterministic report-v2 semantics without reinterpreting historical v1.3.0 identities.","dev_type":null,"id":"conform-core-runtime-to-evaluation-contract-v1-3-1","meta":{"acceptedContract":"evaluation-contract-v1.3.1","acceptedSemanticDigest":"sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af","activationAuthorized":false,"activationGate":["Committed G0/T0 governance","Separate T1 authorization and owner assignment","Fresh upstream GitNexus impact for every existing symbol edit"],"active":false,"allocatedProcedureVersion":"2.0.7","archiveAuthorized":false,"campaign":"A133-bound-technical-successor","cliImplementationAuthorized":false,"commitBoundaries":["T1"],"completeSystemAcceptanceAuthorized":false,"dependencies":["Committed G0/T0 governance","Separate T1 authorization and owner assignment","Fresh upstream GitNexus impact for every existing symbol edit"],"forwardOnly":true,"harnessImplementationAuthorized":false,"humanEquivalent":false,"humanReviewed":false,"liveProcedure":"1.0.0","liveSelectionChangeAuthorized":false,"ownedInventoryKeys":["T1"],"ownerRole":"core-v131-implementer-unassigned","procedurePackageAuthorized":false,"productionImplementationAuthorized":false,"providerExecutionAuthorized":false,"publicationAuthorized":false,"pushAuthorized":false,"releaseAuthorized":false,"repairAuthority":false,"runtimeActivationAuthorized":false,"runtimeImplementationAuthorized":false,"schemaImplementationAuthorized":false,"stage":"T1","stopGate":"Any immutable-input, ownership, authority, inventory, predecessor, protected-path, or verification mismatch","taskExecutionAuthorized":false,"workerAuthorityChangeAuthorized":false},"name":"conform-core-runtime-to-evaluation-contract-v1-3-1","notes":"Planning contract is frozen by G0. Execution remains separately gated.","package":"core","parent":"08-12-implement-evaluation-contract-v1-3-1-technical-successor","pr_url":null,"priority":"P1","relatedFiles":[],"scope":null,"status":"planning","subtasks":[],"title":"T1 — Conform Core runtime to evaluation-contract v1.3.1","worktree_path":null}
+{
+  "assignee": "claude-t1-core-implementer",
+  "base_branch": "evidence/v13-baseline",
+  "branch": null,
+  "children": [],
+  "commit": null,
+  "completedAt": "2026-08-12",
+  "createdAt": "2026-08-12",
+  "creator": "claude",
+  "description": "Implement a version-explicit Core runtime path that enforces the exact seven accepted v1.3.1 leaves and deterministic report-v2 semantics without reinterpreting historical v1.3.0 identities.",
+  "dev_type": null,
+  "id": "conform-core-runtime-to-evaluation-contract-v1-3-1",
+  "meta": {
+    "acceptedContract": "evaluation-contract-v1.3.1",
+    "acceptedSemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+    "activationAuthorized": false,
+    "activationGate": [
+      "Committed G0/T0 governance",
+      "Separate T1 authorization and owner assignment",
+      "Fresh upstream GitNexus impact for every existing symbol edit"
+    ],
+    "active": false,
+    "allocatedProcedureVersion": "2.0.7",
+    "archiveAuthorized": false,
+    "campaign": "A133-bound-technical-successor",
+    "cliImplementationAuthorized": false,
+    "commitAuthorized": true,
+    "commitBoundaries": [
+      "T1"
+    ],
+    "completeSystemAcceptanceAuthorized": false,
+    "dependencies": [
+      "Committed G0/T0 governance",
+      "Separate T1 authorization and owner assignment",
+      "Fresh upstream GitNexus impact for every existing symbol edit"
+    ],
+    "forwardOnly": true,
+    "harnessImplementationAuthorized": false,
+    "humanEquivalent": false,
+    "humanReviewed": false,
+    "liveProcedure": "1.0.0",
+    "liveSelectionChangeAuthorized": false,
+    "ownedInventoryKeys": [
+      "T1"
+    ],
+    "ownerRole": "claude-t1-core-implementer",
+    "procedurePackageAuthorized": false,
+    "productionImplementationAuthorized": true,
+    "providerExecutionAuthorized": false,
+    "publicationAuthorized": false,
+    "pushAuthorized": false,
+    "releaseAuthorized": false,
+    "repairAuthority": false,
+    "runtimeActivationAuthorized": false,
+    "runtimeImplementationAuthorized": true,
+    "schemaImplementationAuthorized": false,
+    "stage": "T1",
+    "stopGate": "Any immutable-input, ownership, authority, inventory, predecessor, protected-path, or verification mismatch",
+    "taskExecutionAuthorized": true,
+    "userAuthorization": "2026-08-12 separate T1 Core execution-and-commit authorization",
+    "workerAuthorityChangeAuthorized": false
+  },
+  "name": "conform-core-runtime-to-evaluation-contract-v1-3-1",
+  "notes": "T1 Core execution and its separate commit are authorized; T2-T7 and all activation/publication operations remain unauthorized.",
+  "package": "core",
+  "parent": "08-12-implement-evaluation-contract-v1-3-1-technical-successor",
+  "pr_url": null,
+  "priority": "P1",
+  "relatedFiles": [],
+  "scope": null,
+  "status": "completed",
+  "subtasks": [],
+  "title": "T1 — Conform Core runtime to evaluation-contract v1.3.1",
+  "worktree_path": null
+}

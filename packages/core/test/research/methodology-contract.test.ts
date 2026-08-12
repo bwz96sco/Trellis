@@ -17,6 +17,8 @@ import {
   RESEARCH_CAPABILITY_REGISTRY,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
   buildSupportPackInventory,
   buildWorkerMethodologyProjectionV2,
   loadResearchMethodologyContractFromProcedure,
@@ -215,6 +217,19 @@ describe("Research methodology contract (historical Phase-2 fixture + version di
       digest:
         "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
       disposition: "exact-v1.3-accepted-2.0.5",
+      authoritative: true,
+    });
+    expect(resolveMethodologyContractBinding("2.0.6")).toEqual({
+      version: "evaluation-contract-v1.3.0",
+      digest:
+        "sha256:dde907ba15d9ce22117b95db2fd9e0a108d4869873801f8c7f93b528f808699f",
+      disposition: "exact-v1.3-accepted-2.0.6",
+      authoritative: true,
+    });
+    expect(resolveMethodologyContractBinding("2.0.7")).toEqual({
+      version: V131_ACCEPTED_CONTRACT_VERSION,
+      digest: V131_ACCEPTED_CONTRACT_DIGEST,
+      disposition: "exact-v1.3.1-accepted-2.0.7",
       authoritative: true,
     });
   });

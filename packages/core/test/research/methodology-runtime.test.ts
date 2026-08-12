@@ -8,6 +8,8 @@ import {
   V13_ACCEPTED_CONTRACT_DIGEST,
   V13_ACCEPTED_CONTRACT_VERSION,
   V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
   canonicalResearchJson,
   RESEARCH_CAPABILITY_REGISTRY,
   V13_METHODOLOGY_CONTRACT_DIGEST,
@@ -15,16 +17,19 @@ import {
   type MethodologyValidationReport,
   buildMethodologyReport,
   buildMethodologyReportV2,
+  buildMethodologyReportV131,
   buildSupportPackInventory,
   buildWorkerMethodologyProjectionV2,
   computeMethodologyReportV2DigestFromCanonicalBody,
   deriveMethodologyValidatorFacts,
   listTrustedMethodologyValidatorIds,
+  parseAcceptedV131ResearchProcedure,
   parseResearchProcedure,
   parseSupportPackManifest,
   planRootCompositionAction,
   resolveMethodologyContractBinding,
   runMethodologyValidators,
+  serializeMethodologyReportV131Sidecar,
   serializeMethodologyReportV2Sidecar,
   serializeSupportPackManifest,
   shouldMaterializeMethodologyReportSidecar,
@@ -339,7 +344,10 @@ describe("Context v2 methodology projection", () => {
   const encoder = new TextEncoder();
   const capability = RESEARCH_CAPABILITY_REGISTRY.find(
     (c) => c.id === "research.ideation.generate",
-  )!;
+  );
+  if (capability === undefined) {
+    throw new Error("Missing research.ideation.generate test capability");
+  }
 
   function sha256Hex(bytes: Uint8Array): string {
     return createHash("sha256").update(bytes).digest("hex");
@@ -716,6 +724,10 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
     const sidecar = serializeMethodologyReportV2Sidecar(v2);
     expect(sidecar.endsWith("\n")).toBe(true);
     expect(JSON.parse(sidecar).reportDigest).toBe(v2.reportDigest);
+    const historicalDigestDrift = { ...v2, reportDigest: `sha256:${"0".repeat(64)}` };
+    expect(serializeMethodologyReportV2Sidecar(historicalDigestDrift)).toBe(
+      `${canonicalResearchJson(historicalDigestDrift)}\n`,
+    );
   });
 
   it("allows report sidecar only after successful batch commit", () => {
@@ -776,6 +788,249 @@ describe("evaluation-contract-v1.3.0 enforcement (R2A/R2B)", () => {
       expect(planned.action.edgeId).toBe("COMP-001");
       expect(planned.action).not.toHaveProperty("launchWorker");
     }
+  });
+});
+
+describe("evaluation-contract-v1.3.1 Procedure 2.0.7 bypass", () => {
+  const encoder = new TextEncoder();
+  const capability = RESEARCH_CAPABILITY_REGISTRY.find(
+    (candidate) => candidate.id === "research.ideation.generate",
+  );
+  if (capability === undefined) {
+    throw new Error("Missing research.ideation.generate test capability");
+  }
+
+  function procedure207Input(contractVersion = V131_ACCEPTED_CONTRACT_VERSION, contractDigest = V131_ACCEPTED_CONTRACT_DIGEST) {
+    const packJsonBytes = encoder.encode(
+      serializeSupportPackManifest({
+        schemaVersion: 1,
+        procedureId: capability.procedure.id,
+        procedureVersion: "2.0.7",
+        methodologyContractVersion: contractVersion,
+        methodologyContractDigest: contractDigest,
+        entries: [],
+      }),
+    );
+    const manifest = parseSupportPackManifest({
+      packJsonBytes,
+      procedureId: capability.procedure.id,
+      procedureVersion: "2.0.7",
+    });
+    const manifestBytes = encoder.encode(
+      `${JSON.stringify({
+        schemaVersion: 1,
+        id: capability.procedure.id,
+        version: "2.0.7",
+        stage: capability.stage,
+        kind: capability.kind,
+        inputs: [
+          "dispatch",
+          "repository",
+          "context",
+          "artifacts",
+          "allowedWritePaths",
+          "expectedOutputs",
+          "checks",
+        ],
+        outputs: ["result", "proposal"],
+        networkPolicy: capability.networkPolicy,
+        repositoryScope: capability.repositoryScope,
+        maxDurationMinutes: capability.maxDurationMinutes,
+        maxDispatches: capability.maxDispatches,
+        packageSchemaVersion: 2,
+      })}\n`,
+    );
+    return {
+      capabilityId: capability.id,
+      source: "bundled" as const,
+      manifestBytes,
+      instructionBytes: encoder.encode("# Procedure 2.0.7\n"),
+      identityMode: "recorded-version" as const,
+      recordedProcedureId: capability.procedure.id,
+      recordedVersion: "2.0.7",
+      packageSchemaVersion: 2 as const,
+      supportPack: { manifest, packJsonBytes, inventoryItems: [] },
+    };
+  }
+
+  it("accepts only the exact 2.0.7 v1.3.1 identity through the generic schema-v2 parser", () => {
+    const parsed = parseAcceptedV131ResearchProcedure(procedure207Input());
+    expect(parsed.manifest.version).toBe("2.0.7");
+    expect(parsed.packageSchemaVersion).toBe(2);
+    expect(parsed.digestDomain).toBe("v2");
+    expect(parsed.supportPack?.manifest.methodologyContractVersion).toBe(
+      V131_ACCEPTED_CONTRACT_VERSION,
+    );
+    expect(parsed).not.toHaveProperty("methodologyFamilyContract");
+  });
+
+  it("rejects wrong Procedure version and wrong v1.3.1 methodology identity without legacy fallback", () => {
+    const wrongVersion = procedure207Input();
+    expect(() =>
+      parseAcceptedV131ResearchProcedure({
+        ...wrongVersion,
+        recordedVersion: "2.0.6",
+      }),
+    ).toThrow(/2\.0\.7/);
+    expect(() =>
+      procedure207Input(V13_ACCEPTED_CONTRACT_VERSION, V13_ACCEPTED_CONTRACT_DIGEST),
+    ).toThrow(/2\.0\.7|v1\.3\.1|authorized methodology contract binding/);
+  });
+});
+
+describe("evaluation-contract-v1.3.1 closed report-v2", () => {
+  const acceptedValidatorIds = [
+    "trellis.artifact.requiredness",
+    "trellis.artifact.cardinality",
+    "trellis.artifact.media-type",
+    "trellis.artifact.authority",
+    "trellis.artifact.ref-binding",
+    "trellis.artifact.stable-id",
+    "trellis.artifact.provenance",
+    "trellis.artifact.dependencies",
+    "trellis.artifact.immutability",
+    "trellis.artifact.transitions",
+    "trellis.artifact.terminal-applicability",
+    "trellis.artifact.cross-consistency",
+    "trellis.closure.schema",
+    "trellis.closure.evidence",
+    "trellis.closure.xor",
+    "trellis.closure.status-inference",
+    "trellis.authority.worker-boundary",
+    "trellis.validator.binding-integrity",
+    "trellis.report.v2-binding",
+    "trellis.contract.integrity",
+  ] as const;
+  const baseInput = {
+    $schema: "https://json-schema.org/draft/2020-12/schema" as const,
+    activationId: "act_1",
+    applicability: [] as const,
+    approvalId: "apr_1",
+    artifactBindings: [] as const,
+    blockedFacts: [] as const,
+    closureSources: [] as const,
+    dispatchId: "dsp_1",
+    methodologyDigest: V131_ACCEPTED_CONTRACT_DIGEST.slice("sha256:".length),
+    methodologyIdentity: V131_ACCEPTED_CONTRACT_VERSION,
+    orderedFindings: [] as const,
+    orderedValidatorTriples: acceptedValidatorIds.map((id) => ({
+      id,
+      version: "1.0.0",
+      severity: "critical" as const,
+    })),
+    procedureDigest: `sha256:${"b".repeat(64)}`,
+    procedureId: "idea-generation-v1",
+    procedureVersion: "2.0.7",
+    questId: "qst_1",
+    schemaVersion: 2 as const,
+    supportInventoryDigest: `sha256:${"c".repeat(64)}`,
+    zeroWriteDisposition: "validation-complete-before-write" as const,
+  };
+
+  it("builds the exact closed schema and rejects unknown keys or finding-order drift", () => {
+    const report = buildMethodologyReportV131(baseInput);
+    expect(report).not.toHaveProperty("reportDigest");
+    const reportDigest = computeMethodologyReportV2DigestFromCanonicalBody(
+      canonicalResearchJson(report),
+    );
+    expect(reportDigest).toMatch(/^sha256:[0-9a-f]{64}$/);
+    const sidecar = serializeMethodologyReportV131Sidecar({
+      report,
+      reportDigest,
+    });
+    expect(sidecar.endsWith("\n")).toBe(true);
+    expect(sidecar.endsWith("\n\n")).toBe(false);
+    expect(JSON.parse(sidecar)).not.toHaveProperty("reportDigest");
+
+    expect(() =>
+      buildMethodologyReportV131({ ...baseInput, unknown: true } as never),
+    ).toThrow(/unknown/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        orderedFindings: [
+          {
+            validator: { id: "z", version: "1.0.0", severity: "critical" },
+            targetId: "a",
+            stableError: "V13_B",
+            factPointer: "/b",
+          },
+          {
+            validator: { id: "a", version: "1.0.0", severity: "critical" },
+            targetId: "a",
+            stableError: "V13_A",
+            factPointer: "/a",
+          },
+        ],
+      }),
+    ).toThrow(/orderedFindings/i);
+  });
+
+  it("rejects report-v2 digest and schema drift", () => {
+    const report = buildMethodologyReportV131(baseInput);
+    expect(() =>
+      serializeMethodologyReportV131Sidecar({
+        report,
+        reportDigest: `sha256:${"0".repeat(64)}`,
+      }),
+    ).toThrow(/digest/i);
+    const schemaDriftedReport = { ...report, unknown: true };
+    const schemaDriftedDigest = computeMethodologyReportV2DigestFromCanonicalBody(
+      canonicalResearchJson(schemaDriftedReport),
+    );
+    expect(() =>
+      serializeMethodologyReportV131Sidecar({
+        report: schemaDriftedReport as never,
+        reportDigest: schemaDriftedDigest,
+      }),
+    ).toThrow(/unknown|schema/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        methodologyIdentity: "evaluation-contract-v1.3.0",
+      }),
+    ).toThrow(/identity/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        methodologyDigest: "0".repeat(64),
+      }),
+    ).toThrow(/digest/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        orderedValidatorTriples: baseInput.orderedValidatorTriples.slice(0, 19),
+      }),
+    ).toThrow(/20/);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        orderedValidatorTriples: baseInput.orderedValidatorTriples.map(
+          (triple, index) =>
+            index === 0 ? { ...triple, id: "untrusted.validator" } : triple,
+        ),
+      }),
+    ).toThrow(/trusted|triple/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        orderedValidatorTriples: [...baseInput.orderedValidatorTriples].reverse(),
+      }),
+    ).toThrow(/ordered|trusted|triple/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        applicability: [
+          { applies: true, bindingId: "binding-1", reason: "global", unknown: true },
+        ],
+      }),
+    ).toThrow(/applicability|unknown/i);
+    expect(() =>
+      buildMethodologyReportV131({
+        ...baseInput,
+        blockedFacts: [{ factPointer: "not-a-pointer", reason: "missing" }],
+      }),
+    ).toThrow(/blockedFacts|factPointer/i);
   });
 });
 

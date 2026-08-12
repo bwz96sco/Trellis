@@ -178,14 +178,19 @@ export {
   METHODOLOGY_REPORT_V2_DIGEST_DOMAIN,
   buildMethodologyReport,
   buildMethodologyReportV2,
+  buildMethodologyReportV131,
   canonicalResearchJson,
   computeMethodologyReportV2DigestFromCanonicalBody,
+  serializeMethodologyReportV131Sidecar,
   serializeMethodologyReportV2Sidecar,
   shouldMaterializeMethodologyReportSidecar,
 } from "./methodology-reports.js";
 export type {
   MethodologyDeterministicReport,
   MethodologyDeterministicReportV2,
+  MethodologyDeterministicReportV131,
+  MethodologyReportV131Finding,
+  MethodologyReportV131ValidatorTriple,
 } from "./methodology-reports.js";
 
 export { buildWorkerMethodologyProjectionV2 } from "./methodology-worker-context.js";
@@ -236,6 +241,19 @@ export {
   V13_PROCEDURE_CLOSURE_DISPOSITIONS,
   V13_PROCEDURE_COUNT,
   V13_PROCEDURE_LIFECYCLE_FAMILIES,
+  V131_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+  V131_ACCEPTED_PACK_MEMBER_ALLOWLIST,
+  V131_COMPLETE_LIFECYCLE_DECISION_COUNT,
+  V131_MAPPING_ROW_COUNT,
+  V131_MAPPING_ROWS_DIGEST,
+  V131_NEGATIVE_LIFECYCLE_DECISION_COUNT,
+  V131_NOT_APPLICABLE_MAPPING_ROW_COUNT,
+  V131_POSITIVE_LIFECYCLE_DECISION_COUNT,
+  deriveAcceptedV131PackIdentity,
+  executeV131BindingInvocations,
+  parseAcceptedV131ContractPack,
+  resolveV131ProcedureArtifactFamilyMapping,
+  selectApplicableV131BindingsForProcedure,
 } from "./methodology-v13-runtime.js";
 export type {
   CanonicalClosureParseResult,
@@ -259,6 +277,15 @@ export type {
   V13ProcedureClosureDisposition,
   V13TrustedValidatorEntry,
   V13ValidatorBinding,
+  DerivedAcceptedV131PackIdentity,
+  V131AcceptedContractPack,
+  V131ApplicableBinding,
+  V131BindingExecutionResult,
+  V131BindingInvocationRow,
+  V131LeafFileName,
+  V131LifecycleDecision,
+  V131MappingRow,
+  V131TrustedValidatorEntry,
 } from "./methodology-v13-runtime.js";
 
 export {
@@ -285,6 +312,7 @@ export {
   computeResearchProcedureDigest,
   computeResearchProjectPolicyDigest,
   evaluateResearchAutomaticEligibility,
+  parseAcceptedV131ResearchProcedure,
   parseResearchProcedure,
   parseResearchProjectPolicy,
   resolveResearchEffectiveAuthority,
@@ -292,6 +320,7 @@ export {
 export type {
   ParsedResearchProcedure,
   ParsedResearchProjectPolicy,
+  ParseResearchProcedureInput,
   ResearchAutomaticEligibility,
   ResearchAutomaticIneligibilityReason,
   ResearchCapabilityPolicyV1,
@@ -321,6 +350,10 @@ export {
   V13_METHODOLOGY_CANDIDATE_MANIFEST_DIGEST,
   V13_METHODOLOGY_CONTRACT_DIGEST,
   V13_METHODOLOGY_CONTRACT_VERSION,
+  V131_ACCEPTED_A133_COMMIT,
+  V131_ACCEPTED_CANDIDATE_MANIFEST_DIGEST,
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
   buildSupportPackInventory,
   computeResearchProcedureDigestV2,
   isAuthoritativeMethodologyProcedureVersion,

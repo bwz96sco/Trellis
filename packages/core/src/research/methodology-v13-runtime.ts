@@ -15,6 +15,8 @@ import path from "node:path";
 import {
   V13_ACCEPTED_CONTRACT_DIGEST,
   V13_ACCEPTED_CONTRACT_VERSION,
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
 } from "./procedure-support-pack.js";
 import { parseStrictResearchJson } from "./strict-json.js";
 
@@ -678,7 +680,7 @@ function parseValidatorEntry(
   // Severity is fixed critical for all trusted v1.3 validators.
   // A3 shape: { provenance, value: { fixed: "critical", downgradeAllowed: false } }
   const severityField = row.severity ?? row.fixedSeverity;
-  let severity: "critical" = "critical";
+  let severity = "critical" as const;
   if (severityField !== undefined) {
     const severityWrap = isRecord(severityField) ? severityField : null;
     const severityValue = severityWrap
@@ -2997,4 +2999,787 @@ export function executeV13ProcedureBindings(input: {
     ),
   );
   return Object.freeze({ ...executed, ledgerDigest });
+}
+
+// ===========================================================================
+// evaluation-contract-v1.3.1 — accepted A133, version-explicit parallel path.
+// Historical V13 symbols above retain their exact v1.3.0 identities/behavior.
+// ===========================================================================
+
+export const V131_ACCEPTED_MEMBER_AGGREGATE_SHA256 =
+  "sha256:718d7ecec808199148b63ce64208e60d52be18575b175df67ef620596107fa34" as const;
+export const V131_MAPPING_ROWS_DIGEST =
+  "sha256:6f63481078b8b49b8645b2b4f3cdf7b4b6a6c0155958c6b9713a0da38bdf462f" as const;
+export const V131_MAPPING_ROW_COUNT = 17 as const;
+export const V131_COMPLETE_LIFECYCLE_DECISION_COUNT = 14365 as const;
+export const V131_POSITIVE_LIFECYCLE_DECISION_COUNT = 975 as const;
+export const V131_NEGATIVE_LIFECYCLE_DECISION_COUNT = 13390 as const;
+export const V131_NOT_APPLICABLE_MAPPING_ROW_COUNT = 4 as const;
+
+export const V131_ACCEPTED_PACK_MEMBER_ALLOWLIST = Object.freeze([
+  "durable-output-disposition-v1.3.1.json",
+  "artifact-lifecycle-contract-v1.3.1.json",
+  "validator-registry-v1.3.1.json",
+  "validator-binding-matrix-v1.3.1.json",
+  "differential-test-matrix-v1.3.1.json",
+  "derivability-provenance-matrix-v1.3.1.json",
+  "closure-contract-v1.3.1.json",
+] as const);
+
+export type V131LeafFileName =
+  (typeof V131_ACCEPTED_PACK_MEMBER_ALLOWLIST)[number];
+
+export interface V131MappingRow {
+  readonly procedureId: string;
+  readonly procedureVersion: "2.0.7";
+  readonly capabilityId: string;
+  readonly disposition: "applicable" | "notApplicable";
+  readonly artifactFamily: string | null;
+}
+
+export interface V131LifecycleDecision {
+  readonly mappingRowIndex: number;
+  readonly procedureId: string;
+  readonly capabilityId: string;
+  readonly disposition: "applicable" | "notApplicable";
+  readonly artifactFamily: string | null;
+  readonly bindingId: string;
+  readonly targetId: string;
+  readonly targetArtifactFamily: string;
+  readonly applies: boolean;
+}
+
+export interface V131TrustedValidatorEntry extends V13TrustedValidatorEntry {
+  readonly inputFactSchema: Readonly<Record<string, unknown>>;
+  readonly applicability: Readonly<Record<string, unknown>>;
+  readonly predicate: Readonly<Record<string, unknown>>;
+  readonly orderedFindings: Readonly<Record<string, unknown>>;
+}
+
+export interface V131AcceptedContractPack {
+  readonly contractVersion: typeof V131_ACCEPTED_CONTRACT_VERSION;
+  readonly acceptedContractDigest: typeof V131_ACCEPTED_CONTRACT_DIGEST;
+  readonly derivedMemberAggregateSha256: typeof V131_ACCEPTED_MEMBER_AGGREGATE_SHA256;
+  readonly counts: V13ContractPackCounts;
+  readonly outputs: readonly Readonly<Record<string, unknown>>[];
+  readonly artifacts: readonly V13ArtifactLifecycleRow[];
+  readonly validators: readonly V131TrustedValidatorEntry[];
+  readonly bindings: readonly V13ValidatorBinding[];
+  readonly deltaCases: readonly Readonly<Record<string, unknown>>[];
+  readonly provenanceRows: readonly Readonly<Record<string, unknown>>[];
+  readonly closureFamilies: readonly string[];
+  readonly mappingRows: readonly V131MappingRow[];
+  readonly lifecycleDecisions: readonly V131LifecycleDecision[];
+  readonly reportV2Contract: Readonly<Record<string, unknown>>;
+  readonly memberDigests: Readonly<Record<string, string>>;
+}
+
+export interface DerivedAcceptedV131PackIdentity {
+  readonly aggregateSha256: string;
+  readonly members: readonly {
+    readonly path: V131LeafFileName;
+    readonly byteLength: number;
+    readonly sha256: string;
+  }[];
+}
+
+export function deriveAcceptedV131PackIdentity(input: {
+  readonly leafBytes: Readonly<
+    Partial<Record<V131LeafFileName, Uint8Array>>
+  >;
+}): DerivedAcceptedV131PackIdentity {
+  const members: {
+    path: V131LeafFileName;
+    byteLength: number;
+    sha256: string;
+  }[] = [];
+  const aggregate = createHash("sha256");
+  aggregate.update("trellis-accepted-v13-pack-members\0");
+  for (const memberPath of V131_ACCEPTED_PACK_MEMBER_ALLOWLIST) {
+    const bytes = input.leafBytes[memberPath];
+    if (bytes === undefined) {
+      fail(
+        "V131_PACK_MEMBER_MISSING",
+        `Missing required v1.3.1 leaf ${memberPath}`,
+      );
+    }
+    members.push({
+      path: memberPath,
+      byteLength: bytes.byteLength,
+      sha256: sha256Hex(bytes),
+    });
+    aggregate.update(memberPath);
+    aggregate.update("\0");
+    aggregate.update(bytes);
+    aggregate.update("\0");
+  }
+  for (const key of Object.keys(input.leafBytes)) {
+    if (!(V131_ACCEPTED_PACK_MEMBER_ALLOWLIST as readonly string[]).includes(key)) {
+      fail("V131_PACK_MEMBER_EXTRA", `Unexpected v1.3.1 pack member ${key}`);
+    }
+  }
+  return Object.freeze({
+    aggregateSha256: `sha256:${aggregate.digest("hex")}`,
+    members: Object.freeze(members),
+  });
+}
+
+function v131WrappedValue(value: unknown): unknown {
+  return isRecord(value) && "value" in value ? value.value : value;
+}
+
+function parseV131MappingRow(value: unknown, index: number): V131MappingRow {
+  const row = requireRecord(value, `mapping.rows[${index}]`);
+  const disposition = requireString(
+    row.disposition,
+    `mapping.rows[${index}].disposition`,
+  );
+  if (disposition !== "applicable" && disposition !== "notApplicable") {
+    fail("V131_MAPPING_DISPOSITION", `Invalid mapping disposition ${disposition}`);
+  }
+  if (row.procedureVersion !== "2.0.7") {
+    fail("V131_MAPPING_VERSION", "Every mapping row must bind Procedure 2.0.7");
+  }
+  const artifactFamily = row.artifactFamily;
+  if (
+    (disposition === "applicable" &&
+      (typeof artifactFamily !== "string" || artifactFamily.length === 0)) ||
+    (disposition === "notApplicable" && artifactFamily !== null)
+  ) {
+    fail(
+      "V131_MAPPING_FAMILY",
+      "Mapping artifactFamily must be non-empty for applicable and null for notApplicable",
+    );
+  }
+  return Object.freeze({
+    procedureId: requireString(row.procedureId, `mapping.rows[${index}].procedureId`),
+    procedureVersion: "2.0.7" as const,
+    capabilityId: requireString(row.capabilityId, `mapping.rows[${index}].capabilityId`),
+    disposition,
+    artifactFamily: artifactFamily as string | null,
+  });
+}
+
+function parseV131LifecycleDecision(
+  value: unknown,
+  index: number,
+  mappingRows: readonly V131MappingRow[],
+  bindingsById: ReadonlyMap<string, V13ValidatorBinding>,
+  artifactsById: ReadonlyMap<string, V13ArtifactLifecycleRow>,
+): V131LifecycleDecision {
+  const row = requireRecord(value, `lifecycle.decisions[${index}]`);
+  const mappingRowIndex = requireNumber(
+    row.mappingRowIndex,
+    `lifecycle.decisions[${index}].mappingRowIndex`,
+  );
+  const mapping = mappingRows[mappingRowIndex];
+  if (mapping === undefined) {
+    fail("V131_LIFECYCLE_DECISION_MAPPING", "Lifecycle decision mapping row is unresolved");
+  }
+  const bindingId = requireString(row.bindingId, `lifecycle.decisions[${index}].bindingId`);
+  const targetId = requireString(row.targetId, `lifecycle.decisions[${index}].targetId`);
+  const targetArtifactFamily = requireString(
+    row.targetArtifactFamily,
+    `lifecycle.decisions[${index}].targetArtifactFamily`,
+  );
+  const binding = bindingsById.get(bindingId);
+  const target = artifactsById.get(targetId);
+  if (
+    binding === undefined ||
+    target === undefined ||
+    binding.targetId !== targetId ||
+    target.family !== targetArtifactFamily
+  ) {
+    fail(
+      "V131_LIFECYCLE_DECISION_CROSSLINK",
+      `Lifecycle decision ${index} has unresolved binding/target/family cross-link`,
+    );
+  }
+  const expectedApplies =
+    mapping.disposition === "applicable" &&
+    targetArtifactFamily === mapping.artifactFamily;
+  if (
+    row.applies !== expectedApplies ||
+    row.procedureId !== mapping.procedureId ||
+    row.capabilityId !== mapping.capabilityId ||
+    row.disposition !== mapping.disposition ||
+    row.artifactFamily !== mapping.artifactFamily
+  ) {
+    fail(
+      "V131_LIFECYCLE_DECISION_DRIFT",
+      `Lifecycle decision ${index} does not equal the authenticated applicability equation`,
+    );
+  }
+  return Object.freeze({
+    mappingRowIndex,
+    procedureId: mapping.procedureId,
+    capabilityId: mapping.capabilityId,
+    disposition: mapping.disposition,
+    artifactFamily: mapping.artifactFamily,
+    bindingId,
+    targetId,
+    targetArtifactFamily,
+    applies: expectedApplies,
+  });
+}
+
+function parseV131ValidatorEntry(
+  value: unknown,
+  index: number,
+): V131TrustedValidatorEntry {
+  const base = parseValidatorEntry(value, index);
+  const row = requireRecord(value, `validator[${index}]`);
+  const inputFactSchema = requireRecord(
+    v131WrappedValue(row.inputFactSchema),
+    `validator[${index}].inputFactSchema.value`,
+  );
+  const applicability = requireRecord(
+    row.applicability,
+    `validator[${index}].applicability`,
+  );
+  const predicate = requireRecord(row.predicate, `validator[${index}].predicate`);
+  if (
+    applicability.language !== "trellis-predicate-v1" ||
+    predicate.language !== "trellis-predicate-v1"
+  ) {
+    fail("V131_VALIDATOR_LANGUAGE", "Validator predicates must use trellis-predicate-v1");
+  }
+  const orderedFindings = requireRecord(
+    row.orderedFindings,
+    `validator[${index}].orderedFindings`,
+  );
+  const findingOrder = requireArray(
+    orderedFindings.order,
+    `validator[${index}].orderedFindings.order`,
+  );
+  if (
+    orderedFindings.severity !== "critical" ||
+    orderedFindings.zeroWriteOnFailure !== true ||
+    findingOrder.length === 0
+  ) {
+    fail(
+      "V131_VALIDATOR_FINDING_ORDER",
+      `validator ${base.identity.id} must have critical ordered zero-write findings`,
+    );
+  }
+  return Object.freeze({
+    ...base,
+    inputFactSchema: Object.freeze({ ...inputFactSchema }),
+    applicability: Object.freeze({ ...applicability }),
+    predicate: Object.freeze({ ...predicate }),
+    orderedFindings: Object.freeze({ ...orderedFindings }),
+  });
+}
+
+export function parseAcceptedV131ContractPack(input: {
+  readonly leafBytes: Readonly<
+    Partial<Record<V131LeafFileName, Uint8Array>>
+  >;
+}): V131AcceptedContractPack {
+  const identity = deriveAcceptedV131PackIdentity({ leafBytes: input.leafBytes });
+  if (identity.aggregateSha256 !== V131_ACCEPTED_MEMBER_AGGREGATE_SHA256) {
+    fail(
+      "V131_PACK_AGGREGATE_MISMATCH",
+      `Derived v1.3.1 member aggregate ${identity.aggregateSha256} does not match accepted ${V131_ACCEPTED_MEMBER_AGGREGATE_SHA256}`,
+    );
+  }
+  const parsed: Record<V131LeafFileName, unknown> = {} as Record<
+    V131LeafFileName,
+    unknown
+  >;
+  for (const memberPath of V131_ACCEPTED_PACK_MEMBER_ALLOWLIST) {
+    const memberBytes = input.leafBytes[memberPath];
+    if (memberBytes === undefined) {
+      fail("V131_PACK_MEMBER_MISSING", `Missing required v1.3.1 leaf ${memberPath}`);
+    }
+    parsed[memberPath] = parseStrictResearchJson(memberBytes);
+  }
+
+  const outputDisposition = requireRecord(
+    parsed["durable-output-disposition-v1.3.1.json"],
+    "v1.3.1 output disposition",
+  );
+  const outputs = requireArray(outputDisposition.outputs, "v1.3.1 outputs");
+  if (
+    outputDisposition.contractVersion !== V131_ACCEPTED_CONTRACT_VERSION ||
+    outputDisposition.sourceSetCount !== V13_OUTPUT_COUNT ||
+    outputs.length !== V13_OUTPUT_COUNT
+  ) {
+    fail("V131_OUTPUT_INTEGRITY", "v1.3.1 output disposition identity/count drift");
+  }
+
+  const lifecycle = requireRecord(
+    parsed["artifact-lifecycle-contract-v1.3.1.json"],
+    "v1.3.1 lifecycle contract",
+  );
+  const rawArtifacts = requireArray(lifecycle.artifacts, "v1.3.1 artifacts");
+  if (
+    lifecycle.contractVersion !== V131_ACCEPTED_CONTRACT_VERSION ||
+    lifecycle.enforceableArtifactCount !== V13_ENFORCEABLE_ARTIFACT_COUNT ||
+    rawArtifacts.length !== V13_ENFORCEABLE_ARTIFACT_COUNT
+  ) {
+    fail("V131_ARTIFACT_INTEGRITY", "v1.3.1 lifecycle artifact identity/count drift");
+  }
+  const artifacts = rawArtifacts.map(parseArtifactRow);
+  const artifactsById = new Map(artifacts.map((row) => [row.artifactId, row] as const));
+
+  const registry = requireRecord(
+    parsed["validator-registry-v1.3.1.json"],
+    "v1.3.1 validator registry",
+  );
+  const rawValidators = requireArray(registry.validators, "v1.3.1 validators");
+  if (
+    registry.contractVersion !== V131_ACCEPTED_CONTRACT_VERSION ||
+    rawValidators.length !== V13_TRUSTED_VALIDATOR_COUNT
+  ) {
+    fail("V131_VALIDATOR_INTEGRITY", "v1.3.1 validator identity/count drift");
+  }
+  const validators = rawValidators.map(parseV131ValidatorEntry);
+  const validatorKeys = new Set(
+    validators.map((row) => `${row.identity.id}@${row.identity.version}`),
+  );
+  if (validatorKeys.size !== V13_TRUSTED_VALIDATOR_COUNT) {
+    fail("V131_VALIDATOR_DUPLICATE", "v1.3.1 validator identities must be unique");
+  }
+
+  const bindingMatrix = requireRecord(
+    parsed["validator-binding-matrix-v1.3.1.json"],
+    "v1.3.1 binding matrix",
+  );
+  const rawBindings = requireArray(bindingMatrix.bindings, "v1.3.1 bindings");
+  if (
+    bindingMatrix.contractVersion !== V131_ACCEPTED_CONTRACT_VERSION ||
+    rawBindings.length !== V13_VALIDATOR_BINDING_COUNT
+  ) {
+    fail("V131_BINDING_INTEGRITY", "v1.3.1 binding identity/count drift");
+  }
+  const bindings = rawBindings.map(parseBinding);
+  const bindingsById = new Map(bindings.map((row) => [row.bindingId, row] as const));
+  if (bindingsById.size !== V13_VALIDATOR_BINDING_COUNT) {
+    fail("V131_BINDING_DUPLICATE", "v1.3.1 binding ids must be unique");
+  }
+  for (const binding of bindings) {
+    if (!validatorKeys.has(`${binding.validator.id}@${binding.validator.version}`)) {
+      fail("V131_UNKNOWN_BINDING_VALIDATOR", `Untrusted binding validator on ${binding.bindingId}`);
+    }
+  }
+
+  const mapping = requireRecord(
+    lifecycle.procedureCapabilityArtifactFamilyMapping,
+    "v1.3.1 Procedure/capability mapping",
+  );
+  if (mapping.mappingRowsDigest !== V131_MAPPING_ROWS_DIGEST) {
+    fail("V131_MAPPING_DIGEST", "v1.3.1 mapping rows digest drift");
+  }
+  const mappingRows = requireArray(mapping.rows, "v1.3.1 mapping rows").map(
+    parseV131MappingRow,
+  );
+  if (
+    mappingRows.length !== V131_MAPPING_ROW_COUNT ||
+    mappingRows.filter((row) => row.disposition === "notApplicable").length !==
+      V131_NOT_APPLICABLE_MAPPING_ROW_COUNT
+  ) {
+    fail("V131_MAPPING_COUNT", "v1.3.1 mapping row count/disposition drift");
+  }
+  const completeMatrix = requireRecord(
+    mapping.completeLifecycleMatrix,
+    "v1.3.1 complete lifecycle matrix",
+  );
+  const rawDecisions = requireArray(
+    completeMatrix.decisions,
+    "v1.3.1 lifecycle decisions",
+  );
+  if (
+    completeMatrix.totalDecisions !== V131_COMPLETE_LIFECYCLE_DECISION_COUNT ||
+    completeMatrix.positiveDecisions !== V131_POSITIVE_LIFECYCLE_DECISION_COUNT ||
+    completeMatrix.negativeDecisions !== V131_NEGATIVE_LIFECYCLE_DECISION_COUNT ||
+    completeMatrix.notApplicablePositiveDecisions !== 0 ||
+    rawDecisions.length !== V131_COMPLETE_LIFECYCLE_DECISION_COUNT
+  ) {
+    fail("V131_LIFECYCLE_DECISION_COUNT", "v1.3.1 lifecycle decision counts drift");
+  }
+  const lifecycleDecisions = rawDecisions.map((row, index) =>
+    parseV131LifecycleDecision(
+      row,
+      index,
+      mappingRows,
+      bindingsById,
+      artifactsById,
+    ),
+  );
+  if (
+    lifecycleDecisions.filter((row) => row.applies).length !==
+    V131_POSITIVE_LIFECYCLE_DECISION_COUNT
+  ) {
+    fail("V131_LIFECYCLE_POSITIVE_COUNT", "v1.3.1 positive decision count drift");
+  }
+
+  const differential = requireRecord(
+    parsed["differential-test-matrix-v1.3.1.json"],
+    "v1.3.1 differential matrix",
+  );
+  const deltaCases = requireArray(differential.v13DeltaCases, "v1.3.1 delta cases");
+  if (deltaCases.length !== V13_DELTA_CASE_COUNT) {
+    fail("V131_DELTA_COUNT", "v1.3.1 delta case count drift");
+  }
+  const provenance = requireRecord(
+    parsed["derivability-provenance-matrix-v1.3.1.json"],
+    "v1.3.1 provenance matrix",
+  );
+  const provenanceRows = requireArray(provenance.rows, "v1.3.1 provenance rows");
+  if (provenanceRows.length !== V13_PROVENANCE_ROW_COUNT) {
+    fail("V131_PROVENANCE_COUNT", "v1.3.1 provenance row count drift");
+  }
+  const closure = requireRecord(
+    parsed["closure-contract-v1.3.1.json"],
+    "v1.3.1 closure contract",
+  );
+  const closureFamilies = requireArray(
+    closure.applicableFamilies,
+    "v1.3.1 closure families",
+  ).map((family, index) => requireString(family, `closure family ${index}`));
+  if (
+    closure.contractVersion !== V131_ACCEPTED_CONTRACT_VERSION ||
+    closureFamilies.length !== V13_CLOSURE_FAMILY_COUNT
+  ) {
+    fail("V131_CLOSURE_INTEGRITY", "v1.3.1 closure identity/count drift");
+  }
+  const statusInference = requireRecord(
+    v131WrappedValue(closure.genericResultStatusInference),
+    "v1.3.1 Result.status inference",
+  );
+  if (statusInference.allowed !== false || statusInference.mapping !== null) {
+    fail("V131_STATUS_INFERENCE", "Result.status cannot be closure authority in v1.3.1");
+  }
+
+  return Object.freeze({
+    contractVersion: V131_ACCEPTED_CONTRACT_VERSION,
+    acceptedContractDigest: V131_ACCEPTED_CONTRACT_DIGEST,
+    derivedMemberAggregateSha256: V131_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+    counts: expectedV13ContractCounts(),
+    outputs: Object.freeze(outputs.map((row) => requireRecord(row, "v1.3.1 output"))),
+    artifacts: Object.freeze(artifacts),
+    validators: Object.freeze(validators),
+    bindings: Object.freeze(bindings),
+    deltaCases: Object.freeze(deltaCases.map((row) => requireRecord(row, "v1.3.1 delta case"))),
+    provenanceRows: Object.freeze(
+      provenanceRows.map((row) => requireRecord(row, "v1.3.1 provenance row")),
+    ),
+    closureFamilies: Object.freeze(closureFamilies),
+    mappingRows: Object.freeze(mappingRows),
+    lifecycleDecisions: Object.freeze(lifecycleDecisions),
+    reportV2Contract: Object.freeze(
+      requireRecord(bindingMatrix.reportV2Contract, "v1.3.1 report-v2 contract"),
+    ),
+    memberDigests: Object.freeze(
+      Object.fromEntries(identity.members.map((member) => [member.path, member.sha256])),
+    ),
+  });
+}
+
+export function resolveV131ProcedureArtifactFamilyMapping(input: {
+  readonly pack: V131AcceptedContractPack;
+  readonly procedureId: string;
+  readonly procedureVersion: string;
+  readonly capabilityId: string;
+}): V131MappingRow {
+  if (input.procedureVersion !== "2.0.7") {
+    fail("V131_PROCEDURE_VERSION", "v1.3.1 mapping requires exact Procedure 2.0.7");
+  }
+  const row = input.pack.mappingRows.find(
+    (candidate) =>
+      candidate.procedureId === input.procedureId &&
+      candidate.capabilityId === input.capabilityId &&
+      candidate.procedureVersion === input.procedureVersion,
+  );
+  if (row === undefined) {
+    fail(
+      "V131_MAPPING_UNRESOLVED",
+      `No exact v1.3.1 mapping for ${input.procedureId}/${input.capabilityId}/${input.procedureVersion}`,
+    );
+  }
+  return row;
+}
+
+export interface V131ApplicableBinding extends V13ApplicableBinding {
+  readonly mapping: V131MappingRow;
+  readonly targetArtifactFamily?: string;
+  readonly applicabilityReason: "family-match" | "global" | "closure";
+}
+
+function v131ResolvePointer(root: unknown, pointer: string): unknown {
+  if (pointer === "") return root;
+  if (!pointer.startsWith("/")) return undefined;
+  let current = root;
+  for (const raw of pointer.slice(1).split("/")) {
+    const key = raw.replace(/~1/g, "/").replace(/~0/g, "~");
+    if (!isRecord(current) && !Array.isArray(current)) return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+function v131DeepEqual(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function v131EvaluatePredicateOperand(root: unknown, operand: unknown): unknown {
+  const value = requireRecord(operand, "v1.3.1 predicate operand");
+  if (value.kind === "literal") return value.value;
+  if (value.kind === "exact-json-pointer") {
+    return v131ResolvePointer(root, requireString(value.value, "predicate pointer"));
+  }
+  fail("V131_PREDICATE_OPERAND", `Unknown predicate operand kind ${String(value.kind)}`);
+}
+
+function v131EvaluatePredicate(root: unknown, expression: unknown): boolean {
+  const node = requireRecord(expression, "v1.3.1 predicate expression");
+  const operands = requireArray(node.operands, "v1.3.1 predicate operands");
+  switch (node.op) {
+    case "all":
+      return operands.every((operand) => v131EvaluatePredicate(root, operand));
+    case "any":
+      return operands.some((operand) => v131EvaluatePredicate(root, operand));
+    case "equals":
+      return v131DeepEqual(
+        v131EvaluatePredicateOperand(root, operands[0]),
+        v131EvaluatePredicateOperand(root, operands[1]),
+      );
+    case "in-set": {
+      const item = v131EvaluatePredicateOperand(root, operands[0]);
+      const set = v131EvaluatePredicateOperand(root, operands[1]);
+      return Array.isArray(set) && set.some((candidate) => v131DeepEqual(candidate, item));
+    }
+    case "exists":
+      return v131EvaluatePredicateOperand(root, operands[0]) !== undefined;
+    default:
+      fail("V131_PREDICATE_OPERATION", `Unknown predicate operation ${String(node.op)}`);
+  }
+}
+
+function v131ValidateSchema(value: unknown, schemaValue: unknown): boolean {
+  const schema = requireRecord(schemaValue, "v1.3.1 fact schema");
+  if (Array.isArray(schema.oneOf)) {
+    if (schema.oneOf.filter((candidate) => v131ValidateSchema(value, candidate)).length !== 1) {
+      return false;
+    }
+  }
+  if (schema.const !== undefined && !v131DeepEqual(value, schema.const)) return false;
+  if (Array.isArray(schema.enum) && !schema.enum.some((item) => v131DeepEqual(item, value))) {
+    return false;
+  }
+  const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+  if (schema.type !== undefined) {
+    const typeMatches = types.some((type) => {
+      if (type === "null") return value === null;
+      if (type === "array") return Array.isArray(value);
+      if (type === "object") return isRecord(value);
+      if (type === "string") return typeof value === "string";
+      if (type === "boolean") return typeof value === "boolean";
+      if (type === "number") return typeof value === "number" && Number.isFinite(value);
+      if (type === "integer") return typeof value === "number" && Number.isInteger(value);
+      return false;
+    });
+    if (!typeMatches) return false;
+  }
+  if (typeof value === "string") {
+    if (typeof schema.minLength === "number" && value.length < schema.minLength) return false;
+    if (typeof schema.pattern === "string" && !new RegExp(schema.pattern).test(value)) return false;
+  }
+  if (Array.isArray(value)) {
+    if (typeof schema.minItems === "number" && value.length < schema.minItems) return false;
+    if (schema.items !== undefined && value.some((item) => !v131ValidateSchema(item, schema.items))) {
+      return false;
+    }
+  }
+  if (isRecord(value)) {
+    const properties = isRecord(schema.properties) ? schema.properties : {};
+    if (schema.additionalProperties === false) {
+      if (Object.keys(value).some((key) => !(key in properties))) return false;
+    }
+    if (
+      Array.isArray(schema.required) &&
+      schema.required.some(
+        (key) => typeof key !== "string" || !Object.prototype.hasOwnProperty.call(value, key),
+      )
+    ) {
+      return false;
+    }
+    for (const [key, propertySchema] of Object.entries(properties)) {
+      if (key in value && !v131ValidateSchema(value[key], propertySchema)) return false;
+    }
+  }
+  return true;
+}
+
+export interface V131BindingInvocationRow extends V13BindingInvocationRow {
+  readonly validatorSeverity: "critical";
+}
+
+export interface V131BindingExecutionResult {
+  readonly applicableCount: number;
+  readonly invocationCount: number;
+  readonly ok: boolean;
+  readonly criticalFailure: boolean;
+  readonly invocations: readonly V131BindingInvocationRow[];
+}
+
+export function executeV131BindingInvocations(input: {
+  readonly pack: V131AcceptedContractPack;
+  readonly applicableBindings: readonly V131ApplicableBinding[];
+  readonly factForBinding: (
+    binding: V131ApplicableBinding,
+  ) =>
+    | {
+        readonly source: string;
+        readonly authenticated: boolean;
+        readonly value: unknown;
+      }
+    | undefined;
+}): V131BindingExecutionResult {
+  const validators = new Map(
+    input.pack.validators.map((validator) => [
+      `${validator.identity.id}@${validator.identity.version}`,
+      validator,
+    ] as const),
+  );
+  const invocations: V131BindingInvocationRow[] = [];
+  for (const applicable of input.applicableBindings) {
+    const validator = validators.get(
+      `${applicable.binding.validator.id}@${applicable.binding.validator.version}`,
+    );
+    if (validator === undefined || applicable.binding.validator.severity !== "critical") {
+      fail(
+        "V131_VALIDATOR_IDENTITY",
+        `Applicable binding ${applicable.binding.bindingId} has no exact trusted critical validator triple`,
+      );
+    }
+    const fact = input.factForBinding(applicable);
+    if (fact === undefined) {
+      fail(
+        "V131_APPLICABLE_FACT_UNRESOLVED",
+        `Applicable binding ${applicable.binding.bindingId} has no required fact`,
+      );
+    }
+    const schemaOk =
+      fact.authenticated &&
+      v131ValidateSchema(fact.value, validator.inputFactSchema);
+    const applicabilityExpression = requireRecord(
+      validator.applicability.predicate,
+      "v1.3.1 applicability predicate",
+    );
+    const predicateExpression = requireRecord(
+      validator.predicate.predicate,
+      "v1.3.1 execution predicate",
+    );
+    const applicableByValidator = schemaOk
+      ? v131EvaluatePredicate(fact.value, applicabilityExpression)
+      : false;
+    const passed =
+      schemaOk &&
+      applicableByValidator &&
+      v131EvaluatePredicate(fact.value, predicateExpression);
+    invocations.push(
+      Object.freeze({
+        bindingId: applicable.binding.bindingId,
+        sourceRowIndex: applicable.sourceRowIndex,
+        validatorId: applicable.binding.validator.id,
+        validatorVersion: applicable.binding.validator.version,
+        validatorSeverity: "critical" as const,
+        targetId: applicable.binding.targetId,
+        dimension: applicable.dimension,
+        ruleKind: applicable.binding.ruleKind,
+        factSource: fact.source,
+        factValue: fact.value,
+        outcome: passed ? ("pass" as const) : ("fail-closed" as const),
+        findingCode: passed
+          ? undefined
+          : applicable.binding.stableErrors[0] ?? "V13_VALIDATOR_BINDING_INVALID",
+      }),
+    );
+  }
+  if (invocations.length !== input.applicableBindings.length) {
+    fail(
+      "V131_INVOCATION_COUNT_MISMATCH",
+      "Every applicable v1.3.1 binding must produce exactly one invocation row",
+    );
+  }
+  const criticalFailure = invocations.some((row) => row.outcome === "fail-closed");
+  return Object.freeze({
+    applicableCount: input.applicableBindings.length,
+    invocationCount: invocations.length,
+    ok: !criticalFailure,
+    criticalFailure,
+    invocations: Object.freeze(invocations),
+  });
+}
+
+export function selectApplicableV131BindingsForProcedure(input: {
+  readonly pack: V131AcceptedContractPack;
+  readonly procedureId: string;
+  readonly procedureVersion: string;
+  readonly capabilityId: string;
+}): readonly V131ApplicableBinding[] {
+  const mapping = resolveV131ProcedureArtifactFamilyMapping(input);
+  const decisionByBinding = new Map(
+    input.pack.lifecycleDecisions
+      .filter(
+        (decision) =>
+          decision.procedureId === mapping.procedureId &&
+          decision.capabilityId === mapping.capabilityId &&
+          decision.applies,
+      )
+      .map((decision) => [decision.bindingId, decision] as const),
+  );
+  const artifactById = new Map(
+    input.pack.artifacts.map((artifact) => [artifact.artifactId, artifact] as const),
+  );
+  const closureFamily = mapProcedureIdToClosureFamily(input.procedureId);
+  const selected: V131ApplicableBinding[] = [];
+  input.pack.bindings.forEach((binding, sourceRowIndex) => {
+    if (binding.ruleKind.startsWith("artifact.")) {
+      const decision = decisionByBinding.get(binding.bindingId);
+      if (decision === undefined) return;
+      const target = artifactById.get(binding.targetId);
+      if (target === undefined) {
+        fail("V131_BINDING_TARGET_UNRESOLVED", `Missing target ${binding.targetId}`);
+      }
+      selected.push(
+        Object.freeze({
+          binding,
+          sourceRowIndex,
+          target,
+          dimension: dimensionFromArtifactRuleKind(binding.ruleKind),
+          isGlobal: false,
+          mapping,
+          targetArtifactFamily: decision.targetArtifactFamily,
+          applicabilityReason: "family-match" as const,
+        }),
+      );
+      return;
+    }
+    if (binding.ruleKind.startsWith("closure.")) {
+      if (closureFamily === undefined || binding.targetId !== closureFamily) return;
+      selected.push(
+        Object.freeze({
+          binding,
+          sourceRowIndex,
+          isGlobal: true,
+          mapping,
+          applicabilityReason: "closure" as const,
+        }),
+      );
+      return;
+    }
+    selected.push(
+      Object.freeze({
+        binding,
+        sourceRowIndex,
+        isGlobal: true,
+        mapping,
+        applicabilityReason: "global" as const,
+      }),
+    );
+  });
+  return Object.freeze(selected);
 }

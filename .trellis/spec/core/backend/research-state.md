@@ -870,6 +870,18 @@ The registry and resolver must not appear on the `@mindfoldhq/trellis-core` root
 barrel, retired Skill-routing exports must be absent from the Research subpath,
 and this change must not alter package export keys.
 
+### Accepted evaluation-contract v1.3.1 runtime compatibility
+
+The Research subpath may expose additive `V131_*` constants, types, parsers, applicability selection, binding execution, and report-v2 construction. These exports are parallel to the historical `V13_*` surface: existing v1.3.0 identities, replay semantics, Procedure `2.0.0` through `2.0.6` bindings, and legacy freeze-family loading remain unchanged.
+
+The v1.3.1 runtime authenticates the exact immutable seven-member A133 pack before using any semantic leaf. It enforces the exact 17-row Procedure/capability/artifact-family mapping, the complete 14,365-decision applicability matrix, all applicable lifecycle dimensions, and exact trusted critical validator triples. Runtime fact inputs are closed-schema and predicate evaluated; unresolved invocation facts or missing, unknown, contradictory, aliased, ambiguous, unauthenticated, or semantically mismatched facts fail closed.
+
+Procedure `2.0.7` is dormant and may be parsed only through the explicit accepted-v1.3.1 wrapper over the generic schema-v2 Procedure path. The capability registry and live Procedure selection remain `1.0.0`; `stage-capabilities.ts` is not modified for this dormant binding.
+
+Workers remain `workerAuthority: "proposal-only"`. The v1.3.1 path grants no worker Decision, recording, publication, activation, provider, ledger, store, reducer, projection, or canonical mutation authority. Closure authority is explicit and canonical for applicable families; Result status is never synthesized into closure facts for v1.3.1.
+
+The accepted v1.3.1 report-v2 body is closed at the top level and for nested applicability, artifact-binding, blocked-fact, closure-source, finding, and validator-triple records. It requires the exact accepted methodology identity and semantic digest plus the exact 20 accepted validator triples. Its domain-separated digest is external to the report object (`selfDigestFieldAllowed: false`); V131 sidecar serialization accepts that external digest, revalidates it against the closed report body, omits `reportDigest` from serialized JSON, and emits exactly one final LF. Historical report-v2 serialization remains unchanged.
+
 Mixed-ledger tests additionally require exact v1 fixture hashes/non-regression, strict v2 payload/version/timestamp vectors, mixed replay/rebuild, one activation per Dispatch, grant/revoke/consume transitions, expiry equality inputs, exact relation order, and consumption adjacency. C05 must prove only plan/grant/revoke emitters were added, all v1 mappings remain unchanged, and no consumption mutation exists. Run fresh GitNexus impact and warn before editing HIGH/CRITICAL parser, reducer, or store symbols.
 
 ## 7. Wrong vs Correct

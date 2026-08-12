@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 
 import { stableResearchJson } from "./projections.js";
 import {
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
   computeResearchProcedureDigestV2,
   type SupportPackInventoryItem,
   type SupportPackManifest,
@@ -468,11 +470,17 @@ function parseManifest(
     const expectedReplaceId =
       identityMode === "capability-current"
         ? capability.procedure.id
-        : recordedProcedureId!;
+        : recordedProcedureId;
     const expectedReplaceVersion =
       identityMode === "capability-current"
         ? capability.procedure.version
-        : recordedVersion!;
+        : recordedVersion;
+    if (expectedReplaceId === undefined || expectedReplaceVersion === undefined) {
+      fail(
+        "INVALID_RESEARCH_PROCEDURE",
+        "Recorded project Procedure replacement identity is incomplete",
+      );
+    }
     if (
       replacement.id !== expectedReplaceId ||
       replacement.version !== expectedReplaceVersion
@@ -586,26 +594,25 @@ export function computeResearchProcedureDigest(input: {
   ]);
 }
 
-export function parseResearchProcedure(input: {
+export interface ParseResearchProcedureInput {
   readonly capabilityId: string;
   readonly source: ResearchProcedureSource;
   readonly manifestBytes: Uint8Array;
   readonly instructionBytes: Uint8Array;
   readonly identityMode?: ResearchProcedureIdentityMode;
   readonly recordedVersion?: string;
-  /** Exact recorded Procedure id for activation-recorded replay (not capability-current). */
   readonly recordedProcedureId?: string;
-  /**
-   * When present, Procedure digest uses the v2 domain binding support-pack
-   * inventory. Omit for schema-v1 packages (default).
-   */
   readonly packageSchemaVersion?: 1 | 2;
   readonly supportPack?: {
     readonly manifest: SupportPackManifest;
     readonly packJsonBytes: Uint8Array;
     readonly inventoryItems: readonly SupportPackInventoryItem[];
   };
-}): ParsedResearchProcedure {
+}
+
+export function parseResearchProcedure(
+  input: ParseResearchProcedureInput,
+): ParsedResearchProcedure {
   const capability = registeredCapability(input.capabilityId);
   const identityMode = input.identityMode ?? "capability-current";
   if (
@@ -716,6 +723,50 @@ export function parseResearchProcedure(input: {
     packageSchemaVersion,
     ...(supportPack !== undefined ? { supportPack } : {}),
   });
+}
+
+/**
+ * Version-explicit evaluation-contract-v1.3.1 parser. It deliberately uses the
+ * generic schema-v2 Procedure path and never consults the legacy 2.0.4
+ * freeze-family methodology loader.
+ */
+export function parseAcceptedV131ResearchProcedure(
+  input: ParseResearchProcedureInput,
+): ParsedResearchProcedure {
+  if (
+    input.identityMode !== "recorded-version" ||
+    input.recordedVersion !== "2.0.7" ||
+    input.packageSchemaVersion !== 2
+  ) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Accepted evaluation-contract-v1.3.1 requires exact recorded Procedure 2.0.7 with packageSchemaVersion 2",
+    );
+  }
+  const supportPack = input.supportPack;
+  if (
+    supportPack?.manifest.procedureVersion !== "2.0.7" ||
+    supportPack.manifest.methodologyContractVersion !==
+      V131_ACCEPTED_CONTRACT_VERSION ||
+    supportPack.manifest.methodologyContractDigest !== V131_ACCEPTED_CONTRACT_DIGEST
+  ) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Accepted Procedure 2.0.7 requires the exact evaluation-contract-v1.3.1 identity and digest",
+    );
+  }
+  const parsed = parseResearchProcedure(input);
+  if (
+    parsed.manifest.version !== "2.0.7" ||
+    parsed.packageSchemaVersion !== 2 ||
+    parsed.digestDomain !== "v2"
+  ) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Accepted Procedure 2.0.7 did not resolve through the generic schema-v2 digest path",
+    );
+  }
+  return parsed;
 }
 
 function parseAllowFalse(

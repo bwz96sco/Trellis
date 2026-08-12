@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,24 +17,37 @@ import {
   V13_PROVENANCE_ROW_COUNT,
   V13_TRUSTED_VALIDATOR_COUNT,
   V13_VALIDATOR_BINDING_COUNT,
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
+  V131_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+  V131_COMPLETE_LIFECYCLE_DECISION_COUNT,
+  V131_MAPPING_ROW_COUNT,
+  V131_NOT_APPLICABLE_MAPPING_ROW_COUNT,
+  V131_POSITIVE_LIFECYCLE_DECISION_COUNT,
   assertHistoricalPhase2FixtureIsNotV13Authority,
   deriveAcceptedV13PackIdentity,
+  deriveAcceptedV131PackIdentity,
   enforceV13LifecycleDimensionsFromArtifactRefs,
   evaluateAcceptedV13DeltaCase,
+  executeV131BindingInvocations,
   expectedV13ContractCounts,
   executeV13BindingInvocations,
   isV13ClosureArtifactExactPath,
   mapProcedureIdToClosureFamily,
   parseAcceptedV13ContractPack,
+  parseAcceptedV131ContractPack,
   parseCanonicalMethodologyClosureArtifact,
   resolveProcedureClosureDisposition,
   resolveProcedureLifecycleFamily,
+  resolveV131ProcedureArtifactFamilyMapping,
   selectApplicableV13BindingsForProcedure,
+  selectApplicableV131BindingsForProcedure,
   selectTrustedV13ValidatorDescriptors,
   validateV13BindingCrossLinks,
   V13_CLOSURE_ARTIFACT_SPECS,
   V13_PROCEDURE_CLOSURE_DISPOSITIONS,
   type V13LeafFileName,
+  type V131LeafFileName,
 } from "../../src/research/index.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -60,6 +74,298 @@ function loadA3LeafBytes(): Partial<Record<V13LeafFileName, Uint8Array>> {
   }
   return out;
 }
+
+const A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3";
+const A133_RESEARCH_PATH =
+  ".trellis/tasks/08-10-author-evaluation-contract-v1-3-1-attempt-3/research";
+const V131_LEAF_FILES: readonly V131LeafFileName[] = [
+  "durable-output-disposition-v1.3.1.json",
+  "artifact-lifecycle-contract-v1.3.1.json",
+  "validator-registry-v1.3.1.json",
+  "validator-binding-matrix-v1.3.1.json",
+  "differential-test-matrix-v1.3.1.json",
+  "derivability-provenance-matrix-v1.3.1.json",
+  "closure-contract-v1.3.1.json",
+];
+
+function loadA133LeafBytes(): Partial<Record<V131LeafFileName, Uint8Array>> {
+  const out: Partial<Record<V131LeafFileName, Uint8Array>> = {};
+  for (const name of V131_LEAF_FILES) {
+    out[name] = execFileSync(
+      "git",
+      ["-C", repoRoot, "show", `${A133_COMMIT}:${A133_RESEARCH_PATH}/${name}`],
+      { maxBuffer: 16 * 1024 * 1024 },
+    );
+  }
+  return out;
+}
+
+describe("methodology v1.3.1 runtime (accepted A133 immutable path)", () => {
+  it("authenticates the exact seven immutable leaves and complete applicability matrix", () => {
+    const leafBytes = loadA133LeafBytes();
+    const identity = deriveAcceptedV131PackIdentity({ leafBytes });
+    expect(identity.aggregateSha256).toBe(V131_ACCEPTED_MEMBER_AGGREGATE_SHA256);
+
+    const pack = parseAcceptedV131ContractPack({ leafBytes });
+    expect(pack.contractVersion).toBe(V131_ACCEPTED_CONTRACT_VERSION);
+    expect(pack.acceptedContractDigest).toBe(V131_ACCEPTED_CONTRACT_DIGEST);
+    expect(pack.mappingRows).toHaveLength(V131_MAPPING_ROW_COUNT);
+    expect(pack.lifecycleDecisions).toHaveLength(
+      V131_COMPLETE_LIFECYCLE_DECISION_COUNT,
+    );
+    expect(pack.lifecycleDecisions.filter((row) => row.applies)).toHaveLength(
+      V131_POSITIVE_LIFECYCLE_DECISION_COUNT,
+    );
+    expect(
+      pack.mappingRows.filter((row) => row.disposition === "notApplicable"),
+    ).toHaveLength(V131_NOT_APPLICABLE_MAPPING_ROW_COUNT);
+    expect(pack.validators).toHaveLength(20);
+    expect(pack.bindings).toHaveLength(876);
+    expect(pack.validators.every((row) => row.severity === "critical")).toBe(true);
+    expect(pack.bindings.every((row) => row.validator.severity === "critical")).toBe(
+      true,
+    );
+  });
+
+  it("uses the authenticated 17-row mapping and never substitutes experiment closure family", () => {
+    const pack = parseAcceptedV131ContractPack({ leafBytes: loadA133LeafBytes() });
+    expect(
+      resolveV131ProcedureArtifactFamilyMapping({
+        pack,
+        procedureId: "experiment-campaign-v1",
+        capabilityId: "research.experiment.campaign",
+        procedureVersion: "2.0.7",
+      }),
+    ).toEqual({
+      procedureId: "experiment-campaign-v1",
+      capabilityId: "research.experiment.campaign",
+      procedureVersion: "2.0.7",
+      disposition: "applicable",
+      artifactFamily: "research-experiment-campaign",
+    });
+    expect(
+      resolveV131ProcedureArtifactFamilyMapping({
+        pack,
+        procedureId: "survey-v1",
+        capabilityId: "research.literature.survey",
+        procedureVersion: "2.0.7",
+      }).artifactFamily,
+    ).toBeNull();
+
+    const selected = selectApplicableV131BindingsForProcedure({
+      pack,
+      procedureId: "experiment-campaign-v1",
+      capabilityId: "research.experiment.campaign",
+      procedureVersion: "2.0.7",
+    });
+    expect(selected.filter((row) => row.binding.ruleKind.startsWith("artifact."))).toHaveLength(
+      195,
+    );
+    expect(
+      selected
+        .filter((row) => row.binding.ruleKind.startsWith("artifact."))
+        .every((row) => row.targetArtifactFamily === "research-experiment-campaign"),
+    ).toBe(true);
+  });
+
+  it("selects only the exact four accepted closure families", () => {
+    const pack = parseAcceptedV131ContractPack({ leafBytes: loadA133LeafBytes() });
+    const cases = [
+      ["literature-review-v1", "research.literature.review", "research-literature"],
+      ["idea-generation-v1", "research.ideation.generate", "research-ideation"],
+      ["idea-evaluation-v1", "research.ideation.evaluate", "research-idea-evaluation"],
+      ["experiment-campaign-v1", "research.experiment.campaign", "research-experiment"],
+    ] as const;
+    for (const [procedureId, capabilityId, expectedFamily] of cases) {
+      const closureBindings = selectApplicableV131BindingsForProcedure({
+        pack,
+        procedureId,
+        capabilityId,
+        procedureVersion: "2.0.7",
+      }).filter((row) => row.binding.ruleKind.startsWith("closure."));
+      expect(closureBindings).toHaveLength(5);
+      expect(new Set(closureBindings.map((row) => row.binding.targetId))).toEqual(
+        new Set([expectedFamily]),
+      );
+    }
+
+    const notApplicableClosureBindings = selectApplicableV131BindingsForProcedure({
+      pack,
+      procedureId: "survey-v1",
+      capabilityId: "research.literature.survey",
+      procedureVersion: "2.0.7",
+    }).filter((row) => row.binding.ruleKind.startsWith("closure."));
+    expect(notApplicableClosureBindings).toHaveLength(0);
+  });
+
+  it("executes every applicable binding once and fails closed on missing or mismatched facts", () => {
+    const pack = parseAcceptedV131ContractPack({ leafBytes: loadA133LeafBytes() });
+    const applicableBindings = selectApplicableV131BindingsForProcedure({
+      pack,
+      procedureId: "survey-v1",
+      capabilityId: "research.literature.survey",
+      procedureVersion: "2.0.7",
+    });
+    const binding = applicableBindings.find(
+      (row) => row.binding.ruleKind === "validator.binding-integrity",
+    );
+    if (binding === undefined) {
+      throw new Error("Missing validator.binding-integrity binding");
+    }
+    const validator = pack.validators.find(
+      (row) => row.identity.id === binding.binding.validator.id,
+    );
+    if (validator === undefined) {
+      throw new Error("Missing binding-integrity trusted validator");
+    }
+    expect(validator.inputFactSchema).toBeDefined();
+    const input = {
+      ruleId: binding.binding.ruleId,
+      targetId: binding.binding.targetId,
+      facts: {
+        aliasesAbsent: true,
+        authorityComplete: true,
+        bindingId: binding.binding.bindingId,
+        contradictionFree: true,
+        expectedStableErrors: ["V13_VALIDATOR_BINDING_INVALID"],
+        factState: "present",
+        ruleKind: "validator.binding-integrity",
+        targetId: binding.binding.targetId,
+        validatorBindingIntegrityAuthorityCanonicalJson: "{}",
+        validatorBindingIntegrityObservedCanonicalJson: "{}",
+      },
+      authoritySnapshot: {
+        methodologyIdentity: V131_ACCEPTED_CONTRACT_VERSION,
+        methodologyDigest: V131_ACCEPTED_CONTRACT_DIGEST.slice("sha256:".length),
+        procedureId: "survey-v1",
+        procedureVersion: "2.0.7",
+        procedureDigest: `sha256:${"a".repeat(64)}`,
+        capabilityId: "research.literature.survey",
+        questId: "qst_test",
+        dispatchId: "dsp_test",
+        activationId: "act_test",
+        approvalId: "apr_test",
+        repositoryId: "rep_test",
+      },
+    };
+    const passed = executeV131BindingInvocations({
+      pack,
+      applicableBindings: [binding],
+      factForBinding: () => ({ source: "authenticated-test-fact", authenticated: true, value: input }),
+    });
+    expect(passed.ok).toBe(true);
+    expect(passed.applicableCount).toBe(1);
+    expect(passed.invocationCount).toBe(1);
+
+    expect(() =>
+      executeV131BindingInvocations({
+        pack,
+        applicableBindings: [binding],
+        factForBinding: () => undefined,
+      }),
+    ).toThrow(/no required fact/i);
+    const mismatched = executeV131BindingInvocations({
+      pack,
+      applicableBindings: [binding],
+      factForBinding: () => ({
+        source: "authenticated-test-fact",
+        authenticated: true,
+        value: { ...input, targetId: "wrong-target" },
+      }),
+    });
+    expect(mismatched.ok).toBe(false);
+    expect(mismatched.invocations[0]?.findingCode).toBe(
+      "V13_VALIDATOR_BINDING_INVALID",
+    );
+
+    const unauthenticated = executeV131BindingInvocations({
+      pack,
+      applicableBindings: [binding],
+      factForBinding: () => ({
+        source: "untrusted-test-fact",
+        authenticated: false,
+        value: input,
+      }),
+    });
+    expect(unauthenticated.ok).toBe(false);
+    expect(unauthenticated.invocations[0]?.outcome).toBe("fail-closed");
+    expect(unauthenticated.invocations[0]?.findingCode).toBe(
+      "V13_VALIDATOR_BINDING_INVALID",
+    );
+
+    const invalidFacts: readonly Readonly<Record<string, unknown>>[] = [
+      { ...input.facts, unknownFact: true },
+      Object.fromEntries(
+        Object.entries(input.facts).filter(([key]) => key !== "authorityComplete"),
+      ),
+      { ...input.facts, factState: "unknown" },
+      { ...input.facts, factState: "contradictory" },
+      { ...input.facts, factState: "aliased" },
+      { ...input.facts, factState: "ambiguous" },
+    ];
+    for (const facts of invalidFacts) {
+      const rejected = executeV131BindingInvocations({
+        pack,
+        applicableBindings: [binding],
+        factForBinding: () => ({
+          source: "authenticated-test-fact",
+          authenticated: true,
+          value: { ...input, facts },
+        }),
+      });
+      expect(rejected.ok).toBe(false);
+      expect(rejected.invocationCount).toBe(1);
+      expect(rejected.invocations[0]?.outcome).toBe("fail-closed");
+      expect(rejected.invocations[0]?.findingCode).toBe(
+        "V13_VALIDATOR_BINDING_INVALID",
+      );
+    }
+  });
+
+  it("fails closed on missing immutable members, semantic drift, and decision drift", () => {
+    const missing = loadA133LeafBytes();
+    delete missing["closure-contract-v1.3.1.json"];
+    expect(() => parseAcceptedV131ContractPack({ leafBytes: missing })).toThrow(
+      /Missing required v1.3.1 leaf/,
+    );
+
+    const semanticDrift = loadA133LeafBytes();
+    const registryName = "validator-registry-v1.3.1.json" as const;
+    const registryBytes = semanticDrift[registryName];
+    if (registryBytes === undefined) throw new Error("Missing registry test leaf");
+    const registry = JSON.parse(Buffer.from(registryBytes).toString("utf8")) as {
+      validators: { severity: { value: { fixed: string } } }[];
+    };
+    const firstValidator = registry.validators[0];
+    if (firstValidator === undefined) throw new Error("Missing registry test validator");
+    firstValidator.severity.value.fixed = "warning";
+    semanticDrift[registryName] = new TextEncoder().encode(`${JSON.stringify(registry)}\n`);
+    expect(() => parseAcceptedV131ContractPack({ leafBytes: semanticDrift })).toThrow(
+      /member aggregate|severity/i,
+    );
+
+    const decisionDrift = loadA133LeafBytes();
+    const lifecycleName = "artifact-lifecycle-contract-v1.3.1.json" as const;
+    const lifecycleBytes = decisionDrift[lifecycleName];
+    if (lifecycleBytes === undefined) throw new Error("Missing lifecycle test leaf");
+    const lifecycle = JSON.parse(Buffer.from(lifecycleBytes).toString("utf8")) as {
+      procedureCapabilityArtifactFamilyMapping: {
+        completeLifecycleMatrix: { decisions: { applies: boolean }[] };
+      };
+    };
+    const firstDecision =
+      lifecycle.procedureCapabilityArtifactFamilyMapping.completeLifecycleMatrix
+        .decisions[0];
+    if (firstDecision === undefined) throw new Error("Missing lifecycle test decision");
+    firstDecision.applies = true;
+    decisionDrift[lifecycleName] = new TextEncoder().encode(
+      `${JSON.stringify(lifecycle)}\n`,
+    );
+    expect(() => parseAcceptedV131ContractPack({ leafBytes: decisionDrift })).toThrow(
+      /member aggregate|lifecycle decision/i,
+    );
+  });
+});
 
 describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
   it("reconstructs exact 64/65/20/876/116/3343 counts from committed A3 leaf bytes", () => {
@@ -103,7 +409,8 @@ describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
 
   it("selects only exact trusted (id, version) bindings and rejects unknown/duplicate/downgrade", () => {
     const pack = parseAcceptedV13ContractPack({ leafBytes: loadA3LeafBytes() });
-    const first = pack.validators[0]!;
+    const first = pack.validators[0];
+    if (first === undefined) throw new Error("Missing accepted validator test row");
     const ok = selectTrustedV13ValidatorDescriptors({
       pack,
       declared: [
@@ -159,12 +466,14 @@ describe("methodology v1.3 runtime (accepted A3 strict path)", () => {
   it("rejects severity-downgraded binding rows when present in pack bytes", () => {
     const leafBytes = loadA3LeafBytes();
     const matrixPath = "validator-binding-matrix-v1.3.json" as const;
-    const matrix = JSON.parse(
-      Buffer.from(leafBytes[matrixPath]!).toString("utf8"),
-    ) as {
-      bindings: Array<{ validator: { severity: string } }>;
+    const matrixBytes = leafBytes[matrixPath];
+    if (matrixBytes === undefined) throw new Error("Missing binding matrix test leaf");
+    const matrix = JSON.parse(Buffer.from(matrixBytes).toString("utf8")) as {
+      bindings: { validator: { severity: string } }[];
     };
-    matrix.bindings[0]!.validator.severity = "warning";
+    const firstBinding = matrix.bindings[0];
+    if (firstBinding === undefined) throw new Error("Missing binding matrix test row");
+    firstBinding.validator.severity = "warning";
     leafBytes[matrixPath] = new TextEncoder().encode(
       `${JSON.stringify(matrix)}\n`,
     );
