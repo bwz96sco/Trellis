@@ -1,0 +1,1 @@
+{"code":"V13_CLOSURE_NOT_APPLICABLE_WRITING","kind":"notApplicable","procedureId":"writing-case-v1","rationale":"This Procedure has no canonical closure artifact under the accepted evaluation-contract-v1.3.1 closure contract; closure is explicitly notApplicable and must never be inferred from Result.status.","schemaVersion":1}

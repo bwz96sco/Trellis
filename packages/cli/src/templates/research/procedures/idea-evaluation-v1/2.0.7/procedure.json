@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"idea-evaluation-v1","version":"2.0.7","stage":"ideation","kind":"workflow","inputs":["dispatch","repository","context","artifacts","allowedWritePaths","expectedOutputs","checks"],"outputs":["result","proposal"],"networkPolicy":"forbidden","repositoryScope":"single","maxDurationMinutes":30,"maxDispatches":2,"packageSchemaVersion":2}
