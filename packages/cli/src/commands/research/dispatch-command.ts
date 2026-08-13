@@ -10,6 +10,7 @@ import {
   isAuthoritativeMethodologyProcedureVersion,
   isV13ClosureArtifactExactPath,
   V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+  V131_ACCEPTED_MEMBER_AGGREGATE_SHA256,
   normalizeArtifactPath,
   parseCanonicalMethodologyClosureArtifact,
   proposalOperationsToMutations,
@@ -18,7 +19,6 @@ import {
   readResearchState,
   reduceResearchEvents,
   resolveProcedureClosureDisposition,
-  serializeMethodologyReportV2Sidecar,
   resolveResearchCapability,
   resultSchema,
   stableResearchJson,
@@ -1068,12 +1068,21 @@ function deriveCanonicalClosureFacts(input: {
     readonly sha256: string;
     readonly mediaType: string;
   }>;
+  readonly closureObservation?: Readonly<{
+    readonly schemaVersion: 1;
+    readonly family: string;
+    readonly selected: boolean;
+    readonly blocked: boolean;
+    readonly selectedEvidenceArtifactIds: readonly string[];
+    readonly blockedEvidenceArtifactIds: readonly string[];
+  }>;
 } {
   const needsCanonicalClosure =
     isAuthoritativeMethodologyProcedureVersion(input.procedureVersion) &&
     (input.procedureVersion === "2.0.4" ||
       input.procedureVersion === "2.0.5" ||
-      input.procedureVersion === "2.0.6");
+      input.procedureVersion === "2.0.6" ||
+      input.procedureVersion === "2.0.7");
   if (!needsCanonicalClosure) {
     return {};
   }
@@ -1174,6 +1183,7 @@ function deriveCanonicalClosureFacts(input: {
       sha256: closureSha256,
       mediaType: closureRef.mediaType,
     },
+    closureObservation: parsedClosure.closure,
   };
 }
 
@@ -1232,7 +1242,8 @@ export async function recordApprovedResearchDispatchResult(
       replayActivationForVersion !== undefined &&
       (replayActivationForVersion.procedure.version === "2.0.4" ||
         replayActivationForVersion.procedure.version === "2.0.5" ||
-        replayActivationForVersion.procedure.version === "2.0.6");
+        replayActivationForVersion.procedure.version === "2.0.6" ||
+        replayActivationForVersion.procedure.version === "2.0.7");
     if (!replayNeedsReportReconstruction) {
       return {
         ...result,
@@ -1311,8 +1322,12 @@ export async function recordApprovedResearchDispatchResult(
         blocked: replayClosure.blocked,
         closureDisposition: replayClosure.disposition,
         closureArtifactRef: replayClosure.closureArtifactRef,
+        closureObservation: replayClosure.closureObservation,
         batchCommitted: true,
-        acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+        acceptedMemberAggregateSha256:
+          replayActivation.procedure.version === "2.0.7"
+            ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
+            : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
         resultId: canonical.result.id,
         proposalId: canonical.proposal.id,
         approvalId: preflight.approvalId,
@@ -1336,37 +1351,20 @@ export async function recordApprovedResearchDispatchResult(
         },
       });
       if (replayGate.materializeSidecar) {
-        const expectedBytes = serializeMethodologyReportV2Sidecar(
-          replayGate.reportV2,
-        );
-        const targetPath = path.join(
-          preflight.root,
-          ".trellis",
-          "research",
-          "dispatches",
-          preflight.dispatchId,
-          "methodology-report-v2.json",
-        );
-        let existing: string | undefined;
-        try {
-          existing = fs.readFileSync(targetPath, "utf8");
-        } catch {
-          existing = undefined;
-        }
-        if (existing !== expectedBytes) {
-          replayReportFile = materializeMethodologyReportV2Sidecar({
-            root: preflight.root,
-            headSeq: result.headSeq,
-            dispatchId: preflight.dispatchId,
-            reportV2: replayGate.reportV2,
-            recovery: `trellis research dispatch record-result ${replayDispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
-          });
-        } else {
-          replayReportFile = path
-            .relative(preflight.root, targetPath)
-            .split(path.sep)
-            .join("/");
-        }
+        replayReportFile = materializeMethodologyReportV2Sidecar({
+          root: preflight.root,
+          headSeq: result.headSeq,
+          dispatchId: preflight.dispatchId,
+          ...(replayGate.reportKind === "v1.3.1"
+            ? {
+                reportV131: {
+                  report: replayGate.reportV131,
+                  reportDigest: replayGate.reportDigest,
+                },
+              }
+            : { reportV2: replayGate.reportV2 }),
+          recovery: `trellis research dispatch record-result ${replayDispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
+        });
       }
     } catch (error) {
       // Recovery failure leaves canonical state untouched: bound artifacts or
@@ -1539,8 +1537,12 @@ export async function recordApprovedResearchDispatchResult(
     blocked: closureBlocked,
     closureDisposition,
     closureArtifactRef,
+    closureObservation: closureFacts.closureObservation,
     batchCommitted: false,
-    acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+    acceptedMemberAggregateSha256:
+      procedureVersion === "2.0.7"
+        ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
+        : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
     resultId: parsed.result.id,
     proposalId: parsed.proposal.id,
     approvalId: preflight.approvalId,
@@ -1564,9 +1566,22 @@ export async function recordApprovedResearchDispatchResult(
     },
   });
   if (methodologyGate.criticalFailure || !methodologyGate.ok) {
-    const codes = [
-      ...new Set(methodologyGate.report.validation.findings.map((f) => f.code)),
-    ].join(",");
+    const codes =
+      methodologyGate.reportKind === "v1.3.1"
+        ? [
+            ...new Set(
+              methodologyGate.reportV131.orderedFindings.map(
+                (finding) => finding.stableError,
+              ),
+            ),
+          ].join(",")
+        : [
+            ...new Set(
+              methodologyGate.report.validation.findings.map(
+                (finding) => finding.code,
+              ),
+            ),
+          ].join(",");
     approvedResultError(
       "METHODOLOGY_VALIDATION_FAILED",
       `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced; codes=${codes}`,
@@ -1707,8 +1722,12 @@ export async function recordApprovedResearchDispatchResult(
     blocked: closureBlocked,
     closureDisposition,
     closureArtifactRef,
+    closureObservation: closureFacts.closureObservation,
     batchCommitted: true,
-    acceptedMemberAggregateSha256: V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+    acceptedMemberAggregateSha256:
+      procedureVersion === "2.0.7"
+        ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
+        : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
     resultId: parsed.result.id,
     proposalId: parsed.proposal.id,
     approvalId: preflight.approvalId,
@@ -1736,7 +1755,14 @@ export async function recordApprovedResearchDispatchResult(
       root: preflight.root,
       headSeq: result.headSeq,
       dispatchId: dispatch.id,
-      reportV2: postBatchGate.reportV2,
+      ...(postBatchGate.reportKind === "v1.3.1"
+        ? {
+            reportV131: {
+              report: postBatchGate.reportV131,
+              reportDigest: postBatchGate.reportDigest,
+            },
+          }
+        : { reportV2: postBatchGate.reportV2 }),
       recovery: `trellis research dispatch record-result ${dispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
     });
   }

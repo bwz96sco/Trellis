@@ -473,3 +473,42 @@ Correct: adapter consumes unchanged normalized success only; exact failure stays
 Wrong: worker validates dry-run, consumes Approval, replays output, or repairs sidecars.
 Correct: worker returns Result plus pending Proposal; root owns validation, commit, replay, and hardened recovery.
 ```
+
+## Scenario: Evaluation contract v1.3.1 worker boundary
+
+### 1. Scope / Trigger
+
+This scenario applies when an approved activation embeds dormant Procedure `2.0.7` and the root later records worker output under evaluation contract v1.3.1. It does not change generated worker, hook, envelope, or normalized Context bytes.
+
+### 2. Contracts
+
+- The worker remains Proposal-only mutation authority: it may write declared allowed target paths and return strict Result plus pending Proposal, but it never records either object, consumes Approval, builds a methodology report, publishes/rebuilds sidecars, or mutates canonical Research/Git state.
+- The worker does not discover or authenticate evaluation-contract members, inspect package ledgers, select closure families, or resolve historical/current Procedure versions. Exact package authentication and activation-recorded Procedure resolution are root-owned.
+- When the embedded Procedure requires a closure artifact, the worker may create only the declared closure/evidence files and corresponding ArtifactRefs. Root recording independently authenticates Repository identity, canonical path, media type, submitted digest, closure bytes, and evidence bindings before canonical writes.
+- Accepted closure families are exactly `research-literature`, `research-ideation`, `research-idea-evaluation`, and `research-experiment`. Quest framing and computation do not gain closure authority from stage names, output paths, worker prose, or Result status.
+- `Result.status` never proves selected/blocked closure. Closure selection requires the strict closure artifact, selected/blocked XOR, and non-closure evidence ArtifactRefs under root validation.
+- A blocked or failed methodology fact remains a root-owned rejected recording attempt. The root emits deterministic `missing`, `unknown`, `unauthenticated`, `ambiguous`, `aliased`, or `contradictory` classification and performs no canonical append or report publication.
+- Exact same-key replay and committed sidecar recovery use canonical events and never reinvoke the worker or reread its original input.
+
+### 3. Validation & Error Matrix
+
+| Worker/root condition | Required behavior |
+|---|---|
+| Worker attempts contract-pack, Procedure-file, ledger, policy, or sidecar discovery | Block as undeclared/root-owned authority; report without mutation. |
+| Worker returns a closure claim only in summary/status text | Root ignores it as closure authority. |
+| Closure ArtifactRef is absent or lacks submitted digest/media type/Repository authentication | Root rejects before append with the matching closed blocked-fact reason. |
+| Multiple ArtifactRefs claim the canonical closure path or one ID claims multiple paths | Root rejects as `ambiguous` or `aliased`. |
+| Authenticated closure/media/evidence differs from accepted authority | Root rejects as `contradictory`. |
+| Recording dry-run succeeds | Validate the snapshot only; worker is not rerun and no sidecar is published. |
+| Same-key recovery occurs after commit | Repair Result, Proposal, consumed-Approval, and report projections without worker/input access or replacement append. |
+
+### 4. Tests Required
+
+Coverage must keep generated worker/hook/template bytes unchanged while root-side integration proves Proposal-only authority, strict closure ArtifactRef/evidence binding, no status inference, all six blocked-fact classifications, zero-write dry-run, atomic Result/Proposal/Approval consumption, and replay recovery without worker invocation.
+
+### 5. Wrong vs Correct
+
+```text
+Wrong: worker authenticates the contract bundle, infers closure from its Result, records output, or repairs methodology-report-v2.json.
+Correct: worker returns bounded artifacts plus Result/Proposal; root independently authenticates methodology, commits atomically, and owns recovery.
+```

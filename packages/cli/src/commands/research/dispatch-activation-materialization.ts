@@ -3,8 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  serializeMethodologyReportV131Sidecar,
   serializeMethodologyReportV2Sidecar,
   stableResearchJson,
+  type MethodologyDeterministicReportV131,
   type MethodologyDeterministicReportV2,
   type Proposal,
   type ResearchActivation,
@@ -555,19 +557,46 @@ export function materializeResearchProposal(input: {
  * sidecar bytes are the methodology-local canonical serialization; the digest
  * body itself has no trailing LF.
  */
-export function materializeMethodologyReportV2Sidecar(input: {
-  readonly root: string;
-  readonly headSeq: number;
-  readonly dispatchId: string;
-  readonly reportV2: MethodologyDeterministicReportV2;
-  readonly recovery: string;
-}): string {
+export function materializeMethodologyReportV2Sidecar(
+  input: {
+    readonly root: string;
+    readonly headSeq: number;
+    readonly dispatchId: string;
+    readonly recovery: string;
+  } & (
+    | {
+        readonly reportV2: MethodologyDeterministicReportV2;
+        readonly reportV131?: never;
+      }
+    | {
+        readonly reportV2?: never;
+        readonly reportV131: Readonly<{
+          readonly report: MethodologyDeterministicReportV131;
+          readonly reportDigest: string;
+        }>;
+      }
+  ),
+): string {
+  let preSerialized: string;
+  try {
+    preSerialized =
+      input.reportV131 === undefined
+        ? serializeMethodologyReportV2Sidecar(input.reportV2)
+        : serializeMethodologyReportV131Sidecar(input.reportV131);
+  } catch (error) {
+    throw new ResearchDispatchFileError(
+      input.headSeq,
+      `.trellis/research/dispatches/${input.dispatchId}/methodology-report-v2.json`,
+      input.recovery,
+      error,
+    );
+  }
   return writeSidecar({
     root: input.root,
     headSeq: input.headSeq,
     segments: [".trellis", "research", "dispatches", input.dispatchId],
     fileName: "methodology-report-v2.json",
-    preSerialized: serializeMethodologyReportV2Sidecar(input.reportV2),
+    preSerialized,
     recovery: input.recovery,
   });
 }

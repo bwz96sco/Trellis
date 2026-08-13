@@ -8,6 +8,7 @@ import {
   buildSupportPackInventory,
   evaluateResearchAutomaticEligibility,
   getResearchCapabilityDefinition,
+  parseAcceptedV131ResearchProcedure,
   parseResearchProcedure,
   parseSupportPackManifest,
   resolveProcedurePackageSchemaVersion,
@@ -463,14 +464,18 @@ function parseSelectedProcedure(
       procedureId,
       procedureVersion,
     );
-    return parseResearchProcedure({
+    const parserInput = {
       capabilityId,
       source,
       ...bytes,
-      packageSchemaVersion: 2,
+      packageSchemaVersion: 2 as const,
       ...recordedIdentity,
       supportPack,
-    });
+    };
+    if (mode === "activation-recorded" && recordedVersion === "2.0.7") {
+      return parseAcceptedV131ResearchProcedure(parserInput);
+    }
+    return parseResearchProcedure(parserInput);
   }
   assertNoSupportPack(selection);
   return parseResearchProcedure({

@@ -1,0 +1,61 @@
+{
+ "schemaVersion": 1,
+ "kind": "trellis-installation-authentication-ledger",
+ "contractVersion": "evaluation-contract-v1.3.1",
+ "memberCount": 7,
+ "aggregateDomain": "sha256(domain trellis-accepted-v13-pack-members\\0 + ordered path\\0bytes\\0)",
+ "aggregateSha256": "sha256:718d7ecec808199148b63ce64208e60d52be18575b175df67ef620596107fa34",
+ "acceptedContractDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+ "acceptedContractDigestRole": "semantic frozen-target digest, separate field, not derived from member bytes",
+ "members": [
+  {
+   "path": "durable-output-disposition-v1.3.1.json",
+   "role": "durable-output-disposition",
+   "mediaType": "application/json",
+   "byteLength": 86577,
+   "sha256": "a99f2fd596fbd875ec0e84e3c184e7e238a076a162e83ce3350fc9fa49b46055"
+  },
+  {
+   "path": "artifact-lifecycle-contract-v1.3.1.json",
+   "role": "artifact-lifecycle-contract",
+   "mediaType": "application/json",
+   "byteLength": 7057719,
+   "sha256": "7bc50f60daef7bcb07f639fd0b0e0cf51446c5eab98359ee4a485843bc553545"
+  },
+  {
+   "path": "validator-registry-v1.3.1.json",
+   "role": "validator-registry",
+   "mediaType": "application/json",
+   "byteLength": 184964,
+   "sha256": "e53e3fc363829e04d040fbe1f1b531fbee8173c932597a49e5db89eae431b453"
+  },
+  {
+   "path": "validator-binding-matrix-v1.3.1.json",
+   "role": "validator-binding-matrix",
+   "mediaType": "application/json",
+   "byteLength": 487508,
+   "sha256": "a8dc2c090c508f349203c52415735fd1b3beef6451a81cd7309cb10603b0dd8b"
+  },
+  {
+   "path": "differential-test-matrix-v1.3.1.json",
+   "role": "differential-test-matrix",
+   "mediaType": "application/json",
+   "byteLength": 2237117,
+   "sha256": "36919f996d7af18214f9a000594e5f2fab03653c0152a3bf0685e258422b03f4"
+  },
+  {
+   "path": "derivability-provenance-matrix-v1.3.1.json",
+   "role": "derivability-provenance-matrix",
+   "mediaType": "application/json",
+   "byteLength": 603849,
+   "sha256": "78e2a7358a4955c03b64de04417eebcc5622285557c5ef54a390ea1be086ccac"
+  },
+  {
+   "path": "closure-contract-v1.3.1.json",
+   "role": "closure-contract",
+   "mediaType": "application/json",
+   "byteLength": 20400,
+   "sha256": "37f37f8b10f98022c0e580d7f95c593700a223184783aecbd60229f57be9e614"
+  }
+ ]
+}

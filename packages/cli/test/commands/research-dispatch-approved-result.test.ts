@@ -1,13 +1,21 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as researchCore from "@mindfoldhq/trellis-core/research";
 import {
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
+  canonicalResearchJson,
+  parseSupportPackManifest,
   readResearchLedger,
   readResearchState,
+  serializeSupportPackManifest,
+  stableResearchJson,
   type ApprovalId,
   type ProposalId,
   type ResultId,
@@ -18,7 +26,9 @@ import {
   revokeResearchApproval,
 } from "../../src/commands/research/dispatch-activation-command.js";
 import { recordApprovedResearchDispatchResult } from "../../src/commands/research/dispatch-command.js";
+import { materializeResearchActivation, materializeResearchApproval } from "../../src/commands/research/dispatch-activation-materialization.js";
 import { readResearchProjectPolicy } from "../../src/commands/research/project-policy.js";
+import { resolveResearchProcedure } from "../../src/commands/research/procedure-resolution.js";
 import { parseStrictJsonInput } from "../../src/commands/research/strict-json-input.js";
 import {
   approvedResultPayload,
@@ -30,6 +40,209 @@ import {
   createResearchDispatchFixture,
   snapshotTree,
 } from "../fixtures/research-dispatch.js";
+
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../..",
+);
+const V131_CLOSURE_ID = "art_11111111-1111-4111-8111-111111111111";
+const V131_EVIDENCE_ID = "art_22222222-2222-4222-8222-222222222222";
+
+function writeAcceptedV131ProjectProcedure(root: string): void {
+  const procedureId = "idea-generation-v1";
+  const sourceDir = path.join(
+    repoRoot,
+    "packages/cli/src/templates/research/procedures",
+    procedureId,
+    "2.0.6",
+  );
+  const targetDir = path.join(
+    root,
+    ".trellis/research/procedures",
+    procedureId,
+    "2.0.7",
+  );
+  fs.cpSync(sourceDir, targetDir, { recursive: true });
+
+  const sourceManifest = JSON.parse(
+    fs.readFileSync(path.join(targetDir, "procedure.json"), "utf8"),
+  ) as Record<string, unknown>;
+  fs.writeFileSync(
+    path.join(targetDir, "procedure.json"),
+    `${JSON.stringify({
+      schemaVersion: sourceManifest.schemaVersion,
+      id: sourceManifest.id,
+      version: "2.0.7",
+      stage: sourceManifest.stage,
+      kind: sourceManifest.kind,
+      inputs: sourceManifest.inputs,
+      outputs: sourceManifest.outputs,
+      networkPolicy: sourceManifest.networkPolicy,
+      repositoryScope: sourceManifest.repositoryScope,
+      maxDurationMinutes: sourceManifest.maxDurationMinutes,
+      maxDispatches: sourceManifest.maxDispatches,
+      replaces: { id: procedureId, version: "2.0.7" },
+      packageSchemaVersion: sourceManifest.packageSchemaVersion,
+    })}\n`,
+  );
+
+  const packPath = path.join(targetDir, "methodology/pack.json");
+  const sourcePack = JSON.parse(fs.readFileSync(packPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  const packJsonBytes = new TextEncoder().encode(
+    JSON.stringify({
+      ...sourcePack,
+      procedureVersion: "2.0.7",
+      methodologyContractVersion: V131_ACCEPTED_CONTRACT_VERSION,
+      methodologyContractDigest: V131_ACCEPTED_CONTRACT_DIGEST,
+    }),
+  );
+  const pack = parseSupportPackManifest({
+    packJsonBytes,
+    procedureId,
+    procedureVersion: "2.0.7",
+  });
+  fs.writeFileSync(packPath, serializeSupportPackManifest(pack));
+}
+
+function rewriteApprovedGrantForProcedure(input: {
+  readonly root: string;
+  readonly dispatchId: researchCore.DispatchId;
+  readonly procedure: researchCore.ParsedResearchProcedure;
+}): void {
+  const eventsFile = researchCore.researchPaths(input.root).eventsFile;
+  const events = fs
+    .readFileSync(eventsFile, "utf8")
+    .trimEnd()
+    .split("\n")
+    .map((line) => JSON.parse(line) as researchCore.ResearchEvent);
+  for (const event of events) {
+    if (event.kind === "activation.planned") {
+      const activation = event.payload.activation as researchCore.ResearchActivation;
+      if (activation.dispatchId !== input.dispatchId) continue;
+      activation.procedure = {
+        id: input.procedure.manifest.id,
+        version: input.procedure.manifest.version,
+        digest: input.procedure.digest,
+      };
+    }
+    if (event.kind === "approval.granted") {
+      const approval = event.payload.approval as researchCore.ResearchApprovalGrant;
+      if (approval.dispatchId !== input.dispatchId) continue;
+      approval.procedureDigest = input.procedure.digest;
+    }
+  }
+  fs.writeFileSync(
+    eventsFile,
+    `${events.map((event) => JSON.stringify(event)).join("\n")}\n`,
+  );
+}
+
+async function setupV131ApprovedResult(sandbox: string, name: string) {
+  const fixture = await createResearchDispatchFixture(
+    path.join(sandbox, name),
+    { automaticEnabled: true, stage: "ideation" },
+  );
+  const granted = await authorizeResearchDispatch({
+    root: fixture.root,
+    dispatchId: fixture.ids.dispatchId,
+    host: "claude",
+    idempotencyKey: `${name}-grant`,
+  });
+  writeAcceptedV131ProjectProcedure(fixture.root);
+  const procedure = await resolveResearchProcedure({
+    root: fixture.root,
+    capabilityId: "research.ideation.generate",
+    mode: "activation-recorded",
+    procedureId: "idea-generation-v1",
+    procedureVersion: "2.0.7",
+  });
+  const current = await resolveResearchProcedure({
+    root: fixture.root,
+    capabilityId: "research.ideation.generate",
+  });
+  if (current.manifest.version !== "1.0.0") {
+    throw new Error("v1.3.1 fixture changed live Procedure selection");
+  }
+  rewriteApprovedGrantForProcedure({
+    root: fixture.root,
+    dispatchId: fixture.ids.dispatchId,
+    procedure,
+  });
+  const state = await readResearchState(fixture.root);
+  const activationId = state.activationByDispatchId[fixture.ids.dispatchId];
+  const activation =
+    activationId === undefined ? undefined : state.activations[activationId];
+  const approval = state.approvals[granted.approval.grant.id];
+  if (activation === undefined || approval === undefined) {
+    throw new Error("Expected rewritten v1.3.1 grant");
+  }
+  materializeResearchActivation({
+    root: fixture.root,
+    headSeq: state.projectedThroughSeq,
+    activation,
+    recovery: "test fixture recovery",
+  });
+  materializeResearchApproval({
+    root: fixture.root,
+    headSeq: state.projectedThroughSeq,
+    approval,
+    recovery: "test fixture recovery",
+  });
+
+  const evidencePath = path.join(fixture.repository, "outputs/evidence.json");
+  fs.mkdirSync(path.dirname(evidencePath), { recursive: true });
+  const evidenceBytes = stableResearchJson({ selected: true });
+  fs.writeFileSync(evidencePath, evidenceBytes);
+  const closurePath = path.join(
+    fixture.repository,
+    "methodology/closure/research-ideation.json",
+  );
+  fs.mkdirSync(path.dirname(closurePath), { recursive: true });
+  const closureBytes = stableResearchJson({
+    blocked: { evidenceArtifactIds: [], value: false },
+    family: "research-ideation",
+    schemaVersion: 1,
+    selected: { evidenceArtifactIds: [V131_EVIDENCE_ID], value: true },
+  });
+  fs.writeFileSync(closurePath, closureBytes);
+
+  const now = new Date(Date.parse(approval.grant.grantedAt) + 1);
+  const payload = exactPayload(
+    resultFirstPayload(
+      approvedResultPayload({
+        approvalId: approval.grant.id,
+        dispatchId: fixture.ids.dispatchId,
+        runId: fixture.ids.runId,
+        questId: fixture.ids.questId,
+        createdAt: now.toISOString(),
+      }),
+    ),
+    (value) => {
+      (value.result as Record<string, unknown>).artifactRefs = [
+        {
+          id: V131_CLOSURE_ID,
+          repositoryId: fixture.ids.repositoryId,
+          path: "methodology/closure/research-ideation.json",
+          kind: "methodology-closure",
+          sha256: createHash("sha256").update(closureBytes).digest("hex"),
+          mediaType: "application/json",
+        },
+        {
+          id: V131_EVIDENCE_ID,
+          repositoryId: fixture.ids.repositoryId,
+          path: "outputs/evidence.json",
+          kind: "evidence",
+          sha256: createHash("sha256").update(evidenceBytes).digest("hex"),
+          mediaType: "application/json",
+        },
+      ];
+    },
+  );
+  return { fixture, approval, activation, procedure, now, payload };
+}
 
 function outputPayload(input: {
   readonly approvalId: ApprovalId;
@@ -401,6 +614,198 @@ describe(
         }),
       ).rejects.toMatchObject({ code: "APPROVAL_EXPIRED" });
       expect(reads).toBe(0);
+    });
+  },
+);
+
+describe(
+  "accepted v1.3.1 approved Result recording",
+  { timeout: 30_000 },
+  () => {
+    let sandbox: string;
+
+    beforeEach(() => {
+      sandbox = fs.mkdtempSync(
+        path.join(os.tmpdir(), "trellis-v131-approved-result-"),
+      );
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      fs.rmSync(sandbox, { recursive: true, force: true });
+    });
+
+    it("keeps 2.0.7 dormant while validating dry-run, atomic commit, report publication, and same-key recovery", async () => {
+      const setup = await setupV131ApprovedResult(sandbox, "record-recover");
+      const ledgerBeforeDryRun = await readResearchLedger(setup.fixture.root);
+      const treeBeforeDryRun = snapshotTree(setup.fixture.root);
+      const dryRun = await recordApprovedResearchDispatchResult({
+        root: setup.fixture.root,
+        dispatchId: setup.fixture.ids.dispatchId,
+        approvalId: setup.approval.grant.id,
+        input: lazyInput(sandbox, () => setup.payload),
+        idempotencyKey: "v131-record-dry-run",
+        dryRun: true,
+        now: setup.now,
+      });
+
+      expect(dryRun.events.map((event) => [event.schemaVersion, event.kind])).toEqual([
+        [1, "result.recorded"],
+        [1, "proposal.recorded"],
+        [2, "approval.consumed"],
+      ]);
+      expect(dryRun).toMatchObject({
+        dryRun: true,
+        replayed: false,
+        resultFile: null,
+        proposalFile: null,
+        approvalFile: null,
+      });
+      expect(await readResearchLedger(setup.fixture.root)).toEqual(
+        ledgerBeforeDryRun,
+      );
+      expect(snapshotTree(setup.fixture.root)).toEqual(treeBeforeDryRun);
+
+      const key = "v131-record-result";
+      const recorded = await recordApprovedResearchDispatchResult({
+        root: setup.fixture.root,
+        dispatchId: setup.fixture.ids.dispatchId,
+        approvalId: setup.approval.grant.id,
+        input: lazyInput(sandbox, () => setup.payload),
+        idempotencyKey: key,
+        now: setup.now,
+      });
+      expect(recorded.events.map((event) => [event.schemaVersion, event.kind])).toEqual([
+        [1, "result.recorded"],
+        [1, "proposal.recorded"],
+        [2, "approval.consumed"],
+      ]);
+      const ledgerAfterCommit = await readResearchLedger(setup.fixture.root);
+      expect(
+        ledgerAfterCommit.filter((event) => event.idempotencyKey === key),
+      ).toHaveLength(3);
+      const reportPath = path.join(
+        setup.fixture.root,
+        ".trellis/research/dispatches",
+        setup.fixture.ids.dispatchId,
+        "methodology-report-v2.json",
+      );
+      const reportBytes = fs.readFileSync(reportPath, "utf8");
+      const report = JSON.parse(reportBytes) as Record<string, unknown>;
+      expect(Object.keys(report).sort()).toEqual([
+        "$schema",
+        "activationId",
+        "applicability",
+        "approvalId",
+        "artifactBindings",
+        "blockedFacts",
+        "closureSources",
+        "dispatchId",
+        "methodologyDigest",
+        "methodologyIdentity",
+        "orderedFindings",
+        "orderedValidatorTriples",
+        "procedureDigest",
+        "procedureId",
+        "procedureVersion",
+        "questId",
+        "schemaVersion",
+        "supportInventoryDigest",
+        "zeroWriteDisposition",
+      ]);
+      expect(report).toMatchObject({
+        activationId: setup.activation.id,
+        approvalId: setup.approval.grant.id,
+        dispatchId: setup.fixture.ids.dispatchId,
+        methodologyIdentity: V131_ACCEPTED_CONTRACT_VERSION,
+        procedureDigest: setup.procedure.digest,
+        procedureId: "idea-generation-v1",
+        procedureVersion: "2.0.7",
+        schemaVersion: 2,
+        zeroWriteDisposition: "validation-complete-before-write",
+      });
+      expect(report).not.toHaveProperty("reportDigest");
+      expect(reportBytes).toBe(`${canonicalResearchJson(report)}\n`);
+
+      fs.rmSync(reportPath);
+      let reads = 0;
+      const replayNow = new Date(Number.NaN);
+      const getTime = vi.spyOn(replayNow, "getTime");
+      const toISOString = vi.spyOn(replayNow, "toISOString");
+      const replay = await recordApprovedResearchDispatchResult({
+        root: setup.fixture.root,
+        dispatchId: setup.fixture.ids.dispatchId,
+        approvalId: setup.approval.grant.id,
+        input: lazyInput(sandbox, () => {
+          reads += 1;
+          throw new Error("v1.3.1 replay must not access stdin");
+        }),
+        idempotencyKey: key,
+        now: replayNow,
+      });
+
+      expect(replay.replayed).toBe(true);
+      expect(reads).toBe(0);
+      expect(getTime).not.toHaveBeenCalled();
+      expect(toISOString).not.toHaveBeenCalled();
+      expect(await readResearchLedger(setup.fixture.root)).toEqual(
+        ledgerAfterCommit,
+      );
+      expect(fs.readFileSync(reportPath, "utf8")).toBe(reportBytes);
+      const current = await resolveResearchProcedure({
+        root: setup.fixture.root,
+        capabilityId: "research.ideation.generate",
+      });
+      expect(current.manifest.version).toBe("1.0.0");
+    });
+
+    it("rejects an equal-byte report symlink during same-key recovery", async () => {
+      const setup = await setupV131ApprovedResult(sandbox, "report-symlink");
+      const key = "v131-report-symlink";
+      await recordApprovedResearchDispatchResult({
+        root: setup.fixture.root,
+        dispatchId: setup.fixture.ids.dispatchId,
+        approvalId: setup.approval.grant.id,
+        input: lazyInput(sandbox, () => setup.payload),
+        idempotencyKey: key,
+        now: setup.now,
+      });
+      const ledgerAfterCommit = await readResearchLedger(setup.fixture.root);
+      const reportPath = path.join(
+        setup.fixture.root,
+        ".trellis/research/dispatches",
+        setup.fixture.ids.dispatchId,
+        "methodology-report-v2.json",
+      );
+      const reportBytes = fs.readFileSync(reportPath);
+      const outsideReport = path.join(sandbox, "outside-report.json");
+      fs.writeFileSync(outsideReport, reportBytes);
+      fs.rmSync(reportPath);
+      fs.symlinkSync(outsideReport, reportPath);
+      let reads = 0;
+
+      await expect(
+        recordApprovedResearchDispatchResult({
+          root: setup.fixture.root,
+          dispatchId: setup.fixture.ids.dispatchId,
+          approvalId: setup.approval.grant.id,
+          input: lazyInput(sandbox, () => {
+            reads += 1;
+            throw new Error("replay must not access stdin");
+          }),
+          idempotencyKey: key,
+          now: new Date(Number.NaN),
+        }),
+      ).rejects.toMatchObject({
+        committed: true,
+        target: expect.stringMatching(/methodology-report-v2\.json$/),
+      });
+      expect(reads).toBe(0);
+      expect(await readResearchLedger(setup.fixture.root)).toEqual(
+        ledgerAfterCommit,
+      );
+      expect(fs.lstatSync(reportPath).isSymbolicLink()).toBe(true);
+      expect(fs.readFileSync(outsideReport)).toEqual(reportBytes);
     });
   },
 );

@@ -7,15 +7,42 @@ import { describe, expect, it } from "vitest";
 import {
   METHODOLOGY_REPORT_V2_DIGEST_DOMAIN,
   V13_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_DIGEST,
+  V131_ACCEPTED_CONTRACT_VERSION,
   buildMethodologyReport,
+  buildMethodologyReportV131,
   buildMethodologyReportV2,
   canonicalResearchJson,
   computeMethodologyReportV2DigestFromCanonicalBody,
+  serializeMethodologyReportV131Sidecar,
   serializeMethodologyReportV2Sidecar,
   type MethodologyValidationReport,
 } from "@mindfoldhq/trellis-core/research";
 
 import { materializeMethodologyReportV2Sidecar } from "../../src/commands/research/dispatch-activation-materialization.js";
+
+const V131_VALIDATOR_IDS = [
+  "trellis.artifact.requiredness",
+  "trellis.artifact.cardinality",
+  "trellis.artifact.media-type",
+  "trellis.artifact.authority",
+  "trellis.artifact.ref-binding",
+  "trellis.artifact.stable-id",
+  "trellis.artifact.provenance",
+  "trellis.artifact.dependencies",
+  "trellis.artifact.immutability",
+  "trellis.artifact.transitions",
+  "trellis.artifact.terminal-applicability",
+  "trellis.artifact.cross-consistency",
+  "trellis.closure.schema",
+  "trellis.closure.evidence",
+  "trellis.closure.xor",
+  "trellis.closure.status-inference",
+  "trellis.authority.worker-boundary",
+  "trellis.validator.binding-integrity",
+  "trellis.report.v2-binding",
+  "trellis.contract.integrity",
+] as const;
 
 function makeReportV2() {
   const validation: MethodologyValidationReport = {
@@ -46,6 +73,49 @@ function makeReportV2() {
     batchCommitted: true,
     closureSource: { selected: true, blocked: false },
   });
+}
+
+function makeReportV131() {
+  const report = buildMethodologyReportV131({
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    activationId: "act_11111111-1111-4111-8111-111111111111",
+    applicability: [],
+    approvalId: "apr_11111111-1111-4111-8111-111111111111",
+    artifactBindings: [],
+    blockedFacts: [],
+    closureSources: [
+      {
+        digest:
+          "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        family: "research-ideation",
+        sourceId: "art_11111111-1111-4111-8111-111111111111",
+      },
+    ],
+    dispatchId: "dsp_11111111-1111-4111-8111-111111111111",
+    methodologyDigest: V131_ACCEPTED_CONTRACT_DIGEST.slice("sha256:".length),
+    methodologyIdentity: V131_ACCEPTED_CONTRACT_VERSION,
+    orderedFindings: [],
+    orderedValidatorTriples: V131_VALIDATOR_IDS.map((id) => ({
+      id,
+      version: "1.0.0",
+      severity: "critical" as const,
+    })),
+    procedureDigest:
+      "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    procedureId: "idea-generation-v1",
+    procedureVersion: "2.0.7",
+    questId: "qst_11111111-1111-4111-8111-111111111111",
+    schemaVersion: 2,
+    supportInventoryDigest:
+      "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    zeroWriteDisposition: "validation-complete-before-write",
+  });
+  return {
+    report,
+    reportDigest: computeMethodologyReportV2DigestFromCanonicalBody(
+      canonicalResearchJson(report),
+    ),
+  };
 }
 
 describe("CS5-4 report-v2 hardened publication and canonical bytes", () => {
@@ -99,6 +169,83 @@ describe("CS5-4 report-v2 hardened publication and canonical bytes", () => {
       headSeq: 9,
       dispatchId,
       reportV2: report,
+      recovery: "recovery",
+    });
+    expect(second).toBe(first);
+    fs.rmSync(sandbox, { recursive: true, force: true });
+  });
+
+  it("publishes accepted v1.3.1 canonical bytes with an external digest", () => {
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-v131pub-"));
+    const root = path.join(sandbox, "root");
+    fs.mkdirSync(path.join(root, ".trellis"), { recursive: true });
+    const report = makeReportV131();
+    const file = materializeMethodologyReportV2Sidecar({
+      root,
+      headSeq: 9,
+      dispatchId: report.report.dispatchId,
+      reportV131: report,
+      recovery: "recovery",
+    });
+    expect(fs.readFileSync(path.join(root, file), "utf8")).toBe(
+      serializeMethodologyReportV131Sidecar(report),
+    );
+    fs.rmSync(sandbox, { recursive: true, force: true });
+  });
+
+  it("rejects v1.3.1 external digest and closed-schema drift", () => {
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-v131drift-"));
+    const root = path.join(sandbox, "root");
+    fs.mkdirSync(path.join(root, ".trellis"), { recursive: true });
+    const report = makeReportV131();
+    expect(() =>
+      materializeMethodologyReportV2Sidecar({
+        root,
+        headSeq: 9,
+        dispatchId: report.report.dispatchId,
+        reportV131: {
+          report: report.report,
+          reportDigest:
+            "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        },
+        recovery: "recovery",
+      }),
+    ).toThrow(/Research events committed through seq/);
+    expect(() =>
+      materializeMethodologyReportV2Sidecar({
+        root,
+        headSeq: 9,
+        dispatchId: report.report.dispatchId,
+        reportV131: {
+          report: {
+            ...report.report,
+            unknown: true,
+          } as never,
+          reportDigest: report.reportDigest,
+        },
+        recovery: "recovery",
+      }),
+    ).toThrow(/Research events committed through seq/);
+    fs.rmSync(sandbox, { recursive: true, force: true });
+  });
+
+  it("treats an identical v1.3.1 sidecar as an equivalent-winner no-op", () => {
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-v131eq-"));
+    const root = path.join(sandbox, "root");
+    fs.mkdirSync(path.join(root, ".trellis"), { recursive: true });
+    const report = makeReportV131();
+    const first = materializeMethodologyReportV2Sidecar({
+      root,
+      headSeq: 9,
+      dispatchId: report.report.dispatchId,
+      reportV131: report,
+      recovery: "recovery",
+    });
+    const second = materializeMethodologyReportV2Sidecar({
+      root,
+      headSeq: 9,
+      dispatchId: report.report.dispatchId,
+      reportV131: report,
       recovery: "recovery",
     });
     expect(second).toBe(first);

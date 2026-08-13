@@ -150,3 +150,18 @@ import { reduceResearchLedger } from "@mindfoldhq/trellis-core/research";
 Wrong: remove a core subpath because its old command disappeared.
 Correct: freeze the 0.7 SDK exports while independently narrowing the active CLI product.
 ```
+
+## Evaluation contract v1.3.1 boundary
+
+The public Research subpath owns the reusable accepted v1.3.1 contract grammar, strict parsers, applicability selection, predicate/schema execution, deterministic findings, closure-family mapping, and report construction/serialization. The production CLI remains the adapter that authenticates installed package bytes, resolves exact Procedure identity, observes Repository and submitted ArtifactRef state, and supplies one fact for every applicable binding.
+
+- Accepted identity is `evaluation-contract-v1.3.1` with semantic digest `sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af`.
+- The accepted closure mapping contains exactly `research-literature`, `research-ideation`, `research-idea-evaluation`, and `research-experiment`. Quest framing and computation are explicit non-closure dispositions.
+- Core fact state is closed to `present`, `missing`, `unknown`, `contradictory`, `aliased`, and `ambiguous`. Unauthenticated input uses outer `authenticated: false`, schema-valid internal `factState: "unknown"`, and report-level blocked reason `unauthenticated`.
+- Every applicable binding produces one invocation. Authentication, closed-schema validation, applicability, and predicate evaluation all remain fail-closed.
+- Historical `MethodologyDeterministicReportV2` construction/serialization remains separate from v1.3.1 `MethodologyDeterministicReportV131`. The historical report embeds `reportDigest`; the v1.3.1 report body excludes it and is serialized only with a separately supplied validated digest.
+- Production CLI modules continue importing these APIs only through `@mindfoldhq/trellis-core/research`; no deep import or source-tree authority is permitted.
+
+Fresh verification is serial: build Core completely before any CLI typecheck, tests, or build. Core and CLI consumer checks must not run concurrently because CLI resolution consumes the freshly generated Core `dist` API.
+
+Required regression coverage proves exact closure mapping, 29 applicable idea-generation bindings, one invocation per binding on pass and failure, strict v1.3.1 report key closure, external digest framing, serializer rejection of digest/body drift, and unchanged historical v1.3.0 bytes.

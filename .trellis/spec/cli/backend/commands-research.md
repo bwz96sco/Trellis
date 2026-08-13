@@ -702,3 +702,56 @@ Correct: read canonical ledger and replay first; validate clock/input only for n
 Wrong: dry-run acquires the Research lock, or recovery reruns worker and appends replacement events.
 Correct: dry-run validates one snapshot without writes; commit stays lockful; canonical replay repairs hardened sidecars.
 ```
+
+## Scenario: Evaluation contract v1.3.1 recording and recovery
+
+### 1. Scope / Trigger
+
+This scenario applies when canonical activation state records Procedure `2.0.7` with accepted contract version `evaluation-contract-v1.3.1` and semantic digest `sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af`. It extends the Procedure-dispatch cutover without changing its public Context or `record-result` signatures.
+
+### 2. Contracts
+
+- Production authenticates the package-owned seven-member v1.3.1 bundle and ordered member ledger. It never reads `.trellis/tasks`, `.git`, mutable candidate files, or environment-selected authority.
+- Procedure resolution remains project-first and fail-closed. Only exact `mode: "activation-recorded"` identity `2.0.7` uses the accepted v1.3.1 parser. Live capability selection remains `1.0.0`; `2.0.7` is dormant for ordinary current selection. Historical `2.0.4`-`2.0.6` v1.3.0 behavior remains on its separate parser/report branch.
+- Accepted closure families, in contract order, are `research-literature`, `research-ideation`, `research-idea-evaluation`, and `research-experiment`. `research-quest` and `research-computation` are not closure families and must not gain inferred closure authority.
+- Root methodology validation runs before canonical writes. For idea generation it selects exactly 29 applicable bindings and produces exactly one invocation for each binding, including failed invocations.
+- Runtime observations are built independently from authenticated Repository/ArtifactRef, closure, Procedure, and package state; accepted authority values are not copied into observed facts. Closed blocked-fact reasons are `missing`, `unknown`, `unauthenticated`, `ambiguous`, `aliased`, and `contradictory`.
+- Dry-run validates the read-only successor snapshot and never publishes `methodology-report-v2.json`. A successful non-dry-run appends schema-v1 `result.recorded`, schema-v1 `proposal.recorded`, then schema-v2 `approval.consumed` atomically before materialization.
+- The v1.3.1 report-v2 body is closed and excludes `reportDigest`. Its digest is computed over framed canonical body bytes without a trailing LF; the sidecar contains canonical report JSON plus one final LF. Historical v1.3.0 reports retain their embedded digest and byte behavior.
+- Report publication and same-key recovery use the existing hardened sidecar publisher. Exact replay is classified before current-clock validation, path access, stdin invocation, or worker rerun; recovery appends no replacement event.
+
+### 3. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Installed member order, length, hash, aggregate, or semantic digest drifts | Fail closed before methodology execution or canonical write. |
+| Project Procedure `2.0.7` is present but invalid | Fail selected project resolution; do not fall back to bundled content. |
+| Ordinary live selection is requested | Resolve live `1.0.0`; do not select dormant `2.0.7`. |
+| An applicable fact is absent, incomplete, unauthenticated, multiply claimed, aliased, or disagrees with authority | Execute every applicable binding, emit deterministic findings and the matching closed reason, append nothing, and publish no report. |
+| Closure evidence attempts Result-status inference or lacks its non-closure ArtifactRef binding | Reject as contradictory/incomplete before append. |
+| External report digest or closed report schema drifts | Reject publication as a committed-recovery error after commit, or as zero-write validation failure before commit where applicable. |
+| Exact successful key is replayed with unavailable input or invalid current clock | Reconstruct canonical v1.3.1 report and repair sidecars without input/clock/worker access or append. |
+
+### 4. Tests Required
+
+Focused v1.3.1 coverage is serial after a fresh Core build and includes:
+
+- `test/commands/research-accepted-bundle-authentication.test.ts`
+- `test/commands/research-procedure-resolution.integration.test.ts`
+- `test/commands/research-methodology-validation.test.ts`
+- `test/commands/research-v131-cli-runtime.test.ts`
+- `test/commands/research-dispatch-approved-result.test.ts`
+- `test/commands/research-report-v2-publication.test.ts`
+- `test/commands/research-dispatch-materialization-reader.test.ts`
+
+Coverage must prove exact package authentication, activation-recorded-only routing, corrected closure-family membership, all six blocked-fact reasons, 29-for-29 invocation execution, snapshot-only dry-run, `[1, 1, 2]` atomic event order, external report digest, hardened publication, and replay-before-clock/input recovery.
+
+### 5. Wrong vs Correct
+
+```text
+Wrong: select Procedure 2.0.7 live, copy accepted authority into observed facts, or infer closure from Result.status.
+Correct: resolve 2.0.7 only from exact activation identity and independently authenticate every applicable observation.
+
+Wrong: embed the v1.3.1 digest in the report body or rerun the worker to recover its sidecar.
+Correct: keep the digest external and reconstruct the recoverable projection from canonical same-key events.
+```
