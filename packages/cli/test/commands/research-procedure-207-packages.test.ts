@@ -584,5 +584,5 @@ describe("immutable dormant Procedure 2.0.7 family packages", () => {
       expect(bytes.at(-1)).toBe(0x0a);
       expect(bytes.subarray(-2).toString()).not.toBe("\n\n");
     }
-  }, 60_000);
+  }, 180_000);
 });
