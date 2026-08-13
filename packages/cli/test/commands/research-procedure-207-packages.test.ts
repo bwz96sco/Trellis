@@ -257,8 +257,20 @@ function loadPackageInventory(procedureId: string): {
 
 describe("immutable dormant Procedure 2.0.7 family packages", () => {
   it("authenticates immutable A133 input and has exactly 17 twelve-file package roots", () => {
-    expect(gitText(["rev-parse", "HEAD"]).trim()).toBe(PREDECESSOR_COMMIT);
-    expect(gitText(["rev-parse", "HEAD^{tree}"]).trim()).toBe(PREDECESSOR_TREE);
+    expect(
+      gitText(["rev-parse", `${PREDECESSOR_COMMIT}^{commit}`]).trim(),
+    ).toBe(PREDECESSOR_COMMIT);
+    expect(gitText(["rev-parse", `${PREDECESSOR_COMMIT}^{tree}`]).trim()).toBe(
+      PREDECESSOR_TREE,
+    );
+    expect(() =>
+      gitText([
+        "merge-base",
+        "--is-ancestor",
+        PREDECESSOR_COMMIT,
+        "HEAD",
+      ]),
+    ).not.toThrow();
     const pack = loadImmutablePack();
     expect(pack.contractVersion).toBe(V131_ACCEPTED_CONTRACT_VERSION);
     expect(pack.acceptedContractDigest).toBe(V131_ACCEPTED_CONTRACT_DIGEST);
@@ -520,6 +532,19 @@ describe("immutable dormant Procedure 2.0.7 family packages", () => {
     for (const relativePath of topology.stageInventories.T3.paths) {
       expect(fs.statSync(path.join(repoRoot, relativePath)).isFile()).toBe(true);
     }
+
+    const versionRecheck = parseJsonFile<{
+      readonly historyCommand: readonly string[];
+    }>(path.join(taskRoot, "research/procedure-version-recheck.json"));
+    expect(versionRecheck.historyCommand).toEqual([
+      "git",
+      "log",
+      PREDECESSOR_COMMIT,
+      "--format=",
+      "--name-only",
+      "--",
+      "packages/cli/src/templates/research/procedures",
+    ]);
 
     const result = JSON.parse(
       execFileSync(

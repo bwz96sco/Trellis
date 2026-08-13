@@ -269,10 +269,15 @@ def require_list(value: Any, label: str) -> list[Any]:
 
 
 def authenticate_inputs() -> dict[str, Any]:
-    if git_text(["rev-parse", "HEAD"]).strip() != PREDECESSOR_COMMIT:
-        raise ValueError("HEAD is not the authorized T3 predecessor commit")
-    if git_text(["rev-parse", "HEAD^{tree}"]).strip() != PREDECESSOR_TREE:
-        raise ValueError("HEAD tree is not the authorized T3 predecessor tree")
+    if git_text(["rev-parse", f"{PREDECESSOR_COMMIT}^{{commit}}"]).strip() != PREDECESSOR_COMMIT:
+        raise ValueError("authorized T3 predecessor commit is unavailable")
+    if git_text(["rev-parse", f"{PREDECESSOR_COMMIT}^{{tree}}"]).strip() != PREDECESSOR_TREE:
+        raise ValueError("authorized T3 predecessor tree mismatch")
+    if run(
+        ["git", "merge-base", "--is-ancestor", PREDECESSOR_COMMIT, "HEAD"],
+        check=False,
+    ).returncode != 0:
+        raise ValueError("HEAD does not descend from the authorized T3 predecessor")
     for commit, tree in (
         (A133_COMMIT, A133_TREE),
         (B133_COMMIT, B133_TREE),
@@ -372,7 +377,7 @@ def collision_recheck() -> dict[str, Any]:
     history = git_text(
         [
             "log",
-            "--all",
+            PREDECESSOR_COMMIT,
             "--format=",
             "--name-only",
             "--",
@@ -1083,7 +1088,7 @@ def render_evidence(
         "historyCommand": [
             "git",
             "log",
-            "--all",
+            PREDECESSOR_COMMIT,
             "--format=",
             "--name-only",
             "--",
