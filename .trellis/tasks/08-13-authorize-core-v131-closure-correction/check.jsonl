@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/research/g0-authority-role-and-stop-routing.json","reason":"Check exact T1 return routing, role separation, stop gates, and denials."}
+{"file":".trellis/tasks/08-12-conform-core-runtime-to-evaluation-contract-v1-3-1/task.json","reason":"Check the completed defective predecessor is referenced but not rewritten."}
+{"file":".trellis/tasks/08-10-author-evaluation-contract-v1-3-1-attempt-3/research/closure-contract-v1.3.1.json","reason":"Check the exact accepted and rejected closure-source family semantics."}
+{"file":".trellis/spec/core/backend/research-procedure-packages.md","reason":"Check v1.3.0 replay, accepted v1.3.1 digest, Procedure states, and worker authority preservation."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check the future technical boundary requires meaningful positive and negative regression coverage."}
