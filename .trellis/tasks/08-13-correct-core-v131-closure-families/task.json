@@ -1,0 +1,119 @@
+{
+  "id": "correct-core-v131-closure-families",
+  "name": "correct-core-v131-closure-families",
+  "title": "Correct Core v1.3.1 closure family validation",
+  "description": "Apply the separately authorized forward-only LOW-risk Core correction for the exact accepted v1.3.1 closure-source family set.",
+  "status": "in_progress",
+  "dev_type": "bugfix",
+  "scope": "core-research-runtime",
+  "package": "core",
+  "priority": "P1",
+  "creator": "claude",
+  "assignee": "claude-t1-core-correction-implementer",
+  "createdAt": "2026-08-13",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "evidence/v13-baseline",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/core/src/research/methodology-reports.ts",
+    "packages/core/test/research/methodology-runtime.test.ts"
+  ],
+  "notes": "This task.json is normative for this technical correction. The active task path is the user-dispatched technical-task equivalent of the governance record's illustrative closure-families slug. Do not stage or commit in this run.",
+  "meta": {
+    "stage": "T1C",
+    "forwardOnly": true,
+    "governanceAuthority": {
+      "commit": "29ff0837caf68edfd89dbfa3771f959eb4dcf313",
+      "tree": "0a8a4bdc6b2b31120a05b2eea253d1f6c352c908",
+      "parent": "79f11838bfe0d7f6a9c9145e472cf8c845d28c9e",
+      "taskPath": ".trellis/tasks/08-13-authorize-core-v131-closure-correction",
+      "routeSourceCommit": "b7c3c6645afb2d34c14548069bbaba61d060d5ee",
+      "routeRule": "T1-core-defect: return to T1; later stages cannot repair Core",
+      "defectivePredecessorCommit": "05573ab1a37af3de66bfc6a797b1e35ba3c47cf3",
+      "defectivePredecessorRewriteAuthorized": false
+    },
+    "impact": {
+      "symbol": "buildMethodologyReportV131",
+      "direction": "upstream",
+      "risk": "LOW",
+      "direct": 2,
+      "impacted": 2,
+      "affectedProcesses": 0,
+      "freshAfterGovernance": true
+    },
+    "correction": {
+      "targetPath": "packages/core/src/research/methodology-reports.ts",
+      "targetSymbol": "buildMethodologyReportV131",
+      "requiredClosureFamilies": [
+        "research-literature",
+        "research-ideation",
+        "research-idea-evaluation",
+        "research-experiment"
+      ],
+      "rejectedClosureFamilies": [
+        "research-quest",
+        "research-computation"
+      ],
+      "testPath": "packages/core/test/research/methodology-runtime.test.ts",
+      "preserveReportV2ShapeAndBehavior": true
+    },
+    "ownedPaths": [
+      ".trellis/tasks/08-13-correct-core-v131-closure-families/task.json",
+      ".trellis/tasks/08-13-correct-core-v131-closure-families/prd.md",
+      ".trellis/tasks/08-13-correct-core-v131-closure-families/design.md",
+      ".trellis/tasks/08-13-correct-core-v131-closure-families/implement.md",
+      ".trellis/tasks/08-13-correct-core-v131-closure-families/implement.jsonl",
+      ".trellis/tasks/08-13-correct-core-v131-closure-families/check.jsonl",
+      "packages/core/src/research/methodology-reports.ts",
+      "packages/core/test/research/methodology-runtime.test.ts"
+    ],
+    "preservations": {
+      "historicalV130ReplayByteExact": true,
+      "acceptedV131SemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+      "liveProcedureVersion": "1.0.0",
+      "dormantProcedureVersion": "2.0.7",
+      "workerAuthority": "proposal-only",
+      "completedT1ArtifactsImmutable": true,
+      "currentT2WorkBytePreserved": true
+    },
+    "preservedT2Paths": [
+      ".trellis/tasks/08-12-conform-cli-to-evaluation-contract-v1-3-1/task.json",
+      ".trellis/tasks/08-12-conform-cli-to-evaluation-contract-v1-3-1/research/gitnexus-impact-ledger.json",
+      ".trellis/tasks/08-12-conform-cli-to-evaluation-contract-v1-3-1/research/implementation-input-attestation.json",
+      ".trellis/tasks/08-12-conform-cli-to-evaluation-contract-v1-3-1/research/protected-path-audit.json",
+      "packages/cli/src/commands/research/dispatch-methodology-validation.ts",
+      "packages/cli/src/commands/research/procedure-resolution.ts",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/artifact-lifecycle-contract-v1.3.1.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/closure-contract-v1.3.1.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/derivability-provenance-matrix-v1.3.1.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/differential-test-matrix-v1.3.1.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/durable-output-disposition-v1.3.1.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/member-ledger.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/validator-binding-matrix-v1.3.1.json",
+      "packages/cli/src/templates/research/evaluation-contracts/1.3.1/validator-registry-v1.3.1.json",
+      "packages/cli/test/commands/research-v131-cli-runtime.test.ts"
+    ],
+    "operationalDenials": {
+      "stagingAuthorized": false,
+      "commitAuthorized": false,
+      "pushAuthorized": false,
+      "activationAuthorized": false,
+      "runtimeActivationAuthorized": false,
+      "liveSelectionChangeAuthorized": false,
+      "providerExecutionAuthorized": false,
+      "publicationAuthorized": false,
+      "releaseAuthorized": false,
+      "archiveAuthorized": false,
+      "completeSystemAcceptanceAuthorized": false,
+      "laterStageExecutionAuthorized": false,
+      "workerAuthorityChangeAuthorized": false
+    },
+    "stopGate": "Stop if any additional Core source, test, spec, completed T1 artifact, T2 path, compatibility behavior, or operational authority must change."
+  }
+}

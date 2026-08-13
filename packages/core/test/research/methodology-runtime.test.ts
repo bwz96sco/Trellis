@@ -966,6 +966,41 @@ describe("evaluation-contract-v1.3.1 closed report-v2", () => {
     ).toThrow(/orderedFindings/i);
   });
 
+  it("accepts ideation closure source families", () => {
+    for (const family of [
+      "research-ideation",
+      "research-idea-evaluation",
+    ] as const) {
+      const closureSource = {
+        digest: `sha256:${"d".repeat(64)}`,
+        family,
+        sourceId: `source-${family}`,
+      };
+      const report = buildMethodologyReportV131({
+        ...baseInput,
+        closureSources: [closureSource],
+      });
+      expect(report.closureSources).toEqual([closureSource]);
+    }
+  });
+
+  it("rejects quest and computation as closure source families", () => {
+    for (const family of ["research-quest", "research-computation"] as const) {
+      expect(() =>
+        buildMethodologyReportV131({
+          ...baseInput,
+          closureSources: [
+            {
+              digest: `sha256:${"d".repeat(64)}`,
+              family,
+              sourceId: `source-${family}`,
+            },
+          ],
+        }),
+      ).toThrow(/closureSources/i);
+    }
+  });
+
   it("rejects report-v2 digest and schema drift", () => {
     const report = buildMethodologyReportV131(baseInput);
     expect(() =>

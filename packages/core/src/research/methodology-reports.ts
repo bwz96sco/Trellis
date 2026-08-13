@@ -341,8 +341,8 @@ const V131_ARTIFACT_FAMILIES = Object.freeze([
 
 const V131_CLOSURE_FAMILIES = Object.freeze([
   "research-literature",
-  "research-quest",
-  "research-computation",
+  "research-ideation",
+  "research-idea-evaluation",
   "research-experiment",
 ] as const);
 
