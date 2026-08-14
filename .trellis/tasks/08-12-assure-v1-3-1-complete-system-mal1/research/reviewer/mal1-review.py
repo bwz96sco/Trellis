@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import io
 import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tarfile
@@ -21,6 +23,7 @@ from typing import Any, Iterable
 SCHEMA_VERSION = 1
 S1_COMMIT = "e6b80d640f0bd264c1acfe6bab906cb3e4ae535a"
 S1_TREE = "1304e0faa7262cd1c80cd3e8ab9b01057809f9e0"
+INITIAL_M0_COMMIT = "87317a7b78d531df37c1f84970fef020a8e77ace"
 SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
 SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
 A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3"
@@ -33,6 +36,9 @@ ASSIGNMENT_PATH = TASK_ROOT / "research/reviewer/reviewer-assignment.json"
 SCRIPT_PATH = TASK_ROOT / "research/reviewer/mal1-review.py"
 FREEZE_PATH = Path(
     ".trellis/tasks/08-12-integrate-install-and-freeze-v1-3-1-subject/research/exact-subject-freeze.json"
+)
+G0_BASELINE_PATH = Path(
+    ".trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/research/g0-protected-path-baseline.json"
 )
 T4_ROOT = Path(".trellis/tasks/08-12-build-v1-3-1-production-harness/research")
 A133_ROOT = Path(
@@ -62,6 +68,7 @@ M1_NAMES = (
     "machine-verdict.json",
 )
 M1_PATHS = tuple(str(ATTEMPT_ROOT / name) for name in M1_NAMES)
+AUX_MEMBER_LEDGER = "member-ledger.json"
 PACK_MEMBERS = (
     "durable-output-disposition-v1.3.1.json",
     "artifact-lifecycle-contract-v1.3.1.json",
@@ -98,6 +105,64 @@ EXPECTED_ACTORS = (
     "claude-t4-production-harness-author",
     "claude-t5-integration-freeze-owner",
 )
+REQUIRED_COMMAND_IDS = (
+    "dependency-install",
+    "core-focused-build",
+    "core-focused-semantics",
+    "cli-focused-complete-system",
+    "core-full-lint",
+    "core-full-test",
+    "core-final-build",
+    "cli-full-lint",
+    "cli-full-typecheck",
+    "cli-full-test",
+    "cli-final-build",
+    "workspace-typecheck",
+    "live-selection-pin",
+    "external-pack-core",
+    "external-pack-cli",
+    "external-npm-install",
+    "external-npm-runtime",
+    "external-npm-trellis-alias",
+    "external-npm-tl-alias",
+    "external-pnpm-lock-seed",
+    "external-pnpm-import",
+    "external-pnpm-lock",
+    "external-pnpm-install",
+    "external-pnpm-runtime",
+    "external-pnpm-trellis-alias",
+    "external-pnpm-tl-alias",
+)
+EXTERNAL_ALIAS_COMMAND_IDS = (
+    "external-npm-trellis-alias",
+    "external-npm-tl-alias",
+    "external-pnpm-trellis-alias",
+    "external-pnpm-tl-alias",
+)
+EXTERNAL_COMMAND_IDS = tuple(
+    command_id for command_id in REQUIRED_COMMAND_IDS if command_id.startswith("external-")
+)
+EXTRACTION_EPHEMERAL_ROOTS = (
+    "node_modules/",
+    "packages/core/node_modules/",
+    "packages/cli/node_modules/",
+    "packages/core/dist/",
+    "packages/cli/dist/",
+)
+SANDBOX_EXEC = Path("/usr/bin/sandbox-exec")
+SANDBOX_MARKER = "TRELLIS_T6_NETWORK_SANDBOXED"
+SANDBOX_PROFILE = "(version 1) (allow default) (deny network*)"
+EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
+
+
+@dataclass(frozen=True)
+class ReviewerInvocation:
+    agent_id: str
+    session_id: str
+    worktree: Path
+    protected_worktree_root: Path
+    resumed: bool
+    shared_scratch_with_t0_through_t5: bool
 
 
 @dataclass(frozen=True)
@@ -199,9 +264,9 @@ def git_object(repo: Path, commit: str, path: str) -> bytes:
     return git_bytes(repo, "show", f"{commit}:{path}")
 
 
-def parse_status_paths(raw: bytes) -> list[str]:
+def parse_status_entries(raw: bytes) -> list[tuple[str, str]]:
     fields = raw.decode("utf-8").split("\0")
-    paths: list[str] = []
+    entries: list[tuple[str, str]] = []
     index = 0
     while index < len(fields):
         row = fields[index]
@@ -211,13 +276,21 @@ def parse_status_paths(raw: bytes) -> list[str]:
         if len(row) < 4 or row[2] != " ":
             raise ValueError("malformed Git porcelain status")
         status = row[:2]
-        paths.append(row[3:])
+        entries.append((status, row[3:]))
         if "R" in status or "C" in status:
             if index >= len(fields) or not fields[index]:
                 raise ValueError("malformed Git rename/copy status")
-            paths.append(fields[index])
+            entries.append((status, fields[index]))
             index += 1
-    return sorted(set(paths))
+    return entries
+
+
+def parse_status_paths(raw: bytes) -> list[str]:
+    return sorted({path for _, path in parse_status_entries(raw)})
+
+
+def installed_contract_inventory_valid(names: Iterable[str]) -> bool:
+    return sorted(names) == sorted((*PACK_MEMBERS, AUX_MEMBER_LEDGER))
 
 
 def static_check() -> dict[str, Any]:
@@ -227,7 +300,7 @@ def static_check() -> dict[str, Any]:
         raise ValueError("M1 inventory must contain exactly nine unique paths")
     if set(M0_PATHS) & set(M1_PATHS):
         raise ValueError("M0 and M1 inventories overlap")
-    for value in (S1_COMMIT, S1_TREE, SUBJECT_COMMIT, SUBJECT_TREE, A133_COMMIT):
+    for value in (S1_COMMIT, S1_TREE, INITIAL_M0_COMMIT, SUBJECT_COMMIT, SUBJECT_TREE, A133_COMMIT):
         if re.fullmatch(r"[0-9a-f]{40}", value) is None:
             raise ValueError(f"invalid Git object identity: {value}")
     for value in (ACCEPTED_SEMANTIC_DIGEST, ACCEPTED_MEMBER_AGGREGATE):
@@ -235,6 +308,37 @@ def static_check() -> dict[str, Any]:
             raise ValueError(f"invalid digest identity: {value}")
     if len(PACK_MEMBERS) != 7 or len(PROCEDURE_IDS) != 17:
         raise ValueError("frozen population constants drifted")
+    if len(REQUIRED_COMMAND_IDS) != len(set(REQUIRED_COMMAND_IDS)):
+        raise ValueError("required command inventory contains duplicates")
+    if not set(EXTERNAL_ALIAS_COMMAND_IDS).issubset(REQUIRED_COMMAND_IDS):
+        raise ValueError("external alias commands are not required")
+    if set(EXTERNAL_COMMAND_IDS) != {
+        command_id for command_id in REQUIRED_COMMAND_IDS if command_id.startswith("external-")
+    }:
+        raise ValueError("external command inventory drifted")
+    exact_contract_names = (*PACK_MEMBERS, AUX_MEMBER_LEDGER)
+    if (
+        len(set(exact_contract_names)) != 8
+        or not installed_contract_inventory_valid(exact_contract_names)
+        or installed_contract_inventory_valid((*exact_contract_names, "extra.json"))
+        or installed_contract_inventory_valid(exact_contract_names[:-1])
+    ):
+        raise ValueError("installed contract directory inventory self-check failed")
+    if sys.platform != "darwin" or not SANDBOX_EXEC.is_file():
+        raise ValueError("required Darwin network sandbox is unavailable")
+    synthetic_mutations = parse_status_paths(
+        b"M  staged.txt\0 M worktree.txt\0A  added.txt\0D  deleted.txt\0"
+        b"?? untracked.txt\0!! ignored.txt\0"
+    )
+    if synthetic_mutations != [
+        "added.txt",
+        "deleted.txt",
+        "ignored.txt",
+        "staged.txt",
+        "untracked.txt",
+        "worktree.txt",
+    ]:
+        raise ValueError("complete Git mutation parsing self-check failed")
     if REVIEWER_AGENT_ID in EXPECTED_ACTORS:
         raise ValueError("reviewer identity overlaps a predecessor actor")
     return {
@@ -244,54 +348,200 @@ def static_check() -> dict[str, Any]:
         "m1PathCount": len(M1_PATHS),
         "packMemberCount": len(PACK_MEMBERS),
         "procedureFamilyCount": len(PROCEDURE_IDS),
+        "requiredCommandCount": len(REQUIRED_COMMAND_IDS),
+        "externalAliasCommandCount": len(EXTERNAL_ALIAS_COMMAND_IDS),
+        "installedContractFileCount": len(PACK_MEMBERS) + 1,
+        "auxiliaryMemberLedgerRequired": True,
+        "mutationStatusModesChecked": ["index", "worktree", "untracked", "ignored"],
+        "networkSandboxRequired": True,
+        "reviewerInvocationInputsRequired": True,
+        "atomicM1DirectoryPublish": True,
         "selfCheckWritesEvidence": False,
         "verdict": "pass",
     }
 
 
-def authenticate_m0(repo: Path, m0_commit: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def authenticate_m0(
+    repo: Path, m0_commit: str, invocation: ReviewerInvocation
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     if git_text(repo, "rev-parse", "HEAD") != m0_commit:
-        raise ValueError("current HEAD is not the explicitly supplied M0 commit")
-    if git_text(repo, "rev-parse", f"{m0_commit}^1") != S1_COMMIT:
-        raise ValueError("M0 is not committed directly on exact S1")
+        raise ValueError("current HEAD is not the explicitly supplied M0 correction commit")
+    if git_text(repo, "rev-parse", f"{m0_commit}^1") != INITIAL_M0_COMMIT:
+        raise ValueError("M0 correction is not committed directly on exact initial M0")
+    if git_text(repo, "rev-parse", f"{INITIAL_M0_COMMIT}^1") != S1_COMMIT:
+        raise ValueError("initial M0 is not committed directly on exact S1")
     if git_text(repo, "rev-parse", f"{S1_COMMIT}^{{tree}}") != S1_TREE:
         raise ValueError("S1 tree mismatch")
-    changed = sorted(
+    initial_paths = sorted(
+        line
+        for line in git_text(
+            repo, "diff-tree", "--no-commit-id", "--name-only", "-r", INITIAL_M0_COMMIT
+        ).splitlines()
+        if line
+    )
+    correction_paths = sorted(
         line
         for line in git_text(repo, "diff-tree", "--no-commit-id", "--name-only", "-r", m0_commit).splitlines()
         if line
     )
-    if changed != sorted(M0_PATHS):
-        raise ValueError(f"M0 changed-path mismatch: {changed}")
+    if initial_paths != sorted(M0_PATHS):
+        raise ValueError(f"initial M0 changed-path mismatch: {initial_paths}")
+    if correction_paths != [str(SCRIPT_PATH)]:
+        raise ValueError(f"M0 correction changed-path mismatch: {correction_paths}")
     if parse_status_paths(
-        git_bytes(repo, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+        git_bytes(
+            repo,
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignored=matching",
+        )
     ):
-        raise ValueError("M1 must start from a clean committed M0 worktree")
+        raise ValueError("M1 must start from a clean committed reviewer worktree")
 
     assignment = strict_json_bytes(git_object(repo, m0_commit, str(ASSIGNMENT_PATH)), "assignment")
     task = strict_json_bytes(git_object(repo, m0_commit, str(TASK_ROOT / "task.json")), "task")
     freeze = strict_json_bytes(git_object(repo, S1_COMMIT, str(FREEZE_PATH)), "freeze")
-    current_script = (repo / SCRIPT_PATH).read_bytes()
-    if git_object(repo, m0_commit, str(SCRIPT_PATH)) != current_script:
-        raise ValueError("reviewer program bytes differ from committed M0")
+    if git_object(repo, m0_commit, str(SCRIPT_PATH)) != (repo / SCRIPT_PATH).read_bytes():
+        raise ValueError("reviewer program bytes differ from committed M0 correction")
 
-    identity = assignment.get("assignment", {})
-    authority = assignment.get("authority", {})
-    if identity.get("agentId") != REVIEWER_AGENT_ID or identity.get("sessionId") != REVIEWER_SESSION_ID:
-        raise ValueError("reviewer identity mismatch")
-    if identity.get("fresh") is not True or identity.get("machineOnly") is not True:
-        raise ValueError("reviewer freshness or machine-only assignment missing")
-    if authority.get("assuranceRunAuthorized") is not False:
-        raise ValueError("M0 must not self-authorize M1")
-    if authority.get("m1OutputWriteAuthorized") is not False:
-        raise ValueError("M0 must not pre-authorize M1 writes")
-    if task.get("assignee") != REVIEWER_AGENT_ID:
-        raise ValueError("task reviewer assignment mismatch")
-    meta = task.get("meta", {})
-    if meta.get("currentCommitBoundary") != "M0" or meta.get("assuranceRunAuthorized") is not False:
-        raise ValueError("task M0 boundary metadata mismatch")
-    if tuple(assignment.get("roleSeparation", {}).get("t0ThroughT5Actors", ())) != EXPECTED_ACTORS:
-        raise ValueError("predecessor actor inventory mismatch")
+    expected_identity = {
+        "agentId": REVIEWER_AGENT_ID,
+        "assignedRole": "fresh-complete-system-mal1-reviewer",
+        "assignmentDate": "2026-08-14",
+        "assignmentId": "t6-m0-reviewer-assignment-20260814-a",
+        "fresh": True,
+        "machineOnly": True,
+        "modelClass": "gpt-5.6-sol",
+        "runtimeClass": "claude-code-isolated-agent-worktree",
+        "sessionId": REVIEWER_SESSION_ID,
+        "status": "assigned-awaiting-separate-m1-authorization",
+    }
+    expected_authority = {
+        "activationAuthorized": False,
+        "archiveAuthorized": False,
+        "assuranceRunAuthorized": False,
+        "completeSystemAcceptanceAuthorized": False,
+        "humanEquivalent": False,
+        "humanReviewed": False,
+        "liveSelectionChangeAuthorized": False,
+        "m0CommitAuthorized": True,
+        "m0OutputWriteAuthorized": True,
+        "m1OutputWriteAuthorized": False,
+        "networkAuthorized": False,
+        "providerExecutionAuthorized": False,
+        "publicationAuthorized": False,
+        "pushAuthorized": False,
+        "releaseAuthorized": False,
+        "repairAuthority": False,
+        "runtimeActivationAuthorized": False,
+        "taskExecutionAuthorized": False,
+        "technicalOperatorDecisionAuthorized": False,
+        "workerAuthorityChangeAuthorized": False,
+    }
+    expected_inputs = {
+        "frozenTechnicalSubject": {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE},
+        "s1FreezeBoundary": {
+            "commit": S1_COMMIT,
+            "firstParent": SUBJECT_COMMIT,
+            "tree": S1_TREE,
+        },
+    }
+    expected_isolation = {
+        "currentWorktreeAsAssuranceSubjectAuthorized": False,
+        "distinctTemporaryExtractionRequired": True,
+        "networkOrProviderInputAuthorized": False,
+        "reviewerMayReadCommittedGitObjectsOnly": True,
+        "subjectTransport": "git-archive",
+        "worktreeOverlayAuthorized": False,
+    }
+    expected_outputs = {
+        "m0": {"count": len(M0_PATHS), "paths": list(M0_PATHS)},
+        "m1": {"count": len(M1_PATHS), "paths": list(M1_PATHS)},
+        "unknownOutputDisposition": "fail-and-stop",
+    }
+    expected_role_separation = {
+        "futureT7MustRejectReviewerAgentAndSession": True,
+        "reviewerMayNotAcceptActivateArchiveReleasePublishOrPush": True,
+        "reviewerMayNotRepair": True,
+        "reviewerMayProduceOnlyMachinePassOrFail": True,
+        "t0ThroughT5Actors": list(EXPECTED_ACTORS),
+        "t0ThroughT5Distinct": True,
+    }
+    expected_boundary = {
+        "currentBoundary": "M0",
+        "m0MayCommitAfterRequiredVerification": True,
+        "m1MayRunOnlyAfterCommittedM0AndSeparateUserAuthorization": True,
+        "reviewerProgramSelfCheckMayNotEmitM1Evidence": True,
+        "worktreePresenceDoesNotAuthorizeM1": True,
+    }
+    expected_program = {
+        "normalRunRequiresExplicitM0Commit": True,
+        "normalRunRequiresExplicitSeparateAuthorizationFlag": True,
+        "path": str(SCRIPT_PATH),
+        "selfCheckWritesEvidence": False,
+        "standardLibraryOnly": True,
+    }
+    exact_sections = (
+        ("assignment", expected_identity),
+        ("authority", expected_authority),
+        ("exactInputs", expected_inputs),
+        ("inputIsolation", expected_isolation),
+        ("outputAuthorization", expected_outputs),
+        ("roleSeparation", expected_role_separation),
+        ("authorizationBoundary", expected_boundary),
+        ("reviewerProgram", expected_program),
+    )
+    for section, expected in exact_sections:
+        if assignment.get(section) != expected:
+            raise ValueError(f"committed reviewer assignment {section} drifted")
+    if assignment.get("commitBoundary") != "M0" or assignment.get("schemaVersion") != SCHEMA_VERSION:
+        raise ValueError("committed reviewer assignment boundary drifted")
+
+    task_meta = task.get("meta", {})
+    expected_task_values = {
+        "acceptedSemanticDigest": ACCEPTED_SEMANTIC_DIGEST,
+        "activationAuthorized": False,
+        "archiveAuthorized": False,
+        "assuranceRunAuthorized": False,
+        "commitAuthorized": True,
+        "completeSystemAcceptanceAuthorized": False,
+        "currentCommitBoundary": "M0",
+        "humanEquivalent": False,
+        "humanReviewed": False,
+        "liveProcedure": "1.0.0",
+        "liveSelectionChangeAuthorized": False,
+        "m0CommitAuthorized": True,
+        "m0ExecutionAuthorized": True,
+        "ownerRole": REVIEWER_AGENT_ID,
+        "providerExecutionAuthorized": False,
+        "publicationAuthorized": False,
+        "pushAuthorized": False,
+        "releaseAuthorized": False,
+        "repairAuthority": False,
+        "runtimeActivationAuthorized": False,
+        "taskExecutionAuthorized": False,
+        "workerAuthorityChangeAuthorized": False,
+    }
+    if any(task_meta.get(key) != value for key, value in expected_task_values.items()):
+        raise ValueError("task execution or publication governance drifted")
+    if task_meta.get("commitBoundaries") != ["M0", "M1"] or task_meta.get("ownedInventoryKeys") != ["M0", "M1"]:
+        raise ValueError("task M0/M1 inventory governance drifted")
+    if task.get("assignee") != REVIEWER_AGENT_ID or task.get("branch") != "claude-t6-mal1-reviewer-01-m0":
+        raise ValueError("task reviewer identity or branch drifted")
+
+    assigned_worktree = Path(task.get("worktree_path", "")).resolve()
+    if invocation.agent_id != REVIEWER_AGENT_ID or invocation.session_id != REVIEWER_SESSION_ID:
+        raise ValueError("explicit reviewer agent or session identity mismatch")
+    if invocation.resumed or invocation.shared_scratch_with_t0_through_t5:
+        raise ValueError("reviewer invocation is resumed or shares predecessor scratch")
+    if invocation.worktree.resolve() != repo or assigned_worktree != repo:
+        raise ValueError("explicit or committed reviewer worktree mismatch")
+    if Path.cwd().resolve() != repo or Path(git_text(repo, "rev-parse", "--show-toplevel")).resolve() != repo:
+        raise ValueError("observed cwd is not the assigned reviewer worktree")
+    if git_text(repo, "branch", "--show-current") != task.get("branch"):
+        raise ValueError("observed reviewer branch mismatch")
 
     frozen = freeze.get("frozenSubject", {})
     if frozen.get("commit") != SUBJECT_COMMIT or frozen.get("tree") != SUBJECT_TREE:
@@ -349,6 +599,53 @@ def resolve_tools() -> dict[str, str]:
             raise ValueError(f"required executable not found: {name}")
         tools[name] = str(Path(resolved).resolve())
     return tools
+
+
+def ensure_network_sandbox() -> None:
+    if os.environ.get(SANDBOX_MARKER) == "1":
+        return
+    if sys.platform != "darwin" or not SANDBOX_EXEC.is_file():
+        raise ValueError("required Darwin network sandbox is unavailable")
+    environment = os.environ.copy()
+    environment[SANDBOX_MARKER] = "1"
+    os.execve(
+        SANDBOX_EXEC,
+        (
+            str(SANDBOX_EXEC),
+            "-p",
+            SANDBOX_PROFILE,
+            sys.executable,
+            str(Path(__file__).resolve()),
+            *sys.argv[1:],
+        ),
+        environment,
+    )
+
+
+def network_denial_probe() -> dict[str, Any]:
+    try:
+        probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except OSError as error:
+        denied = error.errno in (errno.EPERM, errno.EACCES)
+        return {
+            "mechanism": "darwin-sandbox-exec-deny-network",
+            "socketCreationDenied": denied,
+            "outboundConnectDenied": denied,
+            "errno": error.errno,
+            "verdict": "pass" if denied else "fail",
+        }
+    try:
+        result = probe.connect_ex(("127.0.0.1", 9))
+    finally:
+        probe.close()
+    denied = result in (errno.EPERM, errno.EACCES)
+    return {
+        "mechanism": "darwin-sandbox-exec-deny-network",
+        "socketCreationDenied": False,
+        "outboundConnectDenied": denied,
+        "errno": result,
+        "verdict": "pass" if denied else "fail",
+    }
 
 
 def archive_subject(repo: Path) -> bytes:
@@ -634,11 +931,27 @@ def run_external_install_audit(
     core_tarballs = sorted(core_pack.glob("*.tgz"))
     cli_tarballs = sorted(cli_pack.glob("*.tgz"))
     if len(core_tarballs) != 1 or len(cli_tarballs) != 1:
+        observed_ids = {result.command_id for result in results}
+        for command_id in EXTERNAL_COMMAND_IDS:
+            if command_id not in observed_ids:
+                results.append(
+                    CommandResult(
+                        command_id,
+                        ("reviewer", "blocked-by-pack-prerequisite"),
+                        "<EXTERNAL>",
+                        None,
+                        "blocked",
+                    )
+                )
         return results, {
             "verdict": "fail",
             "reason": "expected exactly one Core and one CLI tarball",
             "npm": False,
             "pnpm": False,
+            "aliases": {
+                "npm": {"trellis": False, "tl": False},
+                "pnpm": {"trellis": False, "tl": False},
+            },
             "procedureFamilyCount": 0,
             "procedureFileCount": 0,
             "privacyFindings": ["tarball-set-unavailable"],
@@ -648,8 +961,13 @@ def run_external_install_audit(
     cli_tarball = cli_tarballs[0]
     consumer_root = scratch / "consumers"
     verification = (
+        "const {createRequire}=await import('node:module');"
+        "const fs=await import('node:fs');"
         "const r=await import('@mindfoldhq/trellis-core/research');"
-        "if(r.V131_ACCEPTED_CONTRACT_DIGEST!=='sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af')process.exit(3);"
+        f"if(r.V131_ACCEPTED_CONTRACT_DIGEST!=={json.dumps(ACCEPTED_SEMANTIC_DIGEST)})process.exit(3);"
+        "const require=createRequire(import.meta.url);"
+        "const p=JSON.parse(fs.readFileSync(require.resolve('@mindfoldhq/trellis/package.json'),'utf8'));"
+        "if(JSON.stringify(p.bin)!==JSON.stringify({trellis:'./bin/trellis.js',tl:'./bin/trellis.js'}))process.exit(4);"
         "await import('@mindfoldhq/trellis');process.stdout.write('installed-runtime-ok\\n');"
     )
     npm_consumer = consumer_root / "npm"
@@ -669,25 +987,66 @@ def run_external_install_audit(
         str(core_tarball),
         str(cli_tarball),
     )
-    npm_ok = external_command("external-npm-install", npm_argv, npm_consumer, env, tools, results)
+    npm_install_ok = external_command(
+        "external-npm-install", npm_argv, npm_consumer, env, tools, results
+    )
     verify_argv = (tools["node"], "--input-type=module", "-e", verification)
-    if npm_ok:
-        npm_ok = external_command(
+    if npm_install_ok:
+        external_command(
             "external-npm-runtime", verify_argv, npm_consumer, env, tools, results, timeout=120
         )
+        for alias in ("trellis", "tl"):
+            alias_argv = (str(npm_consumer / "node_modules/.bin" / alias), "--help")
+            external_command(
+                f"external-npm-{alias}-alias", alias_argv, npm_consumer, env, tools, results, timeout=120
+            )
     else:
         results.append(CommandResult("external-npm-runtime", evidence_argv(verify_argv, tools), "<EXTERNAL>/npm", None, "blocked"))
+        for alias in ("trellis", "tl"):
+            alias_argv = (str(npm_consumer / "node_modules/.bin" / alias), "--help")
+            results.append(
+                CommandResult(
+                    f"external-npm-{alias}-alias",
+                    evidence_argv(alias_argv, tools),
+                    "<EXTERNAL>/npm",
+                    None,
+                    "blocked",
+                )
+            )
 
     pnpm_consumer = consumer_root / "pnpm"
     pnpm_consumer.mkdir(parents=True)
-    pnpm_ok = npm_ok
+    (pnpm_consumer / "package.json").write_text(
+        json.dumps({"name": "t6-mal1-pnpm", "private": True, "type": "module"}) + "\n",
+        encoding="utf-8",
+    )
+    pnpm_seed_argv = (
+        tools["npm"],
+        "install",
+        "--offline",
+        "--ignore-scripts",
+        "--package-lock-only",
+        "--no-audit",
+        "--no-fund",
+        "--save-exact",
+        str(core_tarball),
+        str(cli_tarball),
+    )
+    pnpm_ok = external_command(
+        "external-pnpm-lock-seed", pnpm_seed_argv, pnpm_consumer, env, tools, results
+    )
     if pnpm_ok:
-        shutil.copyfile(npm_consumer / "package.json", pnpm_consumer / "package.json")
-        shutil.copyfile(npm_consumer / "package-lock.json", pnpm_consumer / "package-lock.json")
-        pnpm_package = load_json_file(pnpm_consumer / "package.json", "pnpm-consumer-package")
-        pnpm_version = run_raw((tools["pnpm"], "--version"), cwd=pnpm_consumer, env=env).stdout.decode().strip()
-        pnpm_package["packageManager"] = f"pnpm@{pnpm_version}"
-        (pnpm_consumer / "package.json").write_bytes(canonical_bytes(pnpm_package))
+        try:
+            pnpm_package = load_json_file(pnpm_consumer / "package.json", "pnpm-consumer-package")
+            root_package = load_json_file(extraction / "package.json", "root-package")
+            package_manager = root_package.get("packageManager")
+            if not isinstance(package_manager, str) or not package_manager.startswith("pnpm@"):
+                raise ValueError("frozen subject lacks an exact pnpm package manager")
+            pnpm_package["packageManager"] = package_manager
+            (pnpm_consumer / "package.json").write_bytes(canonical_bytes(pnpm_package))
+        except (OSError, ValueError):
+            pnpm_ok = False
+    if pnpm_ok:
         pnpm_ok = external_command(
             "external-pnpm-import",
             (tools["pnpm"], "import"),
@@ -724,17 +1083,34 @@ def run_external_install_audit(
         "--config.trust-policy=false",
     )
     if pnpm_ok:
-        pnpm_ok = external_command(
+        pnpm_install_ok = external_command(
             "external-pnpm-install", pnpm_install_argv, pnpm_consumer, env, tools, results
         )
     else:
+        pnpm_install_ok = False
         results.append(CommandResult("external-pnpm-install", evidence_argv(pnpm_install_argv, tools), "<EXTERNAL>/pnpm", None, "blocked"))
-    if pnpm_ok:
-        pnpm_ok = external_command(
+    if pnpm_install_ok:
+        external_command(
             "external-pnpm-runtime", verify_argv, pnpm_consumer, env, tools, results, timeout=120
         )
+        for alias in ("trellis", "tl"):
+            alias_argv = (str(pnpm_consumer / "node_modules/.bin" / alias), "--help")
+            external_command(
+                f"external-pnpm-{alias}-alias", alias_argv, pnpm_consumer, env, tools, results, timeout=120
+            )
     else:
         results.append(CommandResult("external-pnpm-runtime", evidence_argv(verify_argv, tools), "<EXTERNAL>/pnpm", None, "blocked"))
+        for alias in ("trellis", "tl"):
+            alias_argv = (str(pnpm_consumer / "node_modules/.bin" / alias), "--help")
+            results.append(
+                CommandResult(
+                    f"external-pnpm-{alias}-alias",
+                    evidence_argv(alias_argv, tools),
+                    "<EXTERNAL>/pnpm",
+                    None,
+                    "blocked",
+                )
+            )
 
     procedure_paths: set[str] = set()
     procedure_files = 0
@@ -763,8 +1139,27 @@ def run_external_install_audit(
                     if any(needle and needle in data for needle in forbidden):
                         privacy_findings.append(f"forbidden-bytes:{name}")
     statuses = {row.command_id: row.status for row in results}
-    npm_ok = statuses.get("external-npm-install") == "pass" and statuses.get("external-npm-runtime") == "pass"
-    pnpm_ok = statuses.get("external-pnpm-install") == "pass" and statuses.get("external-pnpm-runtime") == "pass"
+    npm_ok = all(
+        statuses.get(command_id) == "pass"
+        for command_id in (
+            "external-npm-install",
+            "external-npm-runtime",
+            "external-npm-trellis-alias",
+            "external-npm-tl-alias",
+        )
+    )
+    pnpm_ok = all(
+        statuses.get(command_id) == "pass"
+        for command_id in (
+            "external-pnpm-lock-seed",
+            "external-pnpm-import",
+            "external-pnpm-lock",
+            "external-pnpm-install",
+            "external-pnpm-runtime",
+            "external-pnpm-trellis-alias",
+            "external-pnpm-tl-alias",
+        )
+    )
     verdict = (
         "pass"
         if all(row.status == "pass" for row in results)
@@ -777,6 +1172,10 @@ def run_external_install_audit(
         "verdict": verdict,
         "npm": npm_ok,
         "pnpm": pnpm_ok,
+        "aliases": {
+            "npm": {alias: statuses.get(f"external-npm-{alias}-alias") == "pass" for alias in ("trellis", "tl")},
+            "pnpm": {alias: statuses.get(f"external-pnpm-{alias}-alias") == "pass" for alias in ("trellis", "tl")},
+        },
         "procedureFamilyCount": len(procedure_paths),
         "procedureFileCount": procedure_files,
         "privacyFindings": sorted(set(privacy_findings)),
@@ -792,16 +1191,23 @@ def build_member_ledger(extraction: Path) -> tuple[dict[str, Any], list[str]]:
     aggregate.update(b"trellis-accepted-v13-pack-members\0")
     members: list[dict[str, Any]] = []
     findings: list[str] = []
-    observed_names = sorted(path.name for path in (extraction / INSTALLED_PACK_ROOT).glob("*.json"))
-    if observed_names != sorted(PACK_MEMBERS):
-        findings.append("installed-pack-member-set-mismatch")
+    observed_names = sorted(path.name for path in (extraction / INSTALLED_PACK_ROOT).iterdir())
+    if not installed_contract_inventory_valid(observed_names):
+        findings.append("installed-contract-directory-set-mismatch")
     for name in PACK_MEMBERS:
-        installed = (extraction / INSTALLED_PACK_ROOT / name).read_bytes()
+        installed_path = extraction / INSTALLED_PACK_ROOT / name
+        installed = installed_path.read_bytes() if installed_path.is_file() else b""
         accepted = run_raw(
             ("git", "show", f"{A133_COMMIT}:{A133_ROOT / name}"),
             cwd=extraction,
         ).stdout
-        strict_json_bytes(installed, f"installed:{name}")
+        if not installed:
+            findings.append(f"installed-member-missing:{name}")
+        else:
+            try:
+                strict_json_bytes(installed, f"installed:{name}")
+            except (UnicodeDecodeError, ValueError):
+                findings.append(f"installed-member-invalid-json:{name}")
         exact_match = installed == accepted
         if not exact_match:
             findings.append(f"accepted-member-drift:{name}")
@@ -817,6 +1223,33 @@ def build_member_ledger(extraction: Path) -> tuple[dict[str, Any], list[str]]:
                 "matchesAcceptedA133Bytes": exact_match,
             }
         )
+    ledger_path = extraction / INSTALLED_PACK_ROOT / AUX_MEMBER_LEDGER
+    ledger_bytes = ledger_path.read_bytes() if ledger_path.is_file() else b""
+    try:
+        ledger = strict_json_bytes(ledger_bytes, "installed:member-ledger") if ledger_bytes else {}
+    except (UnicodeDecodeError, ValueError):
+        ledger = {}
+    ledger_members = ledger.get("members", []) if isinstance(ledger, dict) else []
+    installed_identities = {
+        member["path"]: (member["byteLength"], member["sha256"]) for member in members
+    }
+    ledger_valid = (
+        isinstance(ledger, dict)
+        and ledger.get("schemaVersion") == 1
+        and ledger.get("kind") == "trellis-installation-authentication-ledger"
+        and ledger.get("contractVersion") == "evaluation-contract-v1.3.1"
+        and ledger.get("memberCount") == len(PACK_MEMBERS)
+        and ledger.get("aggregateSha256") == ACCEPTED_MEMBER_AGGREGATE
+        and ledger.get("acceptedContractDigest") == ACCEPTED_SEMANTIC_DIGEST
+        and [record.get("path") for record in ledger_members] == list(PACK_MEMBERS)
+        and all(
+            installed_identities.get(record.get("path"))
+            == (record.get("byteLength"), record.get("sha256"))
+            for record in ledger_members
+        )
+    )
+    if not ledger_valid:
+        findings.append("installed-member-ledger-mismatch")
     observed_aggregate = f"sha256:{aggregate.hexdigest()}"
     if observed_aggregate != ACCEPTED_MEMBER_AGGREGATE:
         findings.append("accepted-member-aggregate-mismatch")
@@ -830,6 +1263,13 @@ def build_member_ledger(extraction: Path) -> tuple[dict[str, Any], list[str]]:
             "observedAggregateSha256": observed_aggregate,
             "members": members,
             "memberCount": len(members),
+            "auxiliaryMemberLedger": {
+                "path": AUX_MEMBER_LEDGER,
+                "byteLength": len(ledger_bytes),
+                "sha256": sha256_bytes(ledger_bytes),
+                "authenticated": ledger_valid,
+            },
+            "installedContractFileCount": len(observed_names),
             "verdict": "pass" if not findings else "fail",
         },
         findings,
@@ -903,15 +1343,10 @@ def build_runtime_audit(
     rejected = [row for row in evidence_rows if row.get("actualProductionOutcome") == "rejected"]
     if any(row.get("zeroWrite") is not True or row.get("canonicalEventDelta", {}).get("appendedCount") != 0 for row in rejected):
         findings.append("rejected-case-write-observed")
-    required_commands = (
-        "core-focused-semantics",
-        "cli-focused-complete-system",
-        "core-full-test",
-        "cli-full-test",
-        "external-npm-runtime",
-        "external-pnpm-runtime",
-    )
-    for command_id in required_commands:
+    observed_command_ids = [row.command_id for row in command_results]
+    if tuple(observed_command_ids) != REQUIRED_COMMAND_IDS:
+        findings.append("required-command-inventory-mismatch")
+    for command_id in REQUIRED_COMMAND_IDS:
         if command_status.get(command_id) != "pass":
             findings.append(f"required-command-not-pass:{command_id}")
     if external.get("verdict") != "pass":
@@ -920,6 +1355,10 @@ def build_runtime_audit(
         "schemaVersion": SCHEMA_VERSION,
         "recordKind": "t6-runtime-contract-audit",
         "checks": check_rows,
+        "requiredCommands": [
+            {"commandId": command_id, "status": command_status.get(command_id)}
+            for command_id in REQUIRED_COMMAND_IDS
+        ],
         "coverage": {
             "coreAndCliSemantics": command_status.get("core-focused-semantics") == "pass"
             and command_status.get("cli-focused-complete-system") == "pass",
@@ -940,31 +1379,228 @@ def build_runtime_audit(
 def extraction_mutation_audit(
     extraction: Path, env: dict[str, str], tools: dict[str, str]
 ) -> tuple[dict[str, Any], list[str]]:
-    tracked = run_raw(
-        (tools["git"], "diff", "--name-only", "-z"), cwd=extraction, env=env
-    ).stdout.decode("utf-8").split("\0")
-    tracked = sorted(path for path in tracked if path)
-    untracked = run_raw(
-        (tools["git"], "ls-files", "--others", "--exclude-standard", "-z"),
-        cwd=extraction,
-        env=env,
-    ).stdout.decode("utf-8").split("\0")
-    untracked = sorted(path for path in untracked if path and not path.startswith(".reviewer-runtime/"))
-    findings: list[str] = []
-    if tracked:
-        findings.append("extracted-subject-tracked-mutation")
-    if untracked:
-        findings.append("extracted-subject-unexpected-output")
+    entries = parse_status_entries(
+        run_raw(
+            (
+                tools["git"],
+                "status",
+                "--porcelain=v1",
+                "-z",
+                "--untracked-files=all",
+                "--ignored=matching",
+            ),
+            cwd=extraction,
+            env=env,
+        ).stdout
+    )
+    allowed_ignored = sorted(
+        path
+        for status, path in entries
+        if status == "!!"
+        and any(path == root.rstrip("/") or path.startswith(root) for root in EXTRACTION_EPHEMERAL_ROOTS)
+    )
+    unauthorized = sorted(
+        {path for status, path in entries if not (status == "!!" and path in allowed_ignored)}
+    )
+    findings = ["extracted-subject-unauthorized-mutation"] if unauthorized else []
     return (
         {
             "schemaVersion": SCHEMA_VERSION,
             "recordKind": "t6-filesystem-mutation-audit",
             "subjectCommit": SUBJECT_COMMIT,
-            "trackedMutationPaths": tracked,
-            "unexpectedUntrackedPaths": untracked,
-            "expectedEphemeralRoots": ["node_modules", "dist"],
+            "statusSource": "git-status-porcelain-v1-z-index-worktree-untracked-ignored",
+            "observedStatus": [
+                {"status": status, "path": path} for status, path in entries
+            ],
+            "allowedIgnoredPaths": allowed_ignored,
+            "unauthorizedMutationPaths": unauthorized,
+            "expectedEphemeralRoots": list(EXTRACTION_EPHEMERAL_ROOTS),
             "sourceWorktreeExpectedOutputs": list(M1_PATHS),
             "repairPerformed": False,
+            "verdict": "pass" if not findings else "fail",
+        },
+        findings,
+    )
+
+
+def protected_worktree_audit(
+    repo: Path, protected_root: Path, freeze: dict[str, Any]
+) -> tuple[dict[str, Any], list[str]]:
+    findings: list[str] = []
+    baseline_bytes = git_object(repo, S1_COMMIT, str(G0_BASELINE_PATH))
+    baseline = strict_json_bytes(baseline_bytes, "protected-baseline")
+    frozen_baseline = freeze.get("protectedState", {}).get("baseline", {})
+    if sha256_bytes(baseline_bytes) != frozen_baseline.get("sha256"):
+        findings.append("protected-baseline-digest-mismatch")
+
+    protected_root = protected_root.resolve()
+    repo_common_text = git_text(repo, "rev-parse", "--git-common-dir")
+    protected_common_text = git_text(protected_root, "rev-parse", "--git-common-dir")
+    repo_common = Path(repo_common_text)
+    protected_common = Path(protected_common_text)
+    if not repo_common.is_absolute():
+        repo_common = repo / repo_common
+    if not protected_common.is_absolute():
+        protected_common = protected_root / protected_common
+    same_repository = repo_common.resolve() == protected_common.resolve()
+    if protected_root == repo or not same_repository:
+        findings.append("protected-worktree-root-identity-mismatch")
+
+    file_rows = []
+    for expected in baseline.get("files", []):
+        path = expected["path"]
+        current_sha = sha256_bytes((protected_root / path).read_bytes())
+        diff_sha = sha256_bytes(git_bytes(protected_root, "diff", "--binary", "--", path))
+        staged_sha = sha256_bytes(git_bytes(protected_root, "diff", "--cached", "--binary", "--", path))
+        matches = (
+            current_sha == expected["sha256"]
+            and diff_sha == expected["gitDiffBinarySha256"]
+            and staged_sha == EMPTY_SHA256
+        )
+        if not matches:
+            findings.append(f"protected-file-drift:{path}")
+        file_rows.append(
+            {
+                "path": path,
+                "sha256": current_sha,
+                "expectedSha256": expected["sha256"],
+                "gitDiffBinarySha256": diff_sha,
+                "expectedGitDiffBinarySha256": expected["gitDiffBinarySha256"],
+                "stagedDiffEmpty": staged_sha == EMPTY_SHA256,
+                "matches": matches,
+            }
+        )
+
+    submodule_rows = []
+    for expected in baseline.get("submodules", []):
+        path = expected["path"]
+        submodule = protected_root / path
+        index_line = git_text(protected_root, "ls-files", "-s", "--", path)
+        index_fields = index_line.split()
+        indexed_commit = index_fields[1] if len(index_fields) >= 2 else None
+        worktree_commit = git_text(submodule, "rev-parse", "HEAD")
+        status_short = git_bytes(
+            submodule, "status", "--short", "--untracked-files=all"
+        ).decode("utf-8").splitlines()
+        diff_sha = sha256_bytes(git_bytes(submodule, "diff", "--binary"))
+        staged_sha = sha256_bytes(git_bytes(submodule, "diff", "--cached", "--binary"))
+        matches = (
+            indexed_commit == expected["commit"]
+            and worktree_commit == expected["commit"]
+            and status_short == expected["statusShort"]
+            and diff_sha == expected["gitDiffBinarySha256"]
+            and staged_sha == EMPTY_SHA256
+        )
+        if not matches:
+            findings.append(f"protected-submodule-drift:{path}")
+        submodule_rows.append(
+            {
+                "path": path,
+                "indexedCommit": indexed_commit,
+                "worktreeCommit": worktree_commit,
+                "expectedCommit": expected["commit"],
+                "statusShort": status_short,
+                "expectedStatusShort": expected["statusShort"],
+                "gitDiffBinarySha256": diff_sha,
+                "expectedGitDiffBinarySha256": expected["gitDiffBinarySha256"],
+                "stagedDiffEmpty": staged_sha == EMPTY_SHA256,
+                "matches": matches,
+            }
+        )
+
+    expected_cs5 = baseline.get("untrackedCs5Decision", {})
+    cs5_path = expected_cs5.get("path", "")
+    cs5_file = protected_root / cs5_path
+    cs5_sha = sha256_bytes(cs5_file.read_bytes())
+    tracked = run_raw(
+        ("git", "-C", str(protected_root), "ls-files", "--error-unmatch", "--", cs5_path),
+        cwd=protected_root,
+        check=False,
+    ).returncode == 0
+    cs5_status = parse_status_entries(
+        git_bytes(
+            protected_root,
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignored=matching",
+            "--",
+            cs5_path,
+        )
+    )
+    cs5_matches = (
+        cs5_sha == expected_cs5.get("sha256")
+        and not tracked
+        and cs5_status == [("??", cs5_path)]
+    )
+    if not cs5_matches:
+        findings.append("protected-untracked-cs5-drift")
+
+    return (
+        {
+            "schemaVersion": SCHEMA_VERSION,
+            "recordKind": "t6-protected-worktree-audit",
+            "excludedFromSemanticSubject": True,
+            "sameRepository": same_repository,
+            "baseline": {
+                "path": str(G0_BASELINE_PATH),
+                "sha256": sha256_bytes(baseline_bytes),
+                "matchesFrozenS1": sha256_bytes(baseline_bytes) == frozen_baseline.get("sha256"),
+            },
+            "files": file_rows,
+            "submodules": submodule_rows,
+            "untrackedCs5Decision": {
+                "path": cs5_path,
+                "sha256": cs5_sha,
+                "expectedSha256": expected_cs5.get("sha256"),
+                "tracked": tracked,
+                "status": [
+                    {"status": status, "path": path} for status, path in cs5_status
+                ],
+                "matches": cs5_matches,
+            },
+            "verdict": "pass" if not findings else "fail",
+        },
+        findings,
+    )
+
+
+def reviewer_worktree_audit(
+    repo: Path, staging: Path
+) -> tuple[dict[str, Any], list[str]]:
+    entries = parse_status_entries(
+        git_bytes(
+            repo,
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignored=matching",
+        )
+    )
+    expected_paths = {
+        str((staging / name).relative_to(repo)) for name in M1_NAMES
+    }
+    observed_staging = {
+        path for status, path in entries if status == "??" and path in expected_paths
+    }
+    unauthorized = sorted(
+        {path for status, path in entries if not (status == "??" and path in expected_paths)}
+    )
+    missing = sorted(expected_paths - observed_staging)
+    findings: list[str] = []
+    if unauthorized:
+        findings.append("reviewer-worktree-unauthorized-mutation")
+    if missing:
+        findings.append("reviewer-worktree-staging-inventory-mismatch")
+    return (
+        {
+            "sourceAndReviewerWorktreeSame": True,
+            "statusSource": "git-status-porcelain-v1-z-index-worktree-untracked-ignored",
+            "stagedOutputPaths": sorted(observed_staging),
+            "missingStagedOutputPaths": missing,
+            "unauthorizedMutationPaths": unauthorized,
             "verdict": "pass" if not findings else "fail",
         },
         findings,
@@ -979,27 +1615,70 @@ def scan_private_bytes(outputs: dict[str, bytes], forbidden: tuple[bytes, ...]) 
     return findings
 
 
-def publish_outputs(repo: Path, outputs: dict[str, bytes], staging: Path) -> None:
+def cleanup_staging(staging: Path) -> None:
+    if staging.is_dir():
+        shutil.rmtree(staging)
+    elif staging.exists():
+        staging.unlink()
+
+
+def stage_outputs(repo: Path, outputs: dict[str, bytes]) -> Path:
     if set(outputs) != set(M1_NAMES):
         raise ValueError("internal M1 output set mismatch")
     target = repo / ATTEMPT_ROOT
-    if target.exists() and any(target.iterdir()):
-        raise ValueError("M1 output directory is not empty")
-    staging.mkdir(parents=True, exist_ok=False)
-    for name in M1_NAMES:
-        (staging / name).write_bytes(outputs[name])
-    target.mkdir(parents=True, exist_ok=True)
-    for name in M1_NAMES:
-        os.replace(staging / name, target / name)
+    staging = target.parent / f".{target.name}.t6-staging"
+    if target.exists():
+        cleanup_staging(staging)
+        raise ValueError("final M1 output directory already exists")
+    cleanup_staging(staging)
+    try:
+        staging.mkdir(parents=False, exist_ok=False)
+        for name in M1_NAMES:
+            (staging / name).write_bytes(outputs[name])
+        if sorted(path.name for path in staging.iterdir()) != sorted(M1_NAMES):
+            raise ValueError("staged M1 filename inventory mismatch")
+        if any((staging / name).read_bytes() != outputs[name] for name in M1_NAMES):
+            raise ValueError("staged M1 bytes mismatch")
+        return staging
+    except BaseException:
+        cleanup_staging(staging)
+        raise
 
 
-def run_assurance(repo: Path, m0_commit: str) -> int:
+def publish_outputs(repo: Path, outputs: dict[str, bytes], staging: Path) -> None:
+    target = repo / ATTEMPT_ROOT
+    try:
+        if target.exists():
+            raise ValueError("final M1 output directory already exists")
+        if staging.parent != target.parent:
+            raise ValueError("M1 staging directory is not adjacent to final destination")
+        if sorted(path.name for path in staging.iterdir()) != sorted(M1_NAMES):
+            raise ValueError("staged M1 filename inventory changed")
+        if any((staging / name).read_bytes() != outputs[name] for name in M1_NAMES):
+            raise ValueError("staged M1 bytes changed")
+        os.rename(staging, target)
+    except BaseException:
+        cleanup_staging(staging)
+        raise
+
+
+def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) -> int:
     static_check()
-    assignment, _, freeze = authenticate_m0(repo, m0_commit)
+    assignment, _, freeze = authenticate_m0(repo, m0_commit, invocation)
+    network_probe = network_denial_probe()
+    if network_probe["verdict"] != "pass":
+        raise ValueError("mechanical network denial probe failed")
     tools = resolve_tools()
     archive = archive_subject(repo)
     initial_source_status = parse_status_paths(
-        git_bytes(repo, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+        git_bytes(
+            repo,
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignored=matching",
+        )
     )
     if initial_source_status:
         raise ValueError("source worktree became dirty before M1 execution")
@@ -1021,9 +1700,6 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             extraction, scratch / "external", env, tools
         )
         command_results.extend(external_results)
-        for result in command_results:
-            if result.status != "pass":
-                all_findings.append(f"command-not-pass:{result.command_id}")
 
         member_ledger, member_findings = build_member_ledger(extraction)
         all_findings.extend(member_findings)
@@ -1035,12 +1711,18 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             extraction, env, tools
         )
         all_findings.extend(filesystem_findings)
+        protected_audit, protected_findings = protected_worktree_audit(
+            repo, invocation.protected_worktree_root, freeze
+        )
+        if protected_findings:
+            raise ValueError(f"protected worktree containment drifted: {protected_findings}")
 
         exact_attestation = {
             "schemaVersion": SCHEMA_VERSION,
             "recordKind": "t6-exact-subject-attestation",
             "m0Commit": m0_commit,
-            "m0FirstParent": S1_COMMIT,
+            "m0FirstParent": INITIAL_M0_COMMIT,
+            "initialM0FirstParent": S1_COMMIT,
             "s1": {"commit": S1_COMMIT, "tree": S1_TREE},
             "frozenTechnicalSubject": {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE},
             "archiveTransport": {
@@ -1056,15 +1738,20 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             "schemaVersion": SCHEMA_VERSION,
             "recordKind": "t6-reviewer-session-attestation",
             "assignmentId": assignment["assignment"]["assignmentId"],
-            "agentId": REVIEWER_AGENT_ID,
-            "sessionId": REVIEWER_SESSION_ID,
+            "agentId": invocation.agent_id,
+            "sessionId": invocation.session_id,
             "runtimeClass": assignment["assignment"]["runtimeClass"],
             "modelClass": assignment["assignment"]["modelClass"],
-            "fresh": True,
-            "machineOnly": True,
-            "resumed": False,
-            "forkedFromT0ThroughT5": False,
-            "sharedScratchWithT0ThroughT5": False,
+            "fresh": assignment["assignment"]["fresh"]
+            and not invocation.resumed
+            and not invocation.shared_scratch_with_t0_through_t5,
+            "machineOnly": assignment["assignment"]["machineOnly"],
+            "resumed": invocation.resumed,
+            "forkedFromT0ThroughT5": invocation.agent_id in EXPECTED_ACTORS,
+            "sharedScratchWithT0ThroughT5": invocation.shared_scratch_with_t0_through_t5,
+            "reviewerWorktreeMatchesCommittedAssignment": invocation.worktree.resolve() == repo,
+            "observedCwdMatchesReviewerWorktree": Path.cwd().resolve() == repo,
+            "protectedWorktreeExcludedFromSemanticSubject": True,
             "humanReviewed": False,
             "humanEquivalent": False,
             "futureT7MustDiffer": True,
@@ -1076,12 +1763,23 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             row = result.evidence()
             row["ordinal"] = ordinal
             command_rows.append(row)
+        observed_command_ids = [result.command_id for result in command_results]
+        command_inventory_exact = tuple(observed_command_ids) == REQUIRED_COMMAND_IDS
+        provider_command_absent = not any(
+            token in " ".join(result.argv).lower()
+            for result in command_results
+            for token in ("anthropic", "openai", "provider")
+        )
         containment = {
             "schemaVersion": SCHEMA_VERSION,
             "recordKind": "t6-containment-audit",
             "networkAllowed": False,
+            "networkDenial": network_probe,
             "offlinePackageResolutionRequired": True,
+            "predeterminedCommandInventoryExact": command_inventory_exact,
+            "providerCommandAbsent": provider_command_absent,
             "providerExecutionPerformed": False,
+            "protectedWorktree": protected_audit,
             "repairPerformed": False,
             "activationPerformed": False,
             "acceptancePerformed": False,
@@ -1094,10 +1792,24 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             "currentLiveProcedureVersion": "1.0.0",
             "allocatedDormantProcedureVersion": "2.0.7",
             "tarballPrivacyFindings": external_audit.get("privacyFindings", []),
-            "verdict": "pass" if not external_audit.get("privacyFindings") else "fail",
+            "verdict": (
+                "pass"
+                if network_probe["verdict"] == "pass"
+                and command_inventory_exact
+                and provider_command_absent
+                and not external_audit.get("privacyFindings")
+                else "fail"
+            ),
         }
         if containment["verdict"] != "pass":
             all_findings.append("containment-privacy-finding")
+        command_status = {result.command_id: result.status for result in command_results}
+        required_commands_pass = command_inventory_exact and all(
+            command_status.get(command_id) == "pass"
+            for command_id in REQUIRED_COMMAND_IDS
+        )
+        if not required_commands_pass:
+            all_findings.append("machine-required-command-set-not-pass")
 
         unique_findings = sorted(set(all_findings))
         machine_verdict = {
@@ -1109,6 +1821,8 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             "reviewerAgentId": REVIEWER_AGENT_ID,
             "findingCount": len(unique_findings),
             "findings": unique_findings,
+            "requiredCommandIds": list(REQUIRED_COMMAND_IDS),
+            "requiredCommandsPass": required_commands_pass,
             "requiredOutputCount": 9,
             "requiredOutputPaths": list(M1_PATHS),
             "humanReviewed": False,
@@ -1130,9 +1844,20 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
             "containment-audit.json": canonical_bytes(containment),
             "machine-verdict.json": canonical_bytes(machine_verdict),
         }
+        provisional_staging = stage_outputs(repo, outputs)
+        reviewer_audit, reviewer_findings = reviewer_worktree_audit(repo, provisional_staging)
+        cleanup_staging(provisional_staging)
+        if reviewer_findings:
+            raise ValueError(f"reviewer worktree containment drifted: {reviewer_findings}")
+        containment["reviewerWorktree"] = reviewer_audit
+        filesystem_audit["reviewerWorktree"] = reviewer_audit
+        outputs["containment-audit.json"] = canonical_bytes(containment)
+        outputs["filesystem-mutation-audit.json"] = canonical_bytes(filesystem_audit)
+
         forbidden = (
             str(repo).encode(),
             str(extraction).encode(),
+            str(invocation.protected_worktree_root.resolve()).encode(),
             str(Path.home()).encode(),
             b"ANTHROPIC_API_KEY=",
             b"OPENAI_API_KEY=",
@@ -1140,21 +1865,15 @@ def run_assurance(repo: Path, m0_commit: str) -> int:
         )
         private_findings = scan_private_bytes(outputs, forbidden)
         if private_findings:
-            unique_findings = sorted(set(unique_findings + private_findings))
-            containment["verdict"] = "fail"
-            containment["outputPrivacyFindings"] = private_findings
-            machine_verdict["findingCount"] = len(unique_findings)
-            machine_verdict["findings"] = unique_findings
-            machine_verdict["verdict"] = "fail"
-            outputs["containment-audit.json"] = canonical_bytes(containment)
-            outputs["machine-verdict.json"] = canonical_bytes(machine_verdict)
-        publish_outputs(repo, outputs, scratch / "m1-staging")
+            raise ValueError(f"M1 output privacy boundary failed: {private_findings}")
 
-    final_status = parse_status_paths(
-        git_bytes(repo, "status", "--porcelain=v1", "-z", "--untracked-files=all")
-    )
-    if final_status != sorted(M1_PATHS):
-        raise ValueError(f"source worktree output mismatch after M1: {final_status}")
+        staging = stage_outputs(repo, outputs)
+        final_reviewer_audit, final_reviewer_findings = reviewer_worktree_audit(repo, staging)
+        if final_reviewer_findings or final_reviewer_audit != reviewer_audit:
+            cleanup_staging(staging)
+            raise ValueError("final reviewer worktree containment changed before publication")
+        publish_outputs(repo, outputs, staging)
+
     verdict = strict_json_bytes((repo / ATTEMPT_ROOT / "machine-verdict.json").read_bytes(), "verdict")
     sys.stdout.write(json.dumps({"verdict": verdict["verdict"], "findingCount": verdict["findingCount"]}) + "\n")
     return 0 if verdict["verdict"] == "pass" else 1
@@ -1167,22 +1886,46 @@ def parse_args() -> argparse.Namespace:
     mode.add_argument("--run", action="store_true")
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[5])
     parser.add_argument("--m0-commit")
+    parser.add_argument("--reviewer-agent-id")
+    parser.add_argument("--reviewer-session-id")
+    parser.add_argument("--reviewer-worktree", type=Path)
+    parser.add_argument("--protected-worktree-root", type=Path)
+    parser.add_argument("--reviewer-resumed", choices=("true", "false"))
+    parser.add_argument("--shared-scratch-with-t0-through-t5", choices=("true", "false"))
     parser.add_argument("--confirm-separate-m1-authorization", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    run_inputs = (
+        args.m0_commit,
+        args.reviewer_agent_id,
+        args.reviewer_session_id,
+        args.reviewer_worktree,
+        args.protected_worktree_root,
+        args.reviewer_resumed,
+        args.shared_scratch_with_t0_through_t5,
+    )
     if args.self_check:
-        if args.m0_commit is not None or args.confirm_separate_m1_authorization:
-            raise SystemExit("self-check accepts no M1 authorization arguments")
+        if any(value is not None for value in run_inputs) or args.confirm_separate_m1_authorization:
+            raise SystemExit("self-check accepts no M1 authorization or reviewer runtime arguments")
         sys.stdout.write(json.dumps(static_check(), sort_keys=True) + "\n")
         return 0
-    if args.m0_commit is None:
-        raise SystemExit("--run requires --m0-commit")
+    if any(value is None for value in run_inputs):
+        raise SystemExit("--run requires exact M0, reviewer identity, worktree, and scratch declarations")
     if not args.confirm_separate_m1_authorization:
         raise SystemExit("--run requires --confirm-separate-m1-authorization")
-    return run_assurance(args.repo.resolve(), args.m0_commit)
+    invocation = ReviewerInvocation(
+        agent_id=args.reviewer_agent_id,
+        session_id=args.reviewer_session_id,
+        worktree=args.reviewer_worktree.resolve(),
+        protected_worktree_root=args.protected_worktree_root.resolve(),
+        resumed=args.reviewer_resumed == "true",
+        shared_scratch_with_t0_through_t5=args.shared_scratch_with_t0_through_t5 == "true",
+    )
+    ensure_network_sandbox()
+    return run_assurance(args.repo.resolve(), args.m0_commit, invocation)
 
 
 if __name__ == "__main__":
