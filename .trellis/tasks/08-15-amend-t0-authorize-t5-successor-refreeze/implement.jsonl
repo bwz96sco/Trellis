@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze/task.json","reason":"Normative exact I2/S2 authority and denial boundary."}
+{"file":".trellis/tasks/08-12-integrate-install-and-freeze-v1-3-1-subject/research/exact-subject-freeze.json","reason":"Immutable S1 rule requiring a new T5 subject after technical change."}
+{"file":"packages/cli/scripts/research-v131-installed-package-audit.mjs","reason":"Accepted original installed-package audit mechanism copied only to a new successor path."}
+{"file":"packages/cli/test/commands/research-v131-integration.test.ts","reason":"Accepted original focused integration contract copied only to a new successor path."}
+{"file":".trellis/tasks/08-12-build-v1-3-1-production-harness/research/production-116-case-evidence.jsonl","reason":"Corrected T4 evidence committed by the new direct predecessor."}

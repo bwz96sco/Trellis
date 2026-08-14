@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze/task.json","reason":"Check exact authority, predecessor, inventories, and denials."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze/prd.md","reason":"Check observable successor acceptance and out-of-scope boundary."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze/design.md","reason":"Check forward-only I2/S2 shape and containment."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze/implement.md","reason":"Check separate commit ordering and concrete stop routes."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze/implement.jsonl","reason":"Check exact source evidence references."}
