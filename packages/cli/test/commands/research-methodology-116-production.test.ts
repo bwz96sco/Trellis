@@ -320,9 +320,8 @@ async function runRecord(
 function expectedCodesPresent(
   deltaCase: A133DeltaCase,
   actualStableErrors: readonly string[],
-  productionPrevented: boolean,
 ): boolean {
-  if (productionPrevented || deltaCase.expectedStableErrors.length === 0) return true;
+  if (deltaCase.expectedStableErrors.length === 0) return true;
   return deltaCase.expectedStableErrors.every((code) =>
     (PRODUCTION_CODE_EQUIVALENCE[code] ?? [code]).some((candidate) =>
       actualStableErrors.includes(candidate),
@@ -454,10 +453,9 @@ describe(
           const codesPresent = expectedCodesPresent(
             deltaCase,
             actualStableErrors,
-            productionPrevented,
           );
           expect(
-            codesPresent,
+            codesPresent || productionPrevented,
             `${deltaCase.caseId}: expected=${deltaCase.expectedStableErrors.join(",")} actual=${actualStableErrors.join(",")}`,
           ).toBe(true);
           rows.push({
