@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-1/machine-verdict.json","reason":"Check Attempt-1 remains an immutable fail and is not reinterpreted as S1 technical failure."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-1/command-evidence-ledger.jsonl","reason":"Check the harness-induced exit pattern remains preserved."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/mal1-review.py","reason":"Check exact lineage, controlled executable inventory, destination, and self-check updates."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/reviewer-assignment.json","reason":"Check exact Attempt-2 authority and operational denials."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json","reason":"Check T6 status, ownership, and no T7 or activation authority."}

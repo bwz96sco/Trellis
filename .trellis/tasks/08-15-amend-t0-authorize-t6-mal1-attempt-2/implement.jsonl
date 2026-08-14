@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-1/machine-verdict.json","reason":"Immutable Attempt-1 fail verdict and exact command inventory."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-1/command-evidence-ledger.jsonl","reason":"Observed exit pattern proving the controlled-PATH harness failure."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-1/containment-audit.json","reason":"Attempt-1 containment and protected-root evidence that must remain immutable."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/mal1-review.py","reason":"Existing T6 reviewer program receiving the minimal forward-only correction."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/reviewer-assignment.json","reason":"Committed T6 reviewer assignment and authority boundary to update for Attempt-2."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json","reason":"Existing T6 task authority and exact attempt boundary."}
