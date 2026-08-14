@@ -22,8 +22,10 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
-S1_COMMIT = "e6b80d640f0bd264c1acfe6bab906cb3e4ae535a"
-S1_TREE = "1304e0faa7262cd1c80cd3e8ab9b01057809f9e0"
+PROTECTED_S1_COMMIT = "e6b80d640f0bd264c1acfe6bab906cb3e4ae535a"
+PROTECTED_S1_TREE = "1304e0faa7262cd1c80cd3e8ab9b01057809f9e0"
+ORIGINAL_SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
+ORIGINAL_SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
 INITIAL_M0_COMMIT = "87317a7b78d531df37c1f84970fef020a8e77ace"
 PRIOR_M0_CORRECTION_COMMIT = "d5dd5b487669dbd343e3472500d940e8d2ded76b"
 M0_CORRECTION_2_COMMIT = "5d3c86ad11248fdb2569b32b62b379ad6e61a59f"
@@ -33,8 +35,18 @@ PRIOR_FINAL_M0_CORRECTION_COMMIT = "940f87e764ebbf8e4b203b0dd0dd391b0490f35c"
 ATTEMPT_1_M0_COMMIT = "bfee093a8651894dd9e825cb10e2b27f4fe8e4df"
 ATTEMPT_1_EVIDENCE_COMMIT = "cd85634a5a1d8e942c78364ef9442be5a28d4816"
 ATTEMPT_2_GOVERNANCE_COMMIT = "8b6004c8da4d72e9abacfae8c08327a2545ac9a0"
-SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
-SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
+ATTEMPT_2_M0_COMMIT = "09aede6a74319b15fe556fd9ef759df4d186ac5b"
+ATTEMPT_2_EVIDENCE_COMMIT = "1d389f31cb584ffbab3acb583c4810e7676c7b46"
+T4_CORRECTION_GOVERNANCE_COMMIT = "09f74809e2e5ff5a337159560346a0aa29e5546c"
+CORRECTED_T4_COMMIT = "e7ed93f6b8d2bcb4711715a080ec2984119848bb"
+CORRECTED_T4_TREE = "7254198c53055ddb9c896fb7d7ef8778595e54d5"
+T5_SUCCESSOR_GOVERNANCE_COMMIT = "525ea920ece3c1421e116861ac0f22bc14c7e5d5"
+SUBJECT_COMMIT = "8fdb45e0f00cccf6ea41096c279696dd33d4e71b"
+SUBJECT_TREE = "fc7f42ae9a189036f52730b2ecc5fc9930481c47"
+S2_COMMIT = "a2a4ea08bf65cea22a976078aaae104ddb5c4019"
+S2_TREE = "fc308a5c264bb33272ee8e54a3dfb475b6a43dbd"
+ATTEMPT_3_GOVERNANCE_COMMIT = "befacb3783cc65b32279375d0baa582fc8e57cbc"
+ATTEMPT_3_GOVERNANCE_TREE = "d3f66cdc3d16f4b33958db6235131a23a9cac915"
 A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3"
 ACCEPTED_SEMANTIC_DIGEST = "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af"
 ACCEPTED_MEMBER_AGGREGATE = "sha256:718d7ecec808199148b63ce64208e60d52be18575b175df67ef620596107fa34"
@@ -46,11 +58,11 @@ REVIEWER_WORKTREE = Path(
     "claude-t6-mal1-reviewer-01-m0-correction-2"
 )
 TASK_ROOT = Path(".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1")
-T0A_ROOT = Path(".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-2")
+T0A_ROOT = Path(".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-3")
 ASSIGNMENT_PATH = TASK_ROOT / "research/reviewer/reviewer-assignment.json"
 SCRIPT_PATH = TASK_ROOT / "research/reviewer/mal1-review.py"
 FREEZE_PATH = Path(
-    ".trellis/tasks/08-12-integrate-install-and-freeze-v1-3-1-subject/research/exact-subject-freeze.json"
+    ".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor/research/exact-subject-freeze.json"
 )
 G0_BASELINE_PATH = Path(
     ".trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/research/g0-protected-path-baseline.json"
@@ -65,7 +77,8 @@ INSTALLED_PACK_ROOT = Path(
 PROCEDURE_ROOT = Path("packages/cli/src/templates/research/procedures")
 LIVE_SELECTION_PATH = Path("packages/core/src/research/stage-capabilities.ts")
 ATTEMPT_1_ROOT = TASK_ROOT / "research/attempt-1"
-ATTEMPT_ROOT = TASK_ROOT / "research/attempt-2"
+ATTEMPT_2_ROOT = TASK_ROOT / "research/attempt-2"
+ATTEMPT_ROOT = TASK_ROOT / "research/attempt-3"
 PROTECTED_BRANCH_REF = "refs/heads/evidence/v13-baseline"
 EXPECTED_PNPM_VERSION = "10.32.1"
 EXPECTED_PACKAGE_MANAGER = f"pnpm@{EXPECTED_PNPM_VERSION}"
@@ -88,7 +101,7 @@ TASK_GRANTED_AUTHORITY = (
     "m0ExecutionAuthorized", "m1OutputWriteAuthorized", "taskExecutionAuthorized",
 )
 T0A_GRANTED_AUTHORITY = (
-    "assuranceRunAuthorized", "attempt2Authorized", "commitAuthorized",
+    "assuranceRunAuthorized", "attempt3Authorized", "commitAuthorized",
     "harnessCorrectionAuthorized", "reviewerContinuationAuthorized",
     "taskExecutionAuthorized",
 )
@@ -98,34 +111,31 @@ TASK_ONLY_DENIED_AUTHORITY = (
     "runtimeImplementationAuthorized", "schemaImplementationAuthorized",
 )
 EXPECTED_ASSIGNMENT_STATUS = (
-    "assigned-m1-attempt-2-authorized-at-committed-m0-correction"
+    "assigned-m1-attempt-3-authorized-after-committed-m0-correction"
 )
 EXPECTED_ASSIGNMENT_STOP_CONDITIONS = (
-    "supplied Attempt-2 M0 is not an exact three-path commit directly on "
-    "T0A governance 8b6004c8da4d72e9abacfae8c08327a2545ac9a0 -> Attempt-1 evidence "
-    "cd85634a5a1d8e942c78364ef9442be5a28d4816 -> Attempt-1 M0 "
-    "bfee093a8651894dd9e825cb10e2b27f4fe8e4df -> prior final correction "
-    "940f87e764ebbf8e4b203b0dd0dd391b0490f35c -> reviewed script successor "
-    "3081e875538177c6c367967450c658e21df68a39 -> correction 3 -> correction 2 "
-    "-> prior correction -> initial M0 -> exact S1",
+    "supplied Attempt-3 M0 is not an exact three-path commit directly on "
+    "Attempt-3 governance befacb3783cc65b32279375d0baa582fc8e57cbc",
+    "Attempt-3 governance, S2, I2, corrected T4, or Attempts 1-2 identity differs",
     "reviewer identity overlaps T0-T5 or future T7",
-    "separate Attempt-2 M1 authorization is absent",
-    "subject commit or tree differs",
+    "separate Attempt-3 M1 authorization is absent",
     "mutable worktree bytes are used as assurance subject",
     "network or provider execution is attempted",
-    "missing duplicate aliased or extra M0 Attempt-1 T0A or Attempt-2 M1 path",
+    "missing duplicate aliased or extra M0 Attempt-1 Attempt-2 T0A or Attempt-3 M1 path",
+    "unbounded private or credential-shaped command diagnostics are produced",
     "repair activation acceptance archive release publication push or "
     "live-selection action is attempted",
 )
 EXPECTED_TASK_NOTES = (
-    "Attempt-1 M0 bfee093a8651894dd9e825cb10e2b27f4fe8e4df and exact-nine harness-failure "
-    "evidence cd85634a5a1d8e942c78364ef9442be5a28d4816 remain immutable. T0A governance "
-    "8b6004c8da4d72e9abacfae8c08327a2545ac9a0 authorizes one forward-only exact "
-    "three-path M0 correction adding only sh, sed, dirname, and uname to the "
-    "controlled executable inventory, followed by exact-nine Attempt-2 evidence. "
-    "No T1-T5 repair, T7 decision, activation, acceptance, archive, release, "
-    "publication, push, provider, network, live-selection, or worker-authority "
-    "action is authorized."
+    "Attempts 1 and 2 remain immutable failed evidence. Attempt-3 governance "
+    "befacb3783cc65b32279375d0baa582fc8e57cbc authorizes one forward-only exact "
+    "three-path M0 correction bound to corrected T4 e7ed93f6b8d2bcb4711715a080ec2984119848bb, "
+    "I2 8fdb45e0f00cccf6ea41096c279696dd33d4e71b, and S2 "
+    "a2a4ea08bf65cea22a976078aaae104ddb5c4019, followed by exact-nine Attempt-3 "
+    "evidence. Failed commands may record only bounded privacy-safe diagnostics; "
+    "blocked commands must record their prerequisite. No T1-T5 repair, T7 decision, "
+    "activation, acceptance, archive, release, publication, push, provider, network, "
+    "live-selection, or worker-authority action is authorized."
 )
 EXPECTED_MEMBER_LEDGER_KEYS = {
     "acceptedContractDigest",
@@ -175,6 +185,43 @@ T0A_PATHS = (
     str(T0A_ROOT / "implement.jsonl"),
     str(T0A_ROOT / "check.jsonl"),
 )
+ATTEMPT_2_GOVERNANCE_ROOT = Path(
+    ".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-2"
+)
+ATTEMPT_2_GOVERNANCE_PATHS = tuple(
+    str(ATTEMPT_2_GOVERNANCE_ROOT / name)
+    for name in ("task.json", "prd.md", "design.md", "implement.md", "implement.jsonl", "check.jsonl")
+)
+T4_CORRECTION_GOVERNANCE_ROOT = Path(
+    ".trellis/tasks/08-15-amend-t0-authorize-t4-production-evidence-correction"
+)
+T4_CORRECTION_GOVERNANCE_PATHS = tuple(
+    str(T4_CORRECTION_GOVERNANCE_ROOT / name)
+    for name in ("task.json", "prd.md", "design.md", "implement.md", "implement.jsonl", "check.jsonl")
+)
+CORRECTED_T4_PATHS = (
+    ".trellis/tasks/08-12-build-v1-3-1-production-harness/research/production-116-case-evidence.jsonl",
+    "packages/cli/test/commands/research-methodology-116-production.test.ts",
+)
+T5_SUCCESSOR_GOVERNANCE_ROOT = Path(
+    ".trellis/tasks/08-15-amend-t0-authorize-t5-successor-refreeze"
+)
+T5_SUCCESSOR_GOVERNANCE_PATHS = tuple(
+    str(T5_SUCCESSOR_GOVERNANCE_ROOT / name)
+    for name in ("task.json", "prd.md", "design.md", "implement.md", "implement.jsonl", "check.jsonl")
+)
+I2_ROOT = Path(".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor")
+I2_PATHS = (
+    str(I2_ROOT / "task.json"),
+    "packages/cli/scripts/research-v131-installed-package-audit-successor.mjs",
+    "packages/cli/test/commands/research-v131-integration-successor.test.ts",
+    str(I2_ROOT / "research/integration-input-attestation.json"),
+    str(I2_ROOT / "research/package-tarball-inventory.json"),
+    str(I2_ROOT / "research/external-install-evidence.json"),
+    str(I2_ROOT / "research/integration-execution-evidence-ledger.json"),
+    str(I2_ROOT / "research/protected-path-audit.json"),
+)
+S2_PATHS = (str(FREEZE_PATH),)
 M1_NAMES = (
     "exact-subject-attestation.json",
     "reviewer-session-attestation.json",
@@ -187,6 +234,7 @@ M1_NAMES = (
     "machine-verdict.json",
 )
 ATTEMPT_1_M1_PATHS = tuple(str(ATTEMPT_1_ROOT / name) for name in M1_NAMES)
+ATTEMPT_2_M1_PATHS = tuple(str(ATTEMPT_2_ROOT / name) for name in M1_NAMES)
 M1_PATHS = tuple(str(ATTEMPT_ROOT / name) for name in M1_NAMES)
 AUX_MEMBER_LEDGER = "member-ledger.json"
 PACK_MEMBERS = (
@@ -272,6 +320,7 @@ EXTRACTION_EPHEMERAL_ROOTS = (
 SANDBOX_EXEC = Path("/usr/bin/sandbox-exec")
 SANDBOX_MARKER = "TRELLIS_T6_NETWORK_SANDBOXED"
 SANDBOX_PROFILE = "(version 1) (allow default) (deny network*)"
+COMMAND_DIAGNOSTIC_STREAM_LIMIT = 4_096
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 
 @dataclass(frozen=True)
@@ -297,9 +346,11 @@ class CommandResult:
     cwd: str
     exit_code: int | None
     status: str
+    diagnostic: dict[str, Any] | None = None
+    prerequisite_reason: str | None = None
 
     def evidence(self) -> dict[str, Any]:
-        return {
+        row = {
             "schemaVersion": SCHEMA_VERSION,
             "recordKind": "t6-command-evidence",
             "ordinal": -1,
@@ -311,9 +362,107 @@ class CommandResult:
             "networkAllowed": False,
             "providerExecutionAllowed": False,
         }
+        if self.status == "pass":
+            if self.diagnostic is not None or self.prerequisite_reason is not None:
+                raise ValueError("passing command cannot carry failure diagnostics")
+        elif self.status == "blocked":
+            if not self.prerequisite_reason:
+                raise ValueError("blocked command requires an explicit prerequisite reason")
+            row["prerequisiteReason"] = self.prerequisite_reason
+        else:
+            if self.diagnostic is None:
+                raise ValueError("non-pass command requires bounded diagnostics")
+            row["diagnostic"] = self.diagnostic
+        return row
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def sanitize_diagnostic_text(value: str, private_paths: Iterable[Path]) -> str:
+    sanitized = value
+    replacements = {
+        rendered
+        for path in (*private_paths, Path.home())
+        if str(path)
+        for rendered in (str(path), str(path.resolve()))
+    }
+    for private_path in sorted(replacements, key=len, reverse=True):
+        sanitized = sanitized.replace(private_path, "<PRIVATE_PATH>")
+    sanitized = re.sub(
+        r"(?i)\b(bearer)\s+[A-Za-z0-9._~+/=-]+",
+        r"\1 <REDACTED_CREDENTIAL>",
+        sanitized,
+    )
+    sanitized = re.sub(
+        r"(?i)(\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|password|passwd|secret|"
+        r"anthropic_api_key|openai_api_key|aws_access_key_id|aws_secret_access_key|"
+        r"github_token|gh_token|npm_token|node_auth_token)\b(?:['\"])?\s*[:=]\s*)"
+        r"(?:['\"])?[^\s,'\"]+(?:['\"])?",
+        r"\1<REDACTED_CREDENTIAL>",
+        sanitized,
+    )
+    sanitized = re.sub(
+        r"(?i)(https?://)[^/\s:@]+:[^/\s@]+@",
+        r"\1<REDACTED_CREDENTIAL>@",
+        sanitized,
+    )
+    sanitized = re.sub(
+        r"\b(?:sk-ant-[A-Za-z0-9_-]{8,}|sk-[A-Za-z0-9_-]{16,}|"
+        r"gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|"
+        r"npm_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16})\b",
+        "<REDACTED_CREDENTIAL>",
+        sanitized,
+    )
+    return sanitized
+
+
+def bounded_diagnostic_stream(
+    value: bytes | str | None, private_paths: Iterable[Path]
+) -> dict[str, Any]:
+    raw = b"" if value is None else value.encode("utf-8") if isinstance(value, str) else value
+    sanitized = sanitize_diagnostic_text(
+        raw.decode("utf-8", errors="replace"), private_paths
+    ).encode("utf-8")
+    truncated = len(sanitized) > COMMAND_DIAGNOSTIC_STREAM_LIMIT
+    bounded = sanitized[:COMMAND_DIAGNOSTIC_STREAM_LIMIT]
+    while bounded:
+        try:
+            content = bounded.decode("utf-8")
+            break
+        except UnicodeDecodeError as error:
+            bounded = bounded[: error.start]
+    else:
+        content = ""
+    return {
+        "originalByteLength": len(raw),
+        "sha256": sha256_bytes(sanitized),
+        "truncated": truncated,
+        "content": content,
+    }
+
+
+def build_command_diagnostic(
+    *,
+    status: str,
+    stdout: bytes | str | None,
+    stderr: bytes | str | None,
+    failure_reason: str,
+    private_paths: Iterable[Path],
+) -> dict[str, Any]:
+    payload = {
+        "failureReason": sanitize_diagnostic_text(failure_reason, private_paths),
+        "stdout": bounded_diagnostic_stream(stdout, private_paths),
+        "stderr": bounded_diagnostic_stream(stderr, private_paths),
+    }
+    identifier_payload = {
+        "status": status,
+        **payload,
+    }
+    return {
+        "diagnosticId": f"sha256:{sha256_bytes(canonical_bytes(identifier_payload))}",
+        **payload,
+    }
 
 def canonical_bytes(value: Any) -> bytes:
     return (json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n").encode(
@@ -419,13 +568,14 @@ def registered_worktree(repo: Path, path: Path, branch: str, head: str) -> bool:
 
 def authenticate_protected_root(repo: Path, supplied_root: Path) -> Path:
     root = supplied_root.resolve()
-    if not registered_worktree(repo, root, PROTECTED_BRANCH_REF, S1_COMMIT):
+    if not registered_worktree(repo, root, PROTECTED_BRANCH_REF, PROTECTED_S1_COMMIT):
         raise ValueError("protected baseline worktree registration mismatch")
     if (
-        git_text(root, "rev-parse", "HEAD") != S1_COMMIT
-        or git_text(root, "rev-parse", "HEAD^{tree}") != S1_TREE
+        git_text(root, "rev-parse", "HEAD") != PROTECTED_S1_COMMIT
+        or git_text(root, "rev-parse", "HEAD^{tree}") != PROTECTED_S1_TREE
         or git_text(root, "symbolic-ref", "HEAD") != PROTECTED_BRANCH_REF
-        or git_text(root, "rev-parse", f"{S1_COMMIT}^1") != SUBJECT_COMMIT
+        or git_text(root, "rev-parse", f"{PROTECTED_S1_COMMIT}^1")
+        != ORIGINAL_SUBJECT_COMMIT
     ):
         raise ValueError("protected baseline worktree identity drifted")
     return root
@@ -486,7 +636,7 @@ def compare_status_snapshot(root: Path, current: dict[str, Any], initial: dict[s
     )
 
 def load_protected_baseline(repo: Path) -> tuple[dict[str, Any], bytes]:
-    data = git_object(repo, S1_COMMIT, str(G0_BASELINE_PATH))
+    data = git_object(repo, PROTECTED_S1_COMMIT, str(G0_BASELINE_PATH))
     baseline = strict_json_bytes(data, "protected-baseline")
     if not isinstance(baseline, dict):
         raise ValueError("protected baseline must be an object")
@@ -550,14 +700,28 @@ def static_check() -> dict[str, Any]:
         raise ValueError("M1 inventory must contain exactly nine unique paths")
     if len(ATTEMPT_1_M1_PATHS) != 9 or len(set(ATTEMPT_1_M1_PATHS)) != 9:
         raise ValueError("Attempt-1 inventory must contain exactly nine unique paths")
+    if len(ATTEMPT_2_M1_PATHS) != 9 or len(set(ATTEMPT_2_M1_PATHS)) != 9:
+        raise ValueError("Attempt-2 inventory must contain exactly nine unique paths")
     if len(T0A_PATHS) != 6 or len(set(T0A_PATHS)) != 6:
         raise ValueError("T0A inventory must contain exactly six unique paths")
-    inventories = (set(M0_PATHS), set(ATTEMPT_1_M1_PATHS), set(T0A_PATHS), set(M1_PATHS))
-    if any(left & right for index, left in enumerate(inventories) for right in inventories[index + 1:]):
-        raise ValueError("M0, Attempt-1, T0A, and Attempt-2 inventories overlap")
-    for value in (
-        S1_COMMIT,
-        S1_TREE,
+    inventories = (
+        set(M0_PATHS),
+        set(ATTEMPT_1_M1_PATHS),
+        set(ATTEMPT_2_M1_PATHS),
+        set(T0A_PATHS),
+        set(M1_PATHS),
+    )
+    if any(
+        left & right
+        for index, left in enumerate(inventories)
+        for right in inventories[index + 1 :]
+    ):
+        raise ValueError("M0, Attempts 1-2, T0A, and Attempt-3 inventories overlap")
+    git_identities = (
+        PROTECTED_S1_COMMIT,
+        PROTECTED_S1_TREE,
+        ORIGINAL_SUBJECT_COMMIT,
+        ORIGINAL_SUBJECT_TREE,
         INITIAL_M0_COMMIT,
         PRIOR_M0_CORRECTION_COMMIT,
         M0_CORRECTION_2_COMMIT,
@@ -567,27 +731,25 @@ def static_check() -> dict[str, Any]:
         ATTEMPT_1_M0_COMMIT,
         ATTEMPT_1_EVIDENCE_COMMIT,
         ATTEMPT_2_GOVERNANCE_COMMIT,
+        ATTEMPT_2_M0_COMMIT,
+        ATTEMPT_2_EVIDENCE_COMMIT,
+        T4_CORRECTION_GOVERNANCE_COMMIT,
+        CORRECTED_T4_COMMIT,
+        CORRECTED_T4_TREE,
+        T5_SUCCESSOR_GOVERNANCE_COMMIT,
         SUBJECT_COMMIT,
         SUBJECT_TREE,
+        S2_COMMIT,
+        S2_TREE,
+        ATTEMPT_3_GOVERNANCE_COMMIT,
+        ATTEMPT_3_GOVERNANCE_TREE,
         A133_COMMIT,
-    ):
+    )
+    for value in git_identities:
         if re.fullmatch(r"[0-9a-f]{40}", value) is None:
             raise ValueError(f"invalid Git object identity: {value}")
-    if len(
-        {
-            S1_COMMIT,
-            INITIAL_M0_COMMIT,
-            PRIOR_M0_CORRECTION_COMMIT,
-            M0_CORRECTION_2_COMMIT,
-            M0_CORRECTION_3_COMMIT,
-            REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
-            PRIOR_FINAL_M0_CORRECTION_COMMIT,
-            ATTEMPT_1_M0_COMMIT,
-            ATTEMPT_1_EVIDENCE_COMMIT,
-            ATTEMPT_2_GOVERNANCE_COMMIT,
-        }
-    ) != 10:
-        raise ValueError("M0 and Attempt-2 lineage identities must be distinct")
+    if len(set(git_identities)) != len(git_identities):
+        raise ValueError("Attempt-3 lineage identities must be distinct")
     for value in (ACCEPTED_SEMANTIC_DIGEST, ACCEPTED_MEMBER_AGGREGATE):
         if re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
             raise ValueError(f"invalid digest identity: {value}")
@@ -598,8 +760,10 @@ def static_check() -> dict[str, Any]:
         "sh", "sed", "dirname", "uname",
     ):
         raise ValueError("authenticated tool inventory drifted")
-    if len(REQUIRED_COMMAND_IDS) != len(set(REQUIRED_COMMAND_IDS)):
-        raise ValueError("required command inventory contains duplicates")
+    if len(REQUIRED_COMMAND_IDS) != 26 or len(REQUIRED_COMMAND_IDS) != len(set(REQUIRED_COMMAND_IDS)):
+        raise ValueError("required command inventory must contain exactly 26 unique commands")
+    if COMMAND_DIAGNOSTIC_STREAM_LIMIT != 4_096:
+        raise ValueError("command diagnostic stream bound drifted")
     if not set(EXTERNAL_ALIAS_COMMAND_IDS).issubset(REQUIRED_COMMAND_IDS):
         raise ValueError("external alias commands are not required")
     if set(EXTERNAL_COMMAND_IDS) != {
@@ -652,69 +816,49 @@ def static_check() -> dict[str, Any]:
     }
 
 def validate_m0_changed_paths(
-    initial_paths: Iterable[str],
-    prior_correction_paths: Iterable[str],
-    correction_2_paths: Iterable[str],
-    correction_3_paths: Iterable[str],
-    reviewed_successor_paths: Iterable[str],
-    prior_final_correction_paths: Iterable[str],
     attempt_1_m0_paths: Iterable[str],
     attempt_1_evidence_paths: Iterable[str],
     attempt_2_governance_paths: Iterable[str],
+    attempt_2_m0_paths: Iterable[str],
+    attempt_2_evidence_paths: Iterable[str],
+    t4_correction_governance_paths: Iterable[str],
+    corrected_t4_paths: Iterable[str],
+    t5_successor_governance_paths: Iterable[str],
+    i2_paths: Iterable[str],
+    s2_paths: Iterable[str],
+    attempt_3_governance_paths: Iterable[str],
     final_correction_paths: Iterable[str],
 ) -> None:
-    normalized_initial = sorted(initial_paths)
-    normalized_prior = sorted(prior_correction_paths)
-    normalized_correction_2 = sorted(correction_2_paths)
-    normalized_correction_3 = sorted(correction_3_paths)
-    normalized_reviewed_successor = sorted(reviewed_successor_paths)
-    normalized_prior_final_correction = sorted(prior_final_correction_paths)
-    normalized_attempt_1_m0 = sorted(attempt_1_m0_paths)
-    normalized_attempt_1_evidence = sorted(attempt_1_evidence_paths)
-    normalized_attempt_2_governance = sorted(attempt_2_governance_paths)
-    normalized_final_correction = sorted(final_correction_paths)
-    if normalized_initial != sorted(M0_PATHS):
-        raise ValueError(f"initial M0 changed-path mismatch: {normalized_initial}")
-    if normalized_prior != [str(SCRIPT_PATH)]:
-        raise ValueError(
-            f"prior M0 correction changed-path mismatch: {normalized_prior}"
-        )
-    if normalized_correction_2 != sorted(M0_PATHS):
-        raise ValueError(
-            f"M0 correction 2 changed-path mismatch: {normalized_correction_2}"
-        )
-    if normalized_correction_3 != [str(SCRIPT_PATH)]:
-        raise ValueError(
-            f"M0 correction 3 changed-path mismatch: {normalized_correction_3}"
-        )
-    if normalized_reviewed_successor != [str(SCRIPT_PATH)]:
-        raise ValueError(
-            "reviewed M0 script successor changed-path mismatch: "
-            f"{normalized_reviewed_successor}"
-        )
-    if normalized_prior_final_correction != sorted(M0_PATHS):
-        raise ValueError(
-            "prior final M0 correction changed-path mismatch: "
-            f"{normalized_prior_final_correction}"
-        )
-    if normalized_attempt_1_m0 != sorted(M0_PATHS):
-        raise ValueError(
-            f"Attempt-1 M0 changed-path mismatch: {normalized_attempt_1_m0}"
-        )
-    if normalized_attempt_1_evidence != sorted(ATTEMPT_1_M1_PATHS):
-        raise ValueError(
-            "Attempt-1 evidence changed-path mismatch: "
-            f"{normalized_attempt_1_evidence}"
-        )
-    if normalized_attempt_2_governance != sorted(T0A_PATHS):
-        raise ValueError(
-            "Attempt-2 governance changed-path mismatch: "
-            f"{normalized_attempt_2_governance}"
-        )
-    if normalized_final_correction != sorted(M0_PATHS):
-        raise ValueError(
-            f"Attempt-2 M0 changed-path mismatch: {normalized_final_correction}"
-        )
+    expected = (
+        ("Attempt-1 M0", attempt_1_m0_paths, M0_PATHS),
+        ("Attempt-1 evidence", attempt_1_evidence_paths, ATTEMPT_1_M1_PATHS),
+        (
+            "Attempt-2 governance",
+            attempt_2_governance_paths,
+            ATTEMPT_2_GOVERNANCE_PATHS,
+        ),
+        ("Attempt-2 M0", attempt_2_m0_paths, M0_PATHS),
+        ("Attempt-2 evidence", attempt_2_evidence_paths, ATTEMPT_2_M1_PATHS),
+        (
+            "T4 correction governance",
+            t4_correction_governance_paths,
+            T4_CORRECTION_GOVERNANCE_PATHS,
+        ),
+        ("corrected T4", corrected_t4_paths, CORRECTED_T4_PATHS),
+        (
+            "T5 successor governance",
+            t5_successor_governance_paths,
+            T5_SUCCESSOR_GOVERNANCE_PATHS,
+        ),
+        ("I2", i2_paths, I2_PATHS),
+        ("S2", s2_paths, S2_PATHS),
+        ("Attempt-3 governance", attempt_3_governance_paths, T0A_PATHS),
+        ("Attempt-3 M0", final_correction_paths, M0_PATHS),
+    )
+    for label, observed, required in expected:
+        normalized = sorted(observed)
+        if normalized != sorted(required):
+            raise ValueError(f"{label} changed-path mismatch: {normalized}")
 
 def validate_m0_worktree_bytes(
     repo: Path, committed_m0_bytes: dict[str, bytes]
@@ -752,226 +896,97 @@ def authenticate_m0(
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     if git_text(repo, "rev-parse", "HEAD") != m0_commit:
         raise ValueError("current HEAD is not the explicitly supplied M0 successor commit")
-    if (
-        git_text(repo, "rev-parse", f"{m0_commit}^1")
-        != ATTEMPT_2_GOVERNANCE_COMMIT
-    ):
-        raise ValueError(
-            "Attempt-2 M0 is not committed directly on the exact T0A governance"
+    expected_chain = (
+        (m0_commit, ATTEMPT_3_GOVERNANCE_COMMIT, "Attempt-3 M0"),
+        (ATTEMPT_3_GOVERNANCE_COMMIT, S2_COMMIT, "Attempt-3 governance"),
+        (S2_COMMIT, SUBJECT_COMMIT, "S2"),
+        (SUBJECT_COMMIT, T5_SUCCESSOR_GOVERNANCE_COMMIT, "I2"),
+        (T5_SUCCESSOR_GOVERNANCE_COMMIT, CORRECTED_T4_COMMIT, "T5 successor governance"),
+        (CORRECTED_T4_COMMIT, T4_CORRECTION_GOVERNANCE_COMMIT, "corrected T4"),
+        (T4_CORRECTION_GOVERNANCE_COMMIT, ATTEMPT_2_EVIDENCE_COMMIT, "T4 correction governance"),
+        (ATTEMPT_2_EVIDENCE_COMMIT, ATTEMPT_2_M0_COMMIT, "Attempt-2 evidence"),
+        (ATTEMPT_2_M0_COMMIT, ATTEMPT_2_GOVERNANCE_COMMIT, "Attempt-2 M0"),
+        (ATTEMPT_2_GOVERNANCE_COMMIT, ATTEMPT_1_EVIDENCE_COMMIT, "Attempt-2 governance"),
+        (ATTEMPT_1_EVIDENCE_COMMIT, ATTEMPT_1_M0_COMMIT, "Attempt-1 evidence"),
+    )
+    for commit, first_parent, label in expected_chain:
+        if git_text(repo, "rev-parse", f"{commit}^1") != first_parent:
+            raise ValueError(f"{label} first-parent mismatch")
+    expected_trees = (
+        (ATTEMPT_3_GOVERNANCE_COMMIT, ATTEMPT_3_GOVERNANCE_TREE, "Attempt-3 governance"),
+        (S2_COMMIT, S2_TREE, "S2"),
+        (SUBJECT_COMMIT, SUBJECT_TREE, "I2"),
+        (CORRECTED_T4_COMMIT, CORRECTED_T4_TREE, "corrected T4"),
+        (PROTECTED_S1_COMMIT, PROTECTED_S1_TREE, "protected S1"),
+    )
+    for commit, tree, label in expected_trees:
+        if git_text(repo, "rev-parse", f"{commit}^{{tree}}") != tree:
+            raise ValueError(f"{label} tree mismatch")
+    historical_chain = (
+        (ATTEMPT_1_M0_COMMIT, PRIOR_FINAL_M0_CORRECTION_COMMIT, "Attempt-1 M0"),
+        (PRIOR_FINAL_M0_CORRECTION_COMMIT, REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT, "prior final M0 correction"),
+        (REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT, M0_CORRECTION_3_COMMIT, "reviewed M0 script successor"),
+        (M0_CORRECTION_3_COMMIT, M0_CORRECTION_2_COMMIT, "M0 correction 3"),
+        (M0_CORRECTION_2_COMMIT, PRIOR_M0_CORRECTION_COMMIT, "M0 correction 2"),
+        (PRIOR_M0_CORRECTION_COMMIT, INITIAL_M0_COMMIT, "prior M0 correction"),
+        (INITIAL_M0_COMMIT, PROTECTED_S1_COMMIT, "initial M0"),
+        (PROTECTED_S1_COMMIT, ORIGINAL_SUBJECT_COMMIT, "protected S1"),
+    )
+    for commit, first_parent, label in historical_chain:
+        if git_text(repo, "rev-parse", f"{commit}^1") != first_parent:
+            raise ValueError(f"{label} first-parent mismatch")
+
+    def changed_paths(commit: str) -> list[str]:
+        return sorted(
+            line
+            for line in git_text(
+                repo, "diff-tree", "--no-commit-id", "--name-only", "-r", commit
+            ).splitlines()
+            if line
         )
-    if (
-        git_text(repo, "rev-parse", f"{ATTEMPT_2_GOVERNANCE_COMMIT}^1")
-        != ATTEMPT_1_EVIDENCE_COMMIT
-    ):
-        raise ValueError(
-            "T0A governance is not committed directly on immutable Attempt-1 evidence"
-        )
-    if (
-        git_text(repo, "rev-parse", f"{ATTEMPT_1_EVIDENCE_COMMIT}^1")
-        != ATTEMPT_1_M0_COMMIT
-    ):
-        raise ValueError(
-            "Attempt-1 evidence is not committed directly on exact Attempt-1 M0"
-        )
-    if (
-        git_text(repo, "rev-parse", f"{ATTEMPT_1_M0_COMMIT}^1")
-        != PRIOR_FINAL_M0_CORRECTION_COMMIT
-    ):
-        raise ValueError(
-            "Attempt-1 M0 is not committed directly on the prior final correction"
-        )
-    if (
-        git_text(repo, "rev-parse", f"{PRIOR_FINAL_M0_CORRECTION_COMMIT}^1")
-        != REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT
-    ):
-        raise ValueError(
-            "prior final M0 correction is not committed directly on the reviewed script successor"
-        )
-    if (
-        git_text(repo, "rev-parse", f"{REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT}^1")
-        != M0_CORRECTION_3_COMMIT
-    ):
-        raise ValueError(
-            "reviewed M0 script successor is not committed directly on exact correction 3"
-        )
-    if (
-        git_text(repo, "rev-parse", f"{M0_CORRECTION_3_COMMIT}^1")
-        != M0_CORRECTION_2_COMMIT
-    ):
-        raise ValueError("M0 correction 3 is not committed directly on exact correction 2")
-    if (
-        git_text(repo, "rev-parse", f"{M0_CORRECTION_2_COMMIT}^1")
-        != PRIOR_M0_CORRECTION_COMMIT
-    ):
-        raise ValueError("M0 correction 2 is not committed directly on exact prior correction")
-    if (
-        git_text(repo, "rev-parse", f"{PRIOR_M0_CORRECTION_COMMIT}^1")
-        != INITIAL_M0_COMMIT
-    ):
-        raise ValueError("prior M0 correction is not committed directly on exact initial M0")
-    if git_text(repo, "rev-parse", f"{INITIAL_M0_COMMIT}^1") != S1_COMMIT:
-        raise ValueError("initial M0 is not committed directly on exact S1")
-    if git_text(repo, "rev-parse", f"{S1_COMMIT}^{{tree}}") != S1_TREE:
-        raise ValueError("S1 tree mismatch")
-    initial_paths = sorted(
-        line
-        for line in git_text(
-            repo, "diff-tree", "--no-commit-id", "--name-only", "-r", INITIAL_M0_COMMIT
-        ).splitlines()
-        if line
-    )
-    prior_correction_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            PRIOR_M0_CORRECTION_COMMIT,
-        ).splitlines()
-        if line
-    )
-    correction_2_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            M0_CORRECTION_2_COMMIT,
-        ).splitlines()
-        if line
-    )
-    correction_3_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            M0_CORRECTION_3_COMMIT,
-        ).splitlines()
-        if line
-    )
-    reviewed_successor_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
-        ).splitlines()
-        if line
-    )
-    prior_final_correction_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            PRIOR_FINAL_M0_CORRECTION_COMMIT,
-        ).splitlines()
-        if line
-    )
-    attempt_1_m0_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            ATTEMPT_1_M0_COMMIT,
-        ).splitlines()
-        if line
-    )
-    attempt_1_evidence_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            ATTEMPT_1_EVIDENCE_COMMIT,
-        ).splitlines()
-        if line
-    )
-    attempt_2_governance_paths = sorted(
-        line
-        for line in git_text(
-            repo,
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            ATTEMPT_2_GOVERNANCE_COMMIT,
-        ).splitlines()
-        if line
-    )
-    final_correction_paths = sorted(
-        line
-        for line in git_text(
-            repo, "diff-tree", "--no-commit-id", "--name-only", "-r", m0_commit
-        ).splitlines()
-        if line
-    )
+
     validate_m0_changed_paths(
-        initial_paths,
-        prior_correction_paths,
-        correction_2_paths,
-        correction_3_paths,
-        reviewed_successor_paths,
-        prior_final_correction_paths,
-        attempt_1_m0_paths,
-        attempt_1_evidence_paths,
-        attempt_2_governance_paths,
-        final_correction_paths,
+        changed_paths(ATTEMPT_1_M0_COMMIT),
+        changed_paths(ATTEMPT_1_EVIDENCE_COMMIT),
+        changed_paths(ATTEMPT_2_GOVERNANCE_COMMIT),
+        changed_paths(ATTEMPT_2_M0_COMMIT),
+        changed_paths(ATTEMPT_2_EVIDENCE_COMMIT),
+        changed_paths(T4_CORRECTION_GOVERNANCE_COMMIT),
+        changed_paths(CORRECTED_T4_COMMIT),
+        changed_paths(T5_SUCCESSOR_GOVERNANCE_COMMIT),
+        changed_paths(SUBJECT_COMMIT),
+        changed_paths(S2_COMMIT),
+        changed_paths(ATTEMPT_3_GOVERNANCE_COMMIT),
+        changed_paths(m0_commit),
     )
     authenticate_protected_root(repo, invocation.protected_worktree_root)
 
-    committed_m0_bytes = {
-        path: git_object(repo, m0_commit, path) for path in M0_PATHS
-    }
+    committed_m0_bytes = {path: git_object(repo, m0_commit, path) for path in M0_PATHS}
     validate_m0_worktree_bytes(repo, committed_m0_bytes)
-    assignment = strict_json_bytes(
-        committed_m0_bytes[str(ASSIGNMENT_PATH)], "assignment"
-    )
-    task = strict_json_bytes(
-        committed_m0_bytes[str(TASK_ROOT / "task.json")], "task"
-    )
-    freeze = strict_json_bytes(git_object(repo, S1_COMMIT, str(FREEZE_PATH)), "freeze")
-    attempt_2_governance_task = strict_json_bytes(
-        git_object(repo, ATTEMPT_2_GOVERNANCE_COMMIT, str(T0A_ROOT / "task.json")),
-        "Attempt-2 governance",
+    assignment = strict_json_bytes(committed_m0_bytes[str(ASSIGNMENT_PATH)], "assignment")
+    task = strict_json_bytes(committed_m0_bytes[str(TASK_ROOT / "task.json")], "task")
+    freeze = strict_json_bytes(git_object(repo, S2_COMMIT, str(FREEZE_PATH)), "freeze")
+    governance_task = strict_json_bytes(
+        git_object(repo, ATTEMPT_3_GOVERNANCE_COMMIT, str(T0A_ROOT / "task.json")),
+        "Attempt-3 governance",
     )
 
     assigned, authority = assignment.get("assignment"), assignment.get("authority")
     output, inputs = assignment.get("outputAuthorization"), assignment.get("exactInputs")
-    isolation, boundary = assignment.get("inputIsolation"), assignment.get("authorizationBoundary")
+    isolation = assignment.get("inputIsolation")
+    boundary = assignment.get("authorizationBoundary")
     roles, program = assignment.get("roleSeparation"), assignment.get("reviewerProgram")
     continuation = assignment.get("continuation")
     task_meta = task.get("meta")
-    governance_meta = attempt_2_governance_task.get("meta")
-    attempt_1_m0 = inputs.get("attempt1M0") if isinstance(inputs, dict) else None
-    attempt_1_evidence = inputs.get("attempt1Evidence") if isinstance(inputs, dict) else None
-    attempt_2_governance = inputs.get("attempt2Governance") if isinstance(inputs, dict) else None
-    if not all(
-        isinstance(item, dict)
-        for item in (
-            assigned, authority, output, inputs, isolation, boundary, roles, program,
-            continuation, task_meta, governance_meta, attempt_1_m0,
-            attempt_1_evidence, attempt_2_governance,
-        )
-    ):
-        raise ValueError("committed M0 or Attempt-2 governance shape malformed")
+    governance_meta = governance_task.get("meta")
+    required_dicts = (
+        assigned, authority, output, inputs, isolation, boundary, roles, program,
+        continuation, task_meta, governance_meta,
+    )
+    if not all(isinstance(item, dict) for item in required_dicts):
+        raise ValueError("committed M0 or Attempt-3 governance shape malformed")
+
+    validate_invocation_declarations(assigned, invocation)
     identity_ok = (
         assigned.get("agentId") == REVIEWER_AGENT_ID
         and assigned.get("sessionId") == REVIEWER_SESSION_ID
@@ -985,43 +1000,63 @@ def authenticate_m0(
         and assigned.get("status") == EXPECTED_ASSIGNMENT_STATUS
         and assigned.get("agentId") not in EXPECTED_ACTORS
     )
-    validate_invocation_declarations(assigned, invocation)
-    assignment_security_ok = (
-        assignment.get("schemaVersion") == SCHEMA_VERSION
-        and assignment.get("recordKind") == "t6-m0-independent-reviewer-assignment"
-        and assignment.get("commitBoundary") == "M0"
-        and assignment.get("stopConditions")
-        == list(EXPECTED_ASSIGNMENT_STOP_CONDITIONS)
-        and authority_valid(authority, ASSIGNMENT_GRANTED_AUTHORITY, COMMON_DENIED_AUTHORITY)
-        and output.get("m0") == {"count": 3, "paths": list(M0_PATHS)}
-        and output.get("m1") == {"count": 9, "paths": list(M1_PATHS)}
-        and output.get("unknownOutputDisposition") == "fail-and-stop"
-        and inputs.get("frozenTechnicalSubject") == {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE}
-        and inputs.get("s1FreezeBoundary") == {"commit": S1_COMMIT, "firstParent": SUBJECT_COMMIT, "tree": S1_TREE}
-        and attempt_1_m0 == {
+    exact_inputs = {
+        "attempt1M0": {
             "commit": ATTEMPT_1_M0_COMMIT,
             "firstParent": PRIOR_FINAL_M0_CORRECTION_COMMIT,
-        }
-        and attempt_1_evidence == {
+        },
+        "attempt1Evidence": {
             "commit": ATTEMPT_1_EVIDENCE_COMMIT,
             "count": 9,
             "firstParent": ATTEMPT_1_M0_COMMIT,
             "paths": list(ATTEMPT_1_M1_PATHS),
-        }
-        and attempt_2_governance == {
-            "commit": ATTEMPT_2_GOVERNANCE_COMMIT,
+        },
+        "attempt2M0": {
+            "commit": ATTEMPT_2_M0_COMMIT,
+            "firstParent": ATTEMPT_2_GOVERNANCE_COMMIT,
+        },
+        "attempt2Evidence": {
+            "commit": ATTEMPT_2_EVIDENCE_COMMIT,
+            "count": 9,
+            "firstParent": ATTEMPT_2_M0_COMMIT,
+            "paths": list(ATTEMPT_2_M1_PATHS),
+        },
+        "correctedT4": {"commit": CORRECTED_T4_COMMIT, "tree": CORRECTED_T4_TREE},
+        "i2Subject": {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE},
+        "s2Freeze": {
+            "commit": S2_COMMIT,
+            "firstParent": SUBJECT_COMMIT,
+            "tree": S2_TREE,
+        },
+        "attempt3Governance": {
+            "commit": ATTEMPT_3_GOVERNANCE_COMMIT,
             "count": 6,
-            "firstParent": ATTEMPT_1_EVIDENCE_COMMIT,
+            "firstParent": S2_COMMIT,
             "paths": list(T0A_PATHS),
+            "tree": ATTEMPT_3_GOVERNANCE_TREE,
+        },
+    }
+    assignment_security_ok = (
+        assignment.get("schemaVersion") == SCHEMA_VERSION
+        and assignment.get("recordKind") == "t6-m0-independent-reviewer-assignment"
+        and assignment.get("commitBoundary") == "M0"
+        and assignment.get("stopConditions") == list(EXPECTED_ASSIGNMENT_STOP_CONDITIONS)
+        and authority_valid(authority, ASSIGNMENT_GRANTED_AUTHORITY, COMMON_DENIED_AUTHORITY)
+        and output.get("m0") == {"count": 3, "paths": list(M0_PATHS)}
+        and output.get("m1") == {"count": 9, "paths": list(M1_PATHS)}
+        and output.get("unknownOutputDisposition") == "fail-and-stop"
+        and inputs == exact_inputs
+        and isolation == {
+            "currentWorktreeAsAssuranceSubjectAuthorized": False,
+            "distinctTemporaryExtractionRequired": True,
+            "networkOrProviderInputAuthorized": False,
+            "reviewerMayReadCommittedGitObjectsOnly": True,
+            "subjectTransport": "git-archive",
+            "worktreeOverlayAuthorized": False,
         }
-        and isolation.get("reviewerMayReadCommittedGitObjectsOnly") is True
-        and isolation.get("distinctTemporaryExtractionRequired") is True
-        and isolation.get("subjectTransport") == "git-archive"
-        and isolation.get("currentWorktreeAsAssuranceSubjectAuthorized") is False
-        and isolation.get("networkOrProviderInputAuthorized") is False
-        and isolation.get("worktreeOverlayAuthorized") is False
         and boundary.get("attempt1EvidenceImmutable") is True
-        and boundary.get("attempt2GovernanceAuthenticated") is True
+        and boundary.get("attempt2EvidenceImmutable") is True
+        and boundary.get("attempt3GovernanceAuthenticated") is True
         and boundary.get("committedAuthorityIsSemanticSource") is True
         and boundary.get("currentBoundary") == "M0"
         and boundary.get("m1AuthorizationRecorded") is True
@@ -1029,10 +1064,10 @@ def authenticate_m0(
         and boundary.get("reviewerProgramSelfCheckMayNotEmitM1Evidence") is True
         and boundary.get("worktreePresenceDoesNotAuthorizeM1") is True
         and continuation == {
-            "attempt": 2,
+            "attempt": 3,
+            "attempt3GovernanceCommit": ATTEMPT_3_GOVERNANCE_COMMIT,
             "resumedAssignedSessionPermitted": True,
             "sharedT0ThroughT5ScratchPermitted": False,
-            "t0aGovernanceCommit": ATTEMPT_2_GOVERNANCE_COMMIT,
         }
         and roles.get("t0ThroughT5Actors") == list(EXPECTED_ACTORS)
         and roles.get("t0ThroughT5Distinct") is True
@@ -1045,7 +1080,19 @@ def authenticate_m0(
         and program.get("normalRunRequiresExplicitSeparateAuthorizationFlag") is True
         and program.get("selfCheckWritesEvidence") is False
         and program.get("standardLibraryOnly") is True
+        and program.get("diagnosticStreamByteLimit") == COMMAND_DIAGNOSTIC_STREAM_LIMIT
+        and program.get("successfulCommandOutputRecorded") is False
     )
+    expected_harness_correction = {
+        "attempt3OutputRoot": str(ATTEMPT_ROOT),
+        "blockedPrerequisiteReasonsRequired": True,
+        "boundedDiagnosticsRequired": True,
+        "controlledExecutableNames": list(REQUIRED_TOOL_NAMES),
+        "diagnosticPrivacyRequired": True,
+        "diagnosticStreamByteLimit": COMMAND_DIAGNOSTIC_STREAM_LIMIT,
+        "t4Acceptance": "expectedCodesPresent || productionPrevented",
+        "technicalSubjectChange": False,
+    }
     task_security_ok = (
         task.get("assignee") == assigned.get("agentId")
         and task.get("notes") == EXPECTED_TASK_NOTES
@@ -1057,34 +1104,69 @@ def authenticate_m0(
         and task_meta.get("commitBoundaries") == ["M0", "M1"]
         and task_meta.get("ownedInventoryKeys") == ["M0", "M1"]
         and task_meta.get("liveProcedure") == "1.0.0"
-        and task_meta.get("attemptNumber") == 2
+        and task_meta.get("attemptNumber") == 3
         and task_meta.get("attempt1M0Commit") == ATTEMPT_1_M0_COMMIT
         and task_meta.get("attempt1EvidenceCommit") == ATTEMPT_1_EVIDENCE_COMMIT
-        and task_meta.get("attempt1Disposition") == "immutable-harness-failure-evidence"
-        and task_meta.get("attempt2GovernanceCommit") == ATTEMPT_2_GOVERNANCE_COMMIT
-        and task_meta.get("harnessCorrection") == {
-            "allowedExecutableAdditions": ["sh", "sed", "dirname", "uname"],
-            "attempt2OutputRoot": str(ATTEMPT_ROOT),
-            "technicalSubjectChange": False,
-        }
-        and authority_valid(task_meta, TASK_GRANTED_AUTHORITY, (*COMMON_DENIED_AUTHORITY, *TASK_ONLY_DENIED_AUTHORITY))
+        and task_meta.get("attempt2M0Commit") == ATTEMPT_2_M0_COMMIT
+        and task_meta.get("attempt2EvidenceCommit") == ATTEMPT_2_EVIDENCE_COMMIT
+        and task_meta.get("attempt3GovernanceCommit") == ATTEMPT_3_GOVERNANCE_COMMIT
+        and task_meta.get("attempt3GovernanceTree") == ATTEMPT_3_GOVERNANCE_TREE
+        and task_meta.get("correctedT4") == exact_inputs["correctedT4"]
+        and task_meta.get("i2Subject") == exact_inputs["i2Subject"]
+        and task_meta.get("s2Freeze") == exact_inputs["s2Freeze"]
+        and task_meta.get("harnessCorrection") == expected_harness_correction
+        and authority_valid(
+            task_meta,
+            TASK_GRANTED_AUTHORITY,
+            (*COMMON_DENIED_AUTHORITY, *TASK_ONLY_DENIED_AUTHORITY),
+        )
     )
     governance_security_ok = (
-        attempt_2_governance_task.get("id") == "amend-t0-authorize-t6-mal1-attempt-2"
-        and attempt_2_governance_task.get("notes")
-        == "This task.json is the sole normative forward-only authorization for the T6 harness correction and Attempt-2. Attempt-1 commit cd85634 remains immutable failure evidence. No T7 decision is authorized."
-        and governance_meta.get("attempt1Commit") == "cd85634"
+        governance_task.get("id") == "amend-t0-authorize-t6-mal1-attempt-3"
+        and governance_task.get("notes")
+        == "This task.json is the sole normative forward-only authorization for the Attempt-3 reviewer correction and run. Attempts 1 and 2 remain immutable. No T7 decision is authorized."
+        and governance_meta.get("attempt1Commit") == ATTEMPT_1_EVIDENCE_COMMIT
         and governance_meta.get("attempt1Disposition") == "immutable-harness-failure-evidence"
-        and governance_meta.get("attempt2OutputPaths") == list(M1_PATHS)
+        and governance_meta.get("attempt2Commit") == ATTEMPT_2_EVIDENCE_COMMIT
+        and governance_meta.get("attempt2Disposition") == "immutable-failed-non-authoritative-evidence"
+        and governance_meta.get("attempt3OutputPaths") == list(M1_PATHS)
+        and governance_meta.get("attempt3OutputRoot") == str(ATTEMPT_ROOT)
         and governance_meta.get("ownedPaths") == list(T0A_PATHS)
+        and governance_meta.get("correctedT4") == exact_inputs["correctedT4"]
+        and governance_meta.get("i2Subject") == exact_inputs["i2Subject"]
+        and governance_meta.get("s2Freeze") == exact_inputs["s2Freeze"]
         and governance_meta.get("harnessCorrectionBoundary") == {
-            "allowedExecutableAdditions": ["sh", "sed", "dirname", "uname"],
             "allowedM0Paths": list(M0_PATHS),
-            "cause": "controlled PATH omitted POSIX executables required by pnpm lifecycle scripts and Vitest wrappers",
+            "blockedPrerequisiteReasonsRequired": True,
+            "boundedDiagnosticsRequired": True,
+            "cause": "Attempt-2 discarded failed-command output and could not diagnose prerequisites; corrected T4 and successor T5 also superseded its subject lineage",
+            "diagnosticPrivacyRequired": True,
+            "t4Acceptance": "expectedCodesPresent || productionPrevented with both observations preserved separately",
             "technicalSubjectChangeAuthorized": False,
         }
         and governance_meta.get("liveProcedure") == "1.0.0"
         and authority_valid(governance_meta, T0A_GRANTED_AUTHORITY, COMMON_DENIED_AUTHORITY)
+    )
+    frozen = freeze.get("frozenSubject")
+    protected_state = freeze.get("protectedState")
+    freeze_security_ok = (
+        isinstance(frozen, dict)
+        and isinstance(protected_state, dict)
+        and freeze.get("commitBoundary") == "S2"
+        and freeze.get("failedAttemptsPreserved") == {
+            "attempt1EvidenceCommit": ATTEMPT_1_EVIDENCE_COMMIT,
+            "attempt2EvidenceCommit": ATTEMPT_2_EVIDENCE_COMMIT,
+        }
+        and freeze.get("freezeRules", {}).get("exactReviewSubjectIsI2Commit") is True
+        and frozen.get("commit") == SUBJECT_COMMIT
+        and frozen.get("tree") == SUBJECT_TREE
+        and frozen.get("correctedTechnicalPredecessor") == exact_inputs["correctedT4"]
+        and protected_state.get("protectedWorktree") == {
+            "branch": PROTECTED_BRANCH_REF,
+            "commit": PROTECTED_S1_COMMIT,
+            "separateFromIntegrationWorktree": True,
+            "tree": PROTECTED_S1_TREE,
+        }
     )
     observed_worktree_ok = (
         invocation.worktree.resolve() == repo
@@ -1093,22 +1175,18 @@ def authenticate_m0(
         and Path(git_text(repo, "rev-parse", "--show-toplevel")).resolve() == repo
         and git_text(repo, "branch", "--show-current") == REVIEWER_BRANCH
     )
-    if (
-        not identity_ok
-        or not assignment_security_ok
-        or not task_security_ok
-        or not governance_security_ok
-        or not observed_worktree_ok
+    if not all(
+        (
+            identity_ok,
+            assignment_security_ok,
+            task_security_ok,
+            governance_security_ok,
+            freeze_security_ok,
+            observed_worktree_ok,
+        )
     ):
-        raise ValueError("committed reviewer or Attempt-2 governance mismatch")
+        raise ValueError("committed reviewer, Attempt-3 governance, or S2 freeze mismatch")
 
-    frozen = freeze.get("frozenSubject", {})
-    if frozen.get("commit") != SUBJECT_COMMIT or frozen.get("tree") != SUBJECT_TREE:
-        raise ValueError("frozen technical subject mismatch")
-    if git_text(repo, "rev-parse", f"{SUBJECT_COMMIT}^{{tree}}") != SUBJECT_TREE:
-        raise ValueError("observed technical subject tree mismatch")
-    if git_text(repo, "rev-parse", f"{S1_COMMIT}^1") != SUBJECT_COMMIT:
-        raise ValueError("S1 first-parent mismatch")
     governed = {
         "committedAssignmentAuthenticated": True,
         "declaredIdentityMatchesCommittedAssignment": True,
@@ -1119,7 +1197,9 @@ def authenticate_m0(
         "observedCwdMatchesReviewerWorktree": True,
         "committedM1AuthorizationRecorded": True,
         "attempt1EvidenceAuthenticatedAndImmutable": True,
-        "attempt2GovernanceAuthenticated": True,
+        "attempt2EvidenceAuthenticatedAndImmutable": True,
+        "attempt3GovernanceAuthenticated": True,
+        "s2FreezeAuthenticated": True,
         "assignedSessionContinuationPermitted": True,
     }
     return assignment, freeze, governed
@@ -1228,19 +1308,27 @@ def validate_pnpm_identity(
         matches,
     )
 
-def blocked_command_results(reason: str, tools: dict[str, str] | None = None) -> list[CommandResult]:
+def blocked_command_results(
+    reason: str, tools: dict[str, str] | None = None
+) -> list[CommandResult]:
+    if not reason:
+        raise ValueError("blocked command prerequisite reason is required")
     specs = {spec.command_id: spec for spec in fixed_commands(tools)} if tools else {}
     return [
         CommandResult(
             command_id,
-            evidence_argv(specs[command_id].argv, tools) if command_id in specs else ("reviewer", reason),
-            specs[command_id].cwd if command_id in specs else ("<EXTERNAL>" if command_id.startswith("external-") else "."),
+            evidence_argv(specs[command_id].argv, tools)
+            if command_id in specs
+            else ("reviewer", reason),
+            specs[command_id].cwd
+            if command_id in specs
+            else ("<EXTERNAL>" if command_id.startswith("external-") else "."),
             None,
             "blocked",
+            prerequisite_reason=reason,
         )
         for command_id in REQUIRED_COMMAND_IDS
     ]
-
 
 def command_inventory_observation(
     results: Iterable[CommandResult],
@@ -1498,9 +1586,15 @@ def evidence_argv(argv: tuple[str, ...], tools: dict[str, str]) -> tuple[str, ..
     return tuple(normalized)
 
 def execute_command(
-    spec: CommandSpec, extraction: Path, env: dict[str, str], tools: dict[str, str]
+    spec: CommandSpec,
+    extraction: Path,
+    env: dict[str, str],
+    tools: dict[str, str],
+    private_paths: Iterable[Path] = (),
 ) -> CommandResult:
     cwd = extraction / spec.cwd
+    evidence_command = evidence_argv(spec.argv, tools)
+    diagnostic_paths = (extraction, cwd, *private_paths)
     try:
         completed = run_raw(
             spec.argv,
@@ -1509,28 +1603,54 @@ def execute_command(
             timeout=spec.timeout_seconds,
             check=False,
         )
+        if completed.returncode == 0:
+            return CommandResult(spec.command_id, evidence_command, spec.cwd, 0, "pass")
         return CommandResult(
-            command_id=spec.command_id,
-            argv=evidence_argv(spec.argv, tools),
-            cwd=spec.cwd,
-            exit_code=completed.returncode,
-            status="pass" if completed.returncode == 0 else "fail",
+            spec.command_id,
+            evidence_command,
+            spec.cwd,
+            completed.returncode,
+            "fail",
+            diagnostic=build_command_diagnostic(
+                status="fail",
+                stdout=completed.stdout,
+                stderr=completed.stderr,
+                failure_reason=f"command exited with code {completed.returncode}",
+                private_paths=diagnostic_paths,
+            ),
         )
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as error:
         return CommandResult(
-            command_id=spec.command_id,
-            argv=evidence_argv(spec.argv, tools),
-            cwd=spec.cwd,
-            exit_code=124,
-            status="timeout",
+            spec.command_id,
+            evidence_command,
+            spec.cwd,
+            124,
+            "timeout",
+            diagnostic=build_command_diagnostic(
+                status="timeout",
+                stdout=error.stdout,
+                stderr=error.stderr,
+                failure_reason=f"command exceeded {spec.timeout_seconds}-second timeout",
+                private_paths=diagnostic_paths,
+            ),
         )
-    except OSError:
+    except OSError as error:
         return CommandResult(
-            command_id=spec.command_id,
-            argv=evidence_argv(spec.argv, tools),
-            cwd=spec.cwd,
-            exit_code=None,
-            status="launch-failed",
+            spec.command_id,
+            evidence_command,
+            spec.cwd,
+            None,
+            "launch-failed",
+            diagnostic=build_command_diagnostic(
+                status="launch-failed",
+                stdout=None,
+                stderr=str(error),
+                failure_reason=(
+                    f"failed to launch {evidence_command[0]}"
+                    + (f" (errno {error.errno})" if error.errno is not None else "")
+                ),
+                private_paths=diagnostic_paths,
+            ),
         )
 
 def yaml_block_by_prefix(text: str, prefix: str) -> str:
@@ -1595,20 +1715,63 @@ def external_command(
     tools: dict[str, str],
     results: list[CommandResult],
     timeout: int = 1_800,
+    private_paths: Iterable[Path] = (),
 ) -> bool:
+    evidence_command = evidence_argv(argv, tools)
+    cwd = f"<EXTERNAL>/{consumer.name}"
+    diagnostic_paths = (consumer, *private_paths)
     try:
         completed = run_raw(argv, cwd=consumer, env=env, timeout=timeout, check=False)
+        if completed.returncode == 0:
+            result = CommandResult(command_id, evidence_command, cwd, 0, "pass")
+        else:
+            result = CommandResult(
+                command_id,
+                evidence_command,
+                cwd,
+                completed.returncode,
+                "fail",
+                diagnostic=build_command_diagnostic(
+                    status="fail",
+                    stdout=completed.stdout,
+                    stderr=completed.stderr,
+                    failure_reason=f"command exited with code {completed.returncode}",
+                    private_paths=diagnostic_paths,
+                ),
+            )
+    except subprocess.TimeoutExpired as error:
         result = CommandResult(
             command_id,
-            evidence_argv(argv, tools),
-            f"<EXTERNAL>/{consumer.name}",
-            completed.returncode,
-            "pass" if completed.returncode == 0 else "fail",
+            evidence_command,
+            cwd,
+            124,
+            "timeout",
+            diagnostic=build_command_diagnostic(
+                status="timeout",
+                stdout=error.stdout,
+                stderr=error.stderr,
+                failure_reason=f"command exceeded {timeout}-second timeout",
+                private_paths=diagnostic_paths,
+            ),
         )
-    except subprocess.TimeoutExpired:
-        result = CommandResult(command_id, evidence_argv(argv, tools), f"<EXTERNAL>/{consumer.name}", 124, "timeout")
-    except OSError:
-        result = CommandResult(command_id, evidence_argv(argv, tools), f"<EXTERNAL>/{consumer.name}", None, "launch-failed")
+    except OSError as error:
+        result = CommandResult(
+            command_id,
+            evidence_command,
+            cwd,
+            None,
+            "launch-failed",
+            diagnostic=build_command_diagnostic(
+                status="launch-failed",
+                stdout=None,
+                stderr=str(error),
+                failure_reason=(
+                    f"failed to launch {evidence_command[0]}"
+                    + (f" (errno {error.errno})" if error.errno is not None else "")
+                ),
+                private_paths=diagnostic_paths,
+            ),
+        )
     results.append(result)
     return result.status == "pass"
 
@@ -1706,8 +1869,10 @@ def run_external_install_audit(
     env: dict[str, str],
     tools: dict[str, str],
     results: list[CommandResult],
+    private_paths: Iterable[Path] = (),
 ) -> dict[str, Any]:
     external_start = len(results)
+    diagnostic_paths = (extraction, scratch, *private_paths)
     pack_root = scratch / "packs"
     core_pack = pack_root / "core"
     cli_pack = pack_root / "cli"
@@ -1728,7 +1893,9 @@ def run_external_install_audit(
         ),
     ]
     for spec in specs:
-        results.append(execute_command(spec, extraction, env, tools))
+        results.append(
+            execute_command(spec, extraction, env, tools, diagnostic_paths)
+        )
     core_tarballs = sorted(core_pack.glob("*.tgz"))
     cli_tarballs = sorted(cli_pack.glob("*.tgz"))
     if len(core_tarballs) != 1 or len(cli_tarballs) != 1:
@@ -1779,20 +1946,29 @@ def run_external_install_audit(
         str(cli_tarball),
     )
     npm_install_ok = external_command(
-        "external-npm-install", npm_argv, npm_consumer, env, tools, results
+        "external-npm-install", npm_argv, npm_consumer, env, tools, results,
+        private_paths=diagnostic_paths,
     )
     verify_argv = (tools["node"], "--input-type=module", "-e", verification)
     if npm_install_ok:
         external_command(
-            "external-npm-runtime", verify_argv, npm_consumer, env, tools, results, timeout=120
+            "external-npm-runtime", verify_argv, npm_consumer, env, tools, results,
+            timeout=120, private_paths=diagnostic_paths,
         )
         for alias in ("trellis", "tl"):
             alias_argv = (str(npm_consumer / "node_modules/.bin" / alias), "--help")
             external_command(
-                f"external-npm-{alias}-alias", alias_argv, npm_consumer, env, tools, results, timeout=120
+                f"external-npm-{alias}-alias", alias_argv, npm_consumer, env, tools, results,
+                timeout=120, private_paths=diagnostic_paths,
             )
     else:
-        results.append(CommandResult("external-npm-runtime", evidence_argv(verify_argv, tools), "<EXTERNAL>/npm", None, "blocked"))
+        npm_reason = "blocked-by-external-npm-install-prerequisite"
+        results.append(
+            CommandResult(
+                "external-npm-runtime", evidence_argv(verify_argv, tools),
+                "<EXTERNAL>/npm", None, "blocked", prerequisite_reason=npm_reason,
+            )
+        )
         for alias in ("trellis", "tl"):
             alias_argv = (str(npm_consumer / "node_modules/.bin" / alias), "--help")
             results.append(
@@ -1802,6 +1978,7 @@ def run_external_install_audit(
                     "<EXTERNAL>/npm",
                     None,
                     "blocked",
+                    prerequisite_reason=npm_reason,
                 )
             )
 
@@ -1824,8 +2001,10 @@ def run_external_install_audit(
         str(cli_tarball),
     )
     pnpm_ok = external_command(
-        "external-pnpm-lock-seed", pnpm_seed_argv, pnpm_consumer, env, tools, results
+        "external-pnpm-lock-seed", pnpm_seed_argv, pnpm_consumer, env, tools, results,
+        private_paths=diagnostic_paths,
     )
+    pnpm_prerequisite_reason = "blocked-by-pnpm-lock-seed-prerequisite"
     if pnpm_ok:
         try:
             pnpm_package = load_json_file(pnpm_consumer / "package.json", "pnpm-consumer-package")
@@ -1837,6 +2016,7 @@ def run_external_install_audit(
             (pnpm_consumer / "package.json").write_bytes(canonical_bytes(pnpm_package))
         except (OSError, ValueError):
             pnpm_ok = False
+            pnpm_prerequisite_reason = "blocked-by-pnpm-package-preparation-prerequisite"
     if pnpm_ok:
         pnpm_ok = external_command(
             "external-pnpm-import",
@@ -1845,9 +2025,15 @@ def run_external_install_audit(
             env,
             tools,
             results,
+            private_paths=diagnostic_paths,
         )
     else:
-        results.append(CommandResult("external-pnpm-import", ("pnpm", "import"), "<EXTERNAL>/pnpm", None, "blocked"))
+        results.append(
+            CommandResult(
+                "external-pnpm-import", ("pnpm", "import"), "<EXTERNAL>/pnpm",
+                None, "blocked", prerequisite_reason=pnpm_prerequisite_reason,
+            )
+        )
     if pnpm_ok:
         try:
             package = load_json_file(pnpm_consumer / "package.json", "pnpm-consumer-package")
@@ -1860,11 +2046,27 @@ def run_external_install_audit(
                 encoding="utf-8",
             )
             results.append(CommandResult("external-pnpm-lock", ("reviewer", "reconstruct-pnpm-lock"), "<EXTERNAL>/pnpm", 0, "pass"))
-        except (OSError, ValueError):
-            results.append(CommandResult("external-pnpm-lock", ("reviewer", "reconstruct-pnpm-lock"), "<EXTERNAL>/pnpm", 1, "fail"))
+        except (OSError, ValueError) as error:
+            results.append(
+                CommandResult(
+                    "external-pnpm-lock", ("reviewer", "reconstruct-pnpm-lock"),
+                    "<EXTERNAL>/pnpm", 1, "fail",
+                    diagnostic=build_command_diagnostic(
+                        status="fail", stdout=None, stderr=str(error),
+                        failure_reason="failed to reconstruct external pnpm lock",
+                        private_paths=diagnostic_paths,
+                    ),
+                )
+            )
             pnpm_ok = False
     else:
-        results.append(CommandResult("external-pnpm-lock", ("reviewer", "reconstruct-pnpm-lock"), "<EXTERNAL>/pnpm", None, "blocked"))
+        results.append(
+            CommandResult(
+                "external-pnpm-lock", ("reviewer", "reconstruct-pnpm-lock"),
+                "<EXTERNAL>/pnpm", None, "blocked",
+                prerequisite_reason="blocked-by-pnpm-import-prerequisite",
+            )
+        )
     pnpm_install_argv = (
         tools["pnpm"],
         "install",
@@ -1875,22 +2077,37 @@ def run_external_install_audit(
     )
     if pnpm_ok:
         pnpm_install_ok = external_command(
-            "external-pnpm-install", pnpm_install_argv, pnpm_consumer, env, tools, results
+            "external-pnpm-install", pnpm_install_argv, pnpm_consumer, env, tools, results,
+            private_paths=diagnostic_paths,
         )
     else:
         pnpm_install_ok = False
-        results.append(CommandResult("external-pnpm-install", evidence_argv(pnpm_install_argv, tools), "<EXTERNAL>/pnpm", None, "blocked"))
+        results.append(
+            CommandResult(
+                "external-pnpm-install", evidence_argv(pnpm_install_argv, tools),
+                "<EXTERNAL>/pnpm", None, "blocked",
+                prerequisite_reason="blocked-by-pnpm-lock-prerequisite",
+            )
+        )
     if pnpm_install_ok:
         external_command(
-            "external-pnpm-runtime", verify_argv, pnpm_consumer, env, tools, results, timeout=120
+            "external-pnpm-runtime", verify_argv, pnpm_consumer, env, tools, results,
+            timeout=120, private_paths=diagnostic_paths,
         )
         for alias in ("trellis", "tl"):
             alias_argv = (str(pnpm_consumer / "node_modules/.bin" / alias), "--help")
             external_command(
-                f"external-pnpm-{alias}-alias", alias_argv, pnpm_consumer, env, tools, results, timeout=120
+                f"external-pnpm-{alias}-alias", alias_argv, pnpm_consumer, env, tools, results,
+                timeout=120, private_paths=diagnostic_paths,
             )
     else:
-        results.append(CommandResult("external-pnpm-runtime", evidence_argv(verify_argv, tools), "<EXTERNAL>/pnpm", None, "blocked"))
+        pnpm_reason = "blocked-by-external-pnpm-install-prerequisite"
+        results.append(
+            CommandResult(
+                "external-pnpm-runtime", evidence_argv(verify_argv, tools),
+                "<EXTERNAL>/pnpm", None, "blocked", prerequisite_reason=pnpm_reason,
+            )
+        )
         for alias in ("trellis", "tl"):
             alias_argv = (str(pnpm_consumer / "node_modules/.bin" / alias), "--help")
             results.append(
@@ -1900,6 +2117,7 @@ def run_external_install_audit(
                     "<EXTERNAL>/pnpm",
                     None,
                     "blocked",
+                    prerequisite_reason=pnpm_reason,
                 )
             )
 
@@ -1940,9 +2158,16 @@ def run_external_install_audit(
         and not privacy_findings
         else "fail"
     )
+    blocked_reasons = sorted(
+        {
+            result.prerequisite_reason
+            for result in external_results
+            if result.status == "blocked" and result.prerequisite_reason
+        }
+    )
     return {
         "verdict": verdict,
-        "blockedCommandReason": None,
+        "blockedCommandReason": "; ".join(blocked_reasons) if blocked_reasons else None,
         "privacyObservationComplete": privacy_observation_complete,
         "npm": npm_ok,
         "pnpm": pnpm_ok,
@@ -2179,7 +2404,7 @@ def build_runtime_audit(
     effects = load_json_file(extraction / T4_ROOT / "filesystem-and-event-effects.json", "effects")
     freeze = strict_json_bytes(
         run_raw(
-            (git, "show", f"{S1_COMMIT}:{FREEZE_PATH}"),
+            (git, "show", f"{S2_COMMIT}:{FREEZE_PATH}"),
             cwd=extraction,
             env=env,
         ).stdout,
@@ -2200,10 +2425,14 @@ def build_runtime_audit(
         for path in (extraction / PROCEDURE_ROOT).glob("*/2.0.7/procedure.json")
     )
     procedure_files = sum(
-        1 for path in (extraction / PROCEDURE_ROOT).glob("*/2.0.7/**/*") if path.is_file()
+        1
+        for path in (extraction / PROCEDURE_ROOT).glob("*/2.0.7/**/*")
+        if path.is_file()
     )
     live_source = (extraction / LIVE_SELECTION_PATH).read_text(encoding="utf-8")
-    live_match = re.search(r'RESEARCH_PROCEDURE_CURRENT_VERSION\s*=\s*"([^"]+)"', live_source)
+    live_match = re.search(
+        r'RESEARCH_PROCEDURE_CURRENT_VERSION\s*=\s*"([^"]+)"', live_source
+    )
     live_version = None if live_match is None else live_match.group(1)
     populations = coverage.get("populations", {})
     checks = [
@@ -2215,13 +2444,16 @@ def build_runtime_audit(
         ("procedure-files", 204, procedure_files),
         ("rejected-zero-write", 13, effects.get("rejectedZeroWriteCount")),
         ("live-procedure-version", "1.0.0", live_version),
+        ("s2-boundary", "S2", freeze.get("commitBoundary")),
         ("frozen-subject-commit", SUBJECT_COMMIT, freeze.get("frozenSubject", {}).get("commit")),
         ("frozen-subject-tree", SUBJECT_TREE, freeze.get("frozenSubject", {}).get("tree")),
     ]
     check_rows = []
     for check_id, expected, actual in checks:
         matches = actual == expected
-        check_rows.append({"checkId": check_id, "expected": expected, "actual": actual, "matches": matches})
+        check_rows.append(
+            {"checkId": check_id, "expected": expected, "actual": actual, "matches": matches}
+        )
         if not matches:
             findings.append(f"runtime-check-failed:{check_id}")
     if observed_families != sorted(PROCEDURE_IDS):
@@ -2230,14 +2462,41 @@ def build_runtime_audit(
         findings.append("harness-case-identity-mismatch")
     if any(row.get("productionCallCount") != 1 for row in evidence_rows):
         findings.append("harness-production-call-count-mismatch")
+    t4_observations_valid = all(
+        isinstance(row.get("expectedCodesPresent"), bool)
+        and isinstance(row.get("productionPrevented"), bool)
+        for row in evidence_rows
+    )
+    expected_codes_present_count = sum(
+        row.get("expectedCodesPresent") is True for row in evidence_rows
+    )
+    production_prevented_count = sum(
+        row.get("productionPrevented") is True for row in evidence_rows
+    )
+    t4_accepted_count = sum(
+        row.get("expectedCodesPresent") is True
+        or row.get("productionPrevented") is True
+        for row in evidence_rows
+    )
+    if not t4_observations_valid:
+        findings.append("harness-t4-observation-shape-mismatch")
     if any(
         row.get("actualProductionOutcome") != row.get("expectedProductionOutcome")
-        or row.get("expectedCodesPresent") is not True
+        or not (
+            row.get("expectedCodesPresent") is True
+            or row.get("productionPrevented") is True
+        )
         for row in evidence_rows
     ):
         findings.append("harness-outcome-mismatch")
-    rejected = [row for row in evidence_rows if row.get("actualProductionOutcome") == "rejected"]
-    if any(row.get("zeroWrite") is not True or row.get("canonicalEventDelta", {}).get("appendedCount") != 0 for row in rejected):
+    rejected = [
+        row for row in evidence_rows if row.get("actualProductionOutcome") == "rejected"
+    ]
+    if any(
+        row.get("zeroWrite") is not True
+        or row.get("canonicalEventDelta", {}).get("appendedCount") != 0
+        for row in rejected
+    ):
         findings.append("rejected-case-write-observed")
     if command_inventory.get("exact") is not True:
         findings.append("required-command-inventory-mismatch")
@@ -2263,6 +2522,13 @@ def build_runtime_audit(
             "externalInstallation": external,
             "procedureFamilies": observed_families,
             "productionEvidenceRows": len(evidence_rows),
+            "correctedT4": {
+                "acceptanceExpression": "expectedCodesPresent || productionPrevented",
+                "expectedCodesPresentCount": expected_codes_present_count,
+                "productionPreventedCount": production_prevented_count,
+                "acceptedCount": t4_accepted_count,
+                "observationsPreservedSeparately": t4_observations_valid,
+            },
         },
         "repairPerformed": False,
         "humanReviewed": False,
@@ -2350,9 +2616,9 @@ def protected_worktree_audit(
         active_registration = False
     expected_final_identity = {
         "branchRef": PROTECTED_BRANCH_REF,
-        "head": S1_COMMIT,
-        "tree": S1_TREE,
-        "firstParent": SUBJECT_COMMIT,
+        "head": PROTECTED_S1_COMMIT,
+        "tree": PROTECTED_S1_TREE,
+        "firstParent": ORIGINAL_SUBJECT_COMMIT,
     }
 
     def observe_final_git(*args: str) -> str | None:
@@ -2369,7 +2635,7 @@ def protected_worktree_audit(
     }
     try:
         final_registration_matches = registered_worktree(
-            repo, protected_root, PROTECTED_BRANCH_REF, S1_COMMIT
+            repo, protected_root, PROTECTED_BRANCH_REF, PROTECTED_S1_COMMIT
         )
     except (OSError, RuntimeError, ValueError):
         final_registration_matches = False
@@ -2717,7 +2983,13 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
             else:
                 for spec in fixed_commands(tools):
                     raw_command_results.append(
-                        execute_command(spec, extraction, env, tools)
+                        execute_command(
+                            spec,
+                            extraction,
+                            env,
+                            tools,
+                            (repo, invocation.protected_worktree_root, scratch),
+                        )
                     )
                 try:
                     external_audit = run_external_install_audit(
@@ -2726,6 +2998,7 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
                         env,
                         tools,
                         raw_command_results,
+                        (repo, invocation.protected_worktree_root),
                     )
                     privacy_observed = (
                         external_audit.get("privacyObservationComplete") is True
@@ -2770,6 +3043,18 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     command_results = complete_command_results(
         raw_command_results, command_completion_reason, resolved_tools
     )
+    blocked_external_reasons = sorted(
+        {
+            result.prerequisite_reason
+            for result in command_results
+            if result.command_id in EXTERNAL_COMMAND_IDS
+            and result.status == "blocked"
+            and result.prerequisite_reason
+        }
+    )
+    external_audit["blockedCommandReason"] = (
+        "; ".join(blocked_external_reasons) if blocked_external_reasons else None
+    )
 
     try:
         protected_audit, observed = protected_worktree_audit(repo, invocation.protected_worktree_root, freeze, protected_baseline)
@@ -2779,91 +3064,95 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
         findings.append("protected-worktree-audit-failed")
     frozen = freeze.get("frozenSubject", {})
     exact_attestation = {
-        "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-exact-subject-attestation",
+        "schemaVersion": SCHEMA_VERSION,
+        "recordKind": "t6-exact-subject-attestation",
+        "attempt": 3,
         "m0Commit": m0_commit,
-        "m0FirstParent": ATTEMPT_2_GOVERNANCE_COMMIT,
-        "attempt2GovernanceFirstParent": ATTEMPT_1_EVIDENCE_COMMIT,
-        "attempt1EvidenceFirstParent": ATTEMPT_1_M0_COMMIT,
-        "attempt1M0FirstParent": PRIOR_FINAL_M0_CORRECTION_COMMIT,
-        "priorFinalM0CorrectionFirstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
-        "reviewedM0ScriptSuccessorFirstParent": M0_CORRECTION_3_COMMIT,
-        "m0Correction3FirstParent": M0_CORRECTION_2_COMMIT,
-        "m0Correction2FirstParent": PRIOR_M0_CORRECTION_COMMIT,
-        "priorM0CorrectionFirstParent": INITIAL_M0_COMMIT,
-        "initialM0FirstParent": S1_COMMIT,
+        "m0FirstParent": ATTEMPT_3_GOVERNANCE_COMMIT,
+        "attempt3Governance": {
+            "commit": ATTEMPT_3_GOVERNANCE_COMMIT,
+            "tree": ATTEMPT_3_GOVERNANCE_TREE,
+            "firstParent": S2_COMMIT,
+        },
+        "s2": {"commit": S2_COMMIT, "tree": S2_TREE, "firstParent": SUBJECT_COMMIT},
+        "i2Subject": {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE},
+        "correctedT4": {"commit": CORRECTED_T4_COMMIT, "tree": CORRECTED_T4_TREE},
+        "immutableFailedAttempts": {
+            "attempt1EvidenceCommit": ATTEMPT_1_EVIDENCE_COMMIT,
+            "attempt2EvidenceCommit": ATTEMPT_2_EVIDENCE_COMMIT,
+        },
+        "protectedS1": {
+            "commit": PROTECTED_S1_COMMIT,
+            "tree": PROTECTED_S1_TREE,
+            "firstParent": ORIGINAL_SUBJECT_COMMIT,
+            "excludedFromSemanticSubject": True,
+        },
         "m0Lineage": [
             {
                 "commit": m0_commit,
-                "firstParent": ATTEMPT_2_GOVERNANCE_COMMIT,
+                "firstParent": ATTEMPT_3_GOVERNANCE_COMMIT,
                 "changedPaths": list(M0_PATHS),
-                "kind": "attempt-2-three-path-m0-correction",
+                "kind": "attempt-3-three-path-m0-correction",
             },
             {
-                "commit": ATTEMPT_2_GOVERNANCE_COMMIT,
-                "firstParent": ATTEMPT_1_EVIDENCE_COMMIT,
+                "commit": ATTEMPT_3_GOVERNANCE_COMMIT,
+                "tree": ATTEMPT_3_GOVERNANCE_TREE,
+                "firstParent": S2_COMMIT,
                 "changedPaths": list(T0A_PATHS),
-                "kind": "attempt-2-six-path-governance",
+                "kind": "attempt-3-six-path-governance",
+            },
+            {
+                "commit": S2_COMMIT,
+                "tree": S2_TREE,
+                "firstParent": SUBJECT_COMMIT,
+                "changedPaths": list(S2_PATHS),
+                "kind": "exact-s2-freeze",
+            },
+            {
+                "commit": SUBJECT_COMMIT,
+                "tree": SUBJECT_TREE,
+                "firstParent": T5_SUCCESSOR_GOVERNANCE_COMMIT,
+                "changedPaths": list(I2_PATHS),
+                "kind": "exact-i2-subject",
+            },
+            {
+                "commit": T5_SUCCESSOR_GOVERNANCE_COMMIT,
+                "firstParent": CORRECTED_T4_COMMIT,
+                "changedPaths": list(T5_SUCCESSOR_GOVERNANCE_PATHS),
+                "kind": "t5-successor-governance",
+            },
+            {
+                "commit": CORRECTED_T4_COMMIT,
+                "tree": CORRECTED_T4_TREE,
+                "firstParent": T4_CORRECTION_GOVERNANCE_COMMIT,
+                "changedPaths": list(CORRECTED_T4_PATHS),
+                "kind": "corrected-t4",
+            },
+            {
+                "commit": ATTEMPT_2_EVIDENCE_COMMIT,
+                "firstParent": ATTEMPT_2_M0_COMMIT,
+                "changedPaths": list(ATTEMPT_2_M1_PATHS),
+                "kind": "attempt-2-nine-path-failed-evidence",
             },
             {
                 "commit": ATTEMPT_1_EVIDENCE_COMMIT,
                 "firstParent": ATTEMPT_1_M0_COMMIT,
                 "changedPaths": list(ATTEMPT_1_M1_PATHS),
-                "kind": "attempt-1-nine-path-harness-failure-evidence",
-            },
-            {
-                "commit": ATTEMPT_1_M0_COMMIT,
-                "firstParent": PRIOR_FINAL_M0_CORRECTION_COMMIT,
-                "changedPaths": list(M0_PATHS),
-                "kind": "attempt-1-final-three-path-m0",
-            },
-            {
-                "commit": PRIOR_FINAL_M0_CORRECTION_COMMIT,
-                "firstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
-                "changedPaths": list(M0_PATHS),
-                "kind": "prior-final-three-path-correction",
-            },
-            {
-                "commit": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
-                "firstParent": M0_CORRECTION_3_COMMIT,
-                "changedPaths": [str(SCRIPT_PATH)],
-                "kind": "reviewed-script-only-successor",
-            },
-            {
-                "commit": M0_CORRECTION_3_COMMIT,
-                "firstParent": M0_CORRECTION_2_COMMIT,
-                "changedPaths": [str(SCRIPT_PATH)],
-                "kind": "script-only-correction-3",
-            },
-            {
-                "commit": M0_CORRECTION_2_COMMIT,
-                "firstParent": PRIOR_M0_CORRECTION_COMMIT,
-                "changedPaths": list(M0_PATHS),
-                "kind": "three-path-correction-2",
-            },
-            {
-                "commit": PRIOR_M0_CORRECTION_COMMIT,
-                "firstParent": INITIAL_M0_COMMIT,
-                "changedPaths": [str(SCRIPT_PATH)],
-                "kind": "script-only-correction",
-            },
-            {
-                "commit": INITIAL_M0_COMMIT,
-                "firstParent": S1_COMMIT,
-                "changedPaths": list(M0_PATHS),
-                "kind": "initial-three-path-m0",
-            },
-            {
-                "commit": S1_COMMIT,
-                "tree": S1_TREE,
-                "firstParent": SUBJECT_COMMIT,
-                "kind": "exact-s1",
+                "kind": "attempt-1-nine-path-failed-evidence",
             },
         ],
-        "s1": {"commit": S1_COMMIT, "tree": S1_TREE},
-        "frozenTechnicalSubject": {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE},
-        "archiveTransport": {"format": "git-archive-tar", "byteLength": len(archive), "sha256": sha256_bytes(archive)},
-        "freezeRecordMatches": frozen.get("commit") == SUBJECT_COMMIT and frozen.get("tree") == SUBJECT_TREE,
-        "archiveExtractedAndAuthenticated": subject_ready, "worktreeOverlayUsed": False,
+        "archiveTransport": {
+            "format": "git-archive-tar",
+            "byteLength": len(archive),
+            "sha256": sha256_bytes(archive),
+        },
+        "freezeRecordMatches": (
+            freeze.get("commitBoundary") == "S2"
+            and frozen.get("commit") == SUBJECT_COMMIT
+            and frozen.get("tree") == SUBJECT_TREE
+        ),
+        "archiveExtractedAndAuthenticated": subject_ready,
+        "worktreeOverlayUsed": False,
         "verdict": "pass" if subject_ready else "fail",
     }
     reviewer_attestation, observed = build_reviewer_attestation(assignment, invocation, governed, scratch_created, scratch_empty, scratch_distinct)
@@ -2972,20 +3261,22 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
 def focused_self_check() -> list[str]:
     validate_m0_changed_paths(
         M0_PATHS,
-        (str(SCRIPT_PATH),),
-        M0_PATHS,
-        (str(SCRIPT_PATH),),
-        (str(SCRIPT_PATH),),
-        M0_PATHS,
-        M0_PATHS,
         ATTEMPT_1_M1_PATHS,
+        ATTEMPT_2_GOVERNANCE_PATHS,
+        M0_PATHS,
+        ATTEMPT_2_M1_PATHS,
+        T4_CORRECTION_GOVERNANCE_PATHS,
+        CORRECTED_T4_PATHS,
+        T5_SUCCESSOR_GOVERNANCE_PATHS,
+        I2_PATHS,
+        S2_PATHS,
         T0A_PATHS,
         M0_PATHS,
     )
+    tools = resolve_tools()
     with tempfile.TemporaryDirectory(
         prefix="trellis-t6-controlled-path-self-check-"
     ) as temporary:
-        tools = resolve_tools()
         controlled_bin, _ = create_controlled_tool_path(Path(temporary), tools)
         probe = run_raw(
             (
@@ -2999,21 +3290,164 @@ def focused_self_check() -> list[str]:
         )
         if probe.returncode != 0:
             raise ValueError("controlled POSIX tool inventory self-check failed")
-    blocked = blocked_command_results("self-check")
+
+    blocked = blocked_command_results("self-check-prerequisite")
     if (
         tuple(result.command_id for result in blocked) != REQUIRED_COMMAND_IDS
         or any(result.status != "blocked" for result in blocked)
+        or any(
+            result.evidence().get("prerequisiteReason") != "self-check-prerequisite"
+            for result in blocked
+        )
     ):
         raise ValueError("deterministic blocked inventory self-check failed")
+    for invalid in (
+        CommandResult("invalid-blocked", ("self-check",), ".", None, "blocked"),
+        CommandResult("invalid-fail", ("self-check",), ".", 1, "fail"),
+    ):
+        try:
+            invalid.evidence()
+        except ValueError:
+            continue
+        raise ValueError("mandatory non-pass evidence self-check failed")
+    pass_evidence = CommandResult(
+        REQUIRED_COMMAND_IDS[0], ("self-check",), ".", 0, "pass"
+    ).evidence()
+    if "diagnostic" in pass_evidence or "prerequisiteReason" in pass_evidence:
+        raise ValueError("passing command leaked diagnostic output")
+
+    with tempfile.TemporaryDirectory(
+        prefix="trellis-t6-diagnostic-self-check-"
+    ) as temporary:
+        private_root = Path(temporary)
+        raw_stdout = (
+            f"path={private_root}/subject OPENAI_API_KEY=supersecret sk-ant-abcdefghijk\n".encode()
+            + b"x" * 5_000
+        )
+        failure_spec = CommandSpec(
+            "self-check-failure-diagnostic",
+            (
+                tools["python3"],
+                "-c",
+                "import sys;sys.stdout.buffer.write(" + repr(raw_stdout) + ");"
+                "sys.stderr.write('Bearer credential-value\\n');sys.exit(7)",
+            ),
+            timeout_seconds=30,
+        )
+        failure = execute_command(
+            failure_spec,
+            private_root,
+            os.environ.copy(),
+            tools,
+            (REVIEWER_WORKTREE,),
+        )
+        if failure.status != "fail" or failure.diagnostic is None:
+            raise ValueError("failed-command diagnostic self-check failed")
+        stdout_evidence = failure.diagnostic["stdout"]
+        stderr_evidence = failure.diagnostic["stderr"]
+        json_credential_evidence = bounded_diagnostic_stream(
+            b'{"OPENAI_API_KEY":"json-secret"}\n', ()
+        )
+        if (
+            stdout_evidence["originalByteLength"] != len(raw_stdout)
+            or stdout_evidence["truncated"] is not True
+            or re.fullmatch(r"[0-9a-f]{64}", stdout_evidence["sha256"]) is None
+            or len(stdout_evidence["content"].encode("utf-8"))
+            > COMMAND_DIAGNOSTIC_STREAM_LIMIT
+            or str(private_root) in stdout_evidence["content"]
+            or "supersecret" in stdout_evidence["content"]
+            or "sk-ant-abcdefghijk" in stdout_evidence["content"]
+            or "credential-value" in stderr_evidence["content"]
+            or "json-secret" in json_credential_evidence["content"]
+            or "<PRIVATE_PATH>" not in stdout_evidence["content"]
+            or "<REDACTED_CREDENTIAL>" not in stdout_evidence["content"]
+            or "<REDACTED_CREDENTIAL>" not in stderr_evidence["content"]
+            or "<REDACTED_CREDENTIAL>" not in json_credential_evidence["content"]
+        ):
+            raise ValueError("diagnostic bound or redaction self-check failed")
+        digest_one = build_command_diagnostic(
+            status="fail",
+            stdout=raw_stdout,
+            stderr=b"Bearer credential-value\n",
+            failure_reason="command exited with code 7",
+            private_paths=(private_root,),
+        )
+        digest_two = build_command_diagnostic(
+            status="fail",
+            stdout=raw_stdout,
+            stderr=b"Bearer credential-value\n",
+            failure_reason="command exited with code 7",
+            private_paths=(private_root,),
+        )
+        digest_changed = build_command_diagnostic(
+            status="fail",
+            stdout=raw_stdout[:-1] + b"y",
+            stderr=b"Bearer credential-value\n",
+            failure_reason="command exited with code 7",
+            private_paths=(private_root,),
+        )
+        if (
+            digest_one["diagnosticId"] != digest_two["diagnosticId"]
+            or digest_one["diagnosticId"] == digest_changed["diagnosticId"]
+            or re.fullmatch(r"sha256:[0-9a-f]{64}", digest_one["diagnosticId"])
+            is None
+        ):
+            raise ValueError("diagnostic digest stability self-check failed")
+        timeout_result = execute_command(
+            CommandSpec(
+                "self-check-timeout",
+                (tools["python3"], "-c", "import time;time.sleep(2)"),
+                timeout_seconds=1,
+            ),
+            private_root,
+            os.environ.copy(),
+            tools,
+            (REVIEWER_WORKTREE,),
+        )
+        if (
+            timeout_result.status != "timeout"
+            or timeout_result.diagnostic is None
+            or "1-second timeout" not in timeout_result.diagnostic["failureReason"]
+        ):
+            raise ValueError("timeout diagnostic self-check failed")
+        launch_result = execute_command(
+            CommandSpec(
+                "self-check-launch-failure",
+                (str(private_root / "missing-executable"),),
+                timeout_seconds=1,
+            ),
+            private_root,
+            os.environ.copy(),
+            tools,
+            (REVIEWER_WORKTREE,),
+        )
+        if (
+            launch_result.status != "launch-failed"
+            or launch_result.diagnostic is None
+            or "failed to launch" not in launch_result.diagnostic["failureReason"]
+            or "errno" not in launch_result.diagnostic["failureReason"]
+            or str(private_root) in canonical_bytes(launch_result.diagnostic).decode()
+        ):
+            raise ValueError("launch-failure diagnostic self-check failed")
+
     first = CommandResult(REQUIRED_COMMAND_IDS[0], ("self-check",), ".", 0, "pass")
     duplicate = CommandResult(
-        REQUIRED_COMMAND_IDS[0], ("self-check-duplicate",), ".", 1, "fail"
+        REQUIRED_COMMAND_IDS[0],
+        ("self-check-duplicate",),
+        ".",
+        1,
+        "fail",
+        diagnostic=build_command_diagnostic(
+            status="fail",
+            stdout=b"duplicate",
+            stderr=b"",
+            failure_reason="synthetic duplicate",
+            private_paths=(),
+        ),
     )
     extra = CommandResult("unexpected-self-check", ("self-check-extra",), ".", 0, "pass")
     raw_with_duplicate_and_extra = [first, duplicate, extra]
-    duplicate_inventory = command_inventory_observation(
-        raw_with_duplicate_and_extra
-    )
+    duplicate_inventory = command_inventory_observation(raw_with_duplicate_and_extra)
     completed_duplicate = complete_command_results(
         raw_with_duplicate_and_extra, "self-check-missing"
     )
@@ -3031,8 +3465,9 @@ def focused_self_check() -> list[str]:
     if (
         completed_partial[0] is not first
         or len(completed_partial) != len(REQUIRED_COMMAND_IDS)
+        or any(result.status != "blocked" for result in completed_partial[1:])
         or any(
-            result.status != "blocked"
+            result.prerequisite_reason != "self-check-partial"
             for result in completed_partial[1:]
         )
         or partial_inventory["missingCommandIds"] != list(REQUIRED_COMMAND_IDS[1:])
@@ -3047,7 +3482,11 @@ def focused_self_check() -> list[str]:
         for result in tool_aware_partial
         if result.command_id == "core-focused-build"
     )
-    if core_blocked.status != "blocked" or core_blocked.argv[0] != "pnpm":
+    if (
+        core_blocked.status != "blocked"
+        or core_blocked.argv[0] != "pnpm"
+        or core_blocked.prerequisite_reason != "self-check-tool-aware"
+    ):
         raise ValueError("tool-aware blocked completion self-check failed")
 
     original_execute_command = execute_command
@@ -3057,6 +3496,7 @@ def focused_self_check() -> list[str]:
         extraction: Path,
         env: dict[str, str],
         tools: dict[str, str],
+        private_paths: Iterable[Path] = (),
     ) -> CommandResult:
         return CommandResult(spec.command_id, ("pnpm", "pack"), spec.cwd, 0, "pass")
 
@@ -3075,6 +3515,7 @@ def focused_self_check() -> list[str]:
                 {},
                 self_check_tools,
                 bad_tarball_results,
+                (REVIEWER_WORKTREE,),
             )
     finally:
         globals()["execute_command"] = original_execute_command
@@ -3095,10 +3536,11 @@ def focused_self_check() -> list[str]:
         != "blocked-by-pack-prerequisite"
         or bad_tarball_audit.get("privacyObservationComplete") is not False
         or blocked_external_install.status != "blocked"
-        or blocked_external_install.argv
-        != ("reviewer", "blocked-by-pack-prerequisite")
+        or blocked_external_install.prerequisite_reason
+        != "blocked-by-pack-prerequisite"
     ):
         raise ValueError("bad tarball prerequisite metadata self-check failed")
+
     with tempfile.TemporaryDirectory(
         prefix="trellis-t6-privacy-self-check-"
     ) as temporary:
@@ -3120,6 +3562,7 @@ def focused_self_check() -> list[str]:
         or privacy_stream.tell() != len(privacy_stream.getvalue())
     ):
         raise ValueError("privacy stream was not consumed after a finding")
+
     with tempfile.TemporaryDirectory(prefix="trellis-t6-self-check-") as temporary:
         root = Path(temporary)
         (root / "retained.txt").write_text("before\n", encoding="utf-8")
@@ -3172,9 +3615,14 @@ def focused_self_check() -> list[str]:
     if rejected != 2:
         raise ValueError("strict JSON self-check failed")
     return [
-        "exact-m0-lineage-inventory",
+        "exact-attempt-3-lineage-inventory",
         "controlled-posix-tool-inventory",
-        "deterministic-blocked-inventory",
+        "explicit-blocked-prerequisite-reasons",
+        "pass-output-omission",
+        "diagnostic-byte-bound-and-redaction",
+        "diagnostic-digest-stability",
+        "timeout-diagnostic",
+        "launch-failure-diagnostic",
         "raw-command-duplicate-extra-preservation",
         "partial-command-completion",
         "tool-aware-blocked-completion",
