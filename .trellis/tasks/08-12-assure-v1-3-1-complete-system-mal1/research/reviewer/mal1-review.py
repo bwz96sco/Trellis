@@ -27,6 +27,7 @@ S1_TREE = "1304e0faa7262cd1c80cd3e8ab9b01057809f9e0"
 INITIAL_M0_COMMIT = "87317a7b78d531df37c1f84970fef020a8e77ace"
 PRIOR_M0_CORRECTION_COMMIT = "d5dd5b487669dbd343e3472500d940e8d2ded76b"
 M0_CORRECTION_2_COMMIT = "5d3c86ad11248fdb2569b32b62b379ad6e61a59f"
+M0_CORRECTION_3_COMMIT = "63e1b3a970829f5b61de29e7e7f65c5c94f664d5"
 SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
 SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
 A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3"
@@ -501,6 +502,7 @@ def static_check() -> dict[str, Any]:
         INITIAL_M0_COMMIT,
         PRIOR_M0_CORRECTION_COMMIT,
         M0_CORRECTION_2_COMMIT,
+        M0_CORRECTION_3_COMMIT,
         SUBJECT_COMMIT,
         SUBJECT_TREE,
         A133_COMMIT,
@@ -513,8 +515,9 @@ def static_check() -> dict[str, Any]:
             INITIAL_M0_COMMIT,
             PRIOR_M0_CORRECTION_COMMIT,
             M0_CORRECTION_2_COMMIT,
+            M0_CORRECTION_3_COMMIT,
         }
-    ) != 4:
+    ) != 5:
         raise ValueError("M0 correction lineage identities must be distinct")
     for value in (ACCEPTED_SEMANTIC_DIGEST, ACCEPTED_MEMBER_AGGREGATE):
         if re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
@@ -580,11 +583,13 @@ def validate_m0_changed_paths(
     initial_paths: Iterable[str],
     prior_correction_paths: Iterable[str],
     correction_2_paths: Iterable[str],
+    correction_3_paths: Iterable[str],
     successor_paths: Iterable[str],
 ) -> None:
     normalized_initial = sorted(initial_paths)
     normalized_prior = sorted(prior_correction_paths)
     normalized_correction_2 = sorted(correction_2_paths)
+    normalized_correction_3 = sorted(correction_3_paths)
     normalized_successor = sorted(successor_paths)
     if normalized_initial != sorted(M0_PATHS):
         raise ValueError(f"initial M0 changed-path mismatch: {normalized_initial}")
@@ -595,6 +600,10 @@ def validate_m0_changed_paths(
     if normalized_correction_2 != sorted(M0_PATHS):
         raise ValueError(
             f"M0 correction 2 changed-path mismatch: {normalized_correction_2}"
+        )
+    if normalized_correction_3 != [str(SCRIPT_PATH)]:
+        raise ValueError(
+            f"M0 correction 3 changed-path mismatch: {normalized_correction_3}"
         )
     if normalized_successor != [str(SCRIPT_PATH)]:
         raise ValueError(
@@ -637,10 +646,15 @@ def authenticate_m0(
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     if git_text(repo, "rev-parse", "HEAD") != m0_commit:
         raise ValueError("current HEAD is not the explicitly supplied M0 successor commit")
-    if git_text(repo, "rev-parse", f"{m0_commit}^1") != M0_CORRECTION_2_COMMIT:
+    if git_text(repo, "rev-parse", f"{m0_commit}^1") != M0_CORRECTION_3_COMMIT:
         raise ValueError(
-            "M0 script-only successor is not committed directly on exact correction 2"
+            "M0 script-only successor is not committed directly on exact correction 3"
         )
+    if (
+        git_text(repo, "rev-parse", f"{M0_CORRECTION_3_COMMIT}^1")
+        != M0_CORRECTION_2_COMMIT
+    ):
+        raise ValueError("M0 correction 3 is not committed directly on exact correction 2")
     if (
         git_text(repo, "rev-parse", f"{M0_CORRECTION_2_COMMIT}^1")
         != PRIOR_M0_CORRECTION_COMMIT
@@ -686,6 +700,18 @@ def authenticate_m0(
         ).splitlines()
         if line
     )
+    correction_3_paths = sorted(
+        line
+        for line in git_text(
+            repo,
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            M0_CORRECTION_3_COMMIT,
+        ).splitlines()
+        if line
+    )
     successor_paths = sorted(
         line
         for line in git_text(
@@ -697,6 +723,7 @@ def authenticate_m0(
         initial_paths,
         prior_correction_paths,
         correction_2_paths,
+        correction_3_paths,
         successor_paths,
     )
     authenticate_protected_root(repo, invocation.protected_worktree_root)
@@ -1411,6 +1438,8 @@ def run_external_install_audit(
         return {
             "verdict": "fail",
             "reason": "expected exactly one Core and one CLI tarball",
+            "blockedCommandReason": "blocked-by-pack-prerequisite",
+            "privacyObservationComplete": False,
             "npm": False,
             "pnpm": False,
             "aliases": {
@@ -1612,6 +1641,8 @@ def run_external_install_audit(
     )
     return {
         "verdict": verdict,
+        "blockedCommandReason": None,
+        "privacyObservationComplete": True,
         "npm": npm_ok,
         "pnpm": pnpm_ok,
         "aliases": {
@@ -2016,12 +2047,42 @@ def protected_worktree_audit(
         )
     except (OSError, RuntimeError, ValueError):
         active_registration = False
+    expected_final_identity = {
+        "branchRef": PROTECTED_BRANCH_REF,
+        "head": S1_COMMIT,
+        "tree": S1_TREE,
+        "firstParent": SUBJECT_COMMIT,
+    }
+
+    def observe_final_git(*args: str) -> str | None:
+        try:
+            return git_text(protected_root, *args)
+        except (OSError, RuntimeError, ValueError):
+            return None
+
+    observed_final_identity = {
+        "branchRef": observe_final_git("symbolic-ref", "HEAD"),
+        "head": observe_final_git("rev-parse", "HEAD"),
+        "tree": observe_final_git("rev-parse", "HEAD^{tree}"),
+        "firstParent": observe_final_git("rev-parse", "HEAD^1"),
+    }
     try:
-        final_identity_matches = (
+        final_registration_matches = registered_worktree(
+            repo, protected_root, PROTECTED_BRANCH_REF, S1_COMMIT
+        )
+    except (OSError, RuntimeError, ValueError):
+        final_registration_matches = False
+    try:
+        final_authentication_matches = (
             authenticate_protected_root(repo, protected_root) == protected_root.resolve()
         )
     except (OSError, RuntimeError, ValueError):
-        final_identity_matches = False
+        final_authentication_matches = False
+    final_identity_matches = (
+        final_registration_matches
+        and final_authentication_matches
+        and observed_final_identity == expected_final_identity
+    )
     if not same_repository:
         findings.append("protected-worktree-root-identity-mismatch")
     if not active_registration:
@@ -2119,10 +2180,10 @@ def protected_worktree_audit(
         "activeReviewerWorktreeRegistrationMatches": active_registration,
         "finalProtectedGitIdentityMatches": final_identity_matches,
         "finalProtectedGitIdentity": {
-            "branchRef": PROTECTED_BRANCH_REF,
-            "head": S1_COMMIT,
-            "tree": S1_TREE,
-            "firstParent": SUBJECT_COMMIT,
+            "registrationMatches": final_registration_matches,
+            "authenticationMatches": final_authentication_matches,
+            "observed": observed_final_identity,
+            "expected": expected_final_identity,
         },
         "baseline": {"path": str(G0_BASELINE_PATH), "sha256": baseline_sha, "matchesFrozenS1": baseline_sha == frozen_baseline.get("sha256")},
         "immutableExclusionsValidated": immutable_ok,
@@ -2322,6 +2383,7 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     subject_ready = scratch_created = scratch_empty = scratch_distinct = False
     provider_names: list[str] = []
     provider_observed = privacy_observed = False
+    resolved_tools: dict[str, str] | None = None
     extraction_forbidden = b""
 
     try:
@@ -2329,6 +2391,7 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
         if network_probe.get("verdict") != "pass":
             findings.append("network-denial-not-mechanically-established")
         tools = resolve_tools()
+        resolved_tools = tools
         archive = archive_subject(repo)
         with tempfile.TemporaryDirectory(prefix="trellis-t6-mal1-") as temporary:
             extraction, scratch = Path(temporary) / "subject", Path(temporary) / "scratch"
@@ -2363,14 +2426,16 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
                         tools,
                         raw_command_results,
                     )
-                    privacy_observed = True
+                    privacy_observed = (
+                        external_audit.get("privacyObservationComplete") is True
+                    )
+                    blocked_reason = external_audit.get("blockedCommandReason")
+                    if isinstance(blocked_reason, str):
+                        command_completion_reason = blocked_reason
                 except Exception:
                     findings.append("external-install-audit-malformed-or-failed")
                     command_completion_reason = "blocked-by-external-audit-failure"
             command_inventory = command_inventory_observation(raw_command_results)
-            command_results = complete_command_results(
-                raw_command_results, command_completion_reason, tools
-            )
             provider_names = provider_attempts(provider_log)
             provider_observed = True
             if provider_names:
@@ -2383,7 +2448,7 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
             try:
                 runtime_audit, observed, evidence_rows = build_runtime_audit(
                     extraction,
-                    command_results,
+                    raw_command_results,
                     command_inventory,
                     external_audit,
                     tools["git"],
@@ -2402,7 +2467,7 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
 
     command_inventory = command_inventory_observation(raw_command_results)
     command_results = complete_command_results(
-        raw_command_results, command_completion_reason
+        raw_command_results, command_completion_reason, resolved_tools
     )
 
     try:
@@ -2414,16 +2479,23 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     frozen = freeze.get("frozenSubject", {})
     exact_attestation = {
         "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-exact-subject-attestation",
-        "m0Commit": m0_commit, "m0FirstParent": M0_CORRECTION_2_COMMIT,
+        "m0Commit": m0_commit, "m0FirstParent": M0_CORRECTION_3_COMMIT,
+        "m0Correction3FirstParent": M0_CORRECTION_2_COMMIT,
         "m0Correction2FirstParent": PRIOR_M0_CORRECTION_COMMIT,
         "priorM0CorrectionFirstParent": INITIAL_M0_COMMIT,
         "initialM0FirstParent": S1_COMMIT,
         "m0Lineage": [
             {
                 "commit": m0_commit,
-                "firstParent": M0_CORRECTION_2_COMMIT,
+                "firstParent": M0_CORRECTION_3_COMMIT,
                 "changedPaths": [str(SCRIPT_PATH)],
                 "kind": "script-only-successor",
+            },
+            {
+                "commit": M0_CORRECTION_3_COMMIT,
+                "firstParent": M0_CORRECTION_2_COMMIT,
+                "changedPaths": [str(SCRIPT_PATH)],
+                "kind": "script-only-correction-3",
             },
             {
                 "commit": M0_CORRECTION_2_COMMIT,
@@ -2566,6 +2638,7 @@ def focused_self_check() -> list[str]:
         (str(SCRIPT_PATH),),
         M0_PATHS,
         (str(SCRIPT_PATH),),
+        (str(SCRIPT_PATH),),
     )
     blocked = blocked_command_results("self-check")
     if (
@@ -2606,6 +2679,67 @@ def focused_self_check() -> list[str]:
         or partial_inventory["missingCommandIds"] != list(REQUIRED_COMMAND_IDS[1:])
     ):
         raise ValueError("partial command completion self-check failed")
+    self_check_tools = {"pnpm": "/self-check/pnpm", "node": "/self-check/node"}
+    tool_aware_partial = complete_command_results(
+        partial, "self-check-tool-aware", self_check_tools
+    )
+    core_blocked = next(
+        result
+        for result in tool_aware_partial
+        if result.command_id == "core-focused-build"
+    )
+    if core_blocked.status != "blocked" or core_blocked.argv[0] != "pnpm":
+        raise ValueError("tool-aware blocked completion self-check failed")
+
+    original_execute_command = execute_command
+
+    def fake_pack_command(
+        spec: CommandSpec,
+        extraction: Path,
+        env: dict[str, str],
+        tools: dict[str, str],
+    ) -> CommandResult:
+        return CommandResult(spec.command_id, ("pnpm", "pack"), spec.cwd, 0, "pass")
+
+    bad_tarball_results: list[CommandResult] = []
+    globals()["execute_command"] = fake_pack_command
+    try:
+        with tempfile.TemporaryDirectory(
+            prefix="trellis-t6-pack-self-check-"
+        ) as temporary:
+            fixture_root = Path(temporary)
+            fixture_extraction = fixture_root / "subject"
+            fixture_extraction.mkdir()
+            bad_tarball_audit = run_external_install_audit(
+                fixture_extraction,
+                fixture_root / "external",
+                {},
+                self_check_tools,
+                bad_tarball_results,
+            )
+    finally:
+        globals()["execute_command"] = original_execute_command
+    bad_tarball_completed = complete_command_results(
+        bad_tarball_results,
+        bad_tarball_audit.get("blockedCommandReason", "missing-reason"),
+        self_check_tools,
+    )
+    blocked_external_install = next(
+        result
+        for result in bad_tarball_completed
+        if result.command_id == "external-npm-install"
+    )
+    if (
+        [result.command_id for result in bad_tarball_results]
+        != ["external-pack-core", "external-pack-cli"]
+        or bad_tarball_audit.get("blockedCommandReason")
+        != "blocked-by-pack-prerequisite"
+        or bad_tarball_audit.get("privacyObservationComplete") is not False
+        or blocked_external_install.status != "blocked"
+        or blocked_external_install.argv
+        != ("reviewer", "blocked-by-pack-prerequisite")
+    ):
+        raise ValueError("bad tarball prerequisite metadata self-check failed")
     with tempfile.TemporaryDirectory(prefix="trellis-t6-self-check-") as temporary:
         root = Path(temporary)
         (root / "retained.txt").write_text("before\n", encoding="utf-8")
@@ -2662,6 +2796,8 @@ def focused_self_check() -> list[str]:
         "deterministic-blocked-inventory",
         "raw-command-duplicate-extra-preservation",
         "partial-command-completion",
+        "tool-aware-blocked-completion",
+        "bad-tarball-prerequisite-and-privacy-metadata",
         "non-ignored-submodule-content-snapshot",
         "status-parser",
         "containment-verdict",
