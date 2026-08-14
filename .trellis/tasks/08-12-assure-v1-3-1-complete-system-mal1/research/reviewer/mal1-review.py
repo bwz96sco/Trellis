@@ -28,6 +28,7 @@ INITIAL_M0_COMMIT = "87317a7b78d531df37c1f84970fef020a8e77ace"
 PRIOR_M0_CORRECTION_COMMIT = "d5dd5b487669dbd343e3472500d940e8d2ded76b"
 M0_CORRECTION_2_COMMIT = "5d3c86ad11248fdb2569b32b62b379ad6e61a59f"
 M0_CORRECTION_3_COMMIT = "63e1b3a970829f5b61de29e7e7f65c5c94f664d5"
+REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT = "3081e875538177c6c367967450c658e21df68a39"
 SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
 SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
 A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3"
@@ -503,6 +504,7 @@ def static_check() -> dict[str, Any]:
         PRIOR_M0_CORRECTION_COMMIT,
         M0_CORRECTION_2_COMMIT,
         M0_CORRECTION_3_COMMIT,
+        REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
         SUBJECT_COMMIT,
         SUBJECT_TREE,
         A133_COMMIT,
@@ -516,8 +518,9 @@ def static_check() -> dict[str, Any]:
             PRIOR_M0_CORRECTION_COMMIT,
             M0_CORRECTION_2_COMMIT,
             M0_CORRECTION_3_COMMIT,
+            REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
         }
-    ) != 5:
+    ) != 6:
         raise ValueError("M0 correction lineage identities must be distinct")
     for value in (ACCEPTED_SEMANTIC_DIGEST, ACCEPTED_MEMBER_AGGREGATE):
         if re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
@@ -584,13 +587,15 @@ def validate_m0_changed_paths(
     prior_correction_paths: Iterable[str],
     correction_2_paths: Iterable[str],
     correction_3_paths: Iterable[str],
-    successor_paths: Iterable[str],
+    reviewed_successor_paths: Iterable[str],
+    final_correction_paths: Iterable[str],
 ) -> None:
     normalized_initial = sorted(initial_paths)
     normalized_prior = sorted(prior_correction_paths)
     normalized_correction_2 = sorted(correction_2_paths)
     normalized_correction_3 = sorted(correction_3_paths)
-    normalized_successor = sorted(successor_paths)
+    normalized_reviewed_successor = sorted(reviewed_successor_paths)
+    normalized_final_correction = sorted(final_correction_paths)
     if normalized_initial != sorted(M0_PATHS):
         raise ValueError(f"initial M0 changed-path mismatch: {normalized_initial}")
     if normalized_prior != [str(SCRIPT_PATH)]:
@@ -605,9 +610,14 @@ def validate_m0_changed_paths(
         raise ValueError(
             f"M0 correction 3 changed-path mismatch: {normalized_correction_3}"
         )
-    if normalized_successor != [str(SCRIPT_PATH)]:
+    if normalized_reviewed_successor != [str(SCRIPT_PATH)]:
         raise ValueError(
-            f"M0 script-only successor changed-path mismatch: {normalized_successor}"
+            "reviewed M0 script successor changed-path mismatch: "
+            f"{normalized_reviewed_successor}"
+        )
+    if normalized_final_correction != sorted(M0_PATHS):
+        raise ValueError(
+            f"final M0 correction changed-path mismatch: {normalized_final_correction}"
         )
 
 def validate_m0_worktree_bytes(
@@ -646,9 +656,19 @@ def authenticate_m0(
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     if git_text(repo, "rev-parse", "HEAD") != m0_commit:
         raise ValueError("current HEAD is not the explicitly supplied M0 successor commit")
-    if git_text(repo, "rev-parse", f"{m0_commit}^1") != M0_CORRECTION_3_COMMIT:
+    if (
+        git_text(repo, "rev-parse", f"{m0_commit}^1")
+        != REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT
+    ):
         raise ValueError(
-            "M0 script-only successor is not committed directly on exact correction 3"
+            "final M0 correction is not committed directly on the reviewed script successor"
+        )
+    if (
+        git_text(repo, "rev-parse", f"{REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT}^1")
+        != M0_CORRECTION_3_COMMIT
+    ):
+        raise ValueError(
+            "reviewed M0 script successor is not committed directly on exact correction 3"
         )
     if (
         git_text(repo, "rev-parse", f"{M0_CORRECTION_3_COMMIT}^1")
@@ -712,7 +732,19 @@ def authenticate_m0(
         ).splitlines()
         if line
     )
-    successor_paths = sorted(
+    reviewed_successor_paths = sorted(
+        line
+        for line in git_text(
+            repo,
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+        ).splitlines()
+        if line
+    )
+    final_correction_paths = sorted(
         line
         for line in git_text(
             repo, "diff-tree", "--no-commit-id", "--name-only", "-r", m0_commit
@@ -724,7 +756,8 @@ def authenticate_m0(
         prior_correction_paths,
         correction_2_paths,
         correction_3_paths,
-        successor_paths,
+        reviewed_successor_paths,
+        final_correction_paths,
     )
     authenticate_protected_root(repo, invocation.protected_worktree_root)
 
@@ -757,7 +790,8 @@ def authenticate_m0(
         and assigned.get("machineOnly") is True
         and assigned.get("modelClass") == "gpt-5.6-sol"
         and assigned.get("runtimeClass") == "claude-code-isolated-agent-worktree"
-        and assigned.get("status") == "assigned-m1-authorized-awaiting-committed-m0-correction-2"
+        and assigned.get("status")
+        == "assigned-m1-authorized-awaiting-committed-m0-final-correction"
         and assigned.get("agentId") not in EXPECTED_ACTORS
     )
     validate_invocation_declarations(assigned, invocation)
@@ -1343,10 +1377,11 @@ def stream_contains_forbidden(
 
 def scan_tarball_privacy(
     tarballs: Iterable[Path], extraction: Path
-) -> tuple[set[str], int, list[str]]:
+) -> tuple[set[str], int, list[str], bool]:
     procedure_paths: set[str] = set()
     procedure_files = 0
     privacy_findings: list[str] = []
+    observation_complete = True
     forbidden = (
         str(extraction).encode(),
         str(Path.home()).encode(),
@@ -1359,6 +1394,7 @@ def scan_tarball_privacy(
             archive = tarfile.open(tarball, mode="r:gz")
         except (OSError, tarfile.TarError):
             privacy_findings.append(f"tarball-unreadable:{tarball.name}")
+            observation_complete = False
             continue
         with archive:
             for member in archive.getmembers():
@@ -1397,11 +1433,17 @@ def scan_tarball_privacy(
                     stream = archive.extractfile(member)
                     if stream is None:
                         privacy_findings.append(f"regular-member-unreadable:{name}")
+                        observation_complete = False
                     else:
                         with stream:
                             if stream_contains_forbidden(stream, forbidden):
                                 privacy_findings.append(f"forbidden-bytes:{name}")
-    return procedure_paths, procedure_files, sorted(set(privacy_findings))
+    return (
+        procedure_paths,
+        procedure_files,
+        sorted(set(privacy_findings)),
+        observation_complete,
+    )
 
 def run_external_install_audit(
     extraction: Path,
@@ -1606,9 +1648,12 @@ def run_external_install_audit(
                 )
             )
 
-    procedure_paths, procedure_files, privacy_findings = scan_tarball_privacy(
-        (core_tarball, cli_tarball), extraction
-    )
+    (
+        procedure_paths,
+        procedure_files,
+        privacy_findings,
+        privacy_observation_complete,
+    ) = scan_tarball_privacy((core_tarball, cli_tarball), extraction)
     external_results = results[external_start:]
     npm_ok = all(
         unique_command_status(external_results, command_id) == "pass"
@@ -1636,13 +1681,14 @@ def run_external_install_audit(
         if all(row.status == "pass" for row in external_results)
         and procedure_paths == set(PROCEDURE_IDS)
         and procedure_files == 204
+        and privacy_observation_complete
         and not privacy_findings
         else "fail"
     )
     return {
         "verdict": verdict,
         "blockedCommandReason": None,
-        "privacyObservationComplete": True,
+        "privacyObservationComplete": privacy_observation_complete,
         "npm": npm_ok,
         "pnpm": pnpm_ok,
         "aliases": {
@@ -2479,7 +2525,9 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     frozen = freeze.get("frozenSubject", {})
     exact_attestation = {
         "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-exact-subject-attestation",
-        "m0Commit": m0_commit, "m0FirstParent": M0_CORRECTION_3_COMMIT,
+        "m0Commit": m0_commit,
+        "m0FirstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+        "reviewedM0ScriptSuccessorFirstParent": M0_CORRECTION_3_COMMIT,
         "m0Correction3FirstParent": M0_CORRECTION_2_COMMIT,
         "m0Correction2FirstParent": PRIOR_M0_CORRECTION_COMMIT,
         "priorM0CorrectionFirstParent": INITIAL_M0_COMMIT,
@@ -2487,9 +2535,15 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
         "m0Lineage": [
             {
                 "commit": m0_commit,
+                "firstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+                "changedPaths": list(M0_PATHS),
+                "kind": "final-three-path-correction",
+            },
+            {
+                "commit": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
                 "firstParent": M0_CORRECTION_3_COMMIT,
                 "changedPaths": [str(SCRIPT_PATH)],
-                "kind": "script-only-successor",
+                "kind": "reviewed-script-only-successor",
             },
             {
                 "commit": M0_CORRECTION_3_COMMIT,
@@ -2639,6 +2693,7 @@ def focused_self_check() -> list[str]:
         M0_PATHS,
         (str(SCRIPT_PATH),),
         (str(SCRIPT_PATH),),
+        M0_PATHS,
     )
     blocked = blocked_command_results("self-check")
     if (
@@ -2740,6 +2795,20 @@ def focused_self_check() -> list[str]:
         != ("reviewer", "blocked-by-pack-prerequisite")
     ):
         raise ValueError("bad tarball prerequisite metadata self-check failed")
+    with tempfile.TemporaryDirectory(
+        prefix="trellis-t6-privacy-self-check-"
+    ) as temporary:
+        privacy_root = Path(temporary)
+        unreadable_tarball = privacy_root / "unreadable.tgz"
+        unreadable_tarball.write_bytes(b"not-a-tarball")
+        _, _, unreadable_findings, unreadable_complete = scan_tarball_privacy(
+            (unreadable_tarball,), privacy_root
+        )
+    if (
+        unreadable_complete is not False
+        or unreadable_findings != ["tarball-unreadable:unreadable.tgz"]
+    ):
+        raise ValueError("unreadable tarball privacy completeness self-check failed")
     with tempfile.TemporaryDirectory(prefix="trellis-t6-self-check-") as temporary:
         root = Path(temporary)
         (root / "retained.txt").write_text("before\n", encoding="utf-8")
@@ -2798,6 +2867,7 @@ def focused_self_check() -> list[str]:
         "partial-command-completion",
         "tool-aware-blocked-completion",
         "bad-tarball-prerequisite-and-privacy-metadata",
+        "unreadable-tarball-privacy-completeness",
         "non-ignored-submodule-content-snapshot",
         "status-parser",
         "containment-verdict",
