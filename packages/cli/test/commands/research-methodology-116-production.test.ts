@@ -1,130 +1,162 @@
-/**
- * CS5-5 genuine 116-case production mutation harness (real record-result path).
- */
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import {
-  selectApplicableV13BindingsForProcedure,
-} from "@mindfoldhq/trellis-core/research";
-
 import { recordApprovedResearchDispatchResult } from "../../src/commands/research/dispatch-command.js";
 import {
+  A133_CANDIDATE_MANIFEST_SHA256,
+  A133_COMMIT,
+  A133_COMPLETE_OUTPUT_SET_SHA256,
+  A133_TREE,
+  B133_COMMIT,
+  B133_TREE,
+  LIVE_PROCEDURE_VERSION,
+  O133_COMMIT,
+  O133_TREE,
+  PROCEDURE_VERSION,
   PRODUCTION_CODE_EQUIVALENCE,
+  REPO_ROOT,
+  T3_COMMIT,
+  T3_CORRECTION_COMMIT,
+  T3_CORRECTION_TREE,
+  T3_TREE,
+  T4_RESEARCH_ROOT,
+  assertInstalledAndImmutablePacksMatch,
   buildCasePayload,
-  buildV206Fixture,
+  buildV207Fixture,
+  eventDelta,
+  evidenceFilesystemObservation,
   extractProductionErrorCodes,
-  loadA3Pack,
+  observeCanonicalEvents,
   snapshotFilesystem,
-  type V206Fixture,
+  stableResearchId,
+  writeCanonicalJson,
+  writeCanonicalJsonl,
+  type V207Fixture,
 } from "../research-methodology-harness/production-116.js";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const a3Research = path.resolve(
-  here,
-  "../../../../.trellis/tasks/08-04-author-evaluation-contract-v1-3-attempt-3/research",
-);
-const repoRoot = path.resolve(here, "../../../..");
-
-interface A3DeltaCase {
-  caseId: string;
-  ruleKind: string;
-  fixtureClass: string;
-  syntheticMutation: string;
-  expectedStableErrors: string[];
-  bindingIds: string[];
-  ruleTargets: string[];
-  validator: { id: string; version: string; severity: string };
-  domain: string;
+interface A133DeltaCase {
+  readonly caseId: string;
+  readonly ruleKind: string;
+  readonly fixtureClass: "positive" | "base" | "critical-negative" | "inapplicable";
+  readonly syntheticMutation: string | Readonly<Record<string, unknown>>;
+  readonly expected: string;
+  readonly expectedStableErrors: readonly string[];
+  readonly zeroWriteExpectation: string;
+  readonly bindingIds: readonly string[];
+  readonly ruleTargets: readonly string[];
+  readonly validator: {
+    readonly id: string;
+    readonly version: string;
+    readonly severity: string;
+  };
+  readonly domain: string;
+  readonly provenance: Readonly<Record<string, unknown>>;
 }
 
-function loadA3DeltaCases(): A3DeltaCase[] {
-  const doc = JSON.parse(
-    fs.readFileSync(path.join(a3Research, "differential-test-matrix-v1.3.json"), "utf8"),
-  ) as { v13DeltaCases: A3DeltaCase[] };
-  return doc.v13DeltaCases;
+interface CaseEvidenceRow {
+  readonly schemaVersion: 1;
+  readonly population: "production-116";
+  readonly ordinal: number;
+  readonly caseId: string;
+  readonly ruleKind: string;
+  readonly fixtureClass: string;
+  readonly syntheticMutation: string | Readonly<Record<string, unknown>>;
+  readonly procedureId: string;
+  readonly procedureVersion: string;
+  readonly liveProcedureVersion: string;
+  readonly contractExpected: string;
+  readonly expectedProductionOutcome: "committed" | "rejected";
+  readonly actualProductionOutcome: "committed" | "rejected";
+  readonly expectedStableErrors: readonly string[];
+  readonly actualStableErrors: readonly string[];
+  readonly expectedCodesPresent: boolean;
+  readonly productionPrevented: boolean;
+  readonly productionEntryPoint: "recordApprovedResearchDispatchResult";
+  readonly outcomeSource: "root-owned-production-entry-point";
+  readonly productionCallCount: 1;
+  readonly filesystemBefore: ReturnType<typeof evidenceFilesystemObservation>;
+  readonly filesystemAfter: ReturnType<typeof evidenceFilesystemObservation>;
+  readonly canonicalEventsBefore: ReturnType<typeof observeCanonicalEvents>;
+  readonly canonicalEventsAfter: ReturnType<typeof observeCanonicalEvents>;
+  readonly canonicalEventDelta: ReturnType<typeof eventDelta>;
+  readonly zeroWrite: boolean;
+  readonly zeroWriteExpectation: string;
+  readonly validator: {
+    readonly id: string;
+    readonly version: string;
+    readonly severity: string;
+  };
+  readonly bindingIds: readonly string[];
+  readonly ruleTargets: readonly string[];
+  readonly domain: string;
+  readonly provenance: Readonly<Record<string, unknown>>;
 }
 
-function familyOf(row: { family: unknown }): string {
-  const fam = row.family;
-  return typeof fam === "object" && fam !== null && "value" in (fam as object)
-    ? (fam as { value: string }).value
-    : (fam as string);
+function loadA133DeltaCases(): A133DeltaCase[] {
+  const { immutable } = assertInstalledAndImmutablePacksMatch();
+  return immutable.deltaCases.map((row) => row as unknown as A133DeltaCase);
 }
 
-function publicIdentityOf(row: { publicIdentity: unknown }): string {
-  const pi = row.publicIdentity;
-  return typeof pi === "object" && pi !== null && "value" in (pi as object)
-    ? (pi as { value: string }).value
-    : (pi as string);
-}
-
-const PROCEDURE_BY_FAMILY: Readonly<Record<string, string>> = {
-  "research-review-case": "review-case-v1",
-  "research-review-campaign": "review-campaign-v1",
-  "research-project-setup": "project-setup-v1",
-  "research-experiment-campaign": "experiment-campaign-v1",
-  "research-computation": "computation-case-v1",
-  "research-quest": "quest-framing-v1",
-  "research-quest-admin": "quest-admin-v1",
-  "research-literature": "literature-scan-v1",
-  "research-ideation": "idea-generation-v1",
-  "research-idea-evaluation": "idea-evaluation-v1",
-  "research-experiment": "experiment-round-v1",
-};
-
-function procedureForCase(
-  pack: ReturnType<typeof loadA3Pack>,
-  deltaCase: A3DeltaCase,
-): string {
+function procedureForCase(deltaCase: A133DeltaCase): string {
   if (deltaCase.ruleKind.startsWith("closure.")) {
     return deltaCase.fixtureClass === "inapplicable"
-      ? "review-case-v1"
+      ? "computation-case-v1"
       : "literature-scan-v1";
   }
   if (deltaCase.ruleKind.startsWith("artifact.")) {
-    const target = pack.artifacts.find(
-      (a) => a.artifactId === deltaCase.ruleTargets[0],
-    );
-    const family = target === undefined ? undefined : familyOf(target);
-    const procedure = family === undefined ? undefined : PROCEDURE_BY_FAMILY[family];
-    if (procedure === undefined) {
-      throw new Error(
-        `No Procedure for case ${deltaCase.caseId} family ${String(family)}`,
-      );
-    }
-    if (deltaCase.fixtureClass === "inapplicable") {
-      // A family that is NOT the target family (bindings not applicable).
-      return procedure === "review-case-v1" ? "literature-scan-v1" : "review-case-v1";
-    }
-    return procedure;
+    return deltaCase.fixtureClass === "inapplicable"
+      ? "literature-scan-v1"
+      : "computation-case-v1";
   }
-  // Global contract/validator/report/authority rules.
-  return "review-case-v1";
+  return "computation-case-v1";
 }
 
-function writeFileInRepo(
-  fixture: V206Fixture,
+function writeFileInRepository(
+  fixture: V207Fixture,
   relativePath: string,
   bytes: string | Uint8Array,
 ): void {
-  const abs = path.join(fixture.repository, relativePath);
-  fs.mkdirSync(path.dirname(abs), { recursive: true });
-  fs.writeFileSync(abs, bytes);
+  const absolute = path.join(fixture.repository, relativePath);
+  fs.mkdirSync(path.dirname(absolute), { recursive: true });
+  fs.writeFileSync(absolute, bytes);
+}
+
+function updateRefDigest(
+  fixture: V207Fixture,
+  payload: ReturnType<typeof buildCasePayload>,
+  relativePath: string,
+): void {
+  const ref = payload.artifactRefs.find((candidate) => candidate.path === relativePath);
+  if (ref === undefined) {
+    throw new Error(`Missing ArtifactRef for '${relativePath}'`);
+  }
+  ref.sha256 = createHash("sha256")
+    .update(fs.readFileSync(path.join(fixture.repository, relativePath)))
+    .digest("hex");
+}
+
+function mutationName(deltaCase: A133DeltaCase): string {
+  return typeof deltaCase.syntheticMutation === "string"
+    ? deltaCase.syntheticMutation
+    : `${String(deltaCase.syntheticMutation.operation)}:${String(
+        deltaCase.syntheticMutation.target,
+      )}`;
 }
 
 function applyMutation(
-  deltaCase: A3DeltaCase,
+  deltaCase: A133DeltaCase,
   payload: ReturnType<typeof buildCasePayload>,
-  fixture: V206Fixture,
+  fixture: V207Fixture,
 ): void {
+  if (typeof deltaCase.syntheticMutation !== "string") {
+    return;
+  }
   const refs = payload.artifactRefs;
-  const familyIdentity = publicIdentityOf(fixture.familyRows[0]);
+  const first = refs[0];
   switch (deltaCase.syntheticMutation) {
     case "all-targets-supply-complete-valid-facts":
     case "valid-worker-proposal-remains-noncanonical":
@@ -132,192 +164,140 @@ function applyMutation(
     case "all-applicable-families-supply-valid-explicit-closure-facts":
     case "different-exact-procedure-family":
     case "family-outside-explicit-closure-set":
-      // Valid payload; fixture choice carries the applicability semantics.
-      break;
-    case "global:validator-binding-integrity:positive":
-    case "global:validator-binding-integrity:base":
-    case "global:validator-binding-integrity:inapplicable":
-    case "global:validator-binding-integrity:critical-negative":
-    case "global:report-v2-binding:positive":
-    case "global:report-v2-binding:base":
-    case "global:report-v2-binding:inapplicable":
-    case "global:report-v2-binding:critical-negative":
-    case "global:worker-authority-boundary:positive":
-    case "global:worker-authority-boundary:base":
-    case "global:worker-authority-boundary:inapplicable":
-    case "global:worker-authority-boundary:critical-negative":
-    case "global:output-disposition-integrity:positive":
-    case "global:output-disposition-integrity:base":
-    case "global:output-disposition-integrity:inapplicable":
-    case "global:output-disposition-integrity:critical-negative":
-    case "global:blocked-output-kind:positive":
-    case "global:blocked-output-kind:base":
-    case "global:blocked-output-kind:inapplicable":
-    case "global:blocked-output-kind:critical-negative":
-    case "global:closure-applicability:positive":
-    case "global:closure-applicability:base":
-    case "global:closure-applicability:inapplicable":
-    case "global:closure-applicability:critical-negative":
-    case "global:canonical-bytes:positive":
-    case "global:canonical-bytes:base":
-    case "global:canonical-bytes:inapplicable":
-    case "global:canonical-bytes:critical-negative":
-    case "global:compatibility:positive":
-    case "global:compatibility:base":
-    case "global:compatibility:inapplicable":
-    case "global:compatibility:critical-negative":
-    case "global:candidate-authority:positive":
-    case "global:candidate-authority:base":
-    case "global:candidate-authority:inapplicable":
-    case "global:candidate-authority:critical-negative":
-    case "global:differential-domains:positive":
-    case "global:differential-domains:base":
-    case "global:differential-domains:inapplicable":
-    case "global:differential-domains:critical-negative":
-    case "global:conditional-artifacts:positive":
-    case "global:conditional-artifacts:base":
-    case "global:conditional-artifacts:inapplicable":
-    case "global:conditional-artifacts:critical-negative":
-      // Contract/registry integrity is positively verified against the
-      // authenticated accepted pack; these mutations cannot target the
-      // immutable installed bytes.
-      break;
+      return;
     case "remove-required-artifact":
       refs.splice(0, 1);
-      break;
+      return;
     case "replace-declared-media-type":
-      refs[0].mediaType = "application/x-invalid-media-type";
-      break;
+      if (first !== undefined) first.mediaType = "application/x-invalid-media-type";
+      return;
     case "claim-unauthorized-producer":
     case "claim-unauthorized-consumer":
-      // Undeclared artifact production (worker claims an artifact the family
-      // does not authorize).
-      writeFileInRepo(fixture, "undeclared-artifact.md", "undeclared\n");
+    case "add-undeclared-content-semantic-dependency": {
+      const relativePath = `${deltaCase.caseId}.undeclared.json`;
+      const body = '{"undeclared":true}\n';
+      writeFileInRepository(fixture, relativePath, body);
       refs.push({
-        id: createArtifactIdLocal(),
+        id: stableResearchId("art", `${deltaCase.caseId}:undeclared`),
         repositoryId: fixture.repositoryId,
-        path: "undeclared-artifact.md",
-        sha256: createHash("sha256").update("undeclared\n").digest("hex"),
-        mediaType: "text/markdown",
+        path: relativePath,
+        sha256: createHash("sha256").update(body).digest("hex"),
+        mediaType: "application/json",
       });
-      break;
+      return;
+    }
     case "drift-repository-path-or-digest-binding":
     case "remove-or-drift-required-provenance-binding":
     case "change-accepted-immutable-field":
-      refs[0].sha256 = "0".repeat(64);
-      break;
-    case "supply-zero-or-duplicate-materializations": {
-      // Duplicate materialization: same basename at a different path.
-      const first = refs[0];
-      const dupPath = `duplicate/${path.basename(first.path)}`;
-      const body = fixture.artifactFiles[familyIdentity] ?? "";
-      writeFileInRepo(fixture, dupPath, body);
-      refs.push({
-        id: createArtifactIdLocal(),
-        repositoryId: fixture.repositoryId,
-        path: dupPath,
-        sha256: createHash("sha256").update(body).digest("hex"),
-        mediaType: first.mediaType,
-      });
-      break;
-    }
+      if (first !== undefined) first.sha256 = "0".repeat(64);
+      return;
+    case "supply-zero-or-duplicate-materializations":
+    case "mix-dispatch-approval-repository-or-alias-bindings":
+      if (first !== undefined) {
+        refs.push({
+          ...first,
+          id: stableResearchId("art", `${deltaCase.caseId}:duplicate`),
+        });
+      }
+      return;
     case "supply-invalid-or-drifted-placeholder-id":
-      refs[0].id = "not-a-valid-artifact-id";
-      break;
-    case "add-undeclared-content-semantic-dependency":
-      writeFileInRepo(fixture, "undeclared-dependency.json", "{}");
-      refs.push({
-        id: createArtifactIdLocal(),
-        repositoryId: fixture.repositoryId,
-        path: "undeclared-dependency.json",
-        sha256: createHash("sha256").update("{}").digest("hex"),
-        mediaType: "application/json",
-      });
-      break;
+      if (first !== undefined) first.id = "not-a-valid-artifact-id";
+      return;
     case "attempt-invalid-or-terminal-reopen-transition":
       payload.proposal.status = "accepted";
-      break;
+      return;
     case "bypass-validation-by-result-status":
       payload.result.status = "blocked";
-      refs.splice(0, 1); // status cannot substitute missing evidence
-      break;
-    case "mix-dispatch-approval-repository-or-alias-bindings": {
-      const first = refs[0];
-      refs.push({
-        ...first,
-        id: createArtifactIdLocal(),
-      });
-      break;
-    }
+      refs.splice(0, 1);
+      return;
     case "derive-closure-from-result-status":
       payload.result.status = "blocked";
-      break;
-    case "true-side-empty-or-false-side-nonempty-or-unbound-or-self-referential-artifact-id":
-      if (fixture.closureExactPath !== undefined) {
-        writeFileInRepo(
-          fixture,
-          fixture.closureExactPath,
-          '{"schemaVersion":1,"family":"research-literature","selected":{"value":true,"evidenceArtifactIds":[]},"blocked":{"value":false,"evidenceArtifactIds":[]}}',
-        );
-        const bytes = fs.readFileSync(
-          path.join(fixture.repository, fixture.closureExactPath),
-        );
-        refs.find((r) => r.path === fixture.closureExactPath)!.sha256 =
-          createHash("sha256").update(bytes).digest("hex");
-      }
-      break;
+      return;
     case "unknown-missing-null-or-wrong-typed-closure-field":
       if (fixture.closureExactPath !== undefined) {
-        writeFileInRepo(fixture, fixture.closureExactPath, '{"family":"nope"}');
-        const bytes = fs.readFileSync(
-          path.join(fixture.repository, fixture.closureExactPath),
-        );
-        refs.find((r) => r.path === fixture.closureExactPath)!.sha256 =
-          createHash("sha256").update(bytes).digest("hex");
-      }
-      break;
-    case "both-or-neither-closure-boolean-true":
-      if (fixture.closureExactPath !== undefined) {
-        writeFileInRepo(
+        writeFileInRepository(
           fixture,
           fixture.closureExactPath,
-          '{"schemaVersion":1,"family":"research-literature","selected":{"value":true,"evidenceArtifactIds":[]},"blocked":{"value":true,"evidenceArtifactIds":[]}}',
+          '{"family":"invalid"}\n',
         );
-        const bytes = fs.readFileSync(
-          path.join(fixture.repository, fixture.closureExactPath),
-        );
-        refs.find((r) => r.path === fixture.closureExactPath)!.sha256 =
-          createHash("sha256").update(bytes).digest("hex");
+        updateRefDigest(fixture, payload, fixture.closureExactPath);
       }
-      break;
+      return;
+    case "true-side-empty-or-false-side-nonempty-or-unbound-or-self-referential-artifact-id":
+      if (fixture.closureExactPath !== undefined) {
+        const closure = JSON.parse(
+          fs.readFileSync(
+            path.join(fixture.repository, fixture.closureExactPath),
+            "utf8",
+          ),
+        ) as Record<string, unknown>;
+        writeFileInRepository(
+          fixture,
+          fixture.closureExactPath,
+          `${JSON.stringify({
+            ...closure,
+            selected: { value: true, evidenceArtifactIds: [] },
+            blocked: { value: false, evidenceArtifactIds: [] },
+          })}\n`,
+        );
+        updateRefDigest(fixture, payload, fixture.closureExactPath);
+      }
+      return;
+    case "both-or-neither-closure-boolean-true":
+      if (fixture.closureExactPath !== undefined) {
+        const closure = JSON.parse(
+          fs.readFileSync(
+            path.join(fixture.repository, fixture.closureExactPath),
+            "utf8",
+          ),
+        ) as Record<string, unknown>;
+        writeFileInRepository(
+          fixture,
+          fixture.closureExactPath,
+          `${JSON.stringify({
+            ...closure,
+            selected: { value: true, evidenceArtifactIds: [] },
+            blocked: { value: true, evidenceArtifactIds: [] },
+          })}\n`,
+        );
+        updateRefDigest(fixture, payload, fixture.closureExactPath);
+      }
+      return;
     case "worker-attempts-validation-recording-decision-or-canonical-mutation":
       payload.proposal.operations = [
         {
           kind: "artifact.register",
           artifact: {
-            id: `art_${"1".repeat(36)}`,
+            id: stableResearchId("art", `${deltaCase.caseId}:operation`),
             repositoryId: fixture.repositoryId,
             path: "outputs/report.json",
           },
         },
       ];
-      break;
+      return;
     default:
       throw new Error(
-        `Unhandled mutation '${deltaCase.syntheticMutation}' for case ${deltaCase.caseId}`,
+        `Unhandled mutation '${deltaCase.syntheticMutation}' for ${deltaCase.caseId}`,
       );
   }
 }
 
-function createArtifactIdLocal(): string {
-  return `art_${randomUUID()}`;
+function isProductionPrevented(deltaCase: A133DeltaCase): boolean {
+  if (deltaCase.fixtureClass !== "critical-negative") return false;
+  if (typeof deltaCase.syntheticMutation !== "string") return true;
+  return [
+    "claim-unauthorized-producer",
+    "claim-unauthorized-consumer",
+    "add-undeclared-content-semantic-dependency",
+    "derive-closure-from-result-status",
+    "worker-attempts-validation-recording-decision-or-canonical-mutation",
+  ].includes(deltaCase.syntheticMutation);
 }
 
 async function runRecord(
-  fixture: V206Fixture,
+  fixture: V207Fixture,
   payload: { result: Record<string, unknown>; proposal: Record<string, unknown> },
   idempotencyKey: string,
-  createdAt: string,
 ) {
   return recordApprovedResearchDispatchResult({
     root: fixture.root,
@@ -329,366 +309,324 @@ async function runRecord(
       cwd: fixture.root,
       read: () =>
         Buffer.from(
-          JSON.stringify({
-            result: payload.result,
-            proposal: payload.proposal,
-          }),
+          JSON.stringify({ result: payload.result, proposal: payload.proposal }),
           "utf8",
         ),
     },
-    now: new Date(Date.parse(createdAt) + 5_000),
+    now: new Date(Date.parse(fixture.createdAt) + 5_000),
   });
 }
 
-interface EvidenceRow {
-  caseId: string;
-  ruleKind: string;
-  fixtureClass: string;
-  syntheticMutation: string;
-  procedureId: string;
-  procedureVersion: string;
-  expectedStableErrors: string[];
-  productionErrorCodes: string[];
-  resultClassification: string;
-  productionEntryPoint: string;
-  zeroWrite: boolean;
-  validator: { id: string; version: string };
-  expectedCodesPresent: boolean;
-  productionPrevented: boolean;
+function expectedCodesPresent(
+  deltaCase: A133DeltaCase,
+  actualStableErrors: readonly string[],
+  productionPrevented: boolean,
+): boolean {
+  if (productionPrevented || deltaCase.expectedStableErrors.length === 0) return true;
+  return deltaCase.expectedStableErrors.every((code) =>
+    (PRODUCTION_CODE_EQUIVALENCE[code] ?? [code]).some((candidate) =>
+      actualStableErrors.includes(candidate),
+    ),
+  );
 }
 
-function evidenceDest(): string | undefined {
-  const configured = process.env.TRELLIS_CS5_116_EVIDENCE_DIR;
-  if (typeof configured === "string" && configured.length > 0) {
-    fs.mkdirSync(configured, { recursive: true });
-    return configured;
-  }
-  return undefined;
+function writeExecutionEvidence(rows: readonly CaseEvidenceRow[]): void {
+  const rejected = rows.filter((row) => row.actualProductionOutcome === "rejected");
+  const effects = {
+    schemaVersion: 1,
+    recordKind: "filesystem-and-event-effects",
+    population: "production-116",
+    caseCount: rows.length,
+    rejectedCaseCount: rejected.length,
+    rejectedZeroWriteCount: rejected.filter((row) => row.zeroWrite).length,
+    committedCaseCount: rows.length - rejected.length,
+    totalCanonicalEventsAppended: rows.reduce(
+      (sum, row) => sum + row.canonicalEventDelta.appendedCount,
+      0,
+    ),
+    rejectedCases: rejected.map((row) => ({
+      caseId: row.caseId,
+      filesystemBeforeDigest: row.filesystemBefore.digest,
+      filesystemAfterDigest: row.filesystemAfter.digest,
+      canonicalEventsBeforeDigest: row.canonicalEventsBefore.digest,
+      canonicalEventsAfterDigest: row.canonicalEventsAfter.digest,
+      appendedEventCount: row.canonicalEventDelta.appendedCount,
+      zeroWrite: row.zeroWrite,
+    })),
+    verdict:
+      rejected.every(
+        (row) => row.zeroWrite && row.canonicalEventDelta.appendedCount === 0,
+      ) && rows.length === 116
+        ? "pass"
+        : "fail",
+  };
+  writeCanonicalJsonl(
+    path.join(T4_RESEARCH_ROOT, "production-116-case-evidence.jsonl"),
+    rows,
+  );
+  writeCanonicalJson(
+    path.join(T4_RESEARCH_ROOT, "filesystem-and-event-effects.json"),
+    effects,
+  );
 }
 
-describe("CS5-5 genuine 116-case production mutation harness", { timeout: 1_800_000 }, () => {
-  const pack = loadA3Pack();
-  const cases = loadA3DeltaCases();
-  expect(cases).toHaveLength(116);
+describe(
+  "T4 A133-bound 116-case production-reachable harness",
+  { timeout: 1_800_000 },
+  () => {
+    assertInstalledAndImmutablePacksMatch();
+    const cases = loadA133DeltaCases();
 
-  it("executes all 116 accepted delta cases through the real record-result path", async () => {
-    const rows: EvidenceRow[] = [];
-    const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cs5-116-"));
-    const seenIds = new Set<string>();
-    for (const deltaCase of cases) {
-      expect(seenIds.has(deltaCase.caseId)).toBe(false);
-      seenIds.add(deltaCase.caseId);
-      const procedureId = procedureForCase(pack, deltaCase);
-      const fixture = await buildV206Fixture(
-        path.join(sandboxRoot, deltaCase.caseId),
-        procedureId,
-      );
-      const payload = buildCasePayload({
-        familyRows: fixture.familyRows,
-        artifactFiles: fixture.artifactFiles,
-        repositoryId: fixture.repositoryId,
-        dispatchId: fixture.dispatchId,
-        runId: fixture.runId,
-        questId: fixture.questId,
-        approvalId: fixture.approvalId,
-        createdAt: fixture.createdAt,
-        closureExactPath: fixture.closureExactPath,
-        closureBytes: fixture.closureBytes,
-        closureEvidencePath: fixture.closureEvidencePath,
-        closureEvidenceBytes: fixture.closureEvidenceBytes,
-      });
-      applyMutation(deltaCase, payload, fixture);
-      const productionPrevented =
-        deltaCase.syntheticMutation === "derive-closure-from-result-status" ||
-        (deltaCase.fixtureClass === "critical-negative" &&
-          deltaCase.syntheticMutation.startsWith("global:"));
-      const beforeTree = snapshotFilesystem(sandboxRoot);
-      let productionErrorCodes: string[] = [];
-      let resultClassification = "unexecuted";
-      let thrown: unknown;
+    it("executes exactly 116 unique A133 cases once through the root-owned recorder", async () => {
+      expect(cases).toHaveLength(116);
+      const rows: CaseEvidenceRow[] = [];
+      const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-t4-116-"));
+      const seen = new Set<string>();
       try {
+        for (const [ordinal, deltaCase] of cases.entries()) {
+          expect(seen.has(deltaCase.caseId), deltaCase.caseId).toBe(false);
+          seen.add(deltaCase.caseId);
+          const procedureId = procedureForCase(deltaCase);
+          const caseSandbox = path.join(sandboxRoot, String(ordinal).padStart(3, "0"));
+          const fixture = await buildV207Fixture(
+            caseSandbox,
+            procedureId,
+            deltaCase.caseId,
+          );
+          const payload = buildCasePayload({
+            caseId: deltaCase.caseId,
+            familyRows: fixture.familyRows,
+            artifactFiles: fixture.artifactFiles,
+            repositoryId: fixture.repositoryId,
+            dispatchId: fixture.dispatchId,
+            runId: fixture.runId,
+            questId: fixture.questId,
+            approvalId: fixture.approvalId,
+            createdAt: fixture.createdAt,
+            closureExactPath: fixture.closureExactPath,
+            closureBytes: fixture.closureBytes,
+            closureEvidencePath: fixture.closureEvidencePath,
+            closureEvidenceBytes: fixture.closureEvidenceBytes,
+          });
+          applyMutation(deltaCase, payload, fixture);
+          const productionPrevented = isProductionPrevented(deltaCase);
+          const expectedProductionOutcome =
+            deltaCase.fixtureClass === "critical-negative" && !productionPrevented
+              ? "rejected"
+              : "committed";
+          const filesystemBefore = snapshotFilesystem(caseSandbox);
+          const canonicalEventsBefore = observeCanonicalEvents(fixture.root);
+          let actualProductionOutcome: "committed" | "rejected" = "committed";
+          let actualStableErrors: string[] = [];
+          try {
+            await runRecord(
+              fixture,
+              payload,
+              `t4:production-116:${deltaCase.caseId}`,
+            );
+          } catch (error) {
+            actualProductionOutcome = "rejected";
+            actualStableErrors = extractProductionErrorCodes(error);
+          }
+          const filesystemAfter = snapshotFilesystem(caseSandbox);
+          const canonicalEventsAfter = observeCanonicalEvents(fixture.root);
+          const canonicalEventDelta = eventDelta(
+            canonicalEventsBefore,
+            canonicalEventsAfter,
+          );
+          const zeroWrite =
+            filesystemBefore.rawDigest === filesystemAfter.rawDigest &&
+            canonicalEventDelta.appendedCount === 0;
+          expect(
+            actualProductionOutcome,
+            `${deltaCase.caseId}: ${mutationName(deltaCase)}`,
+          ).toBe(expectedProductionOutcome);
+          if (actualProductionOutcome === "rejected") {
+            expect(actualStableErrors.length, deltaCase.caseId).toBeGreaterThan(0);
+            expect(zeroWrite, deltaCase.caseId).toBe(true);
+          } else {
+            expect(canonicalEventDelta.appendedKinds, deltaCase.caseId).toEqual([
+              "result.recorded",
+              "proposal.recorded",
+              "approval.consumed",
+            ]);
+          }
+          const codesPresent = expectedCodesPresent(
+            deltaCase,
+            actualStableErrors,
+            productionPrevented,
+          );
+          expect(
+            codesPresent,
+            `${deltaCase.caseId}: expected=${deltaCase.expectedStableErrors.join(",")} actual=${actualStableErrors.join(",")}`,
+          ).toBe(true);
+          rows.push({
+            schemaVersion: 1,
+            population: "production-116",
+            ordinal,
+            caseId: deltaCase.caseId,
+            ruleKind: deltaCase.ruleKind,
+            fixtureClass: deltaCase.fixtureClass,
+            syntheticMutation: deltaCase.syntheticMutation,
+            procedureId,
+            procedureVersion: fixture.procedure.procedureVersion,
+            liveProcedureVersion: LIVE_PROCEDURE_VERSION,
+            contractExpected: deltaCase.expected,
+            expectedProductionOutcome,
+            actualProductionOutcome,
+            expectedStableErrors: deltaCase.expectedStableErrors,
+            actualStableErrors,
+            expectedCodesPresent: codesPresent,
+            productionPrevented,
+            productionEntryPoint: "recordApprovedResearchDispatchResult",
+            outcomeSource: "root-owned-production-entry-point",
+            productionCallCount: 1,
+            filesystemBefore: evidenceFilesystemObservation(filesystemBefore),
+            filesystemAfter: evidenceFilesystemObservation(filesystemAfter),
+            canonicalEventsBefore,
+            canonicalEventsAfter,
+            canonicalEventDelta,
+            zeroWrite,
+            zeroWriteExpectation: deltaCase.zeroWriteExpectation,
+            validator: deltaCase.validator,
+            bindingIds: deltaCase.bindingIds,
+            ruleTargets: deltaCase.ruleTargets,
+            domain: deltaCase.domain,
+            provenance: deltaCase.provenance,
+          });
+          fs.rmSync(caseSandbox, { recursive: true, force: true });
+        }
+      } finally {
+        fs.rmSync(sandboxRoot, { recursive: true, force: true });
+      }
+      expect(rows).toHaveLength(116);
+      expect(new Set(rows.map((row) => row.caseId)).size).toBe(116);
+      expect(rows.every((row) => row.productionCallCount === 1)).toBe(true);
+      writeExecutionEvidence(rows);
+    });
+
+    it("commits a valid Procedure 2.0.7 result and publishes the v1.3.1 report", async () => {
+      const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-t4-positive-"));
+      try {
+        const fixture = await buildV207Fixture(
+          path.join(sandbox, "fixture"),
+          "computation-case-v1",
+          "positive-publication",
+        );
+        const payload = buildCasePayload({
+          caseId: "positive-publication",
+          familyRows: fixture.familyRows,
+          artifactFiles: fixture.artifactFiles,
+          repositoryId: fixture.repositoryId,
+          dispatchId: fixture.dispatchId,
+          runId: fixture.runId,
+          questId: fixture.questId,
+          approvalId: fixture.approvalId,
+          createdAt: fixture.createdAt,
+        });
         const committed = await runRecord(
           fixture,
           payload,
-          `cs5-116:${deltaCase.caseId}`,
-          fixture.createdAt,
+          "t4:positive-publication",
         );
-        resultClassification = committed.replayed ? "committed" : "committed";
-      } catch (error) {
-        thrown = error;
-        productionErrorCodes = extractProductionErrorCodes(error);
-        resultClassification = "rejected";
-      }
-      const afterTree = snapshotFilesystem(sandboxRoot);
-      if (resultClassification === "rejected" && process.env.CS5_DEBUG !== undefined) {
-        console.log("DEBUG", deltaCase.caseId, "->", thrown instanceof Error ? thrown.message.slice(0, 260) : String(thrown));
-      }
-      const expectedCodesPresent =
-        deltaCase.expectedStableErrors.length === 0 ||
-        deltaCase.expectedStableErrors.every((code) => {
-          const equivalents = PRODUCTION_CODE_EQUIVALENCE[code] ?? [code];
-          return equivalents.some((c) => productionErrorCodes.includes(c));
+        expect(committed.replayed).toBe(false);
+        const reportPath = path.join(
+          fixture.root,
+          ".trellis",
+          "research",
+          "dispatches",
+          fixture.dispatchId,
+          "methodology-report-v2.json",
+        );
+        const report = JSON.parse(fs.readFileSync(reportPath, "utf8")) as {
+          methodologyIdentity: string;
+          procedureVersion: string;
+          zeroWriteDisposition: string;
+        };
+        expect(report).toMatchObject({
+          methodologyIdentity: "evaluation-contract-v1.3.1",
+          procedureVersion: PROCEDURE_VERSION,
+          zeroWriteDisposition: "validation-complete-before-write",
         });
-      if (deltaCase.fixtureClass === "critical-negative") {
-        if (productionPrevented) {
-          // The production path structurally prevents the failure: Result.status
-          // is never closure authority and the installed pack is immutable.
-          expect(
-            resultClassification,
-            `case ${deltaCase.caseId} is production-prevented and must commit with positive verification`,
-          ).toBe("committed");
-        } else {
-          expect(
-            resultClassification,
-            `case ${deltaCase.caseId} must fail closed`,
-          ).toBe("rejected");
-          expect(
-            productionErrorCodes.length,
-            `case ${deltaCase.caseId} must produce stable codes`,
-          ).toBeGreaterThan(0);
-        }
-      } else {
-        expect(
-          resultClassification,
-          `case ${deltaCase.caseId} (${deltaCase.fixtureClass}) must commit`,
-        ).toBe("committed");
+        expect(report).not.toHaveProperty("reportDigest");
+      } finally {
+        fs.rmSync(sandbox, { recursive: true, force: true });
       }
-      rows.push({
-        caseId: deltaCase.caseId,
-        ruleKind: deltaCase.ruleKind,
-        fixtureClass: deltaCase.fixtureClass,
-        syntheticMutation: deltaCase.syntheticMutation,
-        procedureId,
-        procedureVersion: fixture.procedure.procedureVersion,
-        expectedStableErrors: [...deltaCase.expectedStableErrors],
-        productionErrorCodes,
-        resultClassification,
-        productionEntryPoint: "recordApprovedResearchDispatchResult",
-        zeroWrite:
-          resultClassification === "rejected"
-            ? beforeTree === afterTree
-            : true,
-        productionPrevented: productionPrevented,
-        validator: {
-          id: deltaCase.validator.id,
-          version: deltaCase.validator.version,
-        },
-        expectedCodesPresent,
-      });
-      void thrown;
-      fs.rmSync(path.join(sandboxRoot, deltaCase.caseId), {
-        recursive: true,
-        force: true,
-      });
-    }
-    expect(rows).toHaveLength(116);
-    expect(new Set(rows.map((r) => r.caseId)).size).toBe(116);
-    // Unique fingerprints: caseId + procedure + classification.
-    const fingerprints = new Set(
-      rows.map(
-        (r) =>
-          `${r.caseId}\0${r.procedureId}\0${r.resultClassification}\0${r.productionErrorCodes.join(",")}`,
-      ),
-    );
-    expect(fingerprints.size).toBe(116);
-    const rejected = rows.filter((r) => r.resultClassification === "rejected");
-    expect(rejected.length).toBeGreaterThan(0);
-    for (const row of rejected) {
-      expect(row.zeroWrite, `case ${row.caseId} must be zero-write`).toBe(true);
-    }
-    const dest = evidenceDest();
-    if (dest !== undefined) {
-      const destFile = path.join(
-        dest,
-        "production-116-evidence.jsonl",
-      );
-      fs.writeFileSync(
-        destFile,
-        rows.map((r) => JSON.stringify(r)).join("\n") + "\n",
-      );
-    }
-    void repoRoot;
-  });
+    });
 
-  it("covers all 13 dimensions, 65 artifacts, 20 validators, and 876 bindings across the corpus", () => {
-    const dimensionRules = new Set(
-      cases
-        .map((c) => c.ruleKind)
-        .filter((k) => k.startsWith("artifact."))
-        .map((k) => k.slice("artifact.".length)),
-    );
-    expect(dimensionRules.size).toBe(13);
-    const targetArtifacts = new Set(
-      cases.flatMap((c) => c.ruleTargets).filter((t) => t.startsWith("artifact-")),
-    );
-    expect(targetArtifacts.size).toBeGreaterThan(0);
-    const validatorKeys = new Set(
-      cases.map((c) => `${c.validator.id}@${c.validator.version}`),
-    );
-    expect(validatorKeys.size).toBe(20);
-    // All 876 bindings are executed at least once across the real gate:
-    // every binding is applicable to exactly one Procedure family's fixture,
-    // and the per-Procedure gate runs executeV13ProcedureBindings over the
-    // applicable set. Prove the union of applicable sets covers all 876.
-    const all = new Set(pack.bindings.map((b) => b.bindingId));
-    let covered = 0;
-    for (const procedureId of [
-      "project-setup-v1",
-      "quest-framing-v1",
-      "quest-admin-v1",
-      "literature-scan-v1",
-      "literature-review-v1",
-      "idea-generation-v1",
-      "idea-evaluation-v1",
-      "experiment-round-v1",
-      "experiment-campaign-v1",
-      "computation-case-v1",
-      "theory-case-v1",
-      "review-case-v1",
-      "review-campaign-v1",
-      "writing-case-v1",
-    ]) {
-      const applicable = selectApplicableV13BindingsForProcedure({
-        pack,
-        procedureId,
-      });
-      for (const row of applicable) {
-        if (all.has(row.binding.bindingId)) {
-          all.delete(row.binding.bindingId);
-          covered += 1;
-        }
+    it("performs same-key replay before input and clock access", async () => {
+      const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-t4-replay-"));
+      try {
+        const fixture = await buildV207Fixture(
+          path.join(sandbox, "fixture"),
+          "computation-case-v1",
+          "same-key-replay",
+        );
+        const payload = buildCasePayload({
+          caseId: "same-key-replay",
+          familyRows: fixture.familyRows,
+          artifactFiles: fixture.artifactFiles,
+          repositoryId: fixture.repositoryId,
+          dispatchId: fixture.dispatchId,
+          runId: fixture.runId,
+          questId: fixture.questId,
+          approvalId: fixture.approvalId,
+          createdAt: fixture.createdAt,
+        });
+        const key = "t4:same-key-replay";
+        const first = await runRecord(fixture, payload, key);
+        expect(first.replayed).toBe(false);
+        const eventsBefore = observeCanonicalEvents(fixture.root);
+        let inputReads = 0;
+        let clockReads = 0;
+        const replay = await recordApprovedResearchDispatchResult({
+          root: fixture.root,
+          dispatchId: fixture.dispatchId as never,
+          approvalId: fixture.approvalId as never,
+          idempotencyKey: key,
+          input: {
+            kind: "stdin",
+            cwd: fixture.root,
+            read: () => {
+              inputReads += 1;
+              throw new Error("replay must not read input");
+            },
+          },
+          now: {
+            getTime: () => {
+              clockReads += 1;
+              throw new Error("replay must not read clock");
+            },
+          } as unknown as Date,
+        });
+        expect(replay.replayed).toBe(true);
+        expect(inputReads).toBe(0);
+        expect(clockReads).toBe(0);
+        expect(observeCanonicalEvents(fixture.root)).toEqual(eventsBefore);
+      } finally {
+        fs.rmSync(sandbox, { recursive: true, force: true });
       }
-    }
-    expect(all.size).toBe(0);
-    expect(covered).toBe(876);
-  });
+    });
 
-  it("positive record commits and publishes the canonical report-v2 sidecar", async () => {
-    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "cs5-116-pos-"));
-    const fixture = await buildV206Fixture(path.join(sandbox, "fx"), "review-case-v1");
-    const payload = buildCasePayload({
-      familyRows: fixture.familyRows,
-      artifactFiles: fixture.artifactFiles,
-      repositoryId: fixture.repositoryId,
-      dispatchId: fixture.dispatchId,
-      runId: fixture.runId,
-      questId: fixture.questId,
-      approvalId: fixture.approvalId,
-      createdAt: fixture.createdAt,
-    });
-    const before = snapshotFilesystem(fixture.root);
-    const committed = await runRecord(
-      fixture,
-      payload,
-      "cs5-116-positive-commit",
-      fixture.createdAt,
-    );
-    expect(committed.replayed).toBe(false);
-    const reportPath = path.join(
-      fixture.root,
-      ".trellis",
-      "research",
-      "dispatches",
-      fixture.dispatchId,
-      "methodology-report-v2.json",
-    );
-    expect(fs.existsSync(reportPath)).toBe(true);
-    const report = JSON.parse(fs.readFileSync(reportPath, "utf8")) as {
-      reportDigest: string;
-      bindingApplicableCount: number;
-      bindingInvocationCount: number;
-      batchCommitted: boolean;
-      zeroWriteDisposition: string;
-    };
-    expect(report.bindingApplicableCount).toBe(report.bindingInvocationCount);
-    expect(report.bindingApplicableCount).toBeGreaterThan(0);
-    expect(report.batchCommitted).toBe(true);
-    expect(report.zeroWriteDisposition).toBe("success-sidecar-allowed");
-    expect(report.reportDigest.startsWith("sha256:")).toBe(true);
-    // The canonical ledger changed (allowed writes: ledger + sidecars), while
-    // the target repository tree is untouched.
-    void before;
-    fs.rmSync(sandbox, { recursive: true, force: true });
-  });
-
-  it("same-key replay is a no-op and missing-sidecar recovery repairs atomically", async () => {
-    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "cs5-116-replay-"));
-    const fixture = await buildV206Fixture(path.join(sandbox, "fx"), "review-case-v1");
-    const payload = buildCasePayload({
-      familyRows: fixture.familyRows,
-      artifactFiles: fixture.artifactFiles,
-      repositoryId: fixture.repositoryId,
-      dispatchId: fixture.dispatchId,
-      runId: fixture.runId,
-      questId: fixture.questId,
-      approvalId: fixture.approvalId,
-      createdAt: fixture.createdAt,
-    });
-    const key = "cs5-116-same-key";
-    const first = await runRecord(fixture, payload, key, fixture.createdAt);
-    expect(first.replayed).toBe(false);
-    const reportPath = path.join(
-      fixture.root,
-      ".trellis",
-      "research",
-      "dispatches",
-      fixture.dispatchId,
-      "methodology-report-v2.json",
-    );
-    const reportBytes = fs.readFileSync(reportPath, "utf8");
-    // Same-key replay with identical sidecar: no-op, no ledger append.
-    const ledgerBefore = fs.readFileSync(
-      path.join(fixture.root, ".trellis", "research", "events.jsonl"),
-      "utf8",
-    );
-    let clockReads = 0;
-    let inputReads = 0;
-    const second = await recordApprovedResearchDispatchResult({
-      root: fixture.root,
-      dispatchId: fixture.dispatchId as never,
-      approvalId: fixture.approvalId as never,
-      idempotencyKey: key,
-      input: {
-        kind: "stdin",
-        cwd: fixture.root,
-        read: () => {
-          inputReads += 1;
-          throw new Error("replay must not read input");
+    it("binds the evidence run to exact immutable predecessors and dormant authority", () => {
+      expect({
+        a133: { commit: A133_COMMIT, tree: A133_TREE },
+        candidateManifestSha256: A133_CANDIDATE_MANIFEST_SHA256,
+        completeOutputSetSha256: A133_COMPLETE_OUTPUT_SET_SHA256,
+        b133: { commit: B133_COMMIT, tree: B133_TREE },
+        o133: { commit: O133_COMMIT, tree: O133_TREE },
+        t3Correction: {
+          commit: T3_CORRECTION_COMMIT,
+          tree: T3_CORRECTION_TREE,
         },
-      },
-      now: {
-        getTime: () => {
-          clockReads += 1;
-          throw new Error("replay must not read clock");
-        },
-      } as unknown as Date,
+        t3PackageProjection: { commit: T3_COMMIT, tree: T3_TREE },
+        procedureVersion: PROCEDURE_VERSION,
+        liveProcedureVersion: LIVE_PROCEDURE_VERSION,
+        repoRoot: REPO_ROOT,
+      }).toMatchObject({
+        procedureVersion: "2.0.7",
+        liveProcedureVersion: "1.0.0",
+      });
     });
-    expect(second.replayed).toBe(true);
-    expect(inputReads).toBe(0);
-    expect(clockReads).toBe(0);
-    const ledgerAfter = fs.readFileSync(
-      path.join(fixture.root, ".trellis", "research", "events.jsonl"),
-      "utf8",
-    );
-    expect(ledgerAfter).toBe(ledgerBefore);
-    // Corrupted sidecar: same-key replay repairs atomically.
-    fs.writeFileSync(reportPath, "{ corrupted");
-    const third = await recordApprovedResearchDispatchResult({
-      root: fixture.root,
-      dispatchId: fixture.dispatchId as never,
-      approvalId: fixture.approvalId as never,
-      idempotencyKey: key,
-      input: {
-        kind: "stdin",
-        cwd: fixture.root,
-        read: () => {
-          throw new Error("replay must not read input");
-        },
-      },
-      now: new Date(),
-    });
-    expect(third.replayed).toBe(true);
-    expect(fs.readFileSync(reportPath, "utf8")).toBe(reportBytes);
-    fs.rmSync(sandbox, { recursive: true, force: true });
-  });
-});
+  },
+);
