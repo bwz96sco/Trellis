@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-3/task.json","reason":"Check exact S2/I2/T4 authority, inventories, diagnostics boundary, and denials."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-3/prd.md","reason":"Check observable Attempt-3 acceptance and out-of-scope boundary."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-3/design.md","reason":"Check forward-only lineage, diagnostic privacy, T4 interpretation, and atomic publication."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-3/implement.md","reason":"Check separate commit ordering, required impact analysis, validation, and stop routes."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-t6-mal1-attempt-3/implement.jsonl","reason":"Check exact source evidence references."}

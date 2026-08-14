@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-1/machine-verdict.json","reason":"Immutable Attempt-1 fail verdict."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-2/machine-verdict.json","reason":"Immutable Attempt-2 failed and non-authoritative verdict."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-2/command-evidence-ledger.jsonl","reason":"Evidence that failed-command diagnostics and blocked prerequisite reasons were absent."}
+{"file":".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor/research/exact-subject-freeze.json","reason":"Exact S2 freeze binding I2 and corrected T4."}
+{"file":".trellis/tasks/08-12-build-v1-3-1-production-harness/research/production-116-case-evidence.jsonl","reason":"Corrected T4 evidence preserving separate code-presence and prevention observations."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/mal1-review.py","reason":"Existing reviewer program receiving the minimal Attempt-3 correction."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/reviewer-assignment.json","reason":"Committed reviewer assignment and Attempt-3 authority boundary."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json","reason":"Existing T6 task authority and exact attempt boundary."}
