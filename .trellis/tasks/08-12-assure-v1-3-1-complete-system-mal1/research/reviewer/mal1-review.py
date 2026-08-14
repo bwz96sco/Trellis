@@ -29,6 +29,7 @@ PRIOR_M0_CORRECTION_COMMIT = "d5dd5b487669dbd343e3472500d940e8d2ded76b"
 M0_CORRECTION_2_COMMIT = "5d3c86ad11248fdb2569b32b62b379ad6e61a59f"
 M0_CORRECTION_3_COMMIT = "63e1b3a970829f5b61de29e7e7f65c5c94f664d5"
 REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT = "3081e875538177c6c367967450c658e21df68a39"
+PRIOR_FINAL_M0_CORRECTION_COMMIT = "940f87e764ebbf8e4b203b0dd0dd391b0490f35c"
 SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
 SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
 A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3"
@@ -82,6 +83,33 @@ TASK_ONLY_DENIED_AUTHORITY = (
     "cliImplementationAuthorized", "harnessImplementationAuthorized",
     "procedurePackageAuthorized", "productionImplementationAuthorized",
     "runtimeImplementationAuthorized", "schemaImplementationAuthorized",
+)
+EXPECTED_ASSIGNMENT_STATUS = (
+    "assigned-m1-authorized-at-committed-m0-final-correction"
+)
+EXPECTED_ASSIGNMENT_STOP_CONDITIONS = (
+    "supplied M0 is not an exact three-path commit directly on prior final M0 "
+    "correction 940f87e764ebbf8e4b203b0dd0dd391b0490f35c -> reviewed script "
+    "successor 3081e875538177c6c367967450c658e21df68a39 -> correction 3 -> "
+    "correction 2 -> prior correction -> initial M0 -> exact S1",
+    "reviewer identity overlaps T0-T5 or future T7",
+    "separate M1 authorization is absent",
+    "subject commit or tree differs",
+    "mutable worktree bytes are used as assurance subject",
+    "network or provider execution is attempted",
+    "missing duplicate aliased or extra M0 or M1 path",
+    "repair activation acceptance archive release publication push or "
+    "live-selection action is attempted",
+)
+EXPECTED_TASK_NOTES = (
+    "The final M0 correction is the exact three-path commit directly on prior "
+    "final M0 correction 940f87e764ebbf8e4b203b0dd0dd391b0490f35c, whose "
+    "first parent is reviewed script successor "
+    "3081e875538177c6c367967450c658e21df68a39. M1 execution requires that "
+    "exact runtime-supplied M0 commit, the authenticated predecessor chain, and "
+    "the explicit runtime guard; no repair, activation, acceptance, archive, "
+    "release, publication, push, provider, network, live-selection, or "
+    "worker-authority action is authorized."
 )
 EXPECTED_MEMBER_LEDGER_KEYS = {
     "acceptedContractDigest",
@@ -505,6 +533,7 @@ def static_check() -> dict[str, Any]:
         M0_CORRECTION_2_COMMIT,
         M0_CORRECTION_3_COMMIT,
         REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+        PRIOR_FINAL_M0_CORRECTION_COMMIT,
         SUBJECT_COMMIT,
         SUBJECT_TREE,
         A133_COMMIT,
@@ -519,8 +548,9 @@ def static_check() -> dict[str, Any]:
             M0_CORRECTION_2_COMMIT,
             M0_CORRECTION_3_COMMIT,
             REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+            PRIOR_FINAL_M0_CORRECTION_COMMIT,
         }
-    ) != 6:
+    ) != 7:
         raise ValueError("M0 correction lineage identities must be distinct")
     for value in (ACCEPTED_SEMANTIC_DIGEST, ACCEPTED_MEMBER_AGGREGATE):
         if re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
@@ -588,6 +618,7 @@ def validate_m0_changed_paths(
     correction_2_paths: Iterable[str],
     correction_3_paths: Iterable[str],
     reviewed_successor_paths: Iterable[str],
+    prior_final_correction_paths: Iterable[str],
     final_correction_paths: Iterable[str],
 ) -> None:
     normalized_initial = sorted(initial_paths)
@@ -595,6 +626,7 @@ def validate_m0_changed_paths(
     normalized_correction_2 = sorted(correction_2_paths)
     normalized_correction_3 = sorted(correction_3_paths)
     normalized_reviewed_successor = sorted(reviewed_successor_paths)
+    normalized_prior_final_correction = sorted(prior_final_correction_paths)
     normalized_final_correction = sorted(final_correction_paths)
     if normalized_initial != sorted(M0_PATHS):
         raise ValueError(f"initial M0 changed-path mismatch: {normalized_initial}")
@@ -614,6 +646,11 @@ def validate_m0_changed_paths(
         raise ValueError(
             "reviewed M0 script successor changed-path mismatch: "
             f"{normalized_reviewed_successor}"
+        )
+    if normalized_prior_final_correction != sorted(M0_PATHS):
+        raise ValueError(
+            "prior final M0 correction changed-path mismatch: "
+            f"{normalized_prior_final_correction}"
         )
     if normalized_final_correction != sorted(M0_PATHS):
         raise ValueError(
@@ -658,10 +695,17 @@ def authenticate_m0(
         raise ValueError("current HEAD is not the explicitly supplied M0 successor commit")
     if (
         git_text(repo, "rev-parse", f"{m0_commit}^1")
+        != PRIOR_FINAL_M0_CORRECTION_COMMIT
+    ):
+        raise ValueError(
+            "final M0 correction is not committed directly on the prior final correction"
+        )
+    if (
+        git_text(repo, "rev-parse", f"{PRIOR_FINAL_M0_CORRECTION_COMMIT}^1")
         != REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT
     ):
         raise ValueError(
-            "final M0 correction is not committed directly on the reviewed script successor"
+            "prior final M0 correction is not committed directly on the reviewed script successor"
         )
     if (
         git_text(repo, "rev-parse", f"{REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT}^1")
@@ -744,6 +788,18 @@ def authenticate_m0(
         ).splitlines()
         if line
     )
+    prior_final_correction_paths = sorted(
+        line
+        for line in git_text(
+            repo,
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            PRIOR_FINAL_M0_CORRECTION_COMMIT,
+        ).splitlines()
+        if line
+    )
     final_correction_paths = sorted(
         line
         for line in git_text(
@@ -757,6 +813,7 @@ def authenticate_m0(
         correction_2_paths,
         correction_3_paths,
         reviewed_successor_paths,
+        prior_final_correction_paths,
         final_correction_paths,
     )
     authenticate_protected_root(repo, invocation.protected_worktree_root)
@@ -790,8 +847,7 @@ def authenticate_m0(
         and assigned.get("machineOnly") is True
         and assigned.get("modelClass") == "gpt-5.6-sol"
         and assigned.get("runtimeClass") == "claude-code-isolated-agent-worktree"
-        and assigned.get("status")
-        == "assigned-m1-authorized-awaiting-committed-m0-final-correction"
+        and assigned.get("status") == EXPECTED_ASSIGNMENT_STATUS
         and assigned.get("agentId") not in EXPECTED_ACTORS
     )
     validate_invocation_declarations(assigned, invocation)
@@ -799,6 +855,8 @@ def authenticate_m0(
         assignment.get("schemaVersion") == SCHEMA_VERSION
         and assignment.get("recordKind") == "t6-m0-independent-reviewer-assignment"
         and assignment.get("commitBoundary") == "M0"
+        and assignment.get("stopConditions")
+        == list(EXPECTED_ASSIGNMENT_STOP_CONDITIONS)
         and authority_valid(authority, ASSIGNMENT_GRANTED_AUTHORITY, COMMON_DENIED_AUTHORITY)
         and output.get("m0") == {"count": 3, "paths": list(M0_PATHS)}
         and output.get("m1") == {"count": 9, "paths": list(M1_PATHS)}
@@ -831,6 +889,7 @@ def authenticate_m0(
     )
     task_security_ok = (
         task.get("assignee") == assigned.get("agentId")
+        and task.get("notes") == EXPECTED_TASK_NOTES
         and task.get("branch") == assigned.get("branch")
         and task.get("worktree_path") == assigned.get("worktreePath")
         and task_meta.get("ownerRole") == assigned.get("agentId")
@@ -1366,13 +1425,14 @@ def stream_contains_forbidden(
         return False
     overlap_size = max(len(needle) for needle in needles) - 1
     overlap = b""
+    found = False
     while True:
         chunk = stream.read(chunk_size)
         if not chunk:
-            return False
+            return found
         window = overlap + chunk
         if any(needle in window for needle in needles):
-            return True
+            found = True
         overlap = window[-overlap_size:] if overlap_size > 0 else b""
 
 def scan_tarball_privacy(
@@ -2526,7 +2586,8 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     exact_attestation = {
         "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-exact-subject-attestation",
         "m0Commit": m0_commit,
-        "m0FirstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+        "m0FirstParent": PRIOR_FINAL_M0_CORRECTION_COMMIT,
+        "priorFinalM0CorrectionFirstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
         "reviewedM0ScriptSuccessorFirstParent": M0_CORRECTION_3_COMMIT,
         "m0Correction3FirstParent": M0_CORRECTION_2_COMMIT,
         "m0Correction2FirstParent": PRIOR_M0_CORRECTION_COMMIT,
@@ -2535,9 +2596,15 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
         "m0Lineage": [
             {
                 "commit": m0_commit,
-                "firstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+                "firstParent": PRIOR_FINAL_M0_CORRECTION_COMMIT,
                 "changedPaths": list(M0_PATHS),
                 "kind": "final-three-path-correction",
+            },
+            {
+                "commit": PRIOR_FINAL_M0_CORRECTION_COMMIT,
+                "firstParent": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
+                "changedPaths": list(M0_PATHS),
+                "kind": "prior-final-three-path-correction",
             },
             {
                 "commit": REVIEWED_M0_SCRIPT_SUCCESSOR_COMMIT,
@@ -2694,6 +2761,7 @@ def focused_self_check() -> list[str]:
         (str(SCRIPT_PATH),),
         (str(SCRIPT_PATH),),
         M0_PATHS,
+        M0_PATHS,
     )
     blocked = blocked_command_results("self-check")
     if (
@@ -2809,6 +2877,13 @@ def focused_self_check() -> list[str]:
         or unreadable_findings != ["tarball-unreadable:unreadable.tgz"]
     ):
         raise ValueError("unreadable tarball privacy completeness self-check failed")
+    privacy_stream = io.BytesIO(b"OPENAI_API_KEY=secret\n" + b"tail" * 32)
+    if (
+        stream_contains_forbidden(privacy_stream, (b"OPENAI_API_KEY=",), 8)
+        is not True
+        or privacy_stream.tell() != len(privacy_stream.getvalue())
+    ):
+        raise ValueError("privacy stream was not consumed after a finding")
     with tempfile.TemporaryDirectory(prefix="trellis-t6-self-check-") as temporary:
         root = Path(temporary)
         (root / "retained.txt").write_text("before\n", encoding="utf-8")
@@ -2868,6 +2943,7 @@ def focused_self_check() -> list[str]:
         "tool-aware-blocked-completion",
         "bad-tarball-prerequisite-and-privacy-metadata",
         "unreadable-tarball-privacy-completeness",
+        "privacy-stream-consumed-after-finding",
         "non-ignored-submodule-content-snapshot",
         "status-parser",
         "containment-verdict",
