@@ -26,6 +26,7 @@ S1_COMMIT = "e6b80d640f0bd264c1acfe6bab906cb3e4ae535a"
 S1_TREE = "1304e0faa7262cd1c80cd3e8ab9b01057809f9e0"
 INITIAL_M0_COMMIT = "87317a7b78d531df37c1f84970fef020a8e77ace"
 PRIOR_M0_CORRECTION_COMMIT = "d5dd5b487669dbd343e3472500d940e8d2ded76b"
+M0_CORRECTION_2_COMMIT = "5d3c86ad11248fdb2569b32b62b379ad6e61a59f"
 SUBJECT_COMMIT = "57572e77f81148bc6aae6d3b727db33a09e45f23"
 SUBJECT_TREE = "8e2acbf86f6820b6f3557fa5d6b186226284351b"
 A133_COMMIT = "5a038a87531c3dbfa7b52ba82eaa59d856ab1ea3"
@@ -467,10 +468,22 @@ def capture_protected_worktree_runtime_baseline(repo: Path, protected_root: Path
     excluded = active_reviewer_relative(repo, protected_root)
     unexpected = tuple((status, path) for status, path in git_status_entries(protected_root) if path not in expected and path.rstrip("/") != excluded)
     ignored = {}
+    non_ignored = {}
     for item in submodules:
         root = protected_root / item["path"]
-        ignored[item["path"]] = status_snapshot(root, ((status, path) for status, path in git_status_entries(root) if status == "!!"))
-    return {"unexpected": status_snapshot(protected_root, unexpected), "ignored": ignored, "excluded": excluded}
+        entries = git_status_entries(root)
+        ignored[item["path"]] = status_snapshot(
+            root, ((status, path) for status, path in entries if status == "!!")
+        )
+        non_ignored[item["path"]] = status_snapshot(
+            root, ((status, path) for status, path in entries if status != "!!")
+        )
+    return {
+        "unexpected": status_snapshot(protected_root, unexpected),
+        "ignored": ignored,
+        "nonIgnored": non_ignored,
+        "excluded": excluded,
+    }
 
 def installed_contract_inventory_valid(names: Iterable[str]) -> bool:
     return sorted(names) == sorted((*PACK_MEMBERS, AUX_MEMBER_LEDGER))
@@ -487,13 +500,21 @@ def static_check() -> dict[str, Any]:
         S1_TREE,
         INITIAL_M0_COMMIT,
         PRIOR_M0_CORRECTION_COMMIT,
+        M0_CORRECTION_2_COMMIT,
         SUBJECT_COMMIT,
         SUBJECT_TREE,
         A133_COMMIT,
     ):
         if re.fullmatch(r"[0-9a-f]{40}", value) is None:
             raise ValueError(f"invalid Git object identity: {value}")
-    if len({S1_COMMIT, INITIAL_M0_COMMIT, PRIOR_M0_CORRECTION_COMMIT}) != 3:
+    if len(
+        {
+            S1_COMMIT,
+            INITIAL_M0_COMMIT,
+            PRIOR_M0_CORRECTION_COMMIT,
+            M0_CORRECTION_2_COMMIT,
+        }
+    ) != 4:
         raise ValueError("M0 correction lineage identities must be distinct")
     for value in (ACCEPTED_SEMANTIC_DIGEST, ACCEPTED_MEMBER_AGGREGATE):
         if re.fullmatch(r"sha256:[0-9a-f]{64}", value) is None:
@@ -558,19 +579,27 @@ def static_check() -> dict[str, Any]:
 def validate_m0_changed_paths(
     initial_paths: Iterable[str],
     prior_correction_paths: Iterable[str],
-    correction_paths: Iterable[str],
+    correction_2_paths: Iterable[str],
+    successor_paths: Iterable[str],
 ) -> None:
     normalized_initial = sorted(initial_paths)
     normalized_prior = sorted(prior_correction_paths)
-    normalized_correction = sorted(correction_paths)
+    normalized_correction_2 = sorted(correction_2_paths)
+    normalized_successor = sorted(successor_paths)
     if normalized_initial != sorted(M0_PATHS):
         raise ValueError(f"initial M0 changed-path mismatch: {normalized_initial}")
     if normalized_prior != [str(SCRIPT_PATH)]:
         raise ValueError(
             f"prior M0 correction changed-path mismatch: {normalized_prior}"
         )
-    if normalized_correction != sorted(M0_PATHS):
-        raise ValueError(f"M0 correction changed-path mismatch: {normalized_correction}")
+    if normalized_correction_2 != sorted(M0_PATHS):
+        raise ValueError(
+            f"M0 correction 2 changed-path mismatch: {normalized_correction_2}"
+        )
+    if normalized_successor != [str(SCRIPT_PATH)]:
+        raise ValueError(
+            f"M0 script-only successor changed-path mismatch: {normalized_successor}"
+        )
 
 def validate_m0_worktree_bytes(
     repo: Path, committed_m0_bytes: dict[str, bytes]
@@ -607,9 +636,16 @@ def authenticate_m0(
     repo: Path, m0_commit: str, invocation: ReviewerInvocation
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     if git_text(repo, "rev-parse", "HEAD") != m0_commit:
-        raise ValueError("current HEAD is not the explicitly supplied M0 correction commit")
-    if git_text(repo, "rev-parse", f"{m0_commit}^1") != PRIOR_M0_CORRECTION_COMMIT:
-        raise ValueError("M0 correction is not committed directly on exact prior correction")
+        raise ValueError("current HEAD is not the explicitly supplied M0 successor commit")
+    if git_text(repo, "rev-parse", f"{m0_commit}^1") != M0_CORRECTION_2_COMMIT:
+        raise ValueError(
+            "M0 script-only successor is not committed directly on exact correction 2"
+        )
+    if (
+        git_text(repo, "rev-parse", f"{M0_CORRECTION_2_COMMIT}^1")
+        != PRIOR_M0_CORRECTION_COMMIT
+    ):
+        raise ValueError("M0 correction 2 is not committed directly on exact prior correction")
     if (
         git_text(repo, "rev-parse", f"{PRIOR_M0_CORRECTION_COMMIT}^1")
         != INITIAL_M0_COMMIT
@@ -638,13 +674,30 @@ def authenticate_m0(
         ).splitlines()
         if line
     )
-    correction_paths = sorted(
+    correction_2_paths = sorted(
         line
-        for line in git_text(repo, "diff-tree", "--no-commit-id", "--name-only", "-r", m0_commit).splitlines()
+        for line in git_text(
+            repo,
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            M0_CORRECTION_2_COMMIT,
+        ).splitlines()
+        if line
+    )
+    successor_paths = sorted(
+        line
+        for line in git_text(
+            repo, "diff-tree", "--no-commit-id", "--name-only", "-r", m0_commit
+        ).splitlines()
         if line
     )
     validate_m0_changed_paths(
-        initial_paths, prior_correction_paths, correction_paths
+        initial_paths,
+        prior_correction_paths,
+        correction_2_paths,
+        successor_paths,
     )
     authenticate_protected_root(repo, invocation.protected_worktree_root)
 
@@ -872,6 +925,79 @@ def blocked_command_results(reason: str, tools: dict[str, str] | None = None) ->
         )
         for command_id in REQUIRED_COMMAND_IDS
     ]
+
+
+def command_inventory_observation(
+    results: Iterable[CommandResult],
+) -> dict[str, Any]:
+    observed_ids = [result.command_id for result in results]
+    distinct_observed_ids: list[str] = []
+    for command_id in observed_ids:
+        if command_id not in distinct_observed_ids:
+            distinct_observed_ids.append(command_id)
+    counts = {
+        command_id: observed_ids.count(command_id)
+        for command_id in distinct_observed_ids
+    }
+    missing = [command_id for command_id in REQUIRED_COMMAND_IDS if command_id not in counts]
+    duplicates = [
+        {"commandId": command_id, "count": count}
+        for command_id, count in counts.items()
+        if count > 1
+    ]
+    extras = [
+        command_id for command_id in observed_ids if command_id not in REQUIRED_COMMAND_IDS
+    ]
+    required_sequence = tuple(
+        command_id for command_id in observed_ids if command_id in REQUIRED_COMMAND_IDS
+    )
+    order_matches = required_sequence == REQUIRED_COMMAND_IDS
+    count_matches = len(observed_ids) == len(REQUIRED_COMMAND_IDS)
+    exact = (
+        count_matches
+        and not missing
+        and not duplicates
+        and not extras
+        and order_matches
+    )
+    return {
+        "observedCommandIds": observed_ids,
+        "observedCount": len(observed_ids),
+        "expectedCount": len(REQUIRED_COMMAND_IDS),
+        "missingCommandIds": missing,
+        "duplicateCommands": duplicates,
+        "extraCommandIds": extras,
+        "countMatches": count_matches,
+        "orderMatches": order_matches,
+        "exact": exact,
+    }
+
+
+def complete_command_results(
+    raw_results: Iterable[CommandResult],
+    reason: str,
+    tools: dict[str, str] | None = None,
+) -> list[CommandResult]:
+    completed = list(raw_results)
+    observed_ids = {result.command_id for result in completed}
+    completed.extend(
+        result
+        for result in blocked_command_results(reason, tools)
+        if result.command_id not in observed_ids
+    )
+    return completed
+
+
+def unique_command_status(
+    results: Iterable[CommandResult], command_id: str
+) -> str | None:
+    matches = [result.status for result in results if result.command_id == command_id]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        return "duplicate"
+    return None
+
 
 def resolve_tools() -> dict[str, str]:
     tools: dict[str, str] = {}
@@ -1255,7 +1381,9 @@ def run_external_install_audit(
     scratch: Path,
     env: dict[str, str],
     tools: dict[str, str],
-) -> tuple[list[CommandResult], dict[str, Any]]:
+    results: list[CommandResult],
+) -> dict[str, Any]:
+    external_start = len(results)
     pack_root = scratch / "packs"
     core_pack = pack_root / "core"
     cli_pack = pack_root / "cli"
@@ -1275,23 +1403,12 @@ def run_external_install_audit(
             timeout_seconds=1_800,
         ),
     ]
-    results = [execute_command(spec, extraction, env, tools) for spec in specs]
+    for spec in specs:
+        results.append(execute_command(spec, extraction, env, tools))
     core_tarballs = sorted(core_pack.glob("*.tgz"))
     cli_tarballs = sorted(cli_pack.glob("*.tgz"))
     if len(core_tarballs) != 1 or len(cli_tarballs) != 1:
-        observed_ids = {result.command_id for result in results}
-        for command_id in EXTERNAL_COMMAND_IDS:
-            if command_id not in observed_ids:
-                results.append(
-                    CommandResult(
-                        command_id,
-                        ("reviewer", "blocked-by-pack-prerequisite"),
-                        "<EXTERNAL>",
-                        None,
-                        "blocked",
-                    )
-                )
-        return results, {
+        return {
             "verdict": "fail",
             "reason": "expected exactly one Core and one CLI tarball",
             "npm": False,
@@ -1463,9 +1580,9 @@ def run_external_install_audit(
     procedure_paths, procedure_files, privacy_findings = scan_tarball_privacy(
         (core_tarball, cli_tarball), extraction
     )
-    statuses = {row.command_id: row.status for row in results}
+    external_results = results[external_start:]
     npm_ok = all(
-        statuses.get(command_id) == "pass"
+        unique_command_status(external_results, command_id) == "pass"
         for command_id in (
             "external-npm-install",
             "external-npm-runtime",
@@ -1474,7 +1591,7 @@ def run_external_install_audit(
         )
     )
     pnpm_ok = all(
-        statuses.get(command_id) == "pass"
+        unique_command_status(external_results, command_id) == "pass"
         for command_id in (
             "external-pnpm-lock-seed",
             "external-pnpm-import",
@@ -1487,19 +1604,31 @@ def run_external_install_audit(
     )
     verdict = (
         "pass"
-        if all(row.status == "pass" for row in results)
+        if all(row.status == "pass" for row in external_results)
         and procedure_paths == set(PROCEDURE_IDS)
         and procedure_files == 204
         and not privacy_findings
         else "fail"
     )
-    return results, {
+    return {
         "verdict": verdict,
         "npm": npm_ok,
         "pnpm": pnpm_ok,
         "aliases": {
-            "npm": {alias: statuses.get(f"external-npm-{alias}-alias") == "pass" for alias in ("trellis", "tl")},
-            "pnpm": {alias: statuses.get(f"external-pnpm-{alias}-alias") == "pass" for alias in ("trellis", "tl")},
+            "npm": {
+                alias: unique_command_status(
+                    external_results, f"external-npm-{alias}-alias"
+                )
+                == "pass"
+                for alias in ("trellis", "tl")
+            },
+            "pnpm": {
+                alias: unique_command_status(
+                    external_results, f"external-pnpm-{alias}-alias"
+                )
+                == "pass"
+                for alias in ("trellis", "tl")
+            },
         },
         "procedureFamilyCount": len(procedure_paths),
         "procedureFileCount": procedure_files,
@@ -1708,6 +1837,7 @@ def load_json_file(path: Path, label: str) -> Any:
 def build_runtime_audit(
     extraction: Path,
     command_results: list[CommandResult],
+    command_inventory: dict[str, Any],
     external: dict[str, Any],
     git: str,
     env: dict[str, str],
@@ -1729,7 +1859,10 @@ def build_runtime_audit(
         for index, line in enumerate(evidence_path.read_bytes().splitlines())
         if line
     ]
-    command_status = {row.command_id: row.status for row in command_results}
+    command_status = {
+        command_id: unique_command_status(command_results, command_id)
+        for command_id in REQUIRED_COMMAND_IDS
+    }
     observed_families = sorted(
         path.parent.parent.name
         for path in (extraction / PROCEDURE_ROOT).glob("*/2.0.7/procedure.json")
@@ -1774,8 +1907,7 @@ def build_runtime_audit(
     rejected = [row for row in evidence_rows if row.get("actualProductionOutcome") == "rejected"]
     if any(row.get("zeroWrite") is not True or row.get("canonicalEventDelta", {}).get("appendedCount") != 0 for row in rejected):
         findings.append("rejected-case-write-observed")
-    observed_command_ids = [row.command_id for row in command_results]
-    if tuple(observed_command_ids) != REQUIRED_COMMAND_IDS:
+    if command_inventory.get("exact") is not True:
         findings.append("required-command-inventory-mismatch")
     for command_id in REQUIRED_COMMAND_IDS:
         if command_status.get(command_id) != "pass":
@@ -1786,6 +1918,7 @@ def build_runtime_audit(
         "schemaVersion": SCHEMA_VERSION,
         "recordKind": "t6-runtime-contract-audit",
         "checks": check_rows,
+        "rawCommandInventory": command_inventory,
         "requiredCommands": [
             {"commandId": command_id, "status": command_status.get(command_id)}
             for command_id in REQUIRED_COMMAND_IDS
@@ -1870,12 +2003,31 @@ def protected_worktree_audit(
         value = Path(git_text(root, "rev-parse", "--git-common-dir"))
         return (value if value.is_absolute() else root / value).resolve()
 
-    same_repository = protected_root.resolve() != repo.resolve() and common_dir(protected_root) == common_dir(repo)
-    active_registration = active_reviewer_relative(repo, protected_root) == initial.get("excluded")
+    try:
+        same_repository = (
+            protected_root.resolve() != repo.resolve()
+            and common_dir(protected_root) == common_dir(repo)
+        )
+    except (OSError, RuntimeError, ValueError):
+        same_repository = False
+    try:
+        active_registration = (
+            active_reviewer_relative(repo, protected_root) == initial.get("excluded")
+        )
+    except (OSError, RuntimeError, ValueError):
+        active_registration = False
+    try:
+        final_identity_matches = (
+            authenticate_protected_root(repo, protected_root) == protected_root.resolve()
+        )
+    except (OSError, RuntimeError, ValueError):
+        final_identity_matches = False
     if not same_repository:
         findings.append("protected-worktree-root-identity-mismatch")
     if not active_registration:
         findings.append("protected-active-reviewer-worktree-registration-drift")
+    if not final_identity_matches:
+        findings.append("protected-final-git-identity-mismatch")
 
     file_rows = []
     for expected in files:
@@ -1899,13 +2051,24 @@ def protected_worktree_audit(
         try:
             entries = git_status_entries(root)
             ignored = status_snapshot(root, (row for row in entries if row[0] == "!!"))
+            non_ignored = status_snapshot(
+                root, (row for row in entries if row[0] != "!!")
+            )
             ignored_delta = compare_status_snapshot(root, ignored, initial["ignored"][rel])
+            non_ignored_delta = compare_status_snapshot(
+                root, non_ignored, initial["nonIgnored"][rel]
+            )
             index_fields = git_text(protected_root, "ls-files", "-s", "--", rel).split()
             indexed = index_fields[1] if len(index_fields) >= 2 else None
             observed = {
                 "indexedCommit": indexed,
                 "worktreeCommit": git_text(root, "rev-parse", "HEAD"),
-                "nonIgnoredStatus": [f"{status} {name}" for status, name in entries if status != "!!"],
+                "nonIgnoredStatus": [
+                    f"{status} {name}" for status, name in non_ignored["entries"]
+                ],
+                "nonIgnoredAdded": non_ignored_delta[0],
+                "nonIgnoredMissing": non_ignored_delta[1],
+                "nonIgnoredContentDrift": non_ignored_delta[2],
                 "ignoredStatus": [f"{status} {name}" for status, name in ignored["entries"]],
                 "ignoredAdded": ignored_delta[0],
                 "ignoredMissing": ignored_delta[1],
@@ -1917,6 +2080,7 @@ def protected_worktree_audit(
                 observed["indexedCommit"] == expected.get("commit")
                 and observed["worktreeCommit"] == expected.get("commit")
                 and observed["nonIgnoredStatus"] == expected.get("statusShort")
+                and not any(non_ignored_delta)
                 and not any(ignored_delta)
                 and observed["diffSha256"] == expected.get("gitDiffBinarySha256")
                 and observed["stagedEmpty"]
@@ -1953,6 +2117,13 @@ def protected_worktree_audit(
         "excludedFromSemanticSubject": True,
         "sameRepository": same_repository,
         "activeReviewerWorktreeRegistrationMatches": active_registration,
+        "finalProtectedGitIdentityMatches": final_identity_matches,
+        "finalProtectedGitIdentity": {
+            "branchRef": PROTECTED_BRANCH_REF,
+            "head": S1_COMMIT,
+            "tree": S1_TREE,
+            "firstParent": SUBJECT_COMMIT,
+        },
         "baseline": {"path": str(G0_BASELINE_PATH), "sha256": baseline_sha, "matchesFrozenS1": baseline_sha == frozen_baseline.get("sha256")},
         "immutableExclusionsValidated": immutable_ok,
         "files": file_rows,
@@ -2081,38 +2252,6 @@ def containment_check_results(
         "reviewerWorktreePass": reviewer_audit.get("verdict") == "pass",
     }
 
-def attest_final_destination(
-    repo: Path, outputs: dict[str, bytes], final_audit: dict[str, Any], forbidden: tuple[bytes, ...]
-) -> dict[str, bytes]:
-    target = repo / ATTEMPT_ROOT
-    staging = target.parent / f".{target.name}.t6-staging"
-    if not target.is_dir() or staging.exists() or final_audit.get("verdict") != "pass":
-        raise ValueError("final destination cannot be attested")
-    containment = strict_json_bytes(outputs["containment-audit.json"], "containment-audit")
-    verdict = strict_json_bytes(outputs["machine-verdict.json"], "machine-verdict")
-    if not isinstance(containment, dict) or not isinstance(verdict, dict):
-        raise ValueError("final attestation evidence malformed")
-    containment["checks"]["finalDestinationPass"] = True
-    containment["finalDestinationAudit"] = final_audit
-    containment["authoritative"] = True
-    containment["finalDestinationAuditPending"] = False
-    containment["finalDestinationAuditPassed"] = True
-    verdict["authoritative"] = True
-    verdict["finalDestinationAuditPending"] = False
-    verdict["finalDestinationAuditPassed"] = True
-    updated = dict(outputs)
-    updated["containment-audit.json"] = canonical_bytes(containment)
-    updated["machine-verdict.json"] = canonical_bytes(verdict)
-    os.rename(target, staging)
-    for name in ("containment-audit.json", "machine-verdict.json"):
-        (staging / name).write_bytes(updated[name])
-    if sorted(path.name for path in staging.iterdir()) != sorted(M1_NAMES) or any((staging / name).read_bytes() != updated[name] for name in M1_NAMES):
-        raise ValueError("final attestation exact-nine validation failed")
-    if scan_private_bytes(updated, forbidden):
-        raise ValueError("final attestation contains private bytes")
-    os.rename(staging, target)
-    return updated
-
 def build_reviewer_attestation(
     assignment: dict[str, Any], invocation: ReviewerInvocation, governed: dict[str, bool],
     scratch_created: bool, scratch_empty: bool, scratch_distinct: bool,
@@ -2170,7 +2309,10 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     findings: list[str] = []
     network_probe: dict[str, Any] = {"mechanism": "darwin-sandbox-exec-deny-network", "observationAvailable": False, "verdict": "fail"}
     pnpm_audit: dict[str, Any] = {"expectedVersion": EXPECTED_PNPM_VERSION, "expectedPackageManager": EXPECTED_PACKAGE_MANAGER, "matches": False}
-    command_results = blocked_command_results("blocked-before-corpus")
+    raw_command_results: list[CommandResult] = []
+    command_results: list[CommandResult] = []
+    command_inventory = command_inventory_observation(raw_command_results)
+    command_completion_reason = "blocked-before-corpus"
     external_audit: dict[str, Any] = {"verdict": "fail", "npm": False, "pnpm": False, "aliases": {}, "procedureFamilyCount": 0, "procedureFileCount": 0, "privacyFindings": [], "reason": "assurance-corpus-not-executed"}
     member_ledger: dict[str, Any] = {"schemaVersion": SCHEMA_VERSION, "recordKind": "t6-accepted-member-ledger", "contractVersion": "evaluation-contract-v1.3.1", "acceptedA133Commit": A133_COMMIT, "expectedAggregateSha256": ACCEPTED_MEMBER_AGGREGATE, "members": [], "memberCount": 0, "verdict": "fail"}
     runtime_audit: dict[str, Any] = {"schemaVersion": SCHEMA_VERSION, "recordKind": "t6-runtime-contract-audit", "checks": [], "requiredCommands": [], "coverage": {}, "repairPerformed": False, "humanReviewed": False, "humanEquivalent": False, "verdict": "fail"}
@@ -2203,23 +2345,32 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
             pnpm_audit, pnpm_matches = validate_pnpm_identity(tools, extraction, env)
             if not pnpm_matches:
                 findings.append("pnpm-identity-mismatch")
-                command_results = blocked_command_results("blocked-by-pnpm-identity-mismatch", tools)
+                command_completion_reason = "blocked-by-pnpm-identity-mismatch"
                 external_audit["reason"] = "pnpm-identity-mismatch"
             elif network_probe.get("verdict") != "pass":
-                command_results = blocked_command_results("blocked-by-network-containment-failure", tools)
+                command_completion_reason = "blocked-by-network-containment-failure"
                 external_audit["reason"] = "network-containment-failure"
             else:
-                command_results = [execute_command(spec, extraction, env, tools) for spec in fixed_commands(tools)]
+                for spec in fixed_commands(tools):
+                    raw_command_results.append(
+                        execute_command(spec, extraction, env, tools)
+                    )
                 try:
-                    external_results, external_audit = run_external_install_audit(extraction, scratch / "external", env, tools)
+                    external_audit = run_external_install_audit(
+                        extraction,
+                        scratch / "external",
+                        env,
+                        tools,
+                        raw_command_results,
+                    )
                     privacy_observed = True
-                    command_results.extend(external_results)
                 except Exception:
                     findings.append("external-install-audit-malformed-or-failed")
-            by_id = {result.command_id: result for result in command_results}
-            for blocked in blocked_command_results("blocked-by-prior-failure"):
-                by_id.setdefault(blocked.command_id, blocked)
-            command_results = [by_id[command_id] for command_id in REQUIRED_COMMAND_IDS]
+                    command_completion_reason = "blocked-by-external-audit-failure"
+            command_inventory = command_inventory_observation(raw_command_results)
+            command_results = complete_command_results(
+                raw_command_results, command_completion_reason, tools
+            )
             provider_names = provider_attempts(provider_log)
             provider_observed = True
             if provider_names:
@@ -2230,7 +2381,14 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
             except Exception:
                 findings.append("installed-member-subject-malformed")
             try:
-                runtime_audit, observed, evidence_rows = build_runtime_audit(extraction, command_results, external_audit, tools["git"], env)
+                runtime_audit, observed, evidence_rows = build_runtime_audit(
+                    extraction,
+                    command_results,
+                    command_inventory,
+                    external_audit,
+                    tools["git"],
+                    env,
+                )
                 findings.extend(observed)
             except Exception:
                 findings.append("runtime-evidence-subject-malformed")
@@ -2242,6 +2400,11 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     except Exception:
         findings.append("subject-or-assurance-runtime-malformed")
 
+    command_inventory = command_inventory_observation(raw_command_results)
+    command_results = complete_command_results(
+        raw_command_results, command_completion_reason
+    )
+
     try:
         protected_audit, observed = protected_worktree_audit(repo, invocation.protected_worktree_root, freeze, protected_baseline)
         findings.extend(observed)
@@ -2251,8 +2414,42 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     frozen = freeze.get("frozenSubject", {})
     exact_attestation = {
         "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-exact-subject-attestation",
-        "m0Commit": m0_commit, "m0FirstParent": PRIOR_M0_CORRECTION_COMMIT,
-        "priorM0CorrectionFirstParent": INITIAL_M0_COMMIT, "initialM0FirstParent": S1_COMMIT,
+        "m0Commit": m0_commit, "m0FirstParent": M0_CORRECTION_2_COMMIT,
+        "m0Correction2FirstParent": PRIOR_M0_CORRECTION_COMMIT,
+        "priorM0CorrectionFirstParent": INITIAL_M0_COMMIT,
+        "initialM0FirstParent": S1_COMMIT,
+        "m0Lineage": [
+            {
+                "commit": m0_commit,
+                "firstParent": M0_CORRECTION_2_COMMIT,
+                "changedPaths": [str(SCRIPT_PATH)],
+                "kind": "script-only-successor",
+            },
+            {
+                "commit": M0_CORRECTION_2_COMMIT,
+                "firstParent": PRIOR_M0_CORRECTION_COMMIT,
+                "changedPaths": list(M0_PATHS),
+                "kind": "three-path-correction-2",
+            },
+            {
+                "commit": PRIOR_M0_CORRECTION_COMMIT,
+                "firstParent": INITIAL_M0_COMMIT,
+                "changedPaths": [str(SCRIPT_PATH)],
+                "kind": "script-only-correction",
+            },
+            {
+                "commit": INITIAL_M0_COMMIT,
+                "firstParent": S1_COMMIT,
+                "changedPaths": list(M0_PATHS),
+                "kind": "initial-three-path-m0",
+            },
+            {
+                "commit": S1_COMMIT,
+                "tree": S1_TREE,
+                "firstParent": SUBJECT_COMMIT,
+                "kind": "exact-s1",
+            },
+        ],
         "s1": {"commit": S1_COMMIT, "tree": S1_TREE},
         "frozenTechnicalSubject": {"commit": SUBJECT_COMMIT, "tree": SUBJECT_TREE},
         "archiveTransport": {"format": "git-archive-tar", "byteLength": len(archive), "sha256": sha256_bytes(archive)},
@@ -2262,8 +2459,20 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     }
     reviewer_attestation, observed = build_reviewer_attestation(assignment, invocation, governed, scratch_created, scratch_empty, scratch_distinct)
     findings.extend(observed)
-    command_inventory_exact = tuple(result.command_id for result in command_results) == REQUIRED_COMMAND_IDS
-    required_commands_pass = command_inventory_exact and all(result.status == "pass" for result in command_results)
+    command_inventory_exact = command_inventory.get("exact") is True
+    required_commands_pass = command_inventory_exact and all(
+        result.status == "pass" for result in raw_command_results
+    )
+    if command_inventory.get("missingCommandIds"):
+        findings.append("required-command-missing")
+    if command_inventory.get("duplicateCommands"):
+        findings.append("required-command-duplicate")
+    if command_inventory.get("extraCommandIds"):
+        findings.append("unexpected-command-observed")
+    if command_inventory.get("countMatches") is not True:
+        findings.append("required-command-count-mismatch")
+    if command_inventory.get("orderMatches") is not True:
+        findings.append("required-command-order-mismatch")
     if not command_inventory_exact:
         findings.append("required-command-inventory-mismatch")
     if not required_commands_pass:
@@ -2281,7 +2490,9 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
         findings.append("containment-condition-failed")
     containment = {
         "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-containment-audit",
-        "authoritative": False, "finalDestinationAuditPending": True,
+        "authoritative": False,
+        "semanticAuthorityRequiresImmutableGitCommit": True,
+        "finalDestinationAuditRecordedInOutput": False,
         "postRenameAuditFailureDisposition": "return-nonzero-and-leave-complete-uncommitted-exact-nine-set",
         "networkAllowed": False, "networkDenial": network_probe, "offlinePackageResolutionRequired": True,
         "checks": checks,
@@ -2298,11 +2509,15 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
         "schemaVersion": SCHEMA_VERSION, "recordKind": "t6-machine-verdict",
         "contractVersion": "evaluation-contract-v1.3.1", "subjectCommit": SUBJECT_COMMIT, "subjectTree": SUBJECT_TREE,
         "reviewerAgentId": REVIEWER_AGENT_ID, "findingCount": len(unique_findings), "findings": unique_findings,
-        "requiredCommandIds": list(REQUIRED_COMMAND_IDS), "requiredCommandsPass": required_commands_pass,
+        "requiredCommandIds": list(REQUIRED_COMMAND_IDS),
+        "rawCommandInventory": command_inventory,
+        "requiredCommandsPass": required_commands_pass,
         "requiredOutputCount": 9, "requiredOutputPaths": list(M1_PATHS),
         "humanReviewed": False, "humanEquivalent": False, "repairPerformed": False,
         "acceptanceAuthority": False, "activationAuthority": False,
-        "authoritative": False, "finalDestinationAuditPending": True,
+        "authoritative": False,
+        "semanticAuthorityRequiresImmutableGitCommit": True,
+        "finalDestinationAuditRecordedInOutput": False,
         "verdict": "fail" if unique_findings else "pass",
     }
     command_rows = []
@@ -2333,19 +2548,86 @@ def run_assurance(repo: Path, m0_commit: str, invocation: ReviewerInvocation) ->
     if final_findings:
         sys.stdout.write(json.dumps({"verdict": "fail", "findingCount": len(unique_findings) + len(final_findings), "finalDestinationAudit": "fail"}) + "\n")
         return 1
-    outputs = attest_final_destination(repo, outputs, final_audit, forbidden)
-    verdict = strict_json_bytes(outputs["machine-verdict.json"], "verdict")
-    sys.stdout.write(json.dumps({"verdict": verdict["verdict"], "findingCount": verdict["findingCount"]}) + "\n")
-    return 0 if verdict["verdict"] == "pass" else 1
+    sys.stdout.write(
+        json.dumps(
+            {
+                "verdict": machine_verdict["verdict"],
+                "findingCount": machine_verdict["findingCount"],
+                "finalDestinationAudit": "pass",
+            }
+        )
+        + "\n"
+    )
+    return 0 if machine_verdict["verdict"] == "pass" else 1
 
 def focused_self_check() -> list[str]:
-    validate_m0_changed_paths(M0_PATHS, (str(SCRIPT_PATH),), M0_PATHS)
+    validate_m0_changed_paths(
+        M0_PATHS,
+        (str(SCRIPT_PATH),),
+        M0_PATHS,
+        (str(SCRIPT_PATH),),
+    )
     blocked = blocked_command_results("self-check")
     if (
         tuple(result.command_id for result in blocked) != REQUIRED_COMMAND_IDS
         or any(result.status != "blocked" for result in blocked)
     ):
         raise ValueError("deterministic blocked inventory self-check failed")
+    first = CommandResult(REQUIRED_COMMAND_IDS[0], ("self-check",), ".", 0, "pass")
+    duplicate = CommandResult(
+        REQUIRED_COMMAND_IDS[0], ("self-check-duplicate",), ".", 1, "fail"
+    )
+    extra = CommandResult("unexpected-self-check", ("self-check-extra",), ".", 0, "pass")
+    raw_with_duplicate_and_extra = [first, duplicate, extra]
+    duplicate_inventory = command_inventory_observation(
+        raw_with_duplicate_and_extra
+    )
+    completed_duplicate = complete_command_results(
+        raw_with_duplicate_and_extra, "self-check-missing"
+    )
+    if (
+        duplicate_inventory["exact"] is not False
+        or duplicate_inventory["duplicateCommands"]
+        != [{"commandId": REQUIRED_COMMAND_IDS[0], "count": 2}]
+        or duplicate_inventory["extraCommandIds"] != ["unexpected-self-check"]
+        or completed_duplicate[:3] != raw_with_duplicate_and_extra
+    ):
+        raise ValueError("raw duplicate/extra command preservation self-check failed")
+    partial = [first]
+    partial_inventory = command_inventory_observation(partial)
+    completed_partial = complete_command_results(partial, "self-check-partial")
+    if (
+        completed_partial[0] is not first
+        or len(completed_partial) != len(REQUIRED_COMMAND_IDS)
+        or any(
+            result.status != "blocked"
+            for result in completed_partial[1:]
+        )
+        or partial_inventory["missingCommandIds"] != list(REQUIRED_COMMAND_IDS[1:])
+    ):
+        raise ValueError("partial command completion self-check failed")
+    with tempfile.TemporaryDirectory(prefix="trellis-t6-self-check-") as temporary:
+        root = Path(temporary)
+        (root / "retained.txt").write_text("before\n", encoding="utf-8")
+        (root / "missing.txt").write_text("before\n", encoding="utf-8")
+        initial_non_ignored = status_snapshot(
+            root, (("??", "retained.txt"), ("??", "missing.txt"))
+        )
+        (root / "retained.txt").write_text("after\n", encoding="utf-8")
+        (root / "missing.txt").unlink()
+        (root / "added.txt").write_text("added\n", encoding="utf-8")
+        current_non_ignored = status_snapshot(
+            root, (("??", "retained.txt"), ("??", "added.txt"))
+        )
+        non_ignored_delta = compare_status_snapshot(
+            root, current_non_ignored, initial_non_ignored
+        )
+    if (
+        non_ignored_delta[0] != ["??:added.txt"]
+        or non_ignored_delta[1] != ["??:missing.txt"]
+        or "retained.txt" not in non_ignored_delta[2]
+    ):
+        raise ValueError("non-ignored submodule content snapshot self-check failed")
     if status_short_lines(b" M tracked\0!! cache/\0") != [
         " M tracked",
         "!! cache/",
@@ -2376,8 +2658,11 @@ def focused_self_check() -> list[str]:
     if rejected != 2:
         raise ValueError("strict JSON self-check failed")
     return [
-        "exact-m0-inventory",
+        "exact-m0-lineage-inventory",
         "deterministic-blocked-inventory",
+        "raw-command-duplicate-extra-preservation",
+        "partial-command-completion",
+        "non-ignored-submodule-content-snapshot",
         "status-parser",
         "containment-verdict",
         "strict-json",
