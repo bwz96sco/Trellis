@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/task.json","reason":"Check the exact repair allowlist, retained-object identities, forward-only boundary, and denials."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/prd.md","reason":"Check observable repair acceptance and out-of-scope boundary."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/design.md","reason":"Check T4 semantics, retained-verification design, and failure disposition."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Check ordered impact, verification, commit, and stop gates."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.jsonl","reason":"Check exact source-evidence references."}

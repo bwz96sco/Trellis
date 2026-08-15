@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-3/runtime-contract-audit.json","reason":"Immutable Attempt-3 command statuses and corrected T4 coverage summary."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-3/command-evidence-ledger.jsonl","reason":"Bounded diagnostics identifying the exact T4, lint, historical verifier, and pnpm failures."}
+{"file":".trellis/tasks/08-12-build-v1-3-1-production-harness/research/production-116-case-evidence.jsonl","reason":"Read-only corrected T4 evidence preserving separate code-presence and prevention observations."}
+{"file":"packages/cli/test/commands/research-methodology-v131-coverage.test.ts","reason":"Stale T4 consumer requiring the governed OR correction."}
+{"file":"packages/cli/scripts/research-v131-installed-package-audit.mjs","reason":"Legacy historical verifier that must authenticate retained I1 evidence instead of reading untracked CS5 bytes."}
+{"file":"packages/cli/scripts/research-v131-installed-package-audit-successor.mjs","reason":"Successor historical verifier that must authenticate retained I2 evidence without external worktree registration."}
+{"file":".trellis/tasks/08-12-integrate-install-and-freeze-v1-3-1-subject/research/protected-path-audit.json","reason":"Pinned retained I1 protected-path audit record."}
+{"file":".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor/research/protected-path-audit.json","reason":"Pinned retained I2 protected-path audit record."}
