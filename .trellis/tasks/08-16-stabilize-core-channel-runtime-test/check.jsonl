@@ -1,0 +1,7 @@
+{"file":"packages/core/test/channel/channel-runtime.test.ts","reason":"Check single-pending-next semantics, explicit timeout failure, deterministic delayed-value regression, unchanged late-channel assertion, and cleanup."}
+{"file":"packages/core/test/channel/worker-inbox.test.ts","reason":"Check the same single-pending-next rule for takeN/drain and unchanged replay/watch behavior after the demonstrated full-suite timeout."}
+{"file":"packages/core/src/channel/api/watch-channels.ts","reason":"Read-only check that no production watcher behavior changed and late-channel discovery semantics remain the integration oracle."}
+{"file":"packages/core/src/channel/internal/store/watch.ts","reason":"Read-only check that watcher abort and fallback-poll behavior remains unchanged."}
+{"file":"packages/core/vitest.config.ts","reason":"Check that package-wide timeout, concurrency, pool, and isolation configuration remain unchanged."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check exact assertions, helper-dependent test coverage, cleanup, and avoidance of global timer/concurrency weakening."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Check that R3 ordering, protected evidence, exact gates, and operational denials remain preserved."}

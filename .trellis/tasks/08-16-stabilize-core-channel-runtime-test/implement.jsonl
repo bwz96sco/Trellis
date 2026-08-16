@@ -1,0 +1,10 @@
+{"file":"packages/core/test/channel/channel-runtime.test.ts","reason":"Owns the file-local takeN helper, its four call sites, and the late-created-channel regression that timed out under full-suite load."}
+{"file":"packages/core/test/channel/worker-inbox.test.ts","reason":"Owns the independently duplicated takeN/drain abandoned-request pattern and the worker-inbox regression that timed out in the first full-suite run."}
+{"file":"packages/core/src/channel/api/watch-channels.ts","reason":"Read-only runtime reference for confirming watchChannels liveness and avoiding an unsupported production edit."}
+{"file":"packages/core/src/channel/api/inbox.ts","reason":"Read-only runtime reference for terminal worker-generation completion semantics exercised by worker-inbox tests."}
+{"file":"packages/core/src/channel/internal/store/watch.ts","reason":"Read-only watcher implementation reference for abort settlement and fallback polling behavior."}
+{"file":"packages/core/package.json","reason":"Defines the exact Core lint, typecheck, test, and build gates used by this repair."}
+{"file":".trellis/spec/core/backend/index.md","reason":"Core package ownership, compatibility boundary, and required package-scoped quality checks."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Frozen Channel compatibility and public API requirements that the test-only repair must preserve."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Vitest isolation, exact assertion, regression-test, timer, and helper-change conventions."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Existing R3 sequencing, immutable-evidence boundary, and exact full-gate requirement retained by this additive forward task."}
