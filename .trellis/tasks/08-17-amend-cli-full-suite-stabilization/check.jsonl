@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check explicit 10-second defaults, setup files, normal four-worker behavior, local budgets, and exact project ownership."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check the two real build/pack tests remain unchanged and serialize canonical workspace-dist mutation."}
+{"file":".trellis/tasks/08-12-project-procedure-2-0-7-family-packages/research/generation-evidence-ledger.json","reason":"Check frozen Procedure-test length/digest and reject any technical diff in that file."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Check protected evidence, historical object-only verification, remaining R3 gates, and exact final staging."}
+{"file":".trellis/tasks/08-16-stabilize-core-channel-runtime-test/implement.md","reason":"Check Channel work is preserved and task completion waits for the joint R3 technical commit."}

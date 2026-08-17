@@ -1,0 +1,40 @@
+{
+  "id": "amend-cli-full-suite-stabilization",
+  "name": "amend-cli-full-suite-stabilization",
+  "title": "Amend CLI full-suite stabilization",
+  "description": "Supersede the defective timeout and project-topology clauses in d9c550a with a forward-only three-file, three-lane CLI test correction.",
+  "status": "in_progress",
+  "dev_type": "unit-test",
+  "scope": "cli/unit-test",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-17",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/cli/vitest.config.ts",
+    "packages/cli/test/commands/research-methodology-v131-coverage.test.ts",
+    "packages/cli/test/commands/research-methodology-validation.test.ts"
+  ],
+  "notes": "Forward overlay only. The Procedure 2.0.7 package test is immutable verification input, not an authorized edit path. No history rewrite, production change, package-script change, provider execution, activation, T7, release, publication, or push authority.",
+  "meta": {
+    "supersedesCommit": "d9c550ae786a45cea479c03ebe98aae08839b1a9",
+    "expectedTechnicalPathCount": 3,
+    "expectedFinalUniquePathCount": 21,
+    "expectedCliTestFileCount": 86,
+    "expectedLongLaneFiles": 1,
+    "expectedNormalLaneFiles": 83,
+    "expectedDistMutatingLaneFiles": 2,
+    "frozenProcedureTestByteLength": 19395,
+    "frozenProcedureTestSha256": "1f5a323935e1ea82128cd700618cab91fec66bd8157c2696fe61514d27144673"
+  }
+}
