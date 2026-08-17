@@ -1,0 +1,9 @@
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/task.json","reason":"Verify exact six-path ownership, baseline pins, protected dirty snapshots, gate order, and false future authority flags."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/prd.md","reason":"Verify formal push readiness requires I3/S3, passing Attempt 4, T6 closure, positive T7, closeout, remote freshness, and final push authority."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/design.md","reason":"Verify no gate inherits authority and every frozen or failed artifact is corrected only by a new descendant."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/implement.md","reason":"Verify baseline authentication, exact staging, GitNexus detection, commit containment, and handoff to a separate G-I3 task."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/task.json","reason":"Confirm R3 remains completed and this overlay does not reinterpret its repair authority."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json","reason":"Confirm Attempts 1–3 and current T6 state remain unchanged and no Attempt-4 execution is authorized here."}
+{"file":".trellis/tasks/08-12-decide-v1-3-1-technical-subject/task.json","reason":"Confirm T7 remains planning/inactive with no task, operator, archive, or push authority."}
+{"file":".trellis/tasks/08-12-govern-evaluation-contract-v1-3-1-technical-successor/research/g0-protected-path-baseline.json","reason":"Compare inherited protected dirt and submodule identities without modifying or staging them."}
+{"file":".trellis/tasks/08-12-project-procedure-2-0-7-family-packages/research/generation-evidence-ledger.json","reason":"Authenticate frozen Procedure bytes and digest before the governance commit."}

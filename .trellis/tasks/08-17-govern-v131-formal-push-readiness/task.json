@@ -1,0 +1,91 @@
+{
+  "id": "govern-v131-formal-push-readiness",
+  "name": "govern-v131-formal-push-readiness",
+  "title": "Govern formal v1.3.1 push readiness",
+  "description": "Freeze the forward-only post-R3 sequence and keep I3/S3, Attempt-4 preparation and execution, T6 closure, T7, archive/journal, remote inspection, and push as separate authorities.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "research/governance",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-17",
+  "completedAt": null,
+  "branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "base_branch": "evidence/v13-baseline",
+  "worktree_path": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/task.json",
+    ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json",
+    ".trellis/tasks/08-12-decide-v1-3-1-technical-subject/task.json"
+  ],
+  "notes": "The user selected formal-migration push readiness rather than a transport-only backup and authorized execution to begin. This task authorizes only the six-file governance boundary and the creation of later stage-local governance. It does not itself authorize I3 bytes, reviewer execution, an external provider, T7, archive, journal, network access, evidence transmission, push, release, publication, or activation.",
+  "meta": {
+    "acceptedContract": "evaluation-contract-v1.3.1",
+    "acceptedSemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+    "campaign": "A133-bound-technical-successor",
+    "stage": "G-PRE-PUSH",
+    "forwardOnly": true,
+    "userSelectedPushMode": "formal-migration",
+    "taskExecutionAuthorized": true,
+    "commitAuthorized": true,
+    "commitBoundaries": [
+      "G-PRE-PUSH"
+    ],
+    "nextStageTaskCreationAuthorized": true,
+    "i3SubjectCreationAuthorized": false,
+    "reviewerPreparationAuthorized": false,
+    "assuranceRunAuthorized": false,
+    "providerExecutionAuthorized": false,
+    "technicalOperatorDecisionAuthorized": false,
+    "archiveAuthorized": false,
+    "journalAuthorized": false,
+    "networkAuthorized": false,
+    "evidenceTransmissionAuthorized": false,
+    "pushAuthorized": false,
+    "publicationAuthorized": false,
+    "releaseAuthorized": false,
+    "runtimeActivationAuthorized": false,
+    "liveSelectionChangeAuthorized": false,
+    "workerAuthorityChangeAuthorized": false,
+    "completeSystemAcceptanceAuthorized": false,
+    "r3TechnicalCommit": "0028183901b74263a70dacca98bb936dc792ced4",
+    "r3ClosureCommit": "0037bc4261a08541c5b10085c7d8cb349f574711",
+    "r3BaseCommit": "e6b80d640f0bd264c1acfe6bab906cb3e4ae535a",
+    "immutableAttemptCommits": [
+      "cd85634a5a1d8e942c78364ef9442be5a28d4816",
+      "1d389f31cb584ffbab3acb583c4810e7676c7b46",
+      "e311146a89a96e21e614304240c655245998e20f"
+    ],
+    "protectedDirtySnapshot": {
+      "AGENTS.md": "sha256:788d2a2da0e913874acee2c3cf2f34575b50191b18e47f21478645ea5be4be48",
+      "CLAUDE.md": "sha256:319361ea166bde3be56a6c6dc5a161a5a6f73a214a2aea1d8efd1436b1853cf3"
+    },
+    "ownedPaths": [
+      ".trellis/tasks/08-17-govern-v131-formal-push-readiness/task.json",
+      ".trellis/tasks/08-17-govern-v131-formal-push-readiness/prd.md",
+      ".trellis/tasks/08-17-govern-v131-formal-push-readiness/design.md",
+      ".trellis/tasks/08-17-govern-v131-formal-push-readiness/implement.md",
+      ".trellis/tasks/08-17-govern-v131-formal-push-readiness/implement.jsonl",
+      ".trellis/tasks/08-17-govern-v131-formal-push-readiness/check.jsonl"
+    ],
+    "orderedFutureGates": [
+      "G-I3",
+      "M0-A4",
+      "M1-A4",
+      "T6-CLOSE",
+      "O0",
+      "O1",
+      "G-AJ",
+      "G-REMOTE-READ",
+      "G-PUSH"
+    ],
+    "stopGate": "Any baseline, immutable evidence, ownership, inventory, authority, predecessor, protected-path, submodule, or staged-set mismatch; any attempt to collapse future gates; or any unauthorized provider, operator, archive, journal, network, evidence-transmission, push, release, publication, activation, history-rewrite, or technical action."
+  }
+}

@@ -1,0 +1,9 @@
+{"file":".trellis/spec/tech/repo/index.md","reason":"Preserve repository package, workspace, and submodule boundaries while creating governance-only metadata."}
+{"file":".trellis/spec/guides/index.md","reason":"Apply pre-modification and cross-boundary reasoning without introducing executable changes."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/task.json","reason":"Bind the handoff from completed R3 and retain all false operational authority flags."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/prd.md","reason":"Preserve the requirement that R3 only produces a predecessor for separately governed I3/S3 and Attempt 4."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json","reason":"Preserve T6 Attempts 1–3 and prevent assurance, acceptance, archive, provider, or push authority leakage."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/implement.md","reason":"Retain independent reviewer, clean archive, exact-nine output, zero-finding pass, and no-repair requirements."}
+{"file":".trellis/tasks/08-12-decide-v1-3-1-technical-subject/task.json","reason":"Preserve inactive T7 and its separate operator instruction and decision authorization requirements."}
+{"file":".trellis/tasks/07-29-migrate-research-methodology-to-procedures/implement.md","reason":"Preserve the parent stop-after-T7 rule and separate activation/archive/release/publication/push boundaries."}
+{"file":".trellis/workflow.md","reason":"Use the required work-commit, archive, and journal ordering without granting archive or journal authority now."}
