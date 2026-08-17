@@ -1,0 +1,35 @@
+{
+  "id": "stabilize-cli-full-suite",
+  "name": "stabilize-cli-full-suite",
+  "title": "Stabilize CLI full-suite execution",
+  "description": "Govern the minimal forward correction for three CLI full-suite timeout budgets and the demonstrated shared-dist build race without changing production behavior or package scripts.",
+  "status": "in_progress",
+  "dev_type": "unit-test",
+  "scope": "cli/unit-test",
+  "package": "cli",
+  "priority": "P1",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-17",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/cli/vitest.config.ts",
+    "packages/cli/test/commands/research-methodology-v131-coverage.test.ts",
+    "packages/cli/test/commands/research-methodology-validation.test.ts",
+    "packages/cli/test/commands/research-procedure-207-packages.test.ts"
+  ],
+  "notes": "Forward-only test-infrastructure correction; no production, package-script, evidence, assurance-history, provider, activation, release, publication, T7, or push authority.",
+  "meta": {
+    "expectedTechnicalPathCount": 4,
+    "expectedFinalUniquePathCount": 22,
+    "sharedDistTests": 2
+  }
+}

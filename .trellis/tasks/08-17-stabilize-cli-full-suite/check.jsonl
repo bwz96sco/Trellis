@@ -1,0 +1,4 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check explicit 10-second defaults, setup-file coverage in both projects, exact assertions, and avoidance of global timeout/concurrency weakening."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check that both real package build/pack tests remain unchanged and execute against clean serialized workspace outputs."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Check protected evidence, historical verification, remaining R3 gates, and exact final staging."}
+{"file":".trellis/tasks/08-16-stabilize-core-channel-runtime-test/implement.md","reason":"Check Core/Channel work remains preserved and final task completion is deferred until the joint R3 commit succeeds."}

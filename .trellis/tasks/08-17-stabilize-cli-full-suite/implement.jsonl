@@ -1,0 +1,6 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Vitest 4 configuration, setup-file isolation, exact assertions, test-local timeout, and full-suite ownership conventions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Real build/pack test ownership, clean-dist and packed-artifact requirements, and prohibition on replacing real package proofs with mocks."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Minimal-mocking boundary; the demonstrated shared workspace build race must be corrected by scheduling rather than mocking package builds."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Configuration constant ownership and search-before-changing-value guidance for the exact two shared-dist paths."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"R3 sequencing, immutable-evidence constraints, exact gates, and final technical staging authority."}
+{"file":".trellis/tasks/08-16-stabilize-core-channel-runtime-test/implement.md","reason":"Preceding Channel correction, passed Core gate, and shared final R3 commit boundary."}
