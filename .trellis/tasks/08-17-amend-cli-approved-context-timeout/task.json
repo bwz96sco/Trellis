@@ -1,0 +1,39 @@
+{
+  "id": "amend-cli-approved-context-timeout",
+  "name": "amend-cli-approved-context-timeout",
+  "title": "Amend CLI approved-context timeout",
+  "description": "Authorize the single approved-context callback timeout correction while preserving the governed CLI lane topology and R3 containment.",
+  "status": "in_progress",
+  "dev_type": "unit-test",
+  "scope": "cli/unit-test",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-17",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/cli/vitest.config.ts",
+    "packages/cli/test/commands/research-methodology-v131-coverage.test.ts",
+    "packages/cli/test/commands/research-methodology-validation.test.ts",
+    "packages/cli/test/commands/research-dispatch-approved-context.test.ts"
+  ],
+  "notes": "Forward-only governance overlay superseding only c1e1c40e's stale three-file, two-budget, 21-path boundary. No technical edit, upstream synchronization, push, publication, activation, provider execution, T7 work, or history rewrite is authorized by task creation.",
+  "meta": {
+    "authorizedCliPathCount": 4,
+    "authorizedLocalTimeoutCount": 3,
+    "procedureLaneFiles": 1,
+    "normalLaneFiles": 83,
+    "sharedDistLaneFiles": 2,
+    "uniqueCliTestFiles": 86,
+    "expectedFinalTechnicalPathCount": 22
+  }
+}

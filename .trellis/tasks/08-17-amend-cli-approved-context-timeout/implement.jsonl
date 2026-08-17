@@ -1,0 +1,9 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Apply Vitest local-timeout, exact lane ownership, immutable fixture/evidence, and full-suite verification conventions."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Preserve real parser/build/pack boundaries, normal-project execution, and exact shared-dist scheduling proofs."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Keep real Git/filesystem/package behavior and prohibit mocks or helper substitutions for the demonstrated timeout."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/prd.md","reason":"Predecessor requirements whose three-file, two-budget, and 21-path clauses this task alone supersedes."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/design.md","reason":"Preserved three-project topology, orders, worker counts, ownership, and immutable Procedure boundary."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/implement.md","reason":"Existing focused, full-suite, evidence, and final R3 verification sequence extended by one approved path."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Authoritative R3 sequencing, protected evidence, historical object-only checks, and commit containment."}
+{"file":".trellis/tasks/08-16-stabilize-core-channel-runtime-test/implement.md","reason":"Preserve the two Channel paths and exact Core gate within the final 22-path R3 subject."}
+{"file":".trellis/tasks/08-12-project-procedure-2-0-7-family-packages/research/generation-evidence-ledger.json","reason":"Authenticate the frozen Procedure test as immutable verification input."}

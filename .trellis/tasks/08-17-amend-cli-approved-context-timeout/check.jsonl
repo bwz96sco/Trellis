@@ -1,0 +1,9 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check that the correction remains callback-local and preserves exact budgets, inventories, evidence, and full-suite gates."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check normal-project execution, unchanged three-lane ownership, and real shared-dist/package proof."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Check no mock, helper rewrite, or fixture substitution weakens the demonstrated behavior."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/prd.md","reason":"Check only the stale three-file, two-budget, 21-path clauses are superseded."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/design.md","reason":"Check orders 1/2/3, workers 1/4/1, ownership 1/83/2, and union 86 remain exact."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/implement.md","reason":"Check the preserved focused/full-suite gates, immutable verification sequence, and exact predecessor commit boundary."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/implement.md","reason":"Check retained R3 gates, protected evidence, historical verification, and final technical containment."}
+{"file":".trellis/tasks/08-16-stabilize-core-channel-runtime-test/implement.md","reason":"Check the Channel correction remains unchanged and contributes exactly two paths to the 22-path union."}
+{"file":".trellis/tasks/08-12-project-procedure-2-0-7-family-packages/research/generation-evidence-ledger.json","reason":"Reject any drift in the frozen Procedure test or its retained T3 authentication."}
