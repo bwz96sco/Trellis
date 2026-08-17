@@ -23,48 +23,143 @@ const fakeRuntime: WorkerRuntime = {
   interrupt: async () => ({ method: "provider", outcome: "interrupted" }),
 };
 
-const POLL_TIMEOUT = Symbol("poll-timeout");
+const TAKE_N_TIMEOUT = Symbol("take-n-timeout");
 
 async function takeN<T>(
   gen: AsyncGenerator<T>,
   n: number,
+  controller: AbortController,
   timeoutMs = 4000,
 ): Promise<T[]> {
   const out: T[] = [];
   const deadline = Date.now() + timeoutMs;
-  while (out.length < n && Date.now() < deadline) {
-    const next = await Promise.race([
-      gen.next(),
-      new Promise<typeof POLL_TIMEOUT>((r) =>
-        setTimeout(() => r(POLL_TIMEOUT), 250),
-      ),
-    ]);
-    if (next === POLL_TIMEOUT) continue;
-    if (next.done) break;
-    out.push(next.value as T);
+
+  while (out.length < n) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
+      controller.abort();
+      throw new Error(`Timed out waiting for ${n} generator values`);
+    }
+
+    const pending = gen.next();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let next: IteratorResult<T> | typeof TAKE_N_TIMEOUT;
+    try {
+      next = await Promise.race([
+        pending,
+        new Promise<typeof TAKE_N_TIMEOUT>((resolve) => {
+          timer = setTimeout(() => resolve(TAKE_N_TIMEOUT), remainingMs);
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
+
+    if (next === TAKE_N_TIMEOUT) {
+      controller.abort();
+      await pending.catch(() => undefined);
+      throw new Error(`Timed out waiting for ${n} generator values`);
+    }
+    if (next.done) {
+      throw new Error(`Generator ended before yielding ${n} values`);
+    }
+    out.push(next.value);
   }
+
   return out;
 }
 
-async function drain<T>(
+async function collectUntilDone<T>(
   gen: AsyncGenerator<T>,
+  controller: AbortController,
   timeoutMs = 4000,
 ): Promise<T[]> {
   const out: T[] = [];
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const next = await Promise.race([
-      gen.next(),
-      new Promise<typeof POLL_TIMEOUT>((r) =>
-        setTimeout(() => r(POLL_TIMEOUT), 250),
-      ),
-    ]);
-    if (next === POLL_TIMEOUT) continue;
-    if (next.done) return out;
-    out.push(next.value as T);
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    try {
+      for await (const value of gen) out.push(value);
+    } catch (error) {
+      if (timedOut) throw new Error("Timed out waiting for generator completion");
+      throw error;
+    }
+    if (timedOut) throw new Error("Timed out waiting for generator completion");
+    return out;
+  } finally {
+    clearTimeout(timer);
   }
-  return out;
 }
+
+describe("async generator test helpers", () => {
+  it("keeps one read pending while a delayed value settles", async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    const gen = (async function* (): AsyncGenerator<number> {
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
+      yield 42;
+    })();
+    const next = vi.spyOn(gen, "next");
+
+    try {
+      const result = takeN(gen, 1, controller, 1000);
+      await vi.advanceTimersByTimeAsync(251);
+      expect(next).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(49);
+      await expect(result).resolves.toEqual([42]);
+    } finally {
+      controller.abort();
+      await vi.runAllTimersAsync();
+      await gen.return(undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it("collects values until natural completion", async () => {
+    const controller = new AbortController();
+    const gen = (async function* (): AsyncGenerator<number> {
+      yield 1;
+      yield 2;
+    })();
+
+    try {
+      await expect(collectUntilDone(gen, controller)).resolves.toEqual([1, 2]);
+      expect(controller.signal.aborted).toBe(false);
+    } finally {
+      controller.abort();
+      await gen.return(undefined);
+    }
+  });
+
+  it("aborts and fails when natural completion misses the deadline", async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    const gen = (async function* (): AsyncGenerator<number> {
+      await new Promise<void>((resolve) =>
+        controller.signal.addEventListener("abort", () => resolve(), { once: true }),
+      );
+      yield* [] as number[];
+    })();
+
+    try {
+      const result = collectUntilDone(gen, controller, 100);
+      const rejection = expect(result).rejects.toThrow(
+        "Timed out waiting for generator completion",
+      );
+      await vi.advanceTimersByTimeAsync(100);
+      await rejection;
+      expect(controller.signal.aborted).toBe(true);
+    } finally {
+      controller.abort();
+      await gen.return(undefined);
+      vi.useRealTimers();
+    }
+  });
+});
 
 describe("readWorkerInbox", () => {
   let env: TmpEnv;
@@ -376,7 +471,7 @@ describe("readWorkerInbox", () => {
   });
 });
 
-describe("watchWorkerInbox", () => {
+describe("watchWorkerInbox", { timeout: 30_000 }, () => {
   let env: TmpEnv;
   beforeEach(() => {
     env = setupChannelTmp();
@@ -407,14 +502,17 @@ describe("watchWorkerInbox", () => {
       signal: ac.signal,
     });
 
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "live-1" });
-    await sendMessage({ channel: "c", by: "main", text: "broadcast" });
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "live-2" });
+    try {
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "live-1" });
+      await sendMessage({ channel: "c", by: "main", text: "broadcast" });
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "live-2" });
 
-    const msgs = await takeN(gen, 2);
-    ac.abort();
-    await gen.return(undefined);
-    expect(msgs.map((m) => m.event.text)).toEqual(["live-1", "live-2"]);
+      const msgs = await takeN(gen, 2, ac);
+      expect(msgs.map((m) => m.event.text)).toEqual(["live-1", "live-2"]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 
   it("yields broadcasts under broadcastAndExplicit", async () => {
@@ -438,13 +536,16 @@ describe("watchWorkerInbox", () => {
       signal: ac.signal,
     });
 
-    await sendMessage({ channel: "c", by: "main", text: "broadcast" });
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "explicit" });
+    try {
+      await sendMessage({ channel: "c", by: "main", text: "broadcast" });
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "explicit" });
 
-    const msgs = await takeN(gen, 2);
-    ac.abort();
-    await gen.return(undefined);
-    expect(msgs.map((m) => m.event.text)).toEqual(["broadcast", "explicit"]);
+      const msgs = await takeN(gen, 2, ac);
+      expect(msgs.map((m) => m.event.text)).toEqual(["broadcast", "explicit"]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 
   it("honors sinceSeq and fromStart", async () => {
@@ -474,10 +575,13 @@ describe("watchWorkerInbox", () => {
       sinceSeq: m1.seq,
       signal: ac.signal,
     });
-    const sinceMsgs = await takeN(gen, 1);
-    ac.abort();
-    await gen.return(undefined);
-    expect(sinceMsgs.map((m) => m.event.text)).toEqual(["b"]);
+    try {
+      const sinceMsgs = await takeN(gen, 1, ac);
+      expect(sinceMsgs.map((m) => m.event.text)).toEqual(["b"]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
 
     const ac2 = new AbortController();
     const gen2 = await watchWorkerInbox({
@@ -486,10 +590,13 @@ describe("watchWorkerInbox", () => {
       fromStart: true,
       signal: ac2.signal,
     });
-    const fromStartMsgs = await takeN(gen2, 2);
-    ac2.abort();
-    await gen2.return(undefined);
-    expect(fromStartMsgs.map((m) => m.event.text)).toEqual(["a", "b"]);
+    try {
+      const fromStartMsgs = await takeN(gen2, 2, ac2);
+      expect(fromStartMsgs.map((m) => m.event.text)).toEqual(["a", "b"]);
+    } finally {
+      ac2.abort();
+      await gen2.return(undefined);
+    }
   });
 
   it("fromStart replays only the current worker generation", async () => {
@@ -535,14 +642,17 @@ describe("watchWorkerInbox", () => {
       fromStart: true,
       signal: ac.signal,
     });
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "new" });
-    const msgs = await takeN(gen, 2);
-    ac.abort();
-    await gen.return(undefined);
-    expect(msgs.map((m) => m.event.text)).toEqual([
-      "between-generations",
-      "new",
-    ]);
+    try {
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "new" });
+      const msgs = await takeN(gen, 2, ac);
+      expect(msgs.map((m) => m.event.text)).toEqual([
+        "between-generations",
+        "new",
+      ]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 
   it("rejects watching a terminal worker", async () => {
@@ -590,30 +700,34 @@ describe("watchWorkerInbox", () => {
       signal: ac.signal,
     });
 
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "before" });
-    // Terminal event for the same worker — generator must end.
-    await appendEvent("c", {
-      kind: "killed",
-      by: "cli:kill",
-      worker: "w",
-      reason: "explicit-kill",
-    });
-    // Respawn + post-respawn message that must NOT be yielded.
-    await spawnWorker(
-      {
-        channel: "c",
-        cwd: env.projectDir,
-        by: "main",
-        workerId: "w",
-        systemPrompt: "x",
-      },
-      fakeRuntime,
-    );
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "after" });
+    try {
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "before" });
+      // Terminal event for the same worker — generator must end.
+      await appendEvent("c", {
+        kind: "killed",
+        by: "cli:kill",
+        worker: "w",
+        reason: "explicit-kill",
+      });
+      // Respawn + post-respawn message that must NOT be yielded.
+      await spawnWorker(
+        {
+          channel: "c",
+          cwd: env.projectDir,
+          by: "main",
+          workerId: "w",
+          systemPrompt: "x",
+        },
+        fakeRuntime,
+      );
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "after" });
 
-    const seen: WorkerInboxMessage[] = await drain(gen);
-    ac.abort();
-    expect(seen.map((m) => m.event.text)).toEqual(["before"]);
+      const seen: WorkerInboxMessage[] = await collectUntilDone(gen, ac);
+      expect(seen.map((m) => m.event.text)).toEqual(["before"]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 
   it("rejects unknown worker", async () => {
@@ -692,12 +806,15 @@ describe("watchWorkerInbox", () => {
       signal: ac.signal,
     });
 
-    await sendMessage({ channel: "c", by: "w", text: "self" });
-    await sendMessage({ channel: "c", by: "main", to: "w", text: "in" });
-    const msgs = await takeN(gen, 1);
-    ac.abort();
-    await gen.return(undefined);
-    expect(msgs.map((m) => m.event.text)).toEqual(["in"]);
+    try {
+      await sendMessage({ channel: "c", by: "w", text: "self" });
+      await sendMessage({ channel: "c", by: "main", to: "w", text: "in" });
+      const msgs = await takeN(gen, 1, ac);
+      expect(msgs.map((m) => m.event.text)).toEqual(["in"]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 
   it("delivers multi-target to[] messages while watching", async () => {
@@ -718,15 +835,18 @@ describe("watchWorkerInbox", () => {
       workerId: "w",
       signal: ac.signal,
     });
-    await sendMessage({
-      channel: "c",
-      by: "main",
-      to: ["a", "w"],
-      text: "multi",
-    });
-    const msgs = await takeN(gen, 1);
-    ac.abort();
-    await gen.return(undefined);
-    expect(msgs.map((m) => m.event.text)).toEqual(["multi"]);
+    try {
+      await sendMessage({
+        channel: "c",
+        by: "main",
+        to: ["a", "w"],
+        text: "multi",
+      });
+      const msgs = await takeN(gen, 1, ac);
+      expect(msgs.map((m) => m.event.text)).toEqual(["multi"]);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 });

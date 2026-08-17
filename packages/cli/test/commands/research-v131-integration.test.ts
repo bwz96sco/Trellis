@@ -137,11 +137,24 @@ describe("T5 v1.3.1 installed-package integration", () => {
 
       const protectedAudit = readEvidence<{
         readonly recordKind: string;
+        readonly commitBoundary: string;
         readonly files: readonly { readonly matches: boolean }[];
         readonly submodules: readonly { readonly matches: boolean }[];
+        readonly untrackedCs5Decision: {
+          readonly tracked: boolean;
+          readonly matches: boolean;
+        };
+        readonly t1ThroughT4MutationPerformed: boolean;
+        readonly historicalCs5Cs6MutationPerformed: boolean;
         readonly verdict: string;
       }>("protected-path-audit.json");
-      expect(protectedAudit.recordKind).toBe("t5-protected-path-audit");
+      expect(protectedAudit).toMatchObject({
+        recordKind: "t5-protected-path-audit",
+        commitBoundary: "I1",
+        untrackedCs5Decision: { tracked: false, matches: true },
+        t1ThroughT4MutationPerformed: false,
+        historicalCs5Cs6MutationPerformed: false,
+      });
       expect(protectedAudit.files.every(({ matches }) => matches)).toBe(true);
       expect(protectedAudit.submodules.every(({ matches }) => matches)).toBe(
         true,

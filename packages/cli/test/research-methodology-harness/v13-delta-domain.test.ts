@@ -167,12 +167,12 @@ function loadFigure205ProcedureFromSandbox(sandboxRoot: string): never {
   const pack = JSON.parse(
     fs.readFileSync(path.join(base, "methodology/pack.json"), "utf8"),
   ) as {
-    entries: Array<{
+    entries: {
       path: string;
       role: string;
       mediaType: string;
       sha256: string;
-    }>;
+    }[];
   };
   const inventoryItems = pack.entries.map((e) => {
     const bytes = fs.readFileSync(path.join(base, "methodology", e.path));
@@ -456,7 +456,7 @@ describe("v13 delta domain harness (CS4-4 registry-derived E2E)", () => {
       const pack = parseAcceptedV13ContractPack({ leafBytes });
       const executed: string[] = [];
       const fingerprints = new Set<string>();
-      const evidence: Array<Record<string, unknown>> = [];
+      const evidence: Record<string, unknown>[] = [];
 
       const evidenceRoot = resolveEvidenceRoot();
       fs.mkdirSync(evidenceRoot, { recursive: true });

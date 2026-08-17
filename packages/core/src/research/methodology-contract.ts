@@ -6,8 +6,6 @@ import {
   FROZEN_METHODOLOGY_CONTRACT_VERSION,
   V13_ACCEPTED_CONTRACT_DIGEST,
   V13_ACCEPTED_CONTRACT_VERSION,
-  V13_METHODOLOGY_CONTRACT_DIGEST,
-  V13_METHODOLOGY_CONTRACT_VERSION,
 } from "./procedure-support-pack.js";
 import { parseStrictResearchJson } from "./strict-json.js";
 

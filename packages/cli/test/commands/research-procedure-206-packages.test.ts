@@ -8,7 +8,6 @@ import { describe, expect, it } from "vitest";
 import {
   V13_ACCEPTED_CONTRACT_DIGEST,
   V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
-  V13_PROCEDURE_CLOSURE_DISPOSITIONS,
   resolveProcedureLifecycleFamily,
   buildSupportPackInventory,
   parseAcceptedV13ContractPack,

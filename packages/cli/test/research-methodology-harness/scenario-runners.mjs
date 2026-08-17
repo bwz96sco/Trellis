@@ -2,6 +2,8 @@
  * Synthetic scenario runners — every case executes a named real runtime API.
  * No structural no-op fallback: unknown scenarioId fails before execution.
  */
+import { TextEncoder } from "node:util";
+
 import {
   FROZEN_COMPOSITION_EDGES,
   RESEARCH_PROCEDURE_CURRENT_VERSION,

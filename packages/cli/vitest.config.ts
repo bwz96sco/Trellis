@@ -1,13 +1,56 @@
 import { defineConfig } from "vitest/config";
 
+const PROCEDURE_207_PACKAGES_TEST =
+  "test/commands/research-procedure-207-packages.test.ts";
+
+const DIST_MUTATING_TESTS = [
+  "test/scripts/smoke-installed-cli.test.ts",
+  "test/commands/research-cs5-integration.test.ts",
+];
+
 export default defineConfig({
   test: {
-    maxWorkers: 4,
-    testTimeout: 10_000,
-    include: ["test/**/*.test.ts"],
-    exclude: ["third/**", "node_modules/**"],
-    globalSetup: ["./test/global-setup.ts"],
-    setupFiles: ["./test/setup.ts"],
+    projects: [
+      {
+        test: {
+          name: "procedure-207-packages",
+          maxWorkers: 1,
+          testTimeout: 10_000,
+          include: [PROCEDURE_207_PACKAGES_TEST],
+          exclude: ["third/**", "node_modules/**"],
+          setupFiles: ["./test/setup.ts"],
+          sequence: { groupOrder: 1 },
+        },
+      },
+      {
+        test: {
+          name: "normal",
+          maxWorkers: 4,
+          testTimeout: 10_000,
+          include: ["test/**/*.test.ts"],
+          exclude: [
+            "third/**",
+            "node_modules/**",
+            PROCEDURE_207_PACKAGES_TEST,
+            ...DIST_MUTATING_TESTS,
+          ],
+          globalSetup: ["./test/global-setup.ts"],
+          setupFiles: ["./test/setup.ts"],
+          sequence: { groupOrder: 2 },
+        },
+      },
+      {
+        test: {
+          name: "dist-mutating",
+          maxWorkers: 1,
+          testTimeout: 10_000,
+          include: DIST_MUTATING_TESTS,
+          exclude: ["third/**", "node_modules/**"],
+          setupFiles: ["./test/setup.ts"],
+          sequence: { groupOrder: 3 },
+        },
+      },
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "json-summary"],

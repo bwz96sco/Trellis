@@ -20,7 +20,10 @@ function sha256Hex(bytes: Uint8Array): string {
 
 const capability = RESEARCH_CAPABILITY_REGISTRY.find(
   (c) => c.id === "research.ideation.generate",
-)!;
+);
+if (capability === undefined) {
+  throw new Error("Missing research.ideation.generate capability");
+}
 
 function v1ManifestJson(version = capability.procedure.version): string {
   return `${JSON.stringify({

@@ -70,6 +70,15 @@ const OUTPUTS = Object.freeze({
   install: path.join(RESEARCH_ROOT, "external-install-evidence.json"),
   protected: path.join(RESEARCH_ROOT, "protected-path-audit.json"),
 });
+const RETAINED_PROTECTED_AUDIT = Object.freeze({
+  commit: "57572e77f81148bc6aae6d3b727db33a09e45f23",
+  tree: "8e2acbf86f6820b6f3557fa5d6b186226284351b",
+  path: ".trellis/tasks/08-12-integrate-install-and-freeze-v1-3-1-subject/research/protected-path-audit.json",
+  mode: "100644",
+  blobOid: "da87e9fbc3d9071578190fa6a9b519cf7143b06b",
+  byteLength: 3639,
+  sha256: "9d23f4ff128c18b5d6348c2e4e1b7a125ac1de64a60f02cdcfffe82f341d8db0",
+});
 
 function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -128,6 +137,109 @@ function gitFileIdentity(commit, relativePath) {
     sha256: sha256(bytes),
     jsonParsePassed: Boolean(JSON.parse(bytes.toString("utf8"))),
   };
+}
+
+function loadRetainedProtectedAudit() {
+  if (gitTree(RETAINED_PROTECTED_AUDIT.commit) !== RETAINED_PROTECTED_AUDIT.tree) {
+    throw new Error("Retained I1 protected-audit tree mismatch");
+  }
+  const identity = gitFileIdentity(
+    RETAINED_PROTECTED_AUDIT.commit,
+    RETAINED_PROTECTED_AUDIT.path,
+  );
+  if (
+    identity.mode !== RETAINED_PROTECTED_AUDIT.mode ||
+    identity.blobOid !== RETAINED_PROTECTED_AUDIT.blobOid ||
+    identity.byteLength !== RETAINED_PROTECTED_AUDIT.byteLength ||
+    identity.sha256 !== RETAINED_PROTECTED_AUDIT.sha256 ||
+    identity.jsonParsePassed !== true
+  ) {
+    throw new Error("Retained I1 protected-audit object identity mismatch");
+  }
+  const bytes = gitObjectBytes(
+    RETAINED_PROTECTED_AUDIT.commit,
+    RETAINED_PROTECTED_AUDIT.path,
+  );
+  const record = JSON.parse(bytes.toString("utf8"));
+  if (!bytes.equals(canonicalBytes(record))) {
+    throw new Error("Retained I1 protected-audit JSON is not canonical strict JSON");
+  }
+  if (
+    record.schemaVersion !== 1 ||
+    record.recordKind !== "t5-protected-path-audit" ||
+    record.stage !== "T5" ||
+    record.commitBoundary !== "I1" ||
+    record.authorizedPredecessor?.commit !== T4_COMMIT ||
+    record.authorizedPredecessor?.tree !== T4_TREE ||
+    record.worktreeScope?.i1PathCount !== 8 ||
+    record.worktreeScope?.verdict !== "pass" ||
+    record.untrackedCs5Decision?.tracked !== false ||
+    record.untrackedCs5Decision?.matches !== true ||
+    !Array.isArray(record.files) ||
+    !record.files.every((entry) => entry.matches === true) ||
+    !Array.isArray(record.submodules) ||
+    !record.submodules.every((entry) => entry.matches === true) ||
+    record.t1ThroughT4MutationPerformed !== false ||
+    record.historicalCs5Cs6MutationPerformed !== false ||
+    record.verdict !== "pass"
+  ) {
+    throw new Error("Retained I1 protected-audit semantic mismatch");
+  }
+  return record;
+}
+
+function loadRetainedJson(relativePath) {
+  const bytes = gitObjectBytes(RETAINED_PROTECTED_AUDIT.commit, relativePath);
+  const record = JSON.parse(bytes.toString("utf8"));
+  if (!bytes.equals(canonicalBytes(record))) {
+    throw new Error(`Retained I1 JSON is not canonical strict JSON: ${relativePath}`);
+  }
+  const target = path.join(REPO_ROOT, relativePath);
+  if (!fs.existsSync(target) || !fs.readFileSync(target).equals(bytes)) {
+    throw new Error(`Retained I1 evidence drift: ${relativePath}`);
+  }
+  return record;
+}
+
+function verifyRetainedEvidence() {
+  const input = loadRetainedJson(path.relative(REPO_ROOT, OUTPUTS.input));
+  const packageInventory = loadRetainedJson(
+    path.relative(REPO_ROOT, OUTPUTS.tarballs),
+  );
+  const installEvidence = loadRetainedJson(
+    path.relative(REPO_ROOT, OUTPUTS.install),
+  );
+  const protectedAudit = loadRetainedProtectedAudit();
+  const protectedBytes = gitObjectBytes(
+    RETAINED_PROTECTED_AUDIT.commit,
+    RETAINED_PROTECTED_AUDIT.path,
+  );
+  if (!fs.readFileSync(OUTPUTS.protected).equals(protectedBytes)) {
+    throw new Error(`Retained I1 evidence drift: ${RETAINED_PROTECTED_AUDIT.path}`);
+  }
+  if (
+    input.recordKind !== "t5-integration-input-attestation" ||
+    input.commitBoundary !== "I1" ||
+    input.verdict !== "pass" ||
+    packageInventory.recordKind !== "t5-package-tarball-inventory" ||
+    packageInventory.commitBoundary !== "I1" ||
+    packageInventory.verdict !== "pass" ||
+    installEvidence.recordKind !== "t5-external-install-evidence" ||
+    installEvidence.commitBoundary !== "I1" ||
+    installEvidence.networkPackageResolutionAllowed !== false ||
+    installEvidence.providerExecutionPerformed !== false ||
+    installEvidence.activationPerformed !== false ||
+    installEvidence.liveSelectionChangePerformed !== false ||
+    !Array.isArray(installEvidence.consumers) ||
+    installEvidence.consumers.map((entry) => entry.manager).join(",") !== "npm,pnpm" ||
+    !installEvidence.consumers.every(
+      (entry) => entry.offlineMode === true && entry.verdict === "pass",
+    ) ||
+    installEvidence.verdict !== "pass"
+  ) {
+    throw new Error("Retained I1 integration evidence semantic mismatch");
+  }
+  return { packageInventory, installEvidence, protectedAudit };
 }
 
 function run(command, args, options = {}) {
@@ -856,6 +968,7 @@ function writeOrVerify(records, mode) {
 
 export function runInstalledPackageAudit(mode = "verify") {
   if (mode !== "write" && mode !== "verify") throw new Error("Expected --write or --verify");
+  if (mode === "verify") return verifyRetainedEvidence();
   const externalRoot = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-v131-i1-"));
   if (isWithin(REPO_ROOT, externalRoot)) throw new Error("External audit root is inside repository");
   let cleaned = false;

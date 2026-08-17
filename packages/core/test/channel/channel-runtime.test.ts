@@ -28,28 +28,117 @@ const fakeRuntime: WorkerRuntime = {
   interrupt: async () => ({ method: "provider", outcome: "interrupted" }),
 };
 
+const TAKE_N_TIMEOUT = Symbol("take-n-timeout");
+
 async function takeN<T>(
   gen: AsyncGenerator<T>,
   n: number,
+  controller: AbortController,
   timeoutMs = 4000,
 ): Promise<T[]> {
   const out: T[] = [];
   const deadline = Date.now() + timeoutMs;
-  while (out.length < n && Date.now() < deadline) {
-    const next = await Promise.race([
-      gen.next(),
-      new Promise<{ done: true; value: undefined }>((r) =>
-        setTimeout(() => r({ done: true, value: undefined }), 250),
-      ),
-    ]);
-    if (next.done) {
-      if (next.value === undefined) continue; // poll timeout, retry
-      break;
+
+  while (out.length < n) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
+      controller.abort();
+      throw new Error(`Timed out waiting for ${n} generator values`);
     }
-    out.push(next.value as T);
+
+    const pending = gen.next();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let next: IteratorResult<T> | typeof TAKE_N_TIMEOUT;
+    try {
+      next = await Promise.race([
+        pending,
+        new Promise<typeof TAKE_N_TIMEOUT>((resolve) => {
+          timer = setTimeout(() => resolve(TAKE_N_TIMEOUT), remainingMs);
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
+
+    if (next === TAKE_N_TIMEOUT) {
+      controller.abort();
+      await pending.catch(() => undefined);
+      throw new Error(`Timed out waiting for ${n} generator values`);
+    }
+    if (next.done) {
+      throw new Error(`Generator ended before yielding ${n} values`);
+    }
+    out.push(next.value);
   }
+
   return out;
 }
+
+describe("takeN test helper", () => {
+  it("keeps one read pending while a delayed value settles", async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    const gen = (async function* (): AsyncGenerator<number> {
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
+      yield 42;
+    })();
+    const next = vi.spyOn(gen, "next");
+
+    try {
+      const result = takeN(gen, 1, controller, 1000);
+      await vi.advanceTimersByTimeAsync(251);
+      expect(next).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(49);
+      await expect(result).resolves.toEqual([42]);
+    } finally {
+      controller.abort();
+      await vi.runAllTimersAsync();
+      await gen.return(undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it("fails when the generator ends before the requested count", async () => {
+    const controller = new AbortController();
+    const gen = (async function* (): AsyncGenerator<number> {
+      yield* [] as number[];
+    })();
+
+    try {
+      await expect(takeN(gen, 1, controller)).rejects.toThrow(
+        "Generator ended before yielding 1 values",
+      );
+    } finally {
+      controller.abort();
+      await gen.return(undefined);
+    }
+  });
+
+  it("aborts and fails when the deadline expires", async () => {
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    const gen = (async function* (): AsyncGenerator<number> {
+      await new Promise<void>((resolve) =>
+        controller.signal.addEventListener("abort", () => resolve(), { once: true }),
+      );
+      yield* [] as number[];
+    })();
+
+    try {
+      const result = takeN(gen, 1, controller, 100);
+      const rejection = expect(result).rejects.toThrow(
+        "Timed out waiting for 1 generator values",
+      );
+      await vi.advanceTimersByTimeAsync(100);
+      await rejection;
+      expect(controller.signal.aborted).toBe(true);
+    } finally {
+      controller.abort();
+      await gen.return(undefined);
+      vi.useRealTimers();
+    }
+  });
+});
 
 describe("readChannelEvents pagination", () => {
   let env: TmpEnv;
@@ -406,23 +495,27 @@ describe("listWorkers / watchWorkers", () => {
     const ac = new AbortController();
     const gen = watchWorkers({ channel: "c", signal: ac.signal });
 
-    const first = await gen.next();
-    expect((first.value as WorkerState[])[0].workerId).toBe("w");
+    try {
+      const first = await gen.next();
+      expect((first.value as WorkerState[])[0].workerId).toBe("w");
 
-    await appendEvent("c", {
-      kind: "turn_started",
-      by: "w",
-      worker: "w",
-      inputSeq: 0,
-      turnId: "t1",
-    });
-    const updates = await takeN(gen, 1);
-    ac.abort();
-    expect(updates[0]?.[0]?.activity).toBe("mid-turn");
+      await appendEvent("c", {
+        kind: "turn_started",
+        by: "w",
+        worker: "w",
+        inputSeq: 0,
+        turnId: "t1",
+      });
+      const updates = await takeN(gen, 1, ac);
+      expect(updates[0]?.[0]?.activity).toBe("mid-turn");
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 });
 
-describe("watchChannels cross-channel fan-in", () => {
+describe("watchChannels cross-channel fan-in", { timeout: 30_000 }, () => {
   let env: TmpEnv;
   beforeEach(() => {
     env = setupChannelTmp();
@@ -452,14 +545,17 @@ describe("watchChannels cross-channel fan-in", () => {
       signal: ac.signal,
       discoveryIntervalMs: 100,
     });
-    const events = await takeN(gen, 4);
-    ac.abort();
-    await gen.return(undefined);
 
-    const channelNames = new Set(events.map((e) => e.channel.name));
-    expect(channelNames).toEqual(new Set(["a", "b"]));
-    const last = events[events.length - 1] as CrossChannelEvent;
-    expect(Object.keys(last.cursor).length).toBeGreaterThanOrEqual(2);
+    try {
+      const events = await takeN(gen, 4, ac);
+      const channelNames = new Set(events.map((e) => e.channel.name));
+      expect(channelNames).toEqual(new Set(["a", "b"]));
+      const last = events[events.length - 1] as CrossChannelEvent;
+      expect(Object.keys(last.cursor).length).toBeGreaterThanOrEqual(2);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 
   it("discovers channels created after the watcher starts", async () => {
@@ -472,13 +568,18 @@ describe("watchChannels cross-channel fan-in", () => {
       discoveryIntervalMs: 100,
       fromStartNewChannels: true,
     });
-    // consume the backlog from channel "a"
-    await takeN(gen, 1);
-    await createChannel({ channel: "late", by: "main" });
-    await sendMessage({ channel: "late", by: "main", text: "hello" });
-    const more = await takeN(gen, 1, 5000);
-    ac.abort();
-    await gen.return(undefined);
-    expect(more.some((e) => e.channel.name === "late")).toBe(true);
+
+    try {
+      const backlog = await takeN(gen, 1, ac);
+      expect(backlog.map((e) => e.channel.name)).toEqual(["a"]);
+
+      await createChannel({ channel: "late", by: "main" });
+      await sendMessage({ channel: "late", by: "main", text: "hello" });
+      const more = await takeN(gen, 1, ac, 5000);
+      expect(more.some((e) => e.channel.name === "late")).toBe(true);
+    } finally {
+      ac.abort();
+      await gen.return(undefined);
+    }
   });
 });

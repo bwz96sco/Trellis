@@ -52,14 +52,14 @@ describe("dormant 2.0.2 candidate bijection", () => {
       liveRegistryCurrentVersion: string;
       candidateProcedureVersion: string;
       activationAuthorized: boolean;
-      bindings: Array<{
+      bindings: {
         capabilityId: string;
         procedureId: string;
         procedureVersion: string;
         procedureJsonSha256: string;
         packedPath: string;
         candidateState: string;
-      }>;
+      }[];
     };
     expect(manifest.status).toBe("dormant-candidate");
     expect(manifest.liveRegistryCurrentVersion).toBe("1.0.0");
@@ -98,7 +98,10 @@ describe("dormant 2.0.2 candidate bijection", () => {
     }
 
     // Live registry projection still v1; dormant packages resolve by recorded id.
-    const live = RESEARCH_CAPABILITY_REGISTRY[0]!;
+    const live = RESEARCH_CAPABILITY_REGISTRY[0];
+    if (live === undefined) {
+      throw new Error("Missing first research capability");
+    }
     const current = await resolveResearchProcedure({
       root: repoRoot,
       capabilityId: live.id,

@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   authorizeResearchDispatch,
 } from "../../src/commands/research/dispatch-activation-command.js";
-import * as dispatchCommand from "../../src/commands/research/dispatch-command.js";
 import { recordApprovedResearchDispatchResult } from "../../src/commands/research/dispatch-command.js";
 import * as methodologyValidation from "../../src/commands/research/dispatch-methodology-validation.js";
 import {

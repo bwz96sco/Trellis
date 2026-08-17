@@ -17,10 +17,7 @@ import {
 
 import { RESEARCH_PROCEDURE_VERSIONS } from "../../scripts/packed-cli-audit.js";
 import { getBundledResearchProcedureRoot } from "../../src/commands/research/bundled-procedure-root.js";
-import {
-  loadArtifactContractsFromProcedure,
-  validateMethodologyBeforeRecord,
-} from "../../src/commands/research/dispatch-methodology-validation.js";
+import { validateMethodologyBeforeRecord } from "../../src/commands/research/dispatch-methodology-validation.js";
 import { resolveResearchProcedure } from "../../src/commands/research/procedure-resolution.js";
 
 const repoRoot = path.resolve(
@@ -73,7 +70,7 @@ describe("dormant 2.0.3 candidate bijection", () => {
       activationAuthorized: boolean;
       methodologyContract: string;
       methodologyDigest: string;
-      bindings: Array<{
+      bindings: {
         capabilityId: string;
         procedureId: string;
         procedureVersion: string;
@@ -82,7 +79,7 @@ describe("dormant 2.0.3 candidate bijection", () => {
         candidateState: string;
         methodologyContractVersion: string;
         methodologyContractDigest: string;
-      }>;
+      }[];
     };
     expect(manifest.status).toBe("dormant-candidate");
     expect(manifest.liveRegistryCurrentVersion).toBe("1.0.0");
@@ -139,7 +136,10 @@ describe("dormant 2.0.3 candidate bijection", () => {
       );
     }
 
-    const live = RESEARCH_CAPABILITY_REGISTRY[0]!;
+    const live = RESEARCH_CAPABILITY_REGISTRY[0];
+    if (live === undefined) {
+      throw new Error("Missing first research capability");
+    }
     const current = await resolveResearchProcedure({
       root: repoRoot,
       capabilityId: live.id,
@@ -193,11 +193,11 @@ describe("dormant 2.0.3 candidate bijection", () => {
     } = await import("@mindfoldhq/trellis-core/research");
 
     const candidate = JSON.parse(fs.readFileSync(candidatePath, "utf8")) as {
-      bindings: Array<{
+      bindings: {
         capabilityId: string;
         procedureId: string;
         procedureVersion: string;
-      }>;
+      }[];
     };
 
     let familyPacks = 0;
@@ -221,25 +221,27 @@ describe("dormant 2.0.3 candidate bijection", () => {
         ),
       );
       const pack = JSON.parse(packJson.toString("utf8")) as {
-        entries: Array<{
+        entries: {
           path: string;
           workerVisibility: string;
           contractVersion: string;
-        }>;
+        }[];
       };
       const artEntry = pack.entries.find(
         (e) => e.path === "artifacts/artifact-contract.json",
       );
-      expect(artEntry).toBeDefined();
+      if (artEntry === undefined) {
+        throw new Error("Missing artifact-contract.json pack entry");
+      }
 
       if (binding.procedureId === "literature-scan-v1") {
-        expect(artEntry!.workerVisibility).toBe("worker-visible");
-        expect(artEntry!.contractVersion).toBe(V13_METHODOLOGY_CONTRACT_VERSION);
+        expect(artEntry.workerVisibility).toBe("worker-visible");
+        expect(artEntry.contractVersion).toBe(V13_METHODOLOGY_CONTRACT_VERSION);
         continue;
       }
 
-      expect(artEntry!.workerVisibility).toBe("root-only");
-      expect(artEntry!.contractVersion).toBe(V13_METHODOLOGY_CONTRACT_VERSION);
+      expect(artEntry.workerVisibility).toBe("root-only");
+      expect(artEntry.contractVersion).toBe(V13_METHODOLOGY_CONTRACT_VERSION);
 
       // Family contract bytes must parse as freeze-family identity.
       const familyFromBytes = parseResearchMethodologyFamilyContract(artBytes);
@@ -328,7 +330,7 @@ describe("dormant 2.0.3 candidate bijection", () => {
         fs.readFileSync(path.join(packDir, "methodology", "pack.json")),
       );
       const pack = JSON.parse(Buffer.from(packJson).toString("utf8")) as {
-        entries: Array<{ path: string; workerVisibility: string }>;
+        entries: { path: string; workerVisibility: string }[];
       };
       const files: Record<string, Uint8Array> = {};
       for (const e of pack.entries) {

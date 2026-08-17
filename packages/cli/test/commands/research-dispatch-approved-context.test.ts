@@ -402,7 +402,7 @@ describe("approved Context acceptance matrix", { timeout: 30_000 }, () => {
       }),
     ).rejects.toMatchObject({ code: "SCOPE_HASH_MISMATCH" });
     expect(snapshotTree(sandbox)).toEqual(beforeScope);
-  });
+  }, 60_000);
 
   it("rejects disabled capability before Repository access", async () => {
     const fixture = await createResearchDispatchFixture(

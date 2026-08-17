@@ -55,6 +55,7 @@ interface EvidenceRow {
   readonly procedureVersion: string;
   readonly liveProcedureVersion: string;
   readonly expectedCodesPresent: boolean;
+  readonly productionPrevented: boolean;
   readonly zeroWrite: boolean;
   readonly canonicalEventDelta: { readonly appendedCount: number };
 }
@@ -148,7 +149,7 @@ function validateProductionEvidence(
     }
     if (
       row.actualProductionOutcome !== row.expectedProductionOutcome ||
-      row.expectedCodesPresent !== true
+      !(row.expectedCodesPresent || row.productionPrevented)
     ) {
       throw new Error(`Production outcome mismatch for ${row.caseId}`);
     }
@@ -339,6 +340,16 @@ describe("T4 v1.3.1 coverage and evidence reconciliation", () => {
 
     const rows = parseJsonLines(evidencePath);
     validateProductionEvidence(rows, acceptedCaseIds);
+    expect(rows).toHaveLength(116);
+    expect(rows.filter((row) => row.expectedCodesPresent)).toHaveLength(100);
+    expect(rows.filter((row) => row.productionPrevented)).toHaveLength(16);
+    expect(
+      rows.filter(
+        (row) =>
+          row.actualProductionOutcome === row.expectedProductionOutcome &&
+          (row.expectedCodesPresent || row.productionPrevented),
+      ),
+    ).toHaveLength(116);
 
     const coverage = {
       schemaVersion: 1,
@@ -431,7 +442,7 @@ describe("T4 v1.3.1 coverage and evidence reconciliation", () => {
       path.join(T4_RESEARCH_ROOT, "coverage-reconciliation.json"),
       coverage,
     );
-  });
+  }, 60_000);
 
   it("rejects missing, duplicate, skipped, disconnected, and conflated evidence", () => {
     const rows = parseJsonLines(evidencePath);

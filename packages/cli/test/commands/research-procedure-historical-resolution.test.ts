@@ -14,7 +14,10 @@ import { resolveResearchProcedure } from "../../src/commands/research/procedure-
 
 const capability = RESEARCH_CAPABILITY_REGISTRY.find(
   (c) => c.id === "research.ideation.generate",
-)!;
+);
+if (capability === undefined) {
+  throw new Error("Missing research.ideation.generate capability");
+}
 
 describe("historical Procedure resolution", () => {
   it("registry-current selects v1 while recorded 1.0.0/2.0.0/2.0.1 still resolve", async () => {
@@ -109,7 +112,10 @@ describe("historical Procedure resolution", () => {
     // activation may have recorded survey-v1 (same stage+kind ceilings).
     const reviewCap = RESEARCH_CAPABILITY_REGISTRY.find(
       (c) => c.id === "research.literature.review",
-    )!;
+    );
+    if (reviewCap === undefined) {
+      throw new Error("Missing research.literature.review capability");
+    }
     expect(reviewCap.procedure.id).toBe("literature-review-v1");
     expect(reviewCap.procedure.id).not.toBe("survey-v1");
 

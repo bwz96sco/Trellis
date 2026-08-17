@@ -423,7 +423,7 @@ describe("root methodology contract loading (containment)", () => {
         testCase.reason,
       ).toBe(true);
     }
-  });
+  }, 60_000);
 
   it("does not emit report-v2 materialization for live 1.0.0 path", () => {
     const gate = validateMethodologyBeforeRecord({

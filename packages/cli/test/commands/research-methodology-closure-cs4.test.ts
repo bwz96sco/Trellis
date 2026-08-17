@@ -67,12 +67,12 @@ function loadFigure205Procedure(): never {
   const pack = JSON.parse(
     fs.readFileSync(path.join(base, "methodology/pack.json"), "utf8"),
   ) as {
-    entries: Array<{
+    entries: {
       path: string;
       role: string;
       mediaType: string;
       sha256: string;
-    }>;
+    }[];
   };
   const inventoryItems = pack.entries.map((e) => {
     const bytes = fs.readFileSync(path.join(base, "methodology", e.path));
@@ -207,12 +207,12 @@ describe("CS4 canonical closure on methodology validation path", () => {
     const closureId = "art_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
     const evidenceId = "art_bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
-    const cases: Array<{
+    const cases: {
       name: string;
       body: unknown;
       bound: string[];
       expectOk: boolean;
-    }> = [
+    }[] = [
       {
         name: "both-true",
         body: {
@@ -361,12 +361,12 @@ describe("CS4 lifecycle contract load for freeze-family packs", () => {
     const pack = JSON.parse(
       fs.readFileSync(path.join(base, "methodology/pack.json"), "utf8"),
     ) as {
-      entries: Array<{
+      entries: {
         path: string;
         role: string;
         mediaType: string;
         sha256: string;
-      }>;
+      }[];
     };
     const inventoryItems = pack.entries.map((e) => {
       const bytes = fs.readFileSync(path.join(base, "methodology", e.path));
@@ -439,7 +439,7 @@ describe(
       readonly runId: `run_${string}`;
       readonly questId: `qst_${string}`;
       readonly createdAt: string;
-      readonly artifactRefs?: Array<Record<string, unknown>>;
+      readonly artifactRefs?: readonly Record<string, unknown>[];
     }): string {
       const suffix = input.approvalId.slice(4);
       return JSON.stringify({

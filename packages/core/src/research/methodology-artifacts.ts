@@ -188,6 +188,7 @@ export function validateMethodologyArtifacts(input: {
         });
       }
       if (c.stableIdField) {
+        const knownStableId = input.knownStableIds?.[c.id];
         if (!inst.stableId) {
           errors.push({
             code: "ARTIFACT_PROVENANCE_MISSING",
@@ -196,9 +197,8 @@ export function validateMethodologyArtifacts(input: {
             path: inst.path,
           });
         } else if (
-          input.knownStableIds !== undefined &&
-          input.knownStableIds[c.id] !== undefined &&
-          input.knownStableIds[c.id] !== inst.stableId
+          knownStableId !== undefined &&
+          knownStableId !== inst.stableId
         ) {
           errors.push({
             code: "STABLE_ID_DRIFT",
