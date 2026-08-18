@@ -16,9 +16,14 @@ Apply these conventions to all unit, characterization, golden, and compatibility
 |------|-------|
 | Framework | Vitest 4.x |
 | Config | `vitest.config.ts` |
-| Include | `test/**/*.test.ts` |
-| Exclude | `third/**` |
-| Setup files | `test/setup.ts` (runs before any test, strips host-shell session env vars — see "Test Isolation" below) |
+| Include | `test/**/*.test.ts` partitioned across four ordered projects |
+| Exclude | `third/**`, `node_modules/**`, plus every dedicated path from `normal` |
+| Projects | `procedure-207-packages`, `methodology-116-production`, `normal`, `dist-mutating` |
+| Setup files | `test/setup.ts` in every project (strips host-shell session env vars — see "Test Isolation" below) |
+| Global setup | `test/global-setup.ts` in `normal` only |
+| Workers | `1 / 1 / 4 / 1` in project order |
+| Group order | Positive and distinct: `1 / 2 / 3 / 4` |
+| Default test timeout | `10_000` in every project; explicit suite/test budgets remain authoritative |
 | Lint scope | `eslint src/ test/` |
 | Module system | ESM (`"type": "module"` + `"module": "NodeNext"`) |
 | Coverage provider | `@vitest/coverage-v8` |
@@ -49,6 +54,32 @@ delete process.env.OPENCODE_RUN_ID;
 **When to extend**: any new env var that production resolvers honor as a user override, AND that the dev's host shell may export, must be added to `test/setup.ts`. Do NOT fix this in production code by ignoring the env var — the override is a real feature for end users.
 
 **When NOT to use**: tests that *intentionally* exercise the env-override path should set the env explicitly inside the test (`process.env.X = "..."` in a `beforeEach` and restore in `afterEach`).
+
+### Ordered project ownership
+
+`vitest.config.ts` partitions the complete discovered `test/**/*.test.ts` suite into four disjoint projects:
+
+| Project | Exact ownership | `maxWorkers` | `groupOrder` | Setup |
+|---|---|---:|---:|---|
+| `procedure-207-packages` | `test/commands/research-procedure-207-packages.test.ts` | 1 | 1 | `setupFiles` |
+| `methodology-116-production` | `test/commands/research-methodology-116-production.test.ts` | 1 | 2 | `setupFiles` |
+| `normal` | Every discovered test not owned by a dedicated project | 4 | 3 | `setupFiles` + `globalSetup` |
+| `dist-mutating` | `test/scripts/smoke-installed-cli.test.ts` and `test/commands/research-cs5-integration.test.ts` | 1 | 4 | `setupFiles` |
+
+The partition is an executable contract:
+
+- every dedicated path is excluded from `normal`;
+- pairwise project intersections are empty;
+- the project union equals an independent filesystem discovery with `Path("packages/cli/test").rglob("*.test.ts")`;
+- all group orders are positive and distinct; do not use order zero or share an order across projects with different worker counts;
+- the production-116 producer finishes before `normal`, whose coverage reconciliation test authenticates its retained outputs;
+- the canonical workspace-`dist` owners run last;
+- root coverage remains process-wide rather than duplicated inside projects;
+- every project keeps `testTimeout: 10_000`; explicit suite/test and child-process budgets are not scheduling knobs.
+
+Only `normal` owns `test/global-setup.ts`. The dedicated producer imports production source directly and does not consume `TRELLIS_TEST_BUILT_CLI_ROOT`; duplicating global setup would add an unnecessary CLI compile/copy workload.
+
+A new lane requires retained complete-suite evidence of a distinct resource or shared-output owner. Do not respond to a new failure by raising timeouts, retrying, serializing `normal`, or adding a lane member automatically; stop and govern a separate evidence-backed correction.
 
 ---
 
@@ -280,6 +311,10 @@ vi.spyOn(console, "log").mockImplementation(noop);
 
 | Condition | Required test behavior |
 |---|---|
+| Dedicated path appears in `normal`, two projects intersect, or the union differs from independent discovery | Fail collection verification and correct project ownership before running tests. |
+| Production-116 producer requires `normal` global setup or runs concurrently with its consumer | Fail the producer-only/order proof; do not duplicate global setup to mask the dependency. |
+| Project order is zero/shared, worker counts differ from `1/1/4/1`, or a timeout budget changes | Treat as an ungoverned runner-contract change and stop. |
+| Complete-suite evidence identifies another distinct resource/output owner | Preserve the failure and plan a separate correction; do not auto-add a lane, retry, or widen budgets. |
 | Existing schema-v1 fixture | Keep bytes immutable; add successor fixtures separately. |
 | Arbitrary historical Dispatch metadata | Use deliberately non-current values and assert exact round trip without routing assumptions. |
 | Procedure/policy digest vector | Assert exact framed bytes, prefix, lowercase hash, optional omission, array order, and newline behavior. |
@@ -500,15 +535,37 @@ If production code starts using `tasks/.length === 0` as the discriminator betwe
 
 ## 5. Good / Base / Bad Cases
 
+- **Good runner case**: independent filesystem discovery equals the disjoint four-project union; production-116 passes alone with setup only; its normal-lane consumer authenticates the resulting evidence; complete coverage aggregates all projects.
+- **Base runner case**: ordinary tests remain in four-worker `normal`, while only the exact Procedure, production-116, and canonical `dist` owners use one-worker ordered lanes.
+- **Bad runner case**: raise timeout budgets, serialize all normal tests, retry a loaded failure, duplicate global setup, use overlapping project includes, or infer completeness from project counts without exact path equality.
 - **Good**: unchanged v1 golden fixtures remain the compatibility oracle; separate fixed C04 vectors cover strict JSON, canonical Procedures, policy classification/digests, authority merge, real filesystem resolution, init creation, and additive packed proof. Later vectors cover v2 emitters, approval lifecycle, host parity, and released-byte retirement.
 - **Base**: current Skill resolver/payload/packed behavior remains characterized while all 14 bundled Procedure pairs are added as positive inventory; Skill removal waits for its owning successor.
 - **Bad**: refresh a v1 fixture into v2, hardcode current implementation output as a digest oracle, mock away filesystem/package behavior, claim source assets as packed proof, or use non-deletable bytes in a preservation test.
 
 ## 6. Tests Required
 
+Runner-topology changes require:
+
+- independent `Path.rglob("*.test.ts")` discovery compared with exact `vitest list --project <name> --filesOnly` sets;
+- pairwise-disjoint and complete-union assertions, including the current `1/1/82/2` ownership inventory;
+- a producer-only run proving production-116 needs no `globalSetup` and leaves retained evidence byte-identical;
+- a normal-project run of the affected contention family with four workers and unchanged budgets;
+- the normal coverage-reconciliation consumer after the producer;
+- complete coverage with no worker override, followed by the unchanged repository hook as the final complete Core/CLI gate.
+
 C04 requires `strict-json.test.ts`, `procedure-policy.test.ts`, `research-procedure-resolution.integration.test.ts`, `research-policy-init.integration.test.ts`, Research-subpath compatibility proof, packed CLI inventory tests, and both real packed-package verifiers. Existing init/update/uninstall suites remain regression gates. C02-C09 collectively require exact schema versions, capability inventory, Procedure/policy strictness, deterministic digest vectors, activation/approval ordering and transitions, zero-write Context, atomic consumption, normalized Claude/Codex input, separate retirement evidence, and real packed inventory. Every production-symbol edit requires prior GitNexus upstream impact; HIGH/CRITICAL edits require a warning and affected-flow suites.
 
 ## 7. Wrong vs Correct
+
+```text
+Wrong: keep the 116-case producer in four-worker normal and increase each affected 30-second callback or subprocess budget.
+Correct: give the demonstrated resource owner one exact-path, one-worker, positive-order project; retain normal at four workers and preserve every existing budget.
+```
+
+```text
+Wrong: verify only that project counts add up to the expected total.
+Correct: independently discover raw test paths, compare every exact project set, prove empty intersections, and prove exact union equality.
+```
 
 ```text
 Wrong: regenerate existing golden bytes when successor behavior lands.

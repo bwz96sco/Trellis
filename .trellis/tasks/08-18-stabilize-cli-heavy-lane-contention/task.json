@@ -1,0 +1,169 @@
+{
+  "id": "stabilize-cli-heavy-lane-contention",
+  "name": "stabilize-cli-heavy-lane-contention",
+  "title": "Stabilize CLI heavy-lane contention",
+  "description": "Isolate the 116-case production-evidence harness from the four-worker normal CLI lane, preserve exact suite ownership, and restore the repository pre-commit gate without changing test budgets or production behavior.",
+  "status": "completed",
+  "dev_type": "unit-test",
+  "scope": "cli/unit-test",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-18",
+  "completedAt": "2026-08-18",
+  "branch": null,
+  "base_branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/cli/vitest.config.ts",
+    ".trellis/spec/cli/unit-test/conventions.md",
+    ".trellis/spec/cli/unit-test/index.md"
+  ],
+  "notes": "Execution remains active after exact recovery from the first hook-enabled exact-nine commit launch, which was externally stopped and created no commit. The user's 2026-08-18 instruction, '执行修复', authorizes exactly one replacement launch of the same path-limited, hook-enabled command and no third launch or later-stage action.",
+  "meta": {
+    "planningPredecessorCommit": "c7d3423bbe5bade60a4fa9a02ea1849b5403ea70",
+    "blockedTask": ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze",
+    "failedHookCliFileCount": 4,
+    "failedHookCliTestCount": 13,
+    "failedHookCliPassingTestCount": 994,
+    "expectedCliTestFileCount": 86,
+    "expectedProcedureLaneFiles": 1,
+    "expectedMethodology116LaneFiles": 1,
+    "expectedNormalLaneFiles": 82,
+    "expectedDistMutatingLaneFiles": 2,
+    "expectedTechnicalPathCount": 3,
+    "expectedCombinedCommitPathCount": 9,
+    "executionState": "completed",
+    "atomicBootstrapRequired": true,
+    "commitAttemptHistory": [
+      {
+        "attempt": 1,
+        "authorization": "initial-exactly-once",
+        "commandAndInventory": "approved-exact-nine-path-hook-enabled-commit",
+        "result": "externally-stopped-no-commit",
+        "headAfter": "c7d3423bbe5bade60a4fa9a02ea1849b5403ea70",
+        "completedHookWork": {
+          "core": {
+            "filesPassed": 40,
+            "testsPassed": 664,
+            "testsSkipped": 1
+          },
+          "procedure207Packages": {
+            "filesPassed": 1,
+            "testsPassed": 6
+          }
+        },
+        "cliProjectsNotRun": [
+          "methodology-116-production",
+          "normal",
+          "dist-mutating"
+        ],
+        "terminalOutputEndedWith": "ELIFECYCLE",
+        "assertionFailureRecorded": false,
+        "recovery": {
+          "lifecycleRestored": {
+            "status": "in_progress",
+            "completedAt": null,
+            "executionState": "in_progress"
+          },
+          "repairPathsUnstaged": 9,
+          "worktreeBytesPreserved": true,
+          "stagedSet": "exact-six-g-i3-paths-at-pre-recorded-oids"
+        }
+      }
+    ],
+    "replacementCommitAuthorization": {
+      "authorized": true,
+      "authorizationDate": "2026-08-18",
+      "userInstruction": "执行修复",
+      "attempt": 2,
+      "launchLimit": 1,
+      "sameHookEnabledCommandRequired": true,
+      "sameNinePathInventoryRequired": true,
+      "sameCommitMessageRequired": true,
+      "onlyAuthorizedLongCommand": "replacement-normal-hook",
+      "independentProducerRerunAuthorized": false,
+      "completeCoverageRerunAuthorized": false,
+      "thirdCommitLaunchAuthorized": false,
+      "failureOrInterruptionAction": "exact-recovery-and-stop"
+    },
+    "governanceOwnedPaths": [
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/task.json",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/prd.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/design.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/implement.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/implement.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/check.jsonl"
+    ],
+    "plannedTechnicalInventory": [
+      "packages/cli/vitest.config.ts",
+      ".trellis/spec/cli/unit-test/conventions.md",
+      ".trellis/spec/cli/unit-test/index.md"
+    ],
+    "plannedCombinedCommitInventory": [
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/task.json",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/prd.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/design.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/implement.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/implement.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/check.jsonl",
+      "packages/cli/vitest.config.ts",
+      ".trellis/spec/cli/unit-test/conventions.md",
+      ".trellis/spec/cli/unit-test/index.md"
+    ],
+    "preservedGI3StagedInventory": [
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl"
+    ],
+    "preservedGI3StagedBlobs": {
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json": "1b1da0395f77261fa801a7aa2c134573d114436a",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md": "ace7b00219ca7aa83e344d998100bd065f6fdfb3",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md": "6dc51c8558fc43454005eefd8562caca3ab68899",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md": "90108331b7239d6fbdbe2db51d04aef6380e2b08",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl": "b7748b18f9461c45d00b3712815eb9235f8d1c99",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl": "ca578c04ffffcd22c4017a92462c887277ee5866"
+    },
+    "plannedActivationTransition": {
+      "status": "in_progress",
+      "completedAt": null,
+      "executionState": "in_progress"
+    },
+    "plannedCompletionTransition": {
+      "status": "completed",
+      "completedAt": "2026-08-18",
+      "executionState": "completed"
+    },
+    "plannedFailureTransition": {
+      "status": "in_progress",
+      "completedAt": null,
+      "executionState": "in_progress"
+    },
+    "taskExecutionAuthorized": true,
+    "combinedCommitAuthorized": true,
+    "governanceOnlyCommitAuthorized": false,
+    "gI3CommitAuthorized": false,
+    "i3SubjectCreationAuthorized": false,
+    "s3FreezeCreationAuthorized": false,
+    "assuranceRunAuthorized": false,
+    "providerExecutionAuthorized": false,
+    "technicalOperatorDecisionAuthorized": false,
+    "archiveAuthorized": false,
+    "journalAuthorized": false,
+    "networkAuthorized": false,
+    "evidenceTransmissionAuthorized": false,
+    "pushAuthorized": false,
+    "publicationAuthorized": false,
+    "releaseAuthorized": false,
+    "runtimeActivationAuthorized": false
+  }
+}

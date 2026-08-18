@@ -1,0 +1,19 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check the spec records exact four-project ownership, setup, ordering, worker, timeout, coverage, and stop-condition contracts."}
+{"file":".trellis/spec/cli/unit-test/index.md","reason":"Check the index matches the actual hook and CI order without brittle current test-count or runtime claims."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check real filesystem/Git/subprocess and canonical dist-mutating proofs remain intact."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Check no mock, retry, or weakened proof replaces the demonstrated resource boundary."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/design.md","reason":"Check positive distinct orders, normal four-worker preservation, and the prior spec reconsideration condition."}
+{"file":".trellis/tasks/08-17-amend-cli-approved-context-timeout/prd.md","reason":"Check the latest 13-failure family is broader than the earlier single demonstrated local-budget correction."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json","reason":"Check the exact six staged paths and all later-stage authority flags remain unchanged throughout the repair commit."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md","reason":"Check no G-I3 retry or I3/S3 creation occurs and flag the post-repair predecessor/package-tree reconciliation requirement."}
+{"file":".husky/pre-commit","reason":"Check the replacement uses the exact unmodified hook once, with the same command, message, and nine-path inventory, and that failure or interruption leads to recovery without a third launch."}
+{"file":"packages/cli/vitest.config.ts","reason":"Check the exact 1/1/82/2 disjoint partition, orders 1/2/3/4, workers 1/1/4/1, setup ownership, and unchanged coverage/default budgets."}
+{"file":"packages/cli/test/setup.ts","reason":"Check all four projects retain host-environment isolation."}
+{"file":"packages/cli/test/global-setup.ts","reason":"Check only normal needs the built-CLI setup and no duplicate setup is added to the producer lane."}
+{"file":"packages/cli/test/commands/research-methodology-116-production.test.ts","reason":"Check the producer remains byte-identical, passes alone, executes 116 cases, and reproduces governed evidence."}
+{"file":"packages/cli/test/commands/research-methodology-v131-coverage.test.ts","reason":"Check the normal consumer runs after and authenticates the current producer evidence."}
+{"file":"packages/cli/test/cli/research-only-surface.integration.test.ts","reason":"Check the built-CLI affected file passes in normal without changing its child timeout or assertions."}
+{"file":"packages/cli/test/commands/research-dispatch-activation.integration.test.ts","reason":"Check the two observed timeout failures disappear under isolated producer scheduling."}
+{"file":"packages/cli/test/commands/research-dispatch-approved-context.test.ts","reason":"Check the three observed timeout failures disappear without another callback-budget increase."}
+{"file":"packages/cli/test/commands/research-dispatch-approved-result.test.ts","reason":"Check the five observed timeout failures disappear without timeout or production changes."}
+{"file":".trellis/scripts/task.py","reason":"Check activation, atomic completion, and failed-hook restoration use exact coherent lifecycle states beyond task.py start's top-level status change."}

@@ -23,21 +23,27 @@ This project uses **Vitest** with TypeScript ESM. Tests live in a centralized `t
 ## Quick Reference
 
 ```bash
-# Run all tests
+# Run the complete repository gate (Core, then all CLI projects)
 pnpm test
 
-# Watch mode
-pnpm test:watch
+# Run all CLI projects only
+pnpm --filter @mindfoldhq/trellis test
 
-# Run a specific test file
-pnpm test test/commands/init-research-only.integration.test.ts
+# Watch CLI tests
+pnpm --filter @mindfoldhq/trellis test:watch
+
+# Focused project/file diagnostic — not a substitute for the complete gate
+pnpm --dir packages/cli exec vitest run --project normal test/commands/init-research-only.integration.test.ts
+
+# Inspect exact project ownership
+pnpm --dir packages/cli exec vitest list --project normal --filesOnly
 
 # Verify independent clean packed artifacts
 node packages/cli/scripts/release-preflight.js verify-packed-core
 node packages/cli/scripts/release-preflight.js verify-packed-cli
 
-# Run with coverage report (terminal + HTML)
-pnpm test:coverage
+# Run all CLI projects with coverage (terminal + HTML)
+pnpm --filter @mindfoldhq/trellis test:coverage
 ```
 
 ---
@@ -46,22 +52,26 @@ pnpm test:coverage
 
 Coverage is generated automatically via `@vitest/coverage-v8`. Configuration is in `vitest.config.ts`.
 
-- **Terminal**: `pnpm test:coverage` prints per-file coverage table
+- **Terminal**: `pnpm --filter @mindfoldhq/trellis test:coverage` prints the aggregated per-file coverage table for all CLI projects
 - **HTML report**: `./coverage/index.html` (gitignored, generated on demand)
 - **Source scope**: `src/**/*.ts` (excludes `src/cli/index.ts`)
 
-Do **not** maintain a manual coverage table — always run `pnpm test:coverage` for the real numbers.
+Do **not** maintain a manual coverage table — always run `pnpm --filter @mindfoldhq/trellis test:coverage` from the repository root for the real numbers.
 
 ---
 
 ## CI / Pipeline Strategy
 
-| Stage | What Runs | Rationale |
-|-------|-----------|-----------|
-| **pre-commit** (husky) | `lint-staged` (eslint + prettier) | Keep fast; don't add tests here or developers will skip with `--no-verify` |
-| **CI** (GitHub Actions, PR gate) | `pnpm lint` → `pnpm build` → `pnpm test` | Full suite; ~312 tests run in ~1s, no reason to split |
+| Stage | What Runs | Contract |
+|---|---|---|
+| **pre-commit** (husky) | `pnpm lint-staged` → initialize `marketplace` → clear inherited Git coordinates → root `pnpm test` | The hook runs the complete Core suite followed by all ordered CLI projects. Do not bypass it or treat a focused project as equivalent. |
+| **CI** (GitHub Actions, PR gate) | install → `pnpm typecheck` → `pnpm lint` → `pnpm test` → `pnpm build` → verify build outputs | CI executes the same complete root tests before the final build/output check. |
 
-**When to reconsider**: If total test time exceeds 5 minutes, split into fast (unit) and slow (integration) stages. Currently unnecessary.
+CLI Vitest uses four positive, distinctly ordered projects with exact disjoint ownership: Procedure, production-116, normal, and canonical `dist` mutation. [Conventions](./conventions.md#ordered-project-ownership) defines their setup, workers, ordering, coverage, and partition invariants.
+
+Focused project/file runs are causal diagnostics only. Acceptance still requires the complete applicable coverage run and the unchanged repository hook. Derive current suite counts and timing from Vitest output; do not preserve them as static documentation claims.
+
+**When to reconsider**: preserve the current topology until complete-suite evidence identifies a new distinct resource or shared-output owner. Govern that case separately rather than increasing budgets, retrying, or serializing ordinary tests automatically.
 
 ---
 

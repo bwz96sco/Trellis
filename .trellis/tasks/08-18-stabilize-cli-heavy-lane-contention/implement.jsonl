@@ -1,0 +1,14 @@
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Implement the durable four-project runner, setup ownership, timeout/worker, exact partition, and producer-before-consumer contracts."}
+{"file":".trellis/spec/cli/unit-test/index.md","reason":"Correct the executable pre-commit/CI guidance and remove stale fixed suite-size/runtime claims."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Preserve real filesystem, Git, subprocess, build, pack, and canonical workspace-dist behavior rather than mocking contention away."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Keep the correction at scheduling ownership and do not replace production-backed proofs with mocks."}
+{"file":".trellis/tasks/08-17-amend-cli-full-suite-stabilization/design.md","reason":"Use the existing positive ordered-project model, four-worker normal contract, and prior code-spec reconsideration trigger."}
+{"file":".trellis/tasks/08-17-amend-cli-approved-context-timeout/design.md","reason":"Retain the focused-versus-full-load timing evidence and reject repeated local timeout expansion for the broader failure family."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json","reason":"Preserve its exact staged bytes and authority exclusions; its predecessor and package-tree clauses require later separate reconciliation."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md","reason":"Respect the current R3 equality and I3/S3 boundaries while recognizing that the config repair makes them stale for a later stage."}
+{"file":".husky/pre-commit","reason":"Use the unchanged gate for the one freshly authorized replacement launch; do not rerun producer/coverage, bypass the hook, change the command, or launch a third attempt."}
+{"file":"packages/cli/vitest.config.ts","reason":"Apply the single runtime correction: isolate the exact production-116 resource owner and preserve all other project contracts."}
+{"file":"packages/cli/test/global-setup.ts","reason":"Confirm only normal owns the temporary built-CLI setup and the new producer project has no consumer."}
+{"file":"packages/cli/test/commands/research-methodology-116-production.test.ts","reason":"Authenticate the exceptional workload, exact evidence writes, and no built-CLI dependency without editing the test."}
+{"file":"packages/cli/test/commands/research-methodology-v131-coverage.test.ts","reason":"Preserve and verify the normal-lane consumer dependency on production-116 evidence."}
+{"file":".trellis/scripts/task.py","reason":"Use task activation while explicitly governing meta.executionState, completedAt, and failed-hook lifecycle recovery."}

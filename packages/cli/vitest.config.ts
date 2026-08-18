@@ -2,6 +2,8 @@ import { defineConfig } from "vitest/config";
 
 const PROCEDURE_207_PACKAGES_TEST =
   "test/commands/research-procedure-207-packages.test.ts";
+const METHODOLOGY_116_PRODUCTION_TEST =
+  "test/commands/research-methodology-116-production.test.ts";
 
 const DIST_MUTATING_TESTS = [
   "test/scripts/smoke-installed-cli.test.ts",
@@ -24,6 +26,17 @@ export default defineConfig({
       },
       {
         test: {
+          name: "methodology-116-production",
+          maxWorkers: 1,
+          testTimeout: 10_000,
+          include: [METHODOLOGY_116_PRODUCTION_TEST],
+          exclude: ["third/**", "node_modules/**"],
+          setupFiles: ["./test/setup.ts"],
+          sequence: { groupOrder: 2 },
+        },
+      },
+      {
+        test: {
           name: "normal",
           maxWorkers: 4,
           testTimeout: 10_000,
@@ -32,11 +45,12 @@ export default defineConfig({
             "third/**",
             "node_modules/**",
             PROCEDURE_207_PACKAGES_TEST,
+            METHODOLOGY_116_PRODUCTION_TEST,
             ...DIST_MUTATING_TESTS,
           ],
           globalSetup: ["./test/global-setup.ts"],
           setupFiles: ["./test/setup.ts"],
-          sequence: { groupOrder: 2 },
+          sequence: { groupOrder: 3 },
         },
       },
       {
@@ -47,7 +61,7 @@ export default defineConfig({
           include: DIST_MUTATING_TESTS,
           exclude: ["third/**", "node_modules/**"],
           setupFiles: ["./test/setup.ts"],
-          sequence: { groupOrder: 3 },
+          sequence: { groupOrder: 4 },
         },
       },
     ],
