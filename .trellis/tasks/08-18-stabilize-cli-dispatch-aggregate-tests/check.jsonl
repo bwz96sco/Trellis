@@ -1,0 +1,8 @@
+{"file":".trellis/spec/tech/repo/index.md","reason":"Check exact-eight commit inventory, exact-fourteen staged inventory, protected paths, gitlinks, temporary artifacts, and preserved G-I3 blobs."}
+{"file":".trellis/spec/guides/index.md","reason":"Check that every repair validation has a concrete detectable failure and a defined stop or recovery action."}
+{"file":".trellis/spec/cli/unit-test/index.md","reason":"Check focused and complete test commands, project ownership, timeout semantics, cleanup, and hook behavior."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check independent scenario boundaries, serial execution, exact assertions, temporary-directory isolation, and teardown ordering."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Check spy registration order and inline or afterEach restoration after the split."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check that the repair retains real filesystem integration behavior and does not introduce unnecessary mocks or helpers."}
+{"file":".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/task.json","reason":"Authenticate predecessor 753a5d9a, four-project counts, atomic commit precedent, and the requirement to preserve staged G-I3 history."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json","reason":"Confirm this repair grants no G-I3, I3, S3, Attempt-4, provider, remote, push, or M0-A4 authority."}

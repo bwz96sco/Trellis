@@ -1,0 +1,8 @@
+{"file":".trellis/spec/tech/repo/index.md","reason":"Preserve exact path ownership, staging containment, protected dirty files, submodule gitlinks, and forward-only commit boundaries."}
+{"file":".trellis/spec/guides/index.md","reason":"Require each verification to detect a reachable failure and change the next action without defensive scope expansion."}
+{"file":".trellis/spec/cli/unit-test/index.md","reason":"Apply CLI test ownership, timeout, hook, fixture, isolation, and validation conventions to the split repair."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Preserve serial test isolation, per-test temporary directories, teardown ordering, exact assertions, and four-project ownership."}
+{"file":".trellis/spec/cli/unit-test/mock-strategies.md","reason":"Preserve targeted spy installation and explicit restoreAllMocks behavior across the new scenario boundaries."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Keep real temporary-filesystem integration behavior and avoid replacing heterogeneous race scenarios with table-driven abstractions."}
+{"file":".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/design.md","reason":"Reuse the transparent atomic-bootstrap, exact hook recovery, staged G-I3 preservation, and four-project topology contracts."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md","reason":"Keep the repair stage separate from G-I3 reconciliation and all later I3/S3 authority."}

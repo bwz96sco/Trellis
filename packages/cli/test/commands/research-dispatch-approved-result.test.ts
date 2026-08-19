@@ -1183,7 +1183,7 @@ describe("approved Result validation acceptance", { timeout: 30_000 }, () => {
     expect(reads).toBe(0);
   });
 
-  it("rejects outside-root paths, parent symlinks, final symlinks, and path replacement", async () => {
+  it("rejects an approved Result input path outside the control root", async () => {
     const outside = await setupApprovedResult(sandbox, "outside");
     const outsideFile = path.join(sandbox, "outside.json");
     fs.writeFileSync(outsideFile, outside.payload);
@@ -1197,7 +1197,9 @@ describe("approved Result validation acceptance", { timeout: 30_000 }, () => {
         now: outside.now,
       }),
     ).rejects.toThrow(/inside the control root/);
+  });
 
+  it("rejects a final-symlink approved Result input path", async () => {
     const finalLink = await setupApprovedResult(sandbox, "final-link");
     const finalDirectory = path.join(finalLink.fixture.root, "inputs");
     fs.mkdirSync(finalDirectory);
@@ -1215,7 +1217,9 @@ describe("approved Result validation acceptance", { timeout: 30_000 }, () => {
         now: finalLink.now,
       }),
     ).rejects.toThrow(/non-symlink file/);
+  });
 
+  it("rejects an approved Result input path through a parent symlink", async () => {
     const parentLink = await setupApprovedResult(sandbox, "parent-link");
     const realParent = path.join(parentLink.fixture.root, "real-inputs");
     const linkedParent = path.join(parentLink.fixture.root, "linked-inputs");
@@ -1236,7 +1240,9 @@ describe("approved Result validation acceptance", { timeout: 30_000 }, () => {
         now: parentLink.now,
       }),
     ).rejects.toThrow(/non-symlink directory/);
+  });
 
+  it("detects approved Result input path replacement while reading", async () => {
     const replaced = await setupApprovedResult(sandbox, "replaced");
     const replacePath = path.join(replaced.fixture.root, "worker.json");
     fs.writeFileSync(replacePath, replaced.payload);

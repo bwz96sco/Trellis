@@ -1,0 +1,213 @@
+{
+  "id": "stabilize-cli-dispatch-aggregate-tests",
+  "name": "stabilize-cli-dispatch-aggregate-tests",
+  "title": "Stabilize CLI dispatch aggregate tests",
+  "description": "Split two multi-scenario dispatch tests into scenario-level tests under unchanged budgets and restore the complete hook.",
+  "status": "completed",
+  "dev_type": "unit-test",
+  "scope": "cli/unit-test",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-18",
+  "completedAt": "2026-08-18",
+  "branch": null,
+  "base_branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+    "packages/cli/test/commands/research-dispatch-approved-result.test.ts",
+    ".trellis/spec/cli/unit-test/conventions.md",
+    ".trellis/spec/cli/unit-test/integration-patterns.md",
+    ".trellis/spec/cli/unit-test/mock-strategies.md"
+  ],
+  "notes": "The approved repair is test decomposition only. It grants one exact-eight hook-enabled commit launch. Failure or interruption requires exact lifecycle/index recovery and a stop; it grants no second launch or later-stage authority. Path-aware project Prettier checking found both target HEAD blobs and current files non-clean; broad whole-file rewriting remains outside this surgical repair.",
+  "meta": {
+    "planningPredecessorCommit": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+    "planningPredecessorTree": "59d88a337a563cb90e875cc7197489fa4c1a6e93",
+    "planningPredecessorParent": "c7d3423bbe5bade60a4fa9a02ea1849b5403ea70",
+    "r3SemanticAnchor": "0028183901b74263a70dacca98bb936dc792ced4",
+    "blockedTask": ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze",
+    "failureEvidence": {
+      "boundary": "second-hook-enabled-g-i3-commit-attempt",
+      "commitCreated": false,
+      "core": {
+        "filesPassed": 40,
+        "testsPassed": 664,
+        "testsSkipped": 1
+      },
+      "cli": {
+        "filesPassed": 84,
+        "filesFailed": 2,
+        "testsPassed": 1005,
+        "testsFailed": 2,
+        "testsTotal": 1007,
+        "durationSeconds": 879.54
+      },
+      "timeouts": [
+        {
+          "path": "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+          "aggregateScenarioCount": 5,
+          "budgetMilliseconds": 30000,
+          "observedSeconds": 31.08
+        },
+        {
+          "path": "packages/cli/test/commands/research-dispatch-approved-result.test.ts",
+          "aggregateScenarioCount": 4,
+          "budgetMilliseconds": 30000,
+          "observedSeconds": 30.237
+        }
+      ],
+      "assertionMismatchRecorded": false
+    },
+    "selectedRepair": {
+      "kind": "scenario-level-test-split",
+      "activationScenarioCount": 5,
+      "approvedResultScenarioCount": 4,
+      "serialExecutionRequired": true,
+      "timeoutValueChangeAllowed": false,
+      "productionChangeAllowed": false,
+      "fixtureOrHelperChangeAllowed": false,
+      "vitestTopologyChangeAllowed": false,
+      "workerOrRetryChangeAllowed": false,
+      "repairTimeSpecChangeRequired": false
+    },
+    "expectedCounts": {
+      "activationBefore": 15,
+      "activationAfter": 19,
+      "approvedResultBefore": 51,
+      "approvedResultAfter": 54,
+      "focusedFiles": 2,
+      "focusedTests": 73,
+      "cliFiles": 86,
+      "cliTestsBefore": 1007,
+      "cliTestsAfter": 1014,
+      "procedureProjectFiles": 1,
+      "methodology116ProjectFiles": 1,
+      "normalProjectFiles": 82,
+      "distMutatingProjectFiles": 2
+    },
+    "verificationEvidence": {
+      "gitNexusImpact": {
+        "risk": "LOW",
+        "directDependants": 0,
+        "affectedProcesses": 0,
+        "affectedModules": 0,
+        "epistemicStatus": "exact"
+      },
+      "exactTechnicalDiff": {
+        "files": 2,
+        "insertions": 16,
+        "deletions": 2,
+        "scenarioBodiesChanged": false
+      },
+      "prettier": {
+        "checkExecuted": true,
+        "headBaselineClean": false,
+        "currentFilesClean": false,
+        "wholeFileRewriteAuthorized": false
+      },
+      "targetedEslintPassed": true,
+      "cliTypecheckPassed": true,
+      "focusedNormalProject": {
+        "filesPassed": 2,
+        "testsPassed": 73,
+        "durationSeconds": 88.24
+      },
+      "projectPartition": {
+        "procedure207Packages": 1,
+        "methodology116Production": 1,
+        "normal": 82,
+        "distMutating": 2,
+        "union": 86,
+        "pairwiseIntersectionsEmpty": true,
+        "rawSetSha256": "32cb757664b9a95b57e42ab1b82156b88749f6bb04e10b2c5a56caa189f61d11"
+      }
+    },
+    "governanceOwnedPaths": [
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/task.json",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/prd.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/design.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/implement.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/implement.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/check.jsonl"
+    ],
+    "plannedTechnicalInventory": [
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts"
+    ],
+    "plannedCombinedCommitInventory": [
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/task.json",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/prd.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/design.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/implement.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/implement.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/check.jsonl",
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts"
+    ],
+    "preservedGI3StagedInventory": [
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl"
+    ],
+    "preservedGI3StagedBlobs": {
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl": "fe254b5da232edfc9ff81c0cf170da4f9663059b",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md": "09371084eed2c8390c9a612a8e3201a6d5c05eae",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl": "e1b1a5dcdb0c0fe5f3d4f396b6b7ad3f4bcbc3e5",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md": "b5e52620d1297dbe9c39c02a9e71cc4350aa87a5",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md": "ae15cf74b5cf0ed6a2fb997f69203b814ea16a99",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json": "365ec8be73049555c4a74ce75324ab560824aecb"
+    },
+    "plannedActivationTransition": {
+      "status": "in_progress",
+      "completedAt": null,
+      "executionState": "in_progress"
+    },
+    "plannedCompletionTransition": {
+      "status": "completed",
+      "completedAt": "2026-08-18",
+      "executionState": "completed"
+    },
+    "plannedFailureTransition": {
+      "status": "in_progress",
+      "completedAt": null,
+      "executionState": "in_progress"
+    },
+    "commitAuthorization": {
+      "authorized": true,
+      "authorizationDate": "2026-08-18",
+      "launchLimit": 1,
+      "hookBypassAllowed": false,
+      "failureOrInterruptionAction": "exact-recovery-and-stop",
+      "secondLaunchAuthorized": false
+    },
+    "executionState": "completed",
+    "taskExecutionAuthorized": true,
+    "combinedCommitAuthorized": true,
+    "governanceOnlyCommitAuthorized": false,
+    "gI3CommitAuthorized": false,
+    "i3SubjectCreationAuthorized": false,
+    "s3FreezeCreationAuthorized": false,
+    "assuranceRunAuthorized": false,
+    "providerExecutionAuthorized": false,
+    "technicalOperatorDecisionAuthorized": false,
+    "archiveAuthorized": false,
+    "journalAuthorized": false,
+    "networkAuthorized": false,
+    "evidenceTransmissionAuthorized": false,
+    "pushAuthorized": false,
+    "publicationAuthorized": false,
+    "releaseAuthorized": false,
+    "runtimeActivationAuthorized": false
+  }
+}

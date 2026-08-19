@@ -1206,7 +1206,7 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
     expect(fs.lstatSync(activationPath).isDirectory()).toBe(true);
   });
 
-  it("detects root and parent replacement before sidecar publication without following replacements", async () => {
+  it("detects control-root replacement before activation publication without following it", async () => {
     const rootFixture = await createResearchDispatchFixture(
       path.join(sandbox, "root-replacement"),
     );
@@ -1256,7 +1256,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
       expect(fs.statSync(path.join(outsideDispatch, entry)).size).toBe(0);
     }
     vi.restoreAllMocks();
+  }, 30_000);
 
+  it("detects Dispatch-directory replacement during activation publication without following it", async () => {
     const dispatchFixture = await createResearchDispatchFixture(
       path.join(sandbox, "dispatch-replacement"),
     );
@@ -1304,7 +1306,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
     ).toBe(false);
     expect(fs.readdirSync(outsideDispatchReplacement)).toEqual([]);
     vi.restoreAllMocks();
+  }, 30_000);
 
+  it("detects approvals-directory replacement during approval publication without following it", async () => {
     const approvalFixture = await createResearchDispatchFixture(
       path.join(sandbox, "approval-replacement"),
       { automaticEnabled: true },
@@ -1343,7 +1347,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
     ).toBe(false);
     expect(fs.readdirSync(outsideApprovals)).toEqual([]);
     vi.restoreAllMocks();
+  }, 30_000);
 
+  it("rejects a pre-existing activation parent symlink without following it", async () => {
     const symlinkFixture = await createResearchDispatchFixture(
       path.join(sandbox, "parent-symlink-before-start"),
     );
@@ -1374,7 +1380,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
       }),
     ).toThrow(ResearchDispatchFileError);
     expect(fs.readdirSync(outsideSymlinkDirectory)).toEqual([]);
+  }, 30_000);
 
+  it("detects Dispatch-directory replacement at the activation link boundary without following it", async () => {
     const boundaryFixture = await createResearchDispatchFixture(
       path.join(sandbox, "parent-link-boundary"),
     );
