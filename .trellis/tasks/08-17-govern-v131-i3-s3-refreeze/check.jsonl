@@ -1,0 +1,14 @@
+{"file":".trellis/spec/tech/repo/index.md","reason":"Check exact staged sets, package boundaries, protected dirty files, gitlinks, temporary cleanup, and commit isolation at every phase."}
+{"file":".trellis/spec/guides/index.md","reason":"Check that each verification has a concrete detectable failure and stop/continue consequence."}
+{"file":".trellis/spec/cli/backend/index.md","reason":"Review the I3 audit script for CLI conventions, deterministic output, offline containment, and minimal implementation."}
+{"file":".trellis/spec/cli/unit-test/index.md","reason":"Review the I3 test and living inventory correction for dynamic four-project ownership, pairwise disjointness, complete discovery, and unchanged runner policy."}
+{"file":".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/task.json","reason":"Verify immediate predecessor 5a3a1ec3, exact-eight inventory, completed repair state, and superseded pre-repair G-I3 blob history."}
+{"file":".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/design.md","reason":"Verify both split test files remain repair-only package drift and no scenario, assertion, failure expectation, or timeout policy was lost."}
+{"file":".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/task.json","reason":"Verify 753a5d9a remains only the runner-stabilization anchor and its one-path R3 delta is not misreported as current full drift."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/task.json","reason":"Verify approved completion sequence and stop-before-M0-A4 boundary remain intact."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/design.md","reason":"Verify immutable subject-chain and independent future-gate semantics."}
+{"file":".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/prd.md","reason":"Verify R3 product semantics and retained-object historical authentication remain unchanged."}
+{"file":".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor/research/integration-execution-evidence-ledger.json","reason":"Compare current ledger ownership, same-tarball external install, cleanup, and no-self-reference semantics against retained predecessor evidence."}
+{"file":".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor/research/exact-subject-freeze.json","reason":"Compare S3 committed-object freeze structure while requiring independent current identities, exact-nine inventory, and typed R3/stabilization/repair anchors."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json","reason":"Verify no Attempt-4, provider, acceptance, T6-closure, operator, remote, publication, or activation authority appears."}
+{"file":".trellis/workflow.md","reason":"Verify phase order, lifecycle transitions, validation, exact commits, and final stop behavior."}

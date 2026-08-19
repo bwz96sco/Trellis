@@ -1,0 +1,367 @@
+{
+  "id": "govern-v131-i3-s3-refreeze",
+  "name": "govern-v131-i3-s3-refreeze",
+  "title": "Govern v1.3.1 I3/S3 refreeze",
+  "description": "Create exact-nine I3 from the R3 semantic anchor, stabilized runner anchor, and split-repair predecessor, then freeze exact-one S3 without rewriting retained history.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "research/integration-governance",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude",
+  "createdAt": "2026-08-17",
+  "completedAt": null,
+  "branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "base_branch": "evidence/v13-baseline",
+  "worktree_path": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".trellis/tasks/08-17-govern-v131-formal-push-readiness/task.json",
+    ".trellis/tasks/08-15-amend-t0-authorize-v131-forward-repair/task.json",
+    ".trellis/tasks/08-15-integrate-install-and-freeze-v1-3-1-subject-successor/task.json",
+    ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json",
+    ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/task.json",
+    ".trellis/spec/cli/unit-test/conventions.md",
+    ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/task.json",
+    ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/design.md"
+  ],
+  "notes": "User approved repair-aware sequence: exact-eight split repair, reconciled exact-six G-I3, exact-nine I3, exact-one S3, exact-one closure, then stop before M0-A4. Repair committed as 5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24. No Attempt 4, provider, T6 closure, T7, archive, journal, remote, evidence transmission, push, publication, release, or activation authority.",
+  "meta": {
+    "acceptedContract": "evaluation-contract-v1.3.1",
+    "acceptedSemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+    "campaign": "A133-bound-technical-successor",
+    "stage": "G-I3",
+    "forwardOnly": true,
+    "governancePredecessorCommit": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24",
+    "stabilizationParentCommit": "c7d3423bbe5bade60a4fa9a02ea1849b5403ea70",
+    "stabilizationTree": "59d88a337a563cb90e875cc7197489fa4c1a6e93",
+    "stabilizationSubject": "test(cli): isolate production harness lane",
+    "stabilizationInventory": [
+      ".trellis/spec/cli/unit-test/conventions.md",
+      ".trellis/spec/cli/unit-test/index.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/check.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/design.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/implement.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/implement.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/prd.md",
+      ".trellis/tasks/08-18-stabilize-cli-heavy-lane-contention/task.json",
+      "packages/cli/vitest.config.ts"
+    ],
+    "r3TechnicalCommit": "0028183901b74263a70dacca98bb936dc792ced4",
+    "r3TechnicalTree": "57a66fa619c38d525431f829f3738cd61bb75d83",
+    "r3ClosureCommit": "0037bc4261a08541c5b10085c7d8cb349f574711",
+    "packageComparisonPathspec": [
+      "packages/core",
+      "packages/cli",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml"
+    ],
+    "tupleDigestSerialization": "sha256 of exact git ls-tree -r -z output for the packageComparisonPathspec",
+    "r3PathCount": 1591,
+    "r3TupleDigest": "sha256:077f223c93c98d8abd0854f0e1f5c71d0782dae2cf2b580237b545aff2d34a51",
+    "stabilizedPathCount": 1591,
+    "stabilizedTupleDigest": "sha256:60e3c8e948d08d4b312908becd8b2e947bb882da053ca9a111174e114ec1042c",
+    "stabilizedRunnerDelta": {
+      "path": "packages/cli/vitest.config.ts",
+      "before": {
+        "commit": "0028183901b74263a70dacca98bb936dc792ced4",
+        "mode": "100644",
+        "blob": "4f642c0fb015edd69fcf020ab7edddebbf4b46d4",
+        "byteLength": 1649,
+        "sha256": "8fdc0b3bb1bf35e0d34647ad43202d8db52a6a8a0696297e0859f82f2a7883b3"
+      },
+      "after": {
+        "commit": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+        "mode": "100644",
+        "blob": "4e38f4d5636f9348b7af9a41bb82322e2c85fb10",
+        "byteLength": 2131,
+        "sha256": "e30c2a953a6f151cd4efb0dc0fd34368d87f407be435eabe5b6d877d5a8e678d"
+      }
+    },
+    "preI3PackageDeltaFromStabilizationExpected": [
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts"
+    ],
+    "postI3PackageDeltaFromStabilizationExpected": [
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts",
+      "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+      "packages/cli/test/commands/research-v131-integration-i3.test.ts"
+    ],
+    "postI3PackageDeltaFromR3Expected": [
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts",
+      "packages/cli/vitest.config.ts",
+      "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+      "packages/cli/test/commands/research-v131-integration-i3.test.ts"
+    ],
+    "historicalVerificationMode": "retained-git-object-authentication",
+    "planningAuthorized": true,
+    "freshUserApprovalRequired": false,
+    "freshUserApprovalReceived": true,
+    "freshUserApprovalDate": "2026-08-18",
+    "freshUserApprovalInstruction": "拆分聚合测试（推荐）",
+    "approvedBoundaries": [
+      "G-I3",
+      "I3",
+      "S3",
+      "G-I3-CLOSE"
+    ],
+    "executionState": "governed-awaiting-i3",
+    "plannedGovernanceExecutionState": "governed-awaiting-i3",
+    "plannedI3ExecutionState": "i3-evidence-prepared",
+    "plannedI3TaskTransition": {
+      "status": "in_progress",
+      "executionState": "i3-evidence-prepared",
+      "i3EvidencePrepared": true,
+      "s3Status": "pending"
+    },
+    "taskExecutionAuthorized": true,
+    "governanceCommitAuthorized": true,
+    "i3SubjectCreationAuthorized": true,
+    "i3CommitAuthorized": true,
+    "s3FreezeCreationAuthorized": true,
+    "s3CommitAuthorized": true,
+    "taskClosureCommitAuthorized": true,
+    "m0A4PreparationAuthorized": false,
+    "providerExecutionAuthorized": false,
+    "assuranceRunAuthorized": false,
+    "t6ClosureAuthorized": false,
+    "technicalOperatorDecisionAuthorized": false,
+    "archiveAuthorized": false,
+    "journalAuthorized": false,
+    "remoteReadAuthorized": false,
+    "networkAuthorized": false,
+    "evidenceTransmissionAuthorized": false,
+    "pushAuthorized": false,
+    "publicationAuthorized": false,
+    "releaseAuthorized": false,
+    "runtimeActivationAuthorized": false,
+    "liveSelectionChangeAuthorized": false,
+    "workerAuthorityChangeAuthorized": false,
+    "completeSystemAcceptanceAuthorized": false,
+    "protectedDirtySnapshot": {
+      "AGENTS.md": "sha256:788d2a2da0e913874acee2c3cf2f34575b50191b18e47f21478645ea5be4be48",
+      "CLAUDE.md": "sha256:319361ea166bde3be56a6c6dc5a161a5a6f73a214a2aea1d8efd1436b1853cf3"
+    },
+    "submoduleGitlinks": {
+      "docs-site": "be7684f2086abb9b8e24d4d35733a7dda3123a0f",
+      "marketplace": "d7a18bb5411c700237d21483d6889ac296ef0301"
+    },
+    "supersededStagedGovernanceBlobs": {
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json": "1b1da0395f77261fa801a7aa2c134573d114436a",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md": "ace7b00219ca7aa83e344d998100bd065f6fdfb3",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md": "6dc51c8558fc43454005eefd8562caca3ab68899",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md": "90108331b7239d6fbdbe2db51d04aef6380e2b08",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl": "b7748b18f9461c45d00b3712815eb9235f8d1c99",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl": "ca578c04ffffcd22c4017a92462c887277ee5866"
+    },
+    "governanceOwnedPaths": [
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl"
+    ],
+    "plannedI3Inventory": [
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json",
+      "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+      "packages/cli/test/commands/research-v131-integration-i3.test.ts",
+      ".trellis/spec/cli/unit-test/conventions.md",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/integration-input-attestation.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/package-tarball-inventory.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/external-install-evidence.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/integration-execution-evidence-ledger.json",
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/protected-path-audit.json"
+    ],
+    "plannedS3Inventory": [
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json"
+    ],
+    "plannedClosureInventory": [
+      ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json"
+    ],
+    "plannedClosureTransition": {
+      "status": "completed",
+      "completedAt": null,
+      "completedAtRule": "set to the actual local calendar date immediately before the closure commit",
+      "executionState": "completed",
+      "i3EvidencePrepared": true,
+      "s3Status": "authenticated"
+    },
+    "expectedPostI3ProjectObservation": {
+      "procedure207Packages": 1,
+      "methodology116Production": 1,
+      "normal": 83,
+      "distMutating": 2,
+      "union": 87,
+      "documentationRule": "derive dynamically; do not preserve these observations as a static current-count contract"
+    },
+    "stopGate": "Any three-anchor, predecessor, package-tree, immutable object, protected-path, submodule, dynamic project-inventory, staged-set, offline-containment, validation, or authority mismatch; any historical --write operation; or any M0-A4, provider, assurance, T6 closure, operator, archive, journal, remote, network, evidence-transmission, push, release, publication, activation, or history-rewrite action.",
+    "currentAuthorityChain": {
+      "r3SemanticAnchor": "0028183901b74263a70dacca98bb936dc792ced4",
+      "runnerStabilizationAnchor": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+      "immediateGitIntegrationPredecessor": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24"
+    },
+    "repairPredecessorCommit": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24",
+    "repairPredecessorParent": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+    "repairPredecessorTree": "cc3ce047d4a1b678d9aff74bd831464015acb223",
+    "repairPredecessorSubject": "test(cli): split dispatch aggregate scenarios",
+    "repairInventory": [
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/check.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/design.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/implement.jsonl",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/implement.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/prd.md",
+      ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/task.json",
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts"
+    ],
+    "repairPathCount": 1591,
+    "repairTupleDigest": "sha256:575af4df32b2bc236cd37b675b1b470639ad206c708f79fa735ab1bc83810933",
+    "expectedI3PathCount": 1593,
+    "sharedR3StabilizationPathCount": 1590,
+    "sharedR3StabilizationTupleDigest": "sha256:39ebb8d28913c749b08b6a7b2702838f80ade0d9146d9c5a4d42008cc61d3fda",
+    "sharedR3RepairPathCount": 1588,
+    "sharedR3RepairTupleDigest": "sha256:b2010d0e527a54de1bb2ea9838da7e2af42faadbf26cad4530d82a1c38522187",
+    "sharedR3RepairTupleDigestSerialization": "sha256 of matching exact R3 git ls-tree records, each NUL-terminated, in original R3 tree order",
+    "threeAnchorPackageDeltas": {
+      "r3ToStabilization": [
+        "packages/cli/vitest.config.ts"
+      ],
+      "stabilizationToRepair": [
+        "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+        "packages/cli/test/commands/research-dispatch-approved-result.test.ts"
+      ],
+      "r3ToRepair": [
+        "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
+        "packages/cli/test/commands/research-dispatch-approved-result.test.ts",
+        "packages/cli/vitest.config.ts"
+      ]
+    },
+    "changedPathIdentities": {
+      "packages/cli/vitest.config.ts": {
+        "r3": {
+          "commit": "0028183901b74263a70dacca98bb936dc792ced4",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "4f642c0fb015edd69fcf020ab7edddebbf4b46d4",
+          "byteLength": 1649,
+          "sha256": "8fdc0b3bb1bf35e0d34647ad43202d8db52a6a8a0696297e0859f82f2a7883b3"
+        },
+        "stabilization": {
+          "commit": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "4e38f4d5636f9348b7af9a41bb82322e2c85fb10",
+          "byteLength": 2131,
+          "sha256": "e30c2a953a6f151cd4efb0dc0fd34368d87f407be435eabe5b6d877d5a8e678d"
+        },
+        "repair": {
+          "commit": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "4e38f4d5636f9348b7af9a41bb82322e2c85fb10",
+          "byteLength": 2131,
+          "sha256": "e30c2a953a6f151cd4efb0dc0fd34368d87f407be435eabe5b6d877d5a8e678d"
+        }
+      },
+      "packages/cli/test/commands/research-dispatch-activation.integration.test.ts": {
+        "r3": {
+          "commit": "0028183901b74263a70dacca98bb936dc792ced4",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "3ac4121d201f035554941d31b9b10f489bcfd430",
+          "byteLength": 59980,
+          "sha256": "486363699ab7959a5e3cb000641130f34d7cf5312d206b14628797063118ffd1"
+        },
+        "stabilization": {
+          "commit": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "3ac4121d201f035554941d31b9b10f489bcfd430",
+          "byteLength": 59980,
+          "sha256": "486363699ab7959a5e3cb000641130f34d7cf5312d206b14628797063118ffd1"
+        },
+        "repair": {
+          "commit": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "b8502ac3b692906d19a384005670774e6ae6b572",
+          "byteLength": 60455,
+          "sha256": "42903ce3299952c065516a541d385ee22a3eb173f0d0a53351c8e0d63e438fc0"
+        }
+      },
+      "packages/cli/test/commands/research-dispatch-approved-result.test.ts": {
+        "r3": {
+          "commit": "0028183901b74263a70dacca98bb936dc792ced4",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "3f9b4e49d2b7783ce6b8dd0130cd3b1d1c49921a",
+          "byteLength": 78984,
+          "sha256": "ffe1b4a2bd89ccbe741eafe138b892a5c20f8df85fb5e1f6d031c80ed4f77449"
+        },
+        "stabilization": {
+          "commit": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "3f9b4e49d2b7783ce6b8dd0130cd3b1d1c49921a",
+          "byteLength": 78984,
+          "sha256": "ffe1b4a2bd89ccbe741eafe138b892a5c20f8df85fb5e1f6d031c80ed4f77449"
+        },
+        "repair": {
+          "commit": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24",
+          "mode": "100644",
+          "type": "blob",
+          "blob": "cfbffd9be76f38b756e3c53af8b69ccf5baf35eb",
+          "byteLength": 79224,
+          "sha256": "b773c57241ce91cd0f3e9b1a3e92b91405265439f8a4c5a775e95e3af4f0ac0e"
+        }
+      }
+    },
+    "preI3PackageDeltaFromRepairExpected": [],
+    "postI3PackageDeltaFromRepairExpected": [
+      "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+      "packages/cli/test/commands/research-v131-integration-i3.test.ts"
+    ],
+    "priorSequenceApprovalInstruction": "确认执行",
+    "repairAwareApproval": {
+      "date": "2026-08-18",
+      "instruction": "拆分聚合测试（推荐）",
+      "plan": "/Users/zhangbowen/.claude/plans/sorted-bubbling-moler.md",
+      "sequence": [
+        "REPAIR",
+        "G-I3",
+        "I3",
+        "S3",
+        "G-I3-CLOSE"
+      ],
+      "stopBefore": "M0-A4"
+    },
+    "supersededPreStabilizationApproval": {
+      "reason": "The direct predecessor changed to the CLI stabilization commit and the I3 inventory changed from eight to nine paths.",
+      "priorImmediatePredecessor": "c7d3423bbe5bade60a4fa9a02ea1849b5403ea70",
+      "priorI3PathCount": 8,
+      "currentAuthority": false
+    },
+    "supersededPreRepairDraft": {
+      "reason": "Repair commit changed the immediate predecessor and package arithmetic from one changed package path to three.",
+      "priorImmediatePredecessor": "753a5d9a8b1aa293a42f27201f3d9dd458edd723",
+      "currentAuthority": false,
+      "stagedGovernanceBlobs": {
+        ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/check.jsonl": "fe254b5da232edfc9ff81c0cf170da4f9663059b",
+        ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/design.md": "09371084eed2c8390c9a612a8e3201a6d5c05eae",
+        ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.jsonl": "e1b1a5dcdb0c0fe5f3d4f396b6b7ad3f4bcbc3e5",
+        ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/implement.md": "b5e52620d1297dbe9c39c02a9e71cc4350aa87a5",
+        ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/prd.md": "ae15cf74b5cf0ed6a2fb997f69203b814ea16a99",
+        ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json": "365ec8be73049555c4a74ce75324ab560824aecb"
+      }
+    }
+  }
+}
