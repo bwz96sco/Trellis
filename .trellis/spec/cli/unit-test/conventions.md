@@ -12,24 +12,24 @@ Apply these conventions to all unit, characterization, golden, and compatibility
 
 ### Test Infrastructure
 
-| Item | Value |
-|------|-------|
-| Framework | Vitest 4.x |
-| Config | `vitest.config.ts` |
-| Include | `test/**/*.test.ts` partitioned across four ordered projects |
-| Exclude | `third/**`, `node_modules/**`, plus every dedicated path from `normal` |
-| Projects | `procedure-207-packages`, `methodology-116-production`, `normal`, `dist-mutating` |
-| Setup files | `test/setup.ts` in every project (strips host-shell session env vars — see "Test Isolation" below) |
-| Global setup | `test/global-setup.ts` in `normal` only |
-| Workers | `1 / 1 / 4 / 1` in project order |
-| Group order | Positive and distinct: `1 / 2 / 3 / 4` |
-| Default test timeout | `10_000` in every project; explicit suite/test budgets remain authoritative |
-| Lint scope | `eslint src/ test/` |
-| Module system | ESM (`"type": "module"` + `"module": "NodeNext"`) |
-| Coverage provider | `@vitest/coverage-v8` |
-| Coverage command | `pnpm test:coverage` |
-| Coverage scope | `src/**/*.ts` (excludes `src/cli/index.ts`) |
-| Coverage reports | `text` (terminal), `html` (`./coverage/index.html`), `json-summary` |
+| Item                 | Value                                                                                              |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Framework            | Vitest 4.x                                                                                         |
+| Config               | `vitest.config.ts`                                                                                 |
+| Include              | `test/**/*.test.ts` partitioned across four ordered projects                                       |
+| Exclude              | `third/**`, `node_modules/**`, plus every dedicated path from `normal`                             |
+| Projects             | `procedure-207-packages`, `methodology-116-production`, `normal`, `dist-mutating`                  |
+| Setup files          | `test/setup.ts` in every project (strips host-shell session env vars — see "Test Isolation" below) |
+| Global setup         | `test/global-setup.ts` in `normal` only                                                            |
+| Workers              | `1 / 1 / 4 / 1` in project order                                                                   |
+| Group order          | Positive and distinct: `1 / 2 / 3 / 4`                                                             |
+| Default test timeout | `10_000` in every project; explicit suite/test budgets remain authoritative                        |
+| Lint scope           | `eslint src/ test/`                                                                                |
+| Module system        | ESM (`"type": "module"` + `"module": "NodeNext"`)                                                  |
+| Coverage provider    | `@vitest/coverage-v8`                                                                              |
+| Coverage command     | `pnpm test:coverage`                                                                               |
+| Coverage scope       | `src/**/*.ts` (excludes `src/cli/index.ts`)                                                        |
+| Coverage reports     | `text` (terminal), `html` (`./coverage/index.html`), `json-summary`                                |
 
 ---
 
@@ -53,18 +53,18 @@ delete process.env.OPENCODE_RUN_ID;
 
 **When to extend**: any new env var that production resolvers honor as a user override, AND that the dev's host shell may export, must be added to `test/setup.ts`. Do NOT fix this in production code by ignoring the env var — the override is a real feature for end users.
 
-**When NOT to use**: tests that *intentionally* exercise the env-override path should set the env explicitly inside the test (`process.env.X = "..."` in a `beforeEach` and restore in `afterEach`).
+**When NOT to use**: tests that _intentionally_ exercise the env-override path should set the env explicitly inside the test (`process.env.X = "..."` in a `beforeEach` and restore in `afterEach`).
 
 ### Ordered project ownership
 
 `vitest.config.ts` partitions the complete discovered `test/**/*.test.ts` suite into four disjoint projects:
 
-| Project | Exact ownership | `maxWorkers` | `groupOrder` | Setup |
-|---|---|---:|---:|---|
-| `procedure-207-packages` | `test/commands/research-procedure-207-packages.test.ts` | 1 | 1 | `setupFiles` |
-| `methodology-116-production` | `test/commands/research-methodology-116-production.test.ts` | 1 | 2 | `setupFiles` |
-| `normal` | Every discovered test not owned by a dedicated project | 4 | 3 | `setupFiles` + `globalSetup` |
-| `dist-mutating` | `test/scripts/smoke-installed-cli.test.ts` and `test/commands/research-cs5-integration.test.ts` | 1 | 4 | `setupFiles` |
+| Project                      | Exact ownership                                                                                 | `maxWorkers` | `groupOrder` | Setup                        |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- | -----------: | -----------: | ---------------------------- |
+| `procedure-207-packages`     | `test/commands/research-procedure-207-packages.test.ts`                                         |            1 |            1 | `setupFiles`                 |
+| `methodology-116-production` | `test/commands/research-methodology-116-production.test.ts`                                     |            1 |            2 | `setupFiles`                 |
+| `normal`                     | Every discovered test not owned by a dedicated project                                          |            4 |            3 | `setupFiles` + `globalSetup` |
+| `dist-mutating`              | `test/scripts/smoke-installed-cli.test.ts` and `test/commands/research-cs5-integration.test.ts` |            1 |            4 | `setupFiles`                 |
 
 The partition is an executable contract:
 
@@ -87,33 +87,33 @@ A new lane requires retained complete-suite evidence of a distinct resource or s
 
 ### Must write
 
-| Change Type | Test Type | Example |
-|-------------|-----------|---------|
-| New pure/utility function | Unit test | Added `compareVersions()` → test boundary values |
-| Strict Procedure/policy parser or authority merge | Table-driven unit + exact digest vectors | Cover grammar, canonical bytes, widening classification, freezing, and stable reason order |
-| Procedure/policy filesystem resolution | Real-temp-tree integration test | Cover project-first fallback, symlink/type/identity failures, exact-byte preservation, and no-replace creation |
-| Public package export/proof change | Core-owned compatibility + packed audit tests | Freeze export order/targets, imports, declarations, and deep-import blocking |
-| CLI core dependency-boundary change | CLI-owned source + clean-build scanner test | Accept only exact `@mindfoldhq/trellis-core/research` |
-| New platform | Unit (auto-covered by `registry-invariants.test.ts`) | Added opencode → invariants verify consistency |
-| Bug fix | Regression test | Fixed Windows encoding → add to `regression.test.ts` |
-| Changed init/update behavior | Integration test | Changed downgrade logic → add/update scenario in `update.integration.test.ts` |
+| Change Type                                       | Test Type                                            | Example                                                                                                        |
+| ------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| New pure/utility function                         | Unit test                                            | Added `compareVersions()` → test boundary values                                                               |
+| Strict Procedure/policy parser or authority merge | Table-driven unit + exact digest vectors             | Cover grammar, canonical bytes, widening classification, freezing, and stable reason order                     |
+| Procedure/policy filesystem resolution            | Real-temp-tree integration test                      | Cover project-first fallback, symlink/type/identity failures, exact-byte preservation, and no-replace creation |
+| Public package export/proof change                | Core-owned compatibility + packed audit tests        | Freeze export order/targets, imports, declarations, and deep-import blocking                                   |
+| CLI core dependency-boundary change               | CLI-owned source + clean-build scanner test          | Accept only exact `@mindfoldhq/trellis-core/research`                                                          |
+| New platform                                      | Unit (auto-covered by `registry-invariants.test.ts`) | Added opencode → invariants verify consistency                                                                 |
+| Bug fix                                           | Regression test                                      | Fixed Windows encoding → add to `regression.test.ts`                                                           |
+| Changed init/update behavior                      | Integration test                                     | Changed downgrade logic → add/update scenario in `update.integration.test.ts`                                  |
 
 ### Don't need tests
 
-| Change Type | Reason |
-|-------------|--------|
-| Template text / doc content changes | No logic change |
-| New migration manifest JSON | `registry-invariants.test.ts` auto-validates format |
-| CLI flag description text | Display-only |
+| Change Type                         | Reason                                              |
+| ----------------------------------- | --------------------------------------------------- |
+| Template text / doc content changes | No logic change                                     |
+| New migration manifest JSON         | `registry-invariants.test.ts` auto-validates format |
+| CLI flag description text           | Display-only                                        |
 
 ### Must update existing tests
 
-| Change Type | What to Update |
-|-------------|----------------|
-| Current Research payload path changes | Update exact Claude/Codex allowlists and configure/collect byte-parity tests |
-| Research hook registration changes | Update both generated-file and structured-registration assertions |
-| Core export compatibility changes | Update core-owned export/packed tests; do not duplicate generic SDK ownership in CLI tests |
-| Production CLI core imports change | Update the CLI source/clean-`dist` boundary scanner and adversarial specifier cases |
+| Change Type                           | What to Update                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Current Research payload path changes | Update exact Claude/Codex allowlists and configure/collect byte-parity tests               |
+| Research hook registration changes    | Update both generated-file and structured-registration assertions                          |
+| Core export compatibility changes     | Update core-owned export/packed tests; do not duplicate generic SDK ownership in CLI tests |
+| Production CLI core imports change    | Update the CLI source/clean-`dist` boundary scanner and adversarial specifier cases        |
 
 ### Decision flow
 
@@ -146,6 +146,7 @@ test/
 ```
 
 **Rules**:
+
 - Mirror `src/` directory structure under `test/`
 - Suffix: `.test.ts` for unit tests, `.integration.test.ts` for integration tests
 - One test file per source module (exceptions: regression tests)
@@ -309,24 +310,24 @@ vi.spyOn(console, "log").mockImplementation(noop);
 
 ## 4. Validation & Error Matrix
 
-| Condition | Required test behavior |
-|---|---|
-| Dedicated path appears in `normal`, two projects intersect, or the union differs from independent discovery | Fail collection verification and correct project ownership before running tests. |
-| Production-116 producer requires `normal` global setup or runs concurrently with its consumer | Fail the producer-only/order proof; do not duplicate global setup to mask the dependency. |
-| Project order is zero/shared, worker counts differ from `1/1/4/1`, or a timeout budget changes | Treat as an ungoverned runner-contract change and stop. |
-| Complete-suite evidence identifies another distinct resource/output owner | Preserve the failure and plan a separate correction; do not auto-add a lane, retry, or widen budgets. |
-| Existing schema-v1 fixture | Keep bytes immutable; add successor fixtures separately. |
-| Arbitrary historical Dispatch metadata | Use deliberately non-current values and assert exact round trip without routing assumptions. |
-| Procedure/policy digest vector | Assert exact framed bytes, prefix, lowercase hash, optional omission, array order, and newline behavior. |
-| Present-invalid project Procedure | Assert source-specific error and prove bundled parser/read path is not used. |
-| Concurrent policy creator | Assert final destination is never replacement-written; preserve and strict-validate winner. |
-| Research-init policy behavior | Full-tree snapshots prove fresh/matching creation only, dry-run/conflict zero-write, and root init/update/uninstall non-creation. |
-| Activation/approval transition | Assert exact event version, payload keys, refs/order, reducer state, and late-failure atomicity. |
-| Expiry boundary | Inject one captured clock; equality with `expiresAt` is expired. |
-| Context authorization failure | Compare complete filesystem snapshots and assert no lock/runtime/target/Git write. |
-| Host parity | Compare provider-neutral normalized objects after changing only `host`. |
-| Historical Skill retirement | Use immutable released-byte provenance; preservation input must otherwise qualify for deletion. |
-| Packed inventory | Clean-build and audit a real tarball, not source/collector/dirty `dist`. |
+| Condition                                                                                                   | Required test behavior                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Dedicated path appears in `normal`, two projects intersect, or the union differs from independent discovery | Fail collection verification and correct project ownership before running tests.                                                  |
+| Production-116 producer requires `normal` global setup or runs concurrently with its consumer               | Fail the producer-only/order proof; do not duplicate global setup to mask the dependency.                                         |
+| Project order is zero/shared, worker counts differ from `1/1/4/1`, or a timeout budget changes              | Treat as an ungoverned runner-contract change and stop.                                                                           |
+| Complete-suite evidence identifies another distinct resource/output owner                                   | Preserve the failure and plan a separate correction; do not auto-add a lane, retry, or widen budgets.                             |
+| Existing schema-v1 fixture                                                                                  | Keep bytes immutable; add successor fixtures separately.                                                                          |
+| Arbitrary historical Dispatch metadata                                                                      | Use deliberately non-current values and assert exact round trip without routing assumptions.                                      |
+| Procedure/policy digest vector                                                                              | Assert exact framed bytes, prefix, lowercase hash, optional omission, array order, and newline behavior.                          |
+| Present-invalid project Procedure                                                                           | Assert source-specific error and prove bundled parser/read path is not used.                                                      |
+| Concurrent policy creator                                                                                   | Assert final destination is never replacement-written; preserve and strict-validate winner.                                       |
+| Research-init policy behavior                                                                               | Full-tree snapshots prove fresh/matching creation only, dry-run/conflict zero-write, and root init/update/uninstall non-creation. |
+| Activation/approval transition                                                                              | Assert exact event version, payload keys, refs/order, reducer state, and late-failure atomicity.                                  |
+| Expiry boundary                                                                                             | Inject one captured clock; equality with `expiresAt` is expired.                                                                  |
+| Context authorization failure                                                                               | Compare complete filesystem snapshots and assert no lock/runtime/target/Git write.                                                |
+| Host parity                                                                                                 | Compare provider-neutral normalized objects after changing only `host`.                                                           |
+| Historical Skill retirement                                                                                 | Use immutable released-byte provenance; preservation input must otherwise qualify for deletion.                                   |
+| Packed inventory                                                                                            | Clean-build and audit a real tarball, not source/collector/dirty `dist`.                                                          |
 
 ### Test Anti-Patterns
 
@@ -340,7 +341,9 @@ expect(scripts.size).toBe(23);
 expect(versions.length).toBe(23);
 
 // Good: dynamic count from source of truth
-const jsonFiles = fs.readdirSync(manifestDir).filter(f => f.endsWith(".json"));
+const jsonFiles = fs
+  .readdirSync(manifestDir)
+  .filter((f) => f.endsWith(".json"));
 expect(versions.length).toBe(jsonFiles.length);
 expect(versions.length).toBeGreaterThan(0);
 ```
@@ -398,7 +401,8 @@ expect(commands.length).toBeGreaterThan(0);
 it("is valid JSON", () => {
   expect(() => JSON.parse(settingsTemplate)).not.toThrow();
 });
-it("is a non-empty string", () => { // redundant if parse succeeds
+it("is a non-empty string", () => {
+  // redundant if parse succeeds
   expect(settingsTemplate.length).toBeGreaterThan(0);
 });
 
@@ -414,7 +418,7 @@ it("is valid non-empty JSON", () => {
 ```typescript
 // Bad: regression test checks old location after code was moved
 it("[beta.10] git_context.py has inline encoding fix", () => {
-  expect(commonGitContext).toContain('sys.platform == "win32"');  // Moved to __init__.py!
+  expect(commonGitContext).toContain('sys.platform == "win32"'); // Moved to __init__.py!
 });
 
 // Good: updated to check new location
@@ -482,7 +486,7 @@ it("#2b issue #204: empty tasks/ → bootstrap", async () => {
 
 // Good: args match exactly what the issue reporter typed
 it("#2b issue #204: empty tasks/ + --yes alone → bootstrap", async () => {
-  await init({ yes: true, user: "alice" });  // user's literal command
+  await init({ yes: true, user: "alice" }); // user's literal command
   expect(fs.existsSync(bootstrapPath)).toBe(true);
 });
 
@@ -546,8 +550,8 @@ If production code starts using `tasks/.length === 0` as the discriminator betwe
 
 Runner-topology changes require:
 
-- independent `Path.rglob("*.test.ts")` discovery compared with exact `vitest list --project <name> --filesOnly` sets;
-- pairwise-disjoint and complete-union assertions, including the current `1/1/82/2` ownership inventory;
+- independent `Path.rglob("*.test.ts")` discovery of the complete current CLI test set, with each configured Vitest project and its exact owned-file set derived from the current configuration;
+- assertions that the four configured project sets are pairwise disjoint and that their exact union equals the independent discovery; counts must be reported as observations rather than treated as permanent authority. At I3 preparation time, the observed Procedure/methodology-production/normal/dist-mutating counts are `1/1/83/2`, with union `87`;
 - a producer-only run proving production-116 needs no `globalSetup` and leaves retained evidence byte-identical;
 - a normal-project run of the affected contention family with four workers and unchanged budgets;
 - the normal coverage-reconciliation consumer after the producer;

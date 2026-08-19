@@ -107,13 +107,74 @@
     "freshUserApprovalReceived": true,
     "freshUserApprovalDate": "2026-08-18",
     "freshUserApprovalInstruction": "拆分聚合测试（推荐）",
-    "approvedBoundaries": [
-      "G-I3",
-      "I3",
-      "S3",
-      "G-I3-CLOSE"
+    "approvedBoundaries": ["G-I3", "I3", "S3", "G-I3-CLOSE"],
+    "executionState": "i3-evidence-prepared",
+    "i3EvidencePrepared": true,
+    "i3ExecutionId": "i3-c01c6f9231b3-offline-r5",
+    "i3PriorAttemptsExist": true,
+    "i3PriorExecutionIncident": {
+      "executionId": "i3-c01c6f9231b3-aborted-r1",
+      "status": "aborted",
+      "reason": "Corepack startup was network-capable before offline execution was proven",
+      "networkActivityCannotBeExcluded": true,
+      "evidencePublished": false,
+      "commitCreated": false,
+      "stagingPerformed": false
+    },
+    "i3PriorExecutionHistory": [
+      {
+        "executionId": "i3-c01c6f9231b3-aborted-r1",
+        "status": "aborted",
+        "reason": "Corepack startup was network-capable before offline execution was proven",
+        "networkActivityCannotBeExcluded": true,
+        "evidencePublished": false,
+        "commitCreated": false,
+        "stagingPerformed": false
+      },
+      {
+        "executionId": "i3-c01c6f9231b3-offline-r2",
+        "status": "aborted",
+        "reason": "Zero-network preflight passed, then local pnpm import failed without diagnostics",
+        "networkActivityCannotBeExcluded": false,
+        "offlineStartupPreflightPassed": true,
+        "corePackCount": 1,
+        "cliPackCount": 1,
+        "evidencePublished": false,
+        "commitCreated": false,
+        "stagingPerformed": false
+      },
+      {
+        "executionId": "i3-c01c6f9231b3-offline-r3",
+        "status": "aborted",
+        "reason": "Restricted zero-network preflight passed, Core and CLI were each packed once, then offline pnpm lock import failed because the isolated package metadata mirror lacked chalk range metadata",
+        "diagnostic": "ERR_PNPM_NO_OFFLINE_META: Failed to resolve chalk@>=5.3.0 <6.0.0-0 in package mirror metadata-v1.3/registry.npmjs.org/chalk.json",
+        "networkActivityCannotBeExcluded": false,
+        "offlineStartupPreflightPassed": true,
+        "corePackCount": 1,
+        "cliPackCount": 1,
+        "evidencePublished": false,
+        "commitCreated": false,
+        "stagingPerformed": false
+      },
+      {
+        "executionId": "i3-c01c6f9231b3-offline-r4",
+        "status": "failed",
+        "reason": "Offline evidence generation passed, then staged commit verification rejected the two authorized I3 package additions as unexpected tracked package worktree drift",
+        "diagnostic": "Unexpected tracked package worktree drift: packages/cli/scripts/research-v131-installed-package-audit-i3.mjs,packages/cli/test/commands/research-v131-integration-i3.test.ts",
+        "networkActivityCannotBeExcluded": false,
+        "offlineStartupPreflightPassed": true,
+        "corePackCount": 1,
+        "cliPackCount": 1,
+        "evidencePublished": true,
+        "commitCreated": false,
+        "stagingPerformed": true
+      }
     ],
-    "executionState": "governed-awaiting-i3",
+    "i3FreshExecutionNetworkUsed": false,
+    "i3CorepackInvoked": false,
+    "i3FinalCommitRecorded": false,
+    "i3FinalTreeRecorded": false,
+    "s3Status": "pending",
     "plannedGovernanceExecutionState": "governed-awaiting-i3",
     "plannedI3ExecutionState": "i3-evidence-prepared",
     "plannedI3TaskTransition": {
@@ -232,9 +293,7 @@
     "sharedR3RepairTupleDigest": "sha256:b2010d0e527a54de1bb2ea9838da7e2af42faadbf26cad4530d82a1c38522187",
     "sharedR3RepairTupleDigestSerialization": "sha256 of matching exact R3 git ls-tree records, each NUL-terminated, in original R3 tree order",
     "threeAnchorPackageDeltas": {
-      "r3ToStabilization": [
-        "packages/cli/vitest.config.ts"
-      ],
+      "r3ToStabilization": ["packages/cli/vitest.config.ts"],
       "stabilizationToRepair": [
         "packages/cli/test/commands/research-dispatch-activation.integration.test.ts",
         "packages/cli/test/commands/research-dispatch-approved-result.test.ts"
@@ -335,13 +394,7 @@
       "date": "2026-08-18",
       "instruction": "拆分聚合测试（推荐）",
       "plan": "/Users/zhangbowen/.claude/plans/sorted-bubbling-moler.md",
-      "sequence": [
-        "REPAIR",
-        "G-I3",
-        "I3",
-        "S3",
-        "G-I3-CLOSE"
-      ],
+      "sequence": ["REPAIR", "G-I3", "I3", "S3", "G-I3-CLOSE"],
       "stopBefore": "M0-A4"
     },
     "supersededPreStabilizationApproval": {
