@@ -30,7 +30,7 @@
     ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/task.json",
     ".trellis/tasks/08-18-stabilize-cli-dispatch-aggregate-tests/design.md"
   ],
-  "notes": "User approved repair-aware sequence: exact-eight split repair, reconciled exact-six G-I3, exact-nine I3, exact-one S3, exact-one closure, then stop before M0-A4. Repair committed as 5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24. R5 exact-nine I3 committed as 84a143b16f536c7a7f74a3690c402fe65c9ab21f; its first S3 hook was interrupted and the telemetry retry exposed a post-I3 verification lifecycle defect. R6 corrected retained verification forward-only, but its first corrective hook was externally interrupted and its telemetry retry exposed the I3 test's implicit ten-second timeout under full-suite load. R7 added the explicit per-test timeout and committed as f5f009e0491db38e5d2e1bd9a3971c05b5566423; pre-S3 verification then exposed that the authorized exact-one freeze path was still rejected by retained worktree-scope validation. R8 admits only the declared S3 path during successor verification and regenerates attested evidence forward-only. No Attempt 4, provider, T6 closure, T7, archive, journal, remote, evidence transmission, push, publication, release, or activation authority.",
+  "notes": "User approved repair-aware sequence: exact-eight split repair, reconciled exact-six G-I3, exact-nine I3, exact-one S3, exact-one closure, then stop before M0-A4. Repair committed as 5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24. R5 exact-nine I3 committed as 84a143b16f536c7a7f74a3690c402fe65c9ab21f; its first S3 hook was interrupted and the telemetry retry exposed a post-I3 verification lifecycle defect. R6 corrected retained verification forward-only, but its first corrective hook was externally interrupted and its telemetry retry exposed the I3 test's implicit ten-second timeout under full-suite load. R7 added the explicit per-test timeout and committed as f5f009e0491db38e5d2e1bd9a3971c05b5566423; pre-S3 verification then exposed that the authorized exact-one freeze path was still rejected by retained worktree-scope validation. R8 admitted only the declared S3 path during successor verification, committed exact-nine I3 as edbfa66452a8119c3dbdcd6db43cb29b80e802e2, and froze exact-one S3 as 8793c5aeda09fe8ada263733733569516cb492f5; the exact-one closure hook then exposed that the retained I3 integration test still required mutable task state to remain pre-closure. R9 authenticates the frozen I3 task through matching committed S3 while preserving current candidate task checks before that freeze exists. No Attempt 4, provider, T6 closure, T7, archive, journal, remote, evidence transmission, push, publication, release, or activation authority.",
   "meta": {
     "acceptedContract": "evaluation-contract-v1.3.1",
     "acceptedSemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
@@ -110,9 +110,9 @@
     "approvedBoundaries": ["G-I3", "I3", "S3", "G-I3-CLOSE"],
     "executionState": "i3-evidence-prepared",
     "i3EvidencePrepared": true,
-    "i3ExecutionId": "i3-c01c6f9231b3-offline-r8",
-    "i3PreparationHeadCommit": "f5f009e0491db38e5d2e1bd9a3971c05b5566423",
-    "i3PreparationHeadTree": "c170090a943e84660c2715ee1f941798bf5a34d3",
+    "i3ExecutionId": "i3-c01c6f9231b3-offline-r9",
+    "i3PreparationHeadCommit": "8793c5aeda09fe8ada263733733569516cb492f5",
+    "i3PreparationHeadTree": "2b372de46737169f4a519829f1b88a3074846049",
     "i3VerificationHeadPolicy": "preparation-head-or-forward-descendant",
     "i3PriorAttemptsExist": true,
     "i3PriorExecutionIncident": {
@@ -216,6 +216,23 @@
         "commit": "f5f009e0491db38e5d2e1bd9a3971c05b5566423",
         "stagingPerformed": true,
         "s3CommitCreated": false
+      },
+      {
+        "executionId": "i3-c01c6f9231b3-offline-r8",
+        "status": "superseded",
+        "reason": "Offline evidence, the corrective exact-nine I3 commit, and exact-one S3 commit succeeded, then the exact-one closure hook exposed that the retained I3 integration test still required mutable task state to remain pre-closure",
+        "diagnostic": "expected status \"in_progress\", completedAt null, executionState \"i3-evidence-prepared\", and s3Status \"pending\"; received the authorized completed closure transition",
+        "networkActivityCannotBeExcluded": false,
+        "offlineStartupPreflightPassed": true,
+        "corePackCount": 1,
+        "cliPackCount": 1,
+        "evidencePublished": true,
+        "commitCreated": true,
+        "commit": "edbfa66452a8119c3dbdcd6db43cb29b80e802e2",
+        "stagingPerformed": true,
+        "s3CommitCreated": true,
+        "s3Commit": "8793c5aeda09fe8ada263733733569516cb492f5",
+        "closureCommitCreated": false
       }
     ],
     "i3FreshExecutionNetworkUsed": false,

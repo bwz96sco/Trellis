@@ -211,7 +211,7 @@ const PROTECTED_GITLINKS = Object.freeze({
   marketplace: "d7a18bb5411c700237d21483d6889ac296ef0301",
 });
 
-const EXECUTION_ID = "i3-c01c6f9231b3-offline-r8";
+const EXECUTION_ID = "i3-c01c6f9231b3-offline-r9";
 const PRIOR_EXECUTION_HISTORY = Object.freeze([
   Object.freeze({
     executionId: "i3-c01c6f9231b3-aborted-r1",
@@ -315,6 +315,25 @@ const PRIOR_EXECUTION_HISTORY = Object.freeze([
     stagingPerformed: true,
     s3CommitCreated: false,
   }),
+  Object.freeze({
+    executionId: "i3-c01c6f9231b3-offline-r8",
+    status: "superseded",
+    reason:
+      "Offline evidence, the corrective exact-nine I3 commit, and exact-one S3 commit succeeded, then the exact-one closure hook exposed that the retained I3 integration test still required mutable task state to remain pre-closure",
+    diagnostic:
+      'expected status "in_progress", completedAt null, executionState "i3-evidence-prepared", and s3Status "pending"; received the authorized completed closure transition',
+    networkActivityCannotBeExcluded: false,
+    offlineStartupPreflightPassed: true,
+    corePackCount: 1,
+    cliPackCount: 1,
+    evidencePublished: true,
+    commitCreated: true,
+    commit: "edbfa66452a8119c3dbdcd6db43cb29b80e802e2",
+    stagingPerformed: true,
+    s3CommitCreated: true,
+    s3Commit: "8793c5aeda09fe8ada263733733569516cb492f5",
+    closureCommitCreated: false,
+  }),
 ]);
 const PRIOR_EXECUTION_INCIDENT = PRIOR_EXECUTION_HISTORY[0];
 const PNPM_VERSION = "10.32.1";
@@ -333,10 +352,10 @@ const LOCAL_PNPM_METADATA_ROOT = path.join(
   "Library/Caches/pnpm/metadata-v1.3",
 );
 const TEMP_ROOT_NAMES = Object.freeze({
-  preflight: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-preflight`,
-  pack: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-pack`,
-  npm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-npm`,
-  pnpm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-pnpm`,
+  preflight: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r9-preflight`,
+  pack: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r9-pack`,
+  npm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r9-npm`,
+  pnpm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r9-pnpm`,
 });
 
 function sha256(bytes) {
@@ -948,9 +967,7 @@ function buildInputAttestation(
   try {
     gitBuffer(["merge-base", "--is-ancestor", G_I3.commit, preparationHead]);
   } catch {
-    throw new Error(
-      "I3 preparation head must descend from authenticated G-I3",
-    );
+    throw new Error("I3 preparation head must descend from authenticated G-I3");
   }
   const candidateManifestBytes = gitObjectBytes(A133_COMMIT, A133_MANIFEST);
   if (sha256(candidateManifestBytes) !== CANDIDATE_MANIFEST_SHA256) {
