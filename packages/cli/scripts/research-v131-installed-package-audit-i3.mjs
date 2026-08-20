@@ -208,7 +208,7 @@ const PROTECTED_GITLINKS = Object.freeze({
   marketplace: "d7a18bb5411c700237d21483d6889ac296ef0301",
 });
 
-const EXECUTION_ID = "i3-c01c6f9231b3-offline-r5";
+const EXECUTION_ID = "i3-c01c6f9231b3-offline-r7";
 const PRIOR_EXECUTION_HISTORY = Object.freeze([
   Object.freeze({
     executionId: "i3-c01c6f9231b3-aborted-r1",
@@ -263,6 +263,38 @@ const PRIOR_EXECUTION_HISTORY = Object.freeze([
     commitCreated: false,
     stagingPerformed: true,
   }),
+  Object.freeze({
+    executionId: "i3-c01c6f9231b3-offline-r5",
+    status: "superseded",
+    reason:
+      "Offline evidence and the exact-nine I3 commit succeeded, then S3 hook verification exposed that retained candidate evidence could not verify from its committed forward descendant",
+    diagnostic: "I3 evidence must be prepared directly on authenticated G-I3",
+    networkActivityCannotBeExcluded: false,
+    offlineStartupPreflightPassed: true,
+    corePackCount: 1,
+    cliPackCount: 1,
+    evidencePublished: true,
+    commitCreated: true,
+    commit: "84a143b16f536c7a7f74a3690c402fe65c9ab21f",
+    stagingPerformed: true,
+    firstS3HookInterrupted: true,
+    telemetryRetryExitCode: 1,
+    s3CommitCreated: false,
+  }),
+  Object.freeze({
+    executionId: "i3-c01c6f9231b3-offline-r6",
+    status: "failed",
+    reason:
+      "Retained verification passed, the first corrective commit hook was externally interrupted, then the telemetry retry exposed the I3 integration test's implicit ten-second timeout under full-suite load",
+    diagnostic: "Test timed out in 10000ms.",
+    networkActivityCannotBeExcluded: false,
+    offlineStartupPreflightPassed: true,
+    corePackCount: 1,
+    cliPackCount: 1,
+    evidencePublished: true,
+    commitCreated: false,
+    stagingPerformed: true,
+  }),
 ]);
 const PRIOR_EXECUTION_INCIDENT = PRIOR_EXECUTION_HISTORY[0];
 const PNPM_VERSION = "10.32.1";
@@ -281,10 +313,10 @@ const LOCAL_PNPM_METADATA_ROOT = path.join(
   "Library/Caches/pnpm/metadata-v1.3",
 );
 const TEMP_ROOT_NAMES = Object.freeze({
-  preflight: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r5-preflight`,
-  pack: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r5-pack`,
-  npm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r5-npm`,
-  pnpm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r5-pnpm`,
+  preflight: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-preflight`,
+  pack: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-pack`,
+  npm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-npm`,
+  pnpm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-pnpm`,
 });
 
 function sha256(bytes) {
@@ -881,7 +913,10 @@ function commitIdentity(commit) {
   };
 }
 
-function buildInputAttestation(offlineStartupPreflight) {
+function buildInputAttestation(
+  offlineStartupPreflight,
+  preparationHead = gitText(["rev-parse", "HEAD"]).trim(),
+) {
   if (
     gitTree(A133_COMMIT) !== A133_TREE ||
     gitTree(B133_COMMIT) !== B133_TREE ||
@@ -890,9 +925,11 @@ function buildInputAttestation(offlineStartupPreflight) {
   ) {
     throw new Error("Accepted semantic input tree mismatch");
   }
-  if (gitText(["rev-parse", "HEAD"]).trim() !== G_I3.commit) {
+  try {
+    gitBuffer(["merge-base", "--is-ancestor", G_I3.commit, preparationHead]);
+  } catch {
     throw new Error(
-      "I3 evidence must be prepared directly on authenticated G-I3",
+      "I3 preparation head must descend from authenticated G-I3",
     );
   }
   const candidateManifestBytes = gitObjectBytes(A133_COMMIT, A133_MANIFEST);
@@ -968,7 +1005,9 @@ function buildInputAttestation(offlineStartupPreflight) {
       },
     },
     currentExecutionObservations: {
-      currentHead: commitIdentity(G_I3.commit),
+      preparationHead: commitIdentity(preparationHead),
+      preparationHeadDescendsFromGovernance: true,
+      verificationHeadPolicy: "preparation-head-or-forward-descendant",
       finalI3CommitRecorded: false,
       finalI3TreeRecorded: false,
       historicalVerification,
@@ -2461,7 +2500,28 @@ function verifyStoredRecords() {
   ) {
     throw new Error("I3 offline startup preflight evidence mismatch");
   }
-  const expectedInput = buildInputAttestation(storedPreflight);
+  const storedPreparationHead =
+    loaded.input.record.currentExecutionObservations?.preparationHead?.commit;
+  if (typeof storedPreparationHead !== "string") {
+    throw new Error("I3 input attestation lacks a preparation head");
+  }
+  const currentHead = gitText(["rev-parse", "HEAD"]).trim();
+  try {
+    gitBuffer([
+      "merge-base",
+      "--is-ancestor",
+      storedPreparationHead,
+      currentHead,
+    ]);
+  } catch {
+    throw new Error(
+      "Current HEAD must equal or descend from the I3 preparation head",
+    );
+  }
+  const expectedInput = buildInputAttestation(
+    storedPreflight,
+    storedPreparationHead,
+  );
   if (!loaded.input.bytes.equals(canonicalBytes(expectedInput))) {
     throw new Error(
       "I3 input attestation drifted from current authenticated inputs",

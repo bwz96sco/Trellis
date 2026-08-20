@@ -79,6 +79,8 @@ The partition is an executable contract:
 
 Only `normal` owns `test/global-setup.ts`. The dedicated producer imports production source directly and does not consume `TRELLIS_TEST_BUILT_CLI_ROOT`; duplicating global setup would add an unnecessary CLI compile/copy workload.
 
+Candidate-pre-commit integration evidence records its authenticated preparation head. Retained verification must reconstruct evidence from that frozen preparation identity, while allowing the repository `HEAD` to equal or descend from it. Verification must reject unrelated heads and must not replace historical preparation identity with mutable current-`HEAD` bytes.
+
 A new lane requires retained complete-suite evidence of a distinct resource or shared-output owner. Do not respond to a new failure by raising timeouts, retrying, serializing `normal`, or adding a lane member automatically; stop and govern a separate evidence-backed correction.
 
 ---

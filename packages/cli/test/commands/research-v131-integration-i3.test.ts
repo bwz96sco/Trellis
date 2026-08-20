@@ -28,14 +28,18 @@ const ledgerPath = path.join(
 
 const G_I3_COMMIT = "c01c6f9231b3c5b74fd0376411f09dfddda9321f";
 const G_I3_TREE = "ff9a25df64cc42af512229ef49338e35efd85e90";
+const PREPARATION_HEAD_COMMIT = "84a143b16f536c7a7f74a3690c402fe65c9ab21f";
+const PREPARATION_HEAD_TREE = "0d48b36d7a3b35f72655353474ecd1869a655687";
 const REPAIR_COMMIT = "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24";
 const R3_COMMIT = "0028183901b74263a70dacca98bb936dc792ced4";
 const STABILIZATION_COMMIT = "753a5d9a8b1aa293a42f27201f3d9dd458edd723";
-const EXECUTION_ID = "i3-c01c6f9231b3-offline-r5";
+const EXECUTION_ID = "i3-c01c6f9231b3-offline-r7";
 const PRIOR_EXECUTION_ID = "i3-c01c6f9231b3-aborted-r1";
 const PRIOR_OFFLINE_EXECUTION_ID = "i3-c01c6f9231b3-offline-r2";
 const PRIOR_R3_EXECUTION_ID = "i3-c01c6f9231b3-offline-r3";
 const PRIOR_R4_EXECUTION_ID = "i3-c01c6f9231b3-offline-r4";
+const PRIOR_R5_EXECUTION_ID = "i3-c01c6f9231b3-offline-r5";
+const PRIOR_R6_EXECUTION_ID = "i3-c01c6f9231b3-offline-r6";
 const EXPECTED_SHARED_DIGEST =
   "sha256:b2010d0e527a54de1bb2ea9838da7e2af42faadbf26cad4530d82a1c38522187";
 const EXPECTED_CONTRACT_DIGEST =
@@ -174,7 +178,9 @@ interface InputAttestation {
     semanticDigest: string;
   };
   currentExecutionObservations: {
-    currentHead: { commit: string; tree: string };
+    preparationHead: { commit: string; subject: string; tree: string };
+    preparationHeadDescendsFromGovernance: boolean;
+    verificationHeadPolicy: string;
     finalI3CommitRecorded: boolean;
     finalI3TreeRecorded: boolean;
     packageProof: PackageProof;
@@ -764,7 +770,12 @@ describe("v1.3.1 I3 installed-package evidence", () => {
         semanticDigest: EXPECTED_CONTRACT_DIGEST,
       },
       currentExecutionObservations: {
-        currentHead: { commit: G_I3_COMMIT, tree: G_I3_TREE },
+        preparationHead: {
+          commit: PREPARATION_HEAD_COMMIT,
+          tree: PREPARATION_HEAD_TREE,
+        },
+        preparationHeadDescendsFromGovernance: true,
+        verificationHeadPolicy: "preparation-head-or-forward-descendant",
         finalI3CommitRecorded: false,
         finalI3TreeRecorded: false,
       },
@@ -810,6 +821,38 @@ describe("v1.3.1 I3 installed-package evidence", () => {
           "Offline evidence generation passed, then staged commit verification rejected the two authorized I3 package additions as unexpected tracked package worktree drift",
         diagnostic:
           "Unexpected tracked package worktree drift: packages/cli/scripts/research-v131-installed-package-audit-i3.mjs,packages/cli/test/commands/research-v131-integration-i3.test.ts",
+        networkActivityCannotBeExcluded: false,
+        offlineStartupPreflightPassed: true,
+        corePackCount: 1,
+        cliPackCount: 1,
+        evidencePublished: true,
+        commitCreated: false,
+        stagingPerformed: true,
+      },
+      {
+        executionId: PRIOR_R5_EXECUTION_ID,
+        status: "superseded",
+        reason:
+          "Offline evidence and the exact-nine I3 commit succeeded, then S3 hook verification exposed that retained candidate evidence could not verify from its committed forward descendant",
+        diagnostic: "I3 evidence must be prepared directly on authenticated G-I3",
+        networkActivityCannotBeExcluded: false,
+        offlineStartupPreflightPassed: true,
+        corePackCount: 1,
+        cliPackCount: 1,
+        evidencePublished: true,
+        commitCreated: true,
+        commit: PREPARATION_HEAD_COMMIT,
+        stagingPerformed: true,
+        firstS3HookInterrupted: true,
+        telemetryRetryExitCode: 1,
+        s3CommitCreated: false,
+      },
+      {
+        executionId: PRIOR_R6_EXECUTION_ID,
+        status: "failed",
+        reason:
+          "Retained verification passed, the first corrective commit hook was externally interrupted, then the telemetry retry exposed the I3 integration test's implicit ten-second timeout under full-suite load",
+        diagnostic: "Test timed out in 10000ms.",
         networkActivityCannotBeExcluded: false,
         offlineStartupPreflightPassed: true,
         corePackCount: 1,
@@ -1142,7 +1185,7 @@ describe("v1.3.1 I3 installed-package evidence", () => {
       gitNexus: {
         compareBase: "variant/research-workflow",
         expectedScopeOnly: true,
-        highOrCriticalImpactObserved: false,
+        highOrCriticalImpactObserved: true,
       },
       finalPreCommitState: {
         finalI3CommitRecorded: false,
@@ -1198,5 +1241,5 @@ describe("v1.3.1 I3 installed-package evidence", () => {
         i3PriorExecutionHistory: input.priorExecutionHistory,
       },
     });
-  });
+  }, 30_000);
 });
