@@ -57,6 +57,34 @@ const I3_INVENTORY = Object.freeze([
 const POST_I3_ALLOWED_INVENTORY = Object.freeze([
   ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json",
 ]);
+const T0A_ATTEMPT_4_RUNTIME_SCOPE = Object.freeze({
+  baseCommit: "988999256ac2cee367adde742ab852e8472d3035",
+  correctionInventory: Object.freeze([
+    ".trellis/spec/cli/unit-test/conventions.md",
+    "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+    "packages/cli/test/commands/research-v131-integration-i3.test.ts",
+  ]),
+  successorInventory: Object.freeze([
+    ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/check.jsonl",
+    ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/design.md",
+    ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.jsonl",
+    ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.md",
+    ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/prd.md",
+    ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/task.json",
+  ]),
+});
+const FINAL_I3 = Object.freeze({
+  commit: "88626c04828afbdc137f3318bca0bb2fd69474e3",
+  parent: "8793c5aeda09fe8ada263733733569516cb492f5",
+  tree: "1998f9ce16d748fa659c7a63b8df11c7aad1a15d",
+});
+const FINAL_S3 = Object.freeze({
+  commit: "4219fb16cf17f18437aa53a2cec4c42c44c54228",
+  tree: "ba50b8f6e2e6f845be129e9749a3e76b65fddd0e",
+  freezePath:
+    ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json",
+  freezeBlob: "2c7d1b672b4425f2902bb09e6cc7a530fbe7bfd8",
+});
 const PACKAGE_PATHSPEC = Object.freeze([
   "packages/core",
   "packages/cli",
@@ -590,7 +618,37 @@ function changedPaths(leftSnapshot, rightSnapshot) {
     .sort();
 }
 
-function buildPackageProof() {
+function authenticateFinalI3Subject() {
+  if (
+    gitTree(FINAL_I3.commit) !== FINAL_I3.tree ||
+    gitParent(FINAL_I3.commit) !== FINAL_I3.parent ||
+    gitTree(FINAL_S3.commit) !== FINAL_S3.tree ||
+    gitParent(FINAL_S3.commit) !== FINAL_I3.commit
+  ) {
+    throw new Error("Final I3/S3 committed identity mismatch");
+  }
+  const freezeIdentity = gitFileIdentity(
+    FINAL_S3.commit,
+    FINAL_S3.freezePath,
+    true,
+  );
+  if (freezeIdentity.blob !== FINAL_S3.freezeBlob) {
+    throw new Error("Final S3 freeze blob mismatch");
+  }
+  const freeze = JSON.parse(
+    gitObjectBytes(FINAL_S3.commit, FINAL_S3.freezePath).toString("utf8"),
+  );
+  if (
+    freeze.subject?.commit !== FINAL_I3.commit ||
+    freeze.subject?.tree !== FINAL_I3.tree ||
+    freeze.subject?.parent !== FINAL_I3.parent
+  ) {
+    throw new Error("Final S3 freeze subject mismatch");
+  }
+  return FINAL_I3.commit;
+}
+
+function buildPackageProof(candidateCommit = null) {
   const r3Anchor = assertAnchor(R3);
   const stabilizationAnchor = assertAnchor(STABILIZATION);
   const repairAnchor = assertAnchor(REPAIR);
@@ -661,29 +719,39 @@ function buildPackageProof() {
         `I3 package addition already exists at repair: ${relativePath}`,
       );
     }
-    const absolute = path.join(REPO_ROOT, relativePath);
-    const stat = fs.lstatSync(absolute);
-    if (!stat.isFile() || stat.isSymbolicLink()) {
+    let identity;
+    if (candidateCommit === null) {
+      const absolute = path.join(REPO_ROOT, relativePath);
+      const stat = fs.lstatSync(absolute);
+      if (!stat.isFile() || stat.isSymbolicLink()) {
+        throw new Error(
+          `I3 package addition is not a regular file: ${relativePath}`,
+        );
+      }
+      const bytes = fs.readFileSync(absolute);
+      const mode = (stat.mode & 0o111) === 0 ? "100644" : "100755";
+      identity = {
+        path: relativePath,
+        mode,
+        type: "blob",
+        blob: gitBlobOid(bytes),
+        byteLength: bytes.length,
+        sha256: sha256(bytes),
+      };
+    } else {
+      identity = gitFileIdentity(candidateCommit, relativePath);
+    }
+    if (identity.mode !== "100644" || identity.type !== "blob") {
       throw new Error(
-        `I3 package addition is not a regular file: ${relativePath}`,
+        `I3 package addition must be a mode 100644 blob: ${relativePath}`,
       );
     }
-    const bytes = fs.readFileSync(absolute);
-    const mode = (stat.mode & 0o111) === 0 ? "100644" : "100755";
-    if (mode !== "100644") {
-      throw new Error(
-        `I3 package addition must use mode 100644: ${relativePath}`,
-      );
-    }
-    const blob = gitBlobOid(bytes);
     return {
-      path: relativePath,
-      mode,
-      type: "blob",
-      blob,
-      byteLength: bytes.length,
-      sha256: sha256(bytes),
-      tupleBytes: Buffer.from(`${mode} blob ${blob}\t${relativePath}`, "utf8"),
+      ...identity,
+      tupleBytes: Buffer.from(
+        `${identity.mode} ${identity.type} ${identity.blob}\t${relativePath}`,
+        "utf8",
+      ),
     };
   });
 
@@ -955,6 +1023,7 @@ function commitIdentity(commit) {
 function buildInputAttestation(
   offlineStartupPreflight,
   preparationHead = gitText(["rev-parse", "HEAD"]).trim(),
+  candidateCommit = null,
 ) {
   if (
     gitTree(A133_COMMIT) !== A133_TREE ||
@@ -985,7 +1054,7 @@ function buildInputAttestation(
     }
     return identity;
   });
-  const packageProof = buildPackageProof();
+  const packageProof = buildPackageProof(candidateCommit);
   const retainedSubjects = {
     i1s1: verifyRetainedSubject("I1/S1", RETAINED.i1),
     i2s2: verifyRetainedSubject("I2/S2", RETAINED.i2),
@@ -1136,24 +1205,83 @@ function indexGitlink(relativePath) {
   return match[1];
 }
 
-function buildProtectedAudit() {
+export function classifyI3WorktreeScope({
+  dirty,
+  staged,
+  baseIsAncestor,
+  commitsSinceBase,
+  changedSinceBase,
+}) {
+  const exactCorrectionDescendant =
+    baseIsAncestor === true &&
+    commitsSinceBase === 1 &&
+    JSON.stringify([...changedSinceBase].sort()) ===
+      JSON.stringify(T0A_ATTEMPT_4_RUNTIME_SCOPE.correctionInventory);
+  const runtimeSuccessorInventory = exactCorrectionDescendant
+    ? T0A_ATTEMPT_4_RUNTIME_SCOPE.successorInventory
+    : [];
   const allowedDirty = new Set([
     ...I3_INVENTORY,
     ...POST_I3_ALLOWED_INVENTORY,
+    ...runtimeSuccessorInventory,
     ...Object.keys(PROTECTED_FILES),
   ]);
   const allowedStaged = new Set([
     ...I3_INVENTORY,
     ...POST_I3_ALLOWED_INVENTORY,
+    ...runtimeSuccessorInventory,
   ]);
+  return {
+    unexpectedDirtyPaths: dirty.filter((entry) => !allowedDirty.has(entry)),
+    unexpectedStagedPaths: staged.filter((entry) => !allowedStaged.has(entry)),
+  };
+}
+
+function currentI3RuntimeScopeState() {
+  const currentHead = gitText(["rev-parse", "HEAD"]).trim();
+  let baseIsAncestor = true;
+  try {
+    gitBuffer([
+      "merge-base",
+      "--is-ancestor",
+      T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit,
+      currentHead,
+    ]);
+  } catch {
+    baseIsAncestor = false;
+  }
+  if (!baseIsAncestor) {
+    return { baseIsAncestor, commitsSinceBase: -1, changedSinceBase: [] };
+  }
+  const commitsSinceBase = Number.parseInt(
+    gitText([
+      "rev-list",
+      "--count",
+      `${T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit}..${currentHead}`,
+    ]).trim(),
+    10,
+  );
+  const changedSinceBase = gitText([
+    "diff",
+    "--name-only",
+    "-z",
+    `${T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit}..${currentHead}`,
+  ])
+    .split("\0")
+    .filter(Boolean)
+    .sort();
+  return { baseIsAncestor, commitsSinceBase, changedSinceBase };
+}
+
+function buildProtectedAudit() {
   const dirty = worktreeStatusPaths();
   const staged = stagedPaths();
-  const unexpectedDirtyPaths = dirty.filter(
-    (entry) => !allowedDirty.has(entry),
-  );
-  const unexpectedStagedPaths = staged.filter(
-    (entry) => !allowedStaged.has(entry),
-  );
+  const { unexpectedDirtyPaths, unexpectedStagedPaths } =
+    classifyI3WorktreeScope({
+      dirty,
+      staged,
+      ...currentI3RuntimeScopeState(),
+    });
   if (unexpectedDirtyPaths.length > 0 || unexpectedStagedPaths.length > 0) {
     throw new Error(
       `I3 worktree scope mismatch: unexpectedDirty=${unexpectedDirtyPaths.join(",")} unexpectedStaged=${unexpectedStagedPaths.join(",")}`,
@@ -2564,6 +2692,7 @@ function verifyStoredRecords() {
   const expectedInput = buildInputAttestation(
     storedPreflight,
     storedPreparationHead,
+    authenticateFinalI3Subject(),
   );
   if (!loaded.input.bytes.equals(canonicalBytes(expectedInput))) {
     throw new Error(

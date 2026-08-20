@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { classifyI3WorktreeScope } from "../../scripts/research-v131-installed-package-audit-i3.mjs";
+
 const cliRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
@@ -34,6 +36,7 @@ const G_I3_COMMIT = "c01c6f9231b3c5b74fd0376411f09dfddda9321f";
 const G_I3_TREE = "ff9a25df64cc42af512229ef49338e35efd85e90";
 const PREPARATION_HEAD_COMMIT = "8793c5aeda09fe8ada263733733569516cb492f5";
 const PREPARATION_HEAD_TREE = "2b372de46737169f4a519829f1b88a3074846049";
+const FINAL_I3_COMMIT = "88626c04828afbdc137f3318bca0bb2fd69474e3";
 const REPAIR_COMMIT = "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24";
 const R3_COMMIT = "0028183901b74263a70dacca98bb936dc792ced4";
 const STABILIZATION_COMMIT = "753a5d9a8b1aa293a42f27201f3d9dd458edd723";
@@ -84,6 +87,19 @@ const EXACT_NINE = [
   ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/package-tarball-inventory.json",
   ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/protected-path-audit.json",
   ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json",
+  "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+  "packages/cli/test/commands/research-v131-integration-i3.test.ts",
+];
+const T0A_RUNTIME_INVENTORY = [
+  ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/check.jsonl",
+  ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/design.md",
+  ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.jsonl",
+  ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.md",
+  ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/prd.md",
+  ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/task.json",
+];
+const T0A_CORRECTION_INVENTORY = [
+  ".trellis/spec/cli/unit-test/conventions.md",
   "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
   "packages/cli/test/commands/research-v131-integration-i3.test.ts",
 ];
@@ -431,13 +447,6 @@ function sha256Label(bytes: Buffer | string): string {
   return `sha256:${sha256(bytes)}`;
 }
 
-function gitBlobOid(bytes: Buffer): string {
-  return createHash("sha1")
-    .update(Buffer.from(`blob ${bytes.length}\0`, "utf8"))
-    .update(bytes)
-    .digest("hex");
-}
-
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === "object") {
@@ -556,20 +565,7 @@ function changedPaths(left: TreeRecord[], right: TreeRecord[]): string[] {
 }
 
 function candidateTreeRecords(): TreeRecord[] {
-  const records = treeRecords(G_I3_COMMIT);
-  for (const relativePath of PACKAGE_ADDITIONS) {
-    const bytes = fs.readFileSync(path.join(repoRoot, relativePath));
-    records.push({
-      path: relativePath,
-      bytes: Buffer.from(
-        `100644 blob ${gitBlobOid(bytes)}\t${relativePath}`,
-        "utf8",
-      ),
-    });
-  }
-  return records.sort((left, right) =>
-    Buffer.compare(Buffer.from(left.path), Buffer.from(right.path)),
-  );
+  return treeRecords(FINAL_I3_COMMIT);
 }
 
 function discoverTestFiles(): string[] {
@@ -753,6 +749,44 @@ function assertConsumer(
 }
 
 describe("v1.3.1 I3 installed-package evidence", () => {
+  it("allows only the exact T0A runtime inventory on the correction descendant", () => {
+    const state = {
+      baseIsAncestor: true,
+      commitsSinceBase: 1,
+      changedSinceBase: T0A_CORRECTION_INVENTORY,
+    };
+    expect(
+      classifyI3WorktreeScope({
+        dirty: T0A_RUNTIME_INVENTORY,
+        staged: T0A_RUNTIME_INVENTORY,
+        ...state,
+      }),
+    ).toEqual({ unexpectedDirtyPaths: [], unexpectedStagedPaths: [] });
+
+    const unrelated = ".trellis/tasks/unrelated/task.json";
+    expect(
+      classifyI3WorktreeScope({
+        dirty: [...T0A_RUNTIME_INVENTORY, unrelated],
+        staged: [...T0A_RUNTIME_INVENTORY, unrelated],
+        ...state,
+      }),
+    ).toEqual({
+      unexpectedDirtyPaths: [unrelated],
+      unexpectedStagedPaths: [unrelated],
+    });
+    expect(
+      classifyI3WorktreeScope({
+        dirty: T0A_RUNTIME_INVENTORY,
+        staged: T0A_RUNTIME_INVENTORY,
+        ...state,
+        commitsSinceBase: 2,
+      }),
+    ).toEqual({
+      unexpectedDirtyPaths: T0A_RUNTIME_INVENTORY,
+      unexpectedStagedPaths: T0A_RUNTIME_INVENTORY,
+    });
+  });
+
   it("authenticates the exact candidate, dynamic lanes, artifacts, consumers, and ledger", () => {
     const before = new Map(
       SCRIPT_RECORD_PATHS.map((relativePath) => [
