@@ -54,6 +54,9 @@ const I3_INVENTORY = Object.freeze([
   ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/integration-execution-evidence-ledger.json",
   ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/protected-path-audit.json",
 ]);
+const POST_I3_ALLOWED_INVENTORY = Object.freeze([
+  ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json",
+]);
 const PACKAGE_PATHSPEC = Object.freeze([
   "packages/core",
   "packages/cli",
@@ -208,7 +211,7 @@ const PROTECTED_GITLINKS = Object.freeze({
   marketplace: "d7a18bb5411c700237d21483d6889ac296ef0301",
 });
 
-const EXECUTION_ID = "i3-c01c6f9231b3-offline-r7";
+const EXECUTION_ID = "i3-c01c6f9231b3-offline-r8";
 const PRIOR_EXECUTION_HISTORY = Object.freeze([
   Object.freeze({
     executionId: "i3-c01c6f9231b3-aborted-r1",
@@ -295,6 +298,23 @@ const PRIOR_EXECUTION_HISTORY = Object.freeze([
     commitCreated: false,
     stagingPerformed: true,
   }),
+  Object.freeze({
+    executionId: "i3-c01c6f9231b3-offline-r7",
+    status: "superseded",
+    reason:
+      "Offline evidence and the corrective exact-nine I3 commit succeeded, then pre-S3 retained verification rejected the authorized exact-one freeze path as unexpected worktree and staged scope",
+    diagnostic:
+      "I3 worktree scope mismatch: unexpectedDirty=.trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json unexpectedStaged=.trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json",
+    networkActivityCannotBeExcluded: false,
+    offlineStartupPreflightPassed: true,
+    corePackCount: 1,
+    cliPackCount: 1,
+    evidencePublished: true,
+    commitCreated: true,
+    commit: "f5f009e0491db38e5d2e1bd9a3971c05b5566423",
+    stagingPerformed: true,
+    s3CommitCreated: false,
+  }),
 ]);
 const PRIOR_EXECUTION_INCIDENT = PRIOR_EXECUTION_HISTORY[0];
 const PNPM_VERSION = "10.32.1";
@@ -313,10 +333,10 @@ const LOCAL_PNPM_METADATA_ROOT = path.join(
   "Library/Caches/pnpm/metadata-v1.3",
 );
 const TEMP_ROOT_NAMES = Object.freeze({
-  preflight: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-preflight`,
-  pack: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-pack`,
-  npm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-npm`,
-  pnpm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r7-pnpm`,
+  preflight: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-preflight`,
+  pack: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-pack`,
+  npm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-npm`,
+  pnpm: `trellis-v131-i3-${G_I3.commit.slice(0, 12)}-offline-r8-pnpm`,
 });
 
 function sha256(bytes) {
@@ -1102,7 +1122,12 @@ function indexGitlink(relativePath) {
 function buildProtectedAudit() {
   const allowedDirty = new Set([
     ...I3_INVENTORY,
+    ...POST_I3_ALLOWED_INVENTORY,
     ...Object.keys(PROTECTED_FILES),
+  ]);
+  const allowedStaged = new Set([
+    ...I3_INVENTORY,
+    ...POST_I3_ALLOWED_INVENTORY,
   ]);
   const dirty = worktreeStatusPaths();
   const staged = stagedPaths();
@@ -1110,7 +1135,7 @@ function buildProtectedAudit() {
     (entry) => !allowedDirty.has(entry),
   );
   const unexpectedStagedPaths = staged.filter(
-    (entry) => !I3_INVENTORY.includes(entry),
+    (entry) => !allowedStaged.has(entry),
   );
   if (unexpectedDirtyPaths.length > 0 || unexpectedStagedPaths.length > 0) {
     throw new Error(
@@ -1192,8 +1217,9 @@ function buildProtectedAudit() {
     },
     candidateScope: {
       allowedInventory: [...I3_INVENTORY],
+      allowedSuccessorInventory: [...POST_I3_ALLOWED_INVENTORY],
       allCandidatePathsPresentOrProspective: true,
-      indexContainsOnlyCandidatePaths: true,
+      indexContainsOnlyCandidateOrAuthorizedSuccessorPaths: true,
       missingCandidatePaths,
       protectedPathsStaged: false,
       unexpectedDirtyPaths,
