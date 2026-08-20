@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/task.json","reason":"Normative ordered gate separation and denied authorities."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/design.md","reason":"Stage-transition, exact-inventory, failure, and forward-only rules."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json","reason":"Committed final S3 binding to exact I3 subject."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/protected-path-audit.json","reason":"Protected file hashes and submodule gitlink identities."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/prd.md","reason":"T6 machine-only assurance contract and exact M0/M1 ownership."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/design.md","reason":"Reviewer isolation, committed-object authentication, and exact-nine publication model."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-3/machine-verdict.json","reason":"Immutable Attempt-3 fail verdict and exact 26-command inventory."}
+{"file":".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-3/command-evidence-ledger.jsonl","reason":"Evidence for the pnpm offline metadata-cache prerequisite failure and preserved technical findings."}

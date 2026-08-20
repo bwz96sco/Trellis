@@ -1,0 +1,183 @@
+{
+  "id": "amend-t0-authorize-t6-mal1-attempt-4",
+  "name": "amend-t0-authorize-t6-mal1-attempt-4",
+  "title": "T0A — Authorize T6 MAL-1 Attempt-4",
+  "description": "Govern one forward-only exact-three M0-A4 reviewer-definition boundary for T6 MAL-1 Attempt-4, bound to final I3, S3, and G-I3 closure; do not execute M1.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "research/governance",
+  "package": "cli",
+  "priority": "P0",
+  "creator": "claude",
+  "assignee": "claude-t0a-t6-attempt-4-governance-author",
+  "createdAt": "2026-08-20",
+  "completedAt": null,
+  "branch": "claude-t6-mal1-reviewer-01-m0-correction-2",
+  "base_branch": "evidence/v13-baseline",
+  "worktree_path": "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".trellis/tasks/08-17-govern-v131-formal-push-readiness/task.json",
+    ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/task.json",
+    ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json"
+  ],
+  "notes": "This task.json is the sole normative definition of the Attempt-4 M0-A4 boundary. The current user instruction authorizes this exact-six governance commit only. M0 editing requires a later fresh runtime instruction; M1 execution, evidence commit, T6 closure, T7, archive, remote, push, release, publication, and activation remain unauthorized.",
+  "meta": {
+    "acceptedContract": "evaluation-contract-v1.3.1",
+    "acceptedSemanticDigest": "sha256:8e2cd20dd8e12caab318852f82a100116a28d405113f654efbda7b3646f666af",
+    "campaign": "A133-bound-technical-successor",
+    "stage": "T0A-T6-ATTEMPT-4",
+    "targetStage": "M0-A4",
+    "forwardOnly": true,
+    "taskExecutionAuthorized": true,
+    "commitAuthorized": true,
+    "commitBoundaries": ["T0A-T6-ATTEMPT-4", "M0-A4"],
+    "governedAttemptTaskId": "assure-v1-3-1-complete-system-mal1",
+    "currentBoundary": "T0A-T6-ATTEMPT-4",
+    "nextBoundary": "M0-A4",
+    "m0A4PreparationDefined": true,
+    "m0A4OutputWriteAuthorizedAfterFreshRuntimeInstruction": true,
+    "m0A4CommitAuthorizedAfterRequiredVerification": true,
+    "m1A4AuthorityRecorded": false,
+    "attempt4AssuranceRunAuthorized": false,
+    "reviewerLaunchAuthorized": false,
+    "providerExecutionAuthorized": false,
+    "networkAuthorized": false,
+    "t6ClosureAuthorized": false,
+    "t7Authorized": false,
+    "technicalOperatorDecisionAuthorized": false,
+    "archiveAuthorized": false,
+    "journalAuthorized": false,
+    "remoteReadAuthorized": false,
+    "evidenceTransmissionAuthorized": false,
+    "pushAuthorized": false,
+    "publicationAuthorized": false,
+    "releaseAuthorized": false,
+    "runtimeActivationAuthorized": false,
+    "liveSelectionChangeAuthorized": false,
+    "workerAuthorityChangeAuthorized": false,
+    "completeSystemAcceptanceAuthorized": false,
+    "humanReviewed": false,
+    "humanEquivalent": false,
+    "repairAuthority": false,
+    "immutableAttemptEvidence": [
+      {
+        "attempt": 1,
+        "commit": "cd85634a5a1d8e942c78364ef9442be5a28d4816",
+        "findingCount": 23,
+        "disposition": "immutable-harness-failure-evidence"
+      },
+      {
+        "attempt": 2,
+        "commit": "1d389f31cb584ffbab3acb583c4810e7676c7b46",
+        "findingCount": 11,
+        "disposition": "immutable-failed-non-authoritative-evidence"
+      },
+      {
+        "attempt": 3,
+        "commit": "e311146a89a96e21e614304240c655245998e20f",
+        "findingCount": 12,
+        "disposition": "immutable-failed-machine-evidence"
+      }
+    ],
+    "gI3Governance": {
+      "commit": "c01c6f9231b3c5b74fd0376411f09dfddda9321f",
+      "parent": "5a3a1ec39802fb1150eeaa3b3ffd1696f8313e24",
+      "tree": "ff9a25df64cc42af512229ef49338e35efd85e90",
+      "pathCount": 6
+    },
+    "i3Subject": {
+      "commit": "88626c04828afbdc137f3318bca0bb2fd69474e3",
+      "parent": "8793c5aeda09fe8ada263733733569516cb492f5",
+      "tree": "1998f9ce16d748fa659c7a63b8df11c7aad1a15d",
+      "pathCount": 9
+    },
+    "s3Freeze": {
+      "commit": "4219fb16cf17f18437aa53a2cec4c42c44c54228",
+      "parent": "88626c04828afbdc137f3318bca0bb2fd69474e3",
+      "tree": "ba50b8f6e2e6f845be129e9749a3e76b65fddd0e",
+      "freezePath": ".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json",
+      "freezeBlob": "2c7d1b672b4425f2902bb09e6cc7a530fbe7bfd8"
+    },
+    "gI3Closure": {
+      "commit": "cc344c726170de487b1cc9ef469367bd03f5ee6d",
+      "parent": "4219fb16cf17f18437aa53a2cec4c42c44c54228",
+      "tree": "0d1a9683f2c85737612be6ccd00d5ec52b540875",
+      "pathCount": 1
+    },
+    "successorScopeCorrection": {
+      "commit": "f2f34b7fc53b0603ecdf00aa186b54bcf08f8e9a",
+      "parent": "988999256ac2cee367adde742ab852e8472d3035",
+      "tree": "23275443c58ae66858ddd6e4c0ee30e3ba28074a",
+      "pathCount": 3
+    },
+    "authenticatedDescendant": {
+      "commit": "f2f34b7fc53b0603ecdf00aa186b54bcf08f8e9a",
+      "parent": "988999256ac2cee367adde742ab852e8472d3035",
+      "tree": "23275443c58ae66858ddd6e4c0ee30e3ba28074a"
+    },
+    "protectedTopology": {
+      "AGENTS.md": "sha256:788d2a2da0e913874acee2c3cf2f34575b50191b18e47f21478645ea5be4be48",
+      "CLAUDE.md": "sha256:319361ea166bde3be56a6c6dc5a161a5a6f73a214a2aea1d8efd1436b1853cf3",
+      "docs-site": "be7684f2086abb9b8e24d4d35733a7dda3123a0f",
+      "marketplace": "d7a18bb5411c700237d21483d6889ac296ef0301"
+    },
+    "ownedPaths": [
+      ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/task.json",
+      ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/prd.md",
+      ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/design.md",
+      ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.md",
+      ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.jsonl",
+      ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/check.jsonl"
+    ],
+    "m0A4": {
+      "count": 3,
+      "paths": [
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/reviewer-assignment.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/mal1-review.py"
+      ],
+      "technicalSubjectChangeAuthorized": false,
+      "pnpmOfflineMetadataCacheCorrectionAuthorized": true,
+      "attempt4RebindingAuthorized": true,
+      "freshReviewerAssignmentRequired": true
+    },
+    "m1A4": {
+      "count": 9,
+      "outputRoot": ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4",
+      "paths": [
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/exact-subject-attestation.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/reviewer-session-attestation.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/accepted-member-ledger.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/runtime-contract-audit.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/harness-case-evidence.jsonl",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/command-evidence-ledger.jsonl",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/filesystem-mutation-audit.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/containment-audit.json",
+        ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/attempt-4/machine-verdict.json"
+      ],
+      "outputWriteAuthorized": false,
+      "commitAuthorized": false,
+      "requiresSeparateCommittedAuthority": true,
+      "requiresFreshRuntimeInstruction": true
+    },
+    "reviewerAssignmentRequirements": {
+      "freshAgent": true,
+      "freshSession": true,
+      "freshBranch": true,
+      "freshWorktree": true,
+      "resumedReviewerPermitted": false,
+      "forkedReviewerPermitted": false,
+      "sharedT0ThroughT5ScratchPermitted": false,
+      "mustDifferFromAttempts1Through3": true,
+      "mustDifferFromFutureT7Operator": true,
+      "machineOnly": true,
+      "repairPerformed": false
+    },
+    "stopGate": "Any immutable Attempt 1-3 mutation, G-I3/I3/S3/G-I3-closure/predecessor/successor-scope-correction/descendant mismatch, protected hash or gitlink drift, extra or missing T0A/M0 path, reviewer identity reuse, technical subject edit, ungoverned M1 execution or evidence write, provider or network action, authority collapse, or history rewrite stops execution."
+  }
+}

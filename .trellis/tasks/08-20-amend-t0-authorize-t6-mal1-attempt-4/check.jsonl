@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/task.json","reason":"Check exact subject bindings, inventories, runtime checkpoints, and denied authorities."}
+{"file":".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/prd.md","reason":"Check observable M0-A4 governance requirements and out-of-scope boundary."}
+{"file":".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/design.md","reason":"Check committed-object model, role separation, pnpm correction boundary, and forward-only failure route."}
+{"file":".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/implement.md","reason":"Check exact-six commit order, validation, telemetry, and stop before M0-A4."}
+{"file":".trellis/tasks/08-17-govern-v131-formal-push-readiness/design.md","reason":"Check that M0-A4, M1-A4, T6-CLOSE, and T7 remain independent gates."}
+{"file":".trellis/tasks/08-17-govern-v131-i3-s3-refreeze/research/exact-subject-freeze.json","reason":"Check final S3/I3 immutable identity."}
