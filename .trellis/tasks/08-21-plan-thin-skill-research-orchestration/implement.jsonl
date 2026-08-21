@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/research/architecture-evidence.md","reason":"Confirmed Trellis runtime and source-skill evidence, exact anchors, compatibility boundaries, and pilot constraints."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical Research entities, event/reducer/projection contracts, historical Procedure compatibility, and state authority."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Research CLI signatures, resolution modes, Quest/Dispatch command behavior, and dormant 2.0.7 boundary."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Generic worker Context, proposal-only authority, and prohibited nested execution behavior."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Claude/Codex integration and host-native Skill discovery restrictions for managed workers."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Vitest lane, focused-test, timeout, and full-suite conventions for future implementation children."}

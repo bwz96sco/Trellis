@@ -1002,3 +1002,260 @@ Core read-only validation and lockful commit are separate authorities. `validate
 Approval-bound exact same-key replay is classified from canonical ledger before current clock validation, Approval terminal/current eligibility checks, or original path/stdin access. Canonical replay may reconstruct Result/Proposal event payloads plus consumed Approval reduced state and authorize root-side hardened sidecar repair without appending, rerunning worker, or requiring original input. Result, Proposal, and Approval sidecars are projections only; missing, stale, partial, or failed sequential materialization never outranks canonical ledger authority.
 
 This guard changes neither historical mixed-ledger parsing nor replay of already-valid schema-v1/schema-v2 events. It does not authorize generic raw append, worker-side validation/recording/recovery, Approval consumption outside the exact adjacent batch, sidecars as canonical authority, dry-run locking/writes, replacement events for materialization recovery, or C08/C09 Skill retirement work.
+
+## Scenario: Thin-skill execution packages and canonical research routing
+
+### 1. Scope / Trigger
+
+This planned contract applies when Trellis adds thin Research skills without adding a second replay registry. C1 freezes the contract only; C2–C5 implement it. Historical Procedure schema-v1/schema-v2 events and dormant Procedure `2.0.7` behavior remain unchanged.
+
+### 2. Signatures
+
+```ts
+interface ResolvedExecutionPackageIdentity {
+  id: string;
+  version: string;
+  schemaVersion: number;
+  packageKind: "procedure" | "skill";
+  packageDigest: `sha256:${string}`;
+  instructionDigest: `sha256:${string}`;
+  memberInventoryDigest: `sha256:${string}`;
+}
+
+interface ThinSkillExecutionPolicy {
+  invocationSource: "model" | "operator-explicit";
+  entrypointType: "model-context" | "root-command";
+  allowedProfiles: Array<"lightweight" | "managed">;
+}
+
+interface ResearchWorkflowDefinitionV1 {
+  schemaVersion: 1;
+  id: string;
+  version: string;
+  startNodeIds: string[];
+  nodes: Array<{
+    id: string;
+    executionPackage: ResolvedExecutionPackageIdentity;
+    allowedProfiles: Array<"lightweight" | "managed">;
+    stop: boolean;
+  }>;
+  transitions: Array<{
+    id: string;
+    fromNodeId: string;
+    toNodeId: string;
+    requiredRefs: string[];
+    requiredGateIds: Array<"H1" | "H2">;
+  }>;
+}
+
+interface WorkflowBinding {
+  workflowInstanceId: string;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  currentNodeId: string;
+  status: "active" | "completed" | "blocked" | "cancelled" | "superseded";
+}
+
+type WorkflowAcceptedRef =
+  | { kind: "result"; id: ResultId }
+  | { kind: "artifact"; id: ArtifactId };
+
+interface WorkflowBindPayload {
+  workflowInstanceId: string;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  startNodeId: string;
+  boundAt: string;
+}
+
+interface WorkflowNodeCompletePayload {
+  workflowInstanceId: string;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  nodeId: string;
+  executionPackage: ResolvedExecutionPackageIdentity;
+  executionProfile: "lightweight" | "managed";
+  acceptedRefs: WorkflowAcceptedRef[];
+  completedAt: string;
+}
+
+interface WorkflowTransitionRecordPayload {
+  workflowInstanceId: string;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  transitionId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  selectedBy: string;
+  gateRecordIds: string[];
+  selectedAt: string;
+}
+
+interface WorkflowClosePayload {
+  workflowInstanceId: string;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  outcome: "completed" | "blocked" | "cancelled" | "superseded";
+  closedBy: string;
+  rationale: string;
+  closedAt: string;
+}
+
+interface ScientificGateRecord {
+  id: string;
+  questId: QuestId;
+  workflowInstanceId: string;
+  workflowId: string;
+  workflowVersion: string;
+  nodeId: string;
+  gateId: "H1" | "H2";
+  decision: "approve" | "reject";
+  actor: string;
+  rationale: string;
+  approvedRefs: string[];
+  rejectedRefs: string[];
+  evidenceRefs: ArtifactId[];
+  recordedAt: string;
+}
+
+interface QuestWriterAuthority {
+  questId: QuestId;
+  writer: "trellis" | "source";
+  sourceSnapshotDigest: `sha256:${string}`;
+  recordedEventId: EventId;
+}
+```
+
+Planned canonical mutations are typed `workflow.bind`, `workflow.node.complete`, `workflow.transition.record`, `workflow.close`, `scientific-gate.record`, `quest.import.record`, `quest.import.milestone`, `quest.route.set`, and `quest-writer.transfer` emitters. Generic raw append remains forbidden.
+
+### 3. Contracts
+
+#### One execution-package identity
+
+- Existing Procedure schema-v1/schema-v2 packages normalize into `ResolvedExecutionPackageIdentity` without changing historical bytes or recorded Activation interpretation.
+- New thin-skill schema-v3 uses the same resolver and replay path. New managed Activation events bind an additive normalized `executionPackage` identity; historical Procedure fields remain readable and authoritative for historical events.
+- Lightweight Context records no Activation, but exposes the same normalized identity and exact instruction digest used by managed Context.
+- Package bytes are immutable under one ID/version. Digests cover exact validated bytes, including line endings and final newline.
+- `invocationSource`, `entrypointType`, and execution profile are independent. `invocationSource` controls who may select the package: `model` permits model selection, while `operator-explicit` requires a prior explicit operator binding. It does not prohibit later model execution through a permitted profile.
+- `entrypointType: "model-context"` may allow `lightweight`, `managed`, or both. A `root-command` has no model execution profile and uses an empty `allowedProfiles` array.
+- The pilot bindings are exact: literature and ideation are `model + model-context + [lightweight, managed]`; idea evaluation is `operator-explicit + model-context + [managed]`; Quest read/routing is `model + model-context + [lightweight]`; Quest admin is `operator-explicit + root-command + []`.
+
+#### Workflow-instance state
+
+- Pilot workflow definitions are closed `ResearchWorkflowDefinitionV1` objects containing identities, exact package refs, legal transitions, required refs, gates, profiles, and stops only. Unknown keys, duplicate node/transition IDs, missing start/endpoint nodes, self-edges, and cycles are invalid; methodology prose, prompt text, shell commands, and automatic actions have no schema field.
+- The workflow digest is `sha256(UTF8("trellis-research-workflow-definition-v1\0") || UTF8(stableResearchJson(definition)))`. One workflow ID/version is immutable under this digest.
+- At most one workflow instance is active per Quest.
+- `workflow.bind` selects one start node. `workflow.node.complete` records one completed node and accepted Result/artifact refs. `workflow.transition.record` is a separate operator-selected mutation. `workflow.close` ends or supersedes the instance.
+- Current node comes from canonical workflow events, never from coarse `Quest.stage` inference.
+- Gate satisfaction permits a transition but never selects or executes it. No event invokes a model, worker, skill, or next node.
+
+#### Scientific gates
+
+- H1/H2 are scientific authority, not operational Approval.
+- Gate records preserve actor, rationale, approved/rejected refs, evidence refs, exact workflow instance, and node.
+- Validators check structure, stable-ID membership, set disjointness/coverage, and evidence containment. They do not judge scientific truth.
+- `opportunity_board.md`, `ideas.md`, and candidate attacks remain evidence. Decision Markdown may be imported/exported as compatibility projection but is not duplicate canonical authority after cutover.
+
+#### Quest import, route, and writer authority
+
+| Source field | Canonical treatment |
+|---|---|
+| `schema_version`, source file digest | `quest.import.record` schema/source metadata; schema must be supported. |
+| `quest_id`, `project_slug` | Preserved exact as source identity metadata in `quest.import.record`; never reused as Trellis IDs. |
+| `title`, `objective` | `Quest.title` and `Quest.description`, with exact source scalars retained in import metadata for export. |
+| `status` | Explicit source-to-Quest status mapping plus preserved source scalar; an unmapped value blocks import. |
+| `active_stage`; supported legacy `current_stage` and exact legacy aliases | Explicit source-to-Quest stage mapping plus preserved source scalar; an unmapped value blocks import. |
+| `first_read[]` | Ordered `ArtifactRef` bindings plus ordered route `firstRead` IDs; every path must be relative, contained, and owned. |
+| `authoritative_artifacts.<name>.path`, `.owner_skill` | One `ArtifactRef` plus an exact named owner binding; missing/unknown owner or unsupported authoritative value blocks import. |
+| Supported legacy `evidence` paths | `ArtifactRef` bindings marked as legacy evidence; malformed or escaping values block import. |
+| `branches[].id`, `.status`, `.owner_skill`, `.objective`, `.expected_artifact` | Structured `quest.route.set.branches`; IDs and source fields are preserved, owner conflicts block, and artifact paths bind to `ArtifactRef`. |
+| `claims[].id`, `.owner_skill`, `.branch_id`, `.status`, `.statement`, `.evidence_paths`, plus supported source-only claim fields | Typed `Claim` plus namespaced `sourceFields`; unknown authoritative claim status/type or invalid branch/evidence binding blocks import. |
+| `open_questions[]`, `blockers[]` | Ordered route fields with exact source text preserved. |
+| `current_decision.id`, `.verdict`, `.rationale`, `.evidence_paths` | Structured route decision plus bound evidence `ArtifactRef` IDs; it does not become a Trellis `Decision` over a Proposal. |
+| Structured `next_action.owner_skill`, `.action`, `.acceptance_gate`, `.expected_artifact` | Writable route only after exact owner and artifact validation. A supported legacy scalar `next_action` is preserved verbatim but is not writable routing authority. |
+| Known `board` fields `current_mainline`, `incumbent`, `latest_decisive_result`, `active_blocker`, `stale_routes`, `budget_class` | Namespaced legacy route board; it is projection/compatibility detail, never primary routing authority. |
+| Reviewed JSONL `event_id`, `timestamp`, `actor`, `event_type`, `milestone`, `stage`, `summary`, `artifacts`, `evidence`, `claim_updates`, `decision`, `next_action` | One ordered `quest.import.milestone` payload preserving source identity and text while binding recognized refs; malformed lines, duplicate IDs, unreviewed events, unknown authoritative event types, or invalid refs block import. |
+| Unknown non-authoritative top-level, nested, or event extensions | Namespaced `sourceExtensions` at the corresponding preserved record; never routing, ownership, gate, or transition authority. |
+
+Supported source Quest status mapping is exact:
+
+| Source `status` | Trellis Quest status |
+|---|---|
+| `seed`, `active` | `active` |
+| `paused` | `paused` |
+| `completed` | `completed` |
+| `abandoned` | `abandoned` |
+
+Supported active-stage mapping is exact after applying only the source aliases `research-harness -> research-quest` and `research-innovation-explorer -> research-ideation`:
+
+| Source `active_stage` | Trellis Quest stage |
+|---|---|
+| `research-project-setup` | `setup` |
+| `research-quest` | `framing` |
+| `research-literature` | `literature` |
+| `research-opportunity-mining`, `research-ideation`, `research-idea-evaluation` | `ideation` |
+| `research-experiment`, `research-experiment-campaign` | `experiment` |
+| `research-computation` | `computation` |
+| `research-theory` | `theory` |
+| `research-review-case`, `research-review-campaign` | `audit` |
+| `research-writing`, `research-figure`, `research-slides` | `writing` |
+
+Missing owner, unknown stage/status, competing active owner, malformed reviewed event, unsupported authoritative type, or escaping path blocks import. `research-quest-admin`, `model-training-workflow`, and `experiment-adapter-builder` may be preserved as source owner text where non-authoritative, but they are not active-stage mappings. Scalar legacy `next_action` is preserved verbatim but cannot become a writable route until an operator supplies owner.
+
+Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an explicit loss report. Writer transfer occurs only after export validation; import/export alone never silently changes writer authority.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Thin skill resolves through a second registry or replay path | Reject configuration/implementation; one normalized resolver is required. |
+| Existing package ID/version bytes change | Digest mismatch; fail closed. |
+| Model selects an `operator-explicit` package without a prior explicit operator binding | Reject before Context creation. |
+| Any model Context targets a `root-command` package | Reject before Context creation; route only through the root command. |
+| Managed profile is undeclared or lacks capability binding | Reject before Activation. |
+| Second active workflow instance targets one Quest | Reject without append. |
+| Node completion targets non-current/already-completed node | Reject without append. |
+| Transition source is incomplete, illegal, unselected, or missing gate refs | Reject without append. |
+| Gate record has inferred actor/decision, empty rationale, overlapping refs, or unknown stable IDs | Reject without append. |
+| Quest source has blocking mapping conflict | Preview reports exact conflict; write fails zero-write. |
+| Source admin sees `writer=trellis` | Every mutating operation fails before filesystem mutation. |
+| Export validates but no transfer event exists | Keep `writer=trellis`. |
+| Historical Procedure activation is replayed | Use unchanged activation-recorded historical interpretation. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: one schema-v3 literature package resolves to identical lightweight/managed instruction digest; one node completes; operator separately selects legal next node.
+- **Base**: bounded lightweight work resolves one package, writes no ledger event, and stops with conversational output.
+- **Bad**: workflow infers progress from Quest stage, gate recording launches evaluation, source and Trellis both write, or schema-v3 Skill identity is serialized as a fabricated historical `PROCEDURE.md`.
+
+### 6. Tests Required
+
+- Historical Procedure `1.0.0` and recorded `2.0.4`–`2.0.7` replay fixtures remain byte/exact-identity compatible.
+- Schema-v3 package parser, exact digest, project-first fail-closed resolution, exact five-package pilot bindings, invocation/entrypoint/profile separation, explicit-only managed evaluation, root-command Quest admin with no model profile, and identical lightweight/managed instruction digest.
+- Workflow DAG validation; bind/complete/transition/close reducers; one-active-instance invariant; no stage inference; no automatic continuation.
+- Scientific gate structural validation, H1/H2 versus Approval separation, and no same-mutation transition.
+- Quest schema-0.2 and supported legacy mapping, unknown extension preservation, blocking conflict matrix, reviewed milestone order, export round-trip, and writer-transfer behavior.
+- Integration fixture proving real source admin mutating commands leave a byte-identical filesystem when `writer=trellis`.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: add a ResearchSkillPackage registry beside Procedure resolution and translate managed Skills into fabricated Procedure files.
+Correct: normalize historical Procedures and new thin Skills through one execution-package identity and replay path.
+
+Wrong: use Quest.stage or an H2 record to automatically run evaluation.
+Correct: complete one node, stop, then require a separate operator-selected canonical transition.
+
+Wrong: import Quest state, leave source admin writable, and call Trellis canonical.
+Correct: atomically record Trellis authority and make real source mutations refuse before writes.
+```

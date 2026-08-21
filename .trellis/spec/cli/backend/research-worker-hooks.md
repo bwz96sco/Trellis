@@ -512,3 +512,97 @@ Coverage must keep generated worker/hook/template bytes unchanged while root-sid
 Wrong: worker authenticates the contract bundle, infers closure from its Result, records output, or repairs methodology-report-v2.json.
 Correct: worker returns bounded artifacts plus Result/Proposal; root independently authenticates methodology, commits atomically, and owns recovery.
 ```
+
+## Scenario: Managed thin-skill execution-package Context
+
+### 1. Scope / Trigger
+
+This C1 contract applies when a schema-v3 thin Skill is selected for the managed profile. C1 defines future Context and worker boundaries only; it does not change current adapters, workers, package resolution, or runtime behavior. C2 and C5 implement this contract without adding a second Skill replay path or converting `SKILL.md` into a fabricated historical `PROCEDURE.md`.
+
+### 2. Signatures
+
+New managed Activation events carry an additive normalized identity:
+
+```ts
+interface ResolvedExecutionPackageIdentity {
+  id: string;
+  version: string;
+  schemaVersion: number;
+  packageKind: "procedure" | "skill";
+  packageDigest: `sha256:${string}`;
+  instructionDigest: `sha256:${string}`;
+  memberInventoryDigest: `sha256:${string}`;
+}
+```
+
+Managed Context exposes one resolved package payload:
+
+```ts
+interface ManagedExecutionPackageContext {
+  identity: ResolvedExecutionPackageIdentity;
+  executionProfile: "managed";
+  invocationSource: "model" | "operator-explicit";
+  entrypointType: "model-context";
+  instructions: string;
+  approvedMembers: Array<{
+    path: string;
+    role: "reference" | "template" | "validator" | "helper";
+    digest: `sha256:${string}`;
+    content: string;
+  }>;
+}
+```
+
+`instructions` bytes hash to `identity.instructionDigest`. Lightweight Context for the same ID/version returns the same instruction bytes and digest. `approvedMembers` contains only explicitly requested, manifest-declared, worker-visible members approved by root Context.
+
+### 3. Contracts
+
+- Historical Procedure schema-v1/v2 Activation fields and `activation-recorded` replay remain readable with unchanged meaning. New schema-v3 managed activations add `executionPackage`; readers normalize both forms through one resolver.
+- Root Context validates package identity, capability binding, policy, Activation, Approval, requested members, member visibility, and all digests before worker launch.
+- A thin Skill allowing managed execution must use `entrypointType=model-context`, include `managed` in `allowedProfiles`, and bind one existing capability. `invocationSource=model` permits model selection; `invocationSource=operator-explicit` requires an explicit operator-selected workflow/Activation binding before Context but may then use the same managed worker boundary. A `root-command` package cannot enter worker Context.
+- Context embeds exact `SKILL.md` instructions and approved member content. Host adapters and workers must not list package roots, discover versions, read manifests, load `SKILL.md`, resolve members, or substitute ambient source files.
+- `memberInventoryDigest` authenticates the full declared package inventory; `approvedMembers` remains a bounded subset. Root-only, undeclared, unrequested, or digest-mismatched members are absent.
+- Claude and Codex consume equivalent normalized package bytes. Host changes launch mechanics only; it cannot change identity, instruction bytes, approved members, authority, or output IDs.
+- Worker authority remains declared reads, exact allowed writes, no network/cost unless approved by existing policy, and strict Result plus pending Proposal output. Package prose cannot widen authority.
+- Worker Result/Proposal cannot complete a Workflow node, record H1/H2, select a transition, invoke a suggested handoff, or launch another Skill, Workflow, capability, Procedure, or Dispatch. Root records accepted output and a separate operator action advances Workflow state.
+
+### 4. Validation & Error Matrix
+
+| Input/state | Required behavior |
+|---|---|
+| Activation-recorded identity or any package/instruction/member digest drifts | Context fails closed before worker launch. |
+| Package disallows managed, lacks required explicit operator binding, or uses `root-command` | `research_skill_invocation_forbidden`; no worker launch. |
+| Requested member is undeclared, root-only, path-escaping, or not worker-visible | `research_skill_member_forbidden`; no partial Context. |
+| Requested member bytes differ from manifest digest | Package validation failure; no fallback to source or bundled alternate. |
+| Project-local package is present but invalid | Fail closed; do not fall back to bundled package. |
+| Adapter/worker sees incomplete or mismatched normalized package payload | Non-materializable preflight failure; no target/package access. |
+| Embedded instructions request nested execution or broader authority | Ignore request, return blocked/partial output using supplied IDs. |
+| Worker returns valid Result/Proposal for current node | Root may record/review it; Workflow remains unchanged until explicit completion/transition commands. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: lightweight and managed resolution of `research-literature@1.0.0` produce the same `instructionDigest`; managed Context embeds only requested note-template bytes, worker returns Result/Proposal, then stops.
+- **Base**: no on-demand member is requested; Context contains exact `SKILL.md`, an empty `approvedMembers`, and existing managed authority/output IDs.
+- **Bad**: worker searches installed Skills, reads mutable source repository bytes, imports an unapproved validator, launches a suggested next Skill, records a gate, or advances the Workflow from Result status.
+
+### 6. Tests Required
+
+- Resolver fixtures proving historical Procedure v1/v2 normalization and replay remain unchanged while schema-v3 Skills use additive `executionPackage` identity.
+- Cross-profile fixtures proving identical ID/version, instruction bytes, `instructionDigest`, package digest, and member-inventory digest for lightweight and managed resolution.
+- Context tests for exact approved-member subset, stable order, digest/content binding, project-first fail-closed behavior, and rejection of root-only, undeclared, escaping, unrequested, and drifted members.
+- Policy tests rejecting implicit selection of explicit-only packages, accepting explicit-only managed evaluation after operator binding, and rejecting root-command packages or Skills without a managed capability binding.
+- Generated Claude/Codex contract tests proving equivalent normalized payloads, no package discovery/read, no nested execution, unchanged proposal-only output, and no worker-side Workflow/gate mutation.
+- Integration test proving Result/Proposal recording alone leaves workflow current node unchanged; separate root completion and operator transition are required.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: managed worker discovers SKILL.md and optional members from installed or source-repository paths.
+Correct: root Context embeds exact digest-bound instructions and approved member bytes from one normalized package resolution.
+
+Wrong: lightweight and managed profiles maintain separate prompt copies or identities.
+Correct: both profiles resolve one immutable package and the same instruction digest; only execution authority differs.
+
+Wrong: worker completion automatically selects or executes the next Workflow node.
+Correct: worker returns Result plus pending Proposal and stops; root records acceptance, then operator separately selects a legal transition.
+```

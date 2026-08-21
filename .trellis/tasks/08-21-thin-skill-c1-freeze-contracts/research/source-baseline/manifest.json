@@ -1,0 +1,270 @@
+{
+  "baseCommit": "e2b0d70e3a797f19461eb106601de12250000b69",
+  "branch": "chore/retire-find-skills",
+  "capturedAt": "2026-08-21T11:04:30+00:00",
+  "files": [
+    {
+      "gitState": "tracked-modified",
+      "mode": "100644",
+      "path": "scripts/validate-research-gates.py",
+      "role": "validator",
+      "sha256": "958d6114f6d582601436c664ccad198b0ba7659476083d7ea807547fb313db74",
+      "size": 21419
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-idea-evaluation/SKILL.md",
+      "role": "instruction",
+      "sha256": "ab2025452924fc581f257f33dc9d41851c98f6ec86079ada21d5ad1d9c1b7617",
+      "size": 3286
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-idea-evaluation/agents/openai.yaml",
+      "role": "host-projection",
+      "sha256": "43c1a641b19756f4aa2cf5ff0ed610c05f4e6d0977ce241bba1cb6ed200b8176",
+      "size": 307
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-idea-evaluation/attack-template.md",
+      "role": "template",
+      "sha256": "ee43247517a2652cf9240261e6142e3b163db596fd29c80a75f08479916a4b15",
+      "size": 1293
+    },
+    {
+      "gitState": "tracked-modified",
+      "mode": "100644",
+      "path": "skills/research-ideation/SKILL.md",
+      "role": "instruction",
+      "sha256": "b116c397ca1e3392ca3325ed849be5fd26f969bb75f3e4bc3dae8f1c3e5283db",
+      "size": 5608
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-ideation/agents/openai.yaml",
+      "role": "host-projection",
+      "sha256": "357a183814d9a110cf1df02db13e38dc7de251c1787c065cdcc80fdb0a556a29",
+      "size": 315
+    },
+    {
+      "gitState": "untracked",
+      "mode": "100644",
+      "path": "skills/research-ideation/opportunity-board-template.md",
+      "role": "template",
+      "sha256": "4bdb5a549fe58b02cad078f76cc9f04f1e32dc9533211d7a85e36f28c883582b",
+      "size": 1661
+    },
+    {
+      "gitState": "tracked-modified",
+      "mode": "100644",
+      "path": "skills/research-literature/SKILL.md",
+      "role": "instruction",
+      "sha256": "68ad19d654f519ac7c66d1b0d995251821f45ed2e6848ae7d1f7924ff2dd49ab",
+      "size": 3816
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-literature/agents/openai.yaml",
+      "role": "host-projection",
+      "sha256": "4e8ce93b42780616a322bd4a484a107339d13839921f3af9a1b6fb4c7f4ad785",
+      "size": 314
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-literature/note-template.md",
+      "role": "template",
+      "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71",
+      "size": 2499
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest-admin/SKILL.md",
+      "role": "instruction",
+      "sha256": "a473ffab5b0fabc4591a86e8268e868a9ebe2dfa424d384cf0cb8524a235dbd3",
+      "size": 2506
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest-admin/agents/openai.yaml",
+      "role": "host-projection",
+      "sha256": "91608eb0e7046ed020937d9d336d50cbd223cde6b81fd5a9c6a2b22c7cae9c8e",
+      "size": 292
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest-admin/references/campaign-index.md",
+      "role": "reference",
+      "sha256": "dc6d7cbd18d2e4822edbbe70c336ca3060229dfd4d5493f1f50f131f0a2b7bca",
+      "size": 936
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest-admin/references/quest-pack.md",
+      "role": "reference",
+      "sha256": "8386f0f7a003eb054246fb1b91efaf5af3fe35e71c8e31b802f8cdec0d296a23",
+      "size": 2746
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest-admin/references/task-forest-bridge.md",
+      "role": "reference",
+      "sha256": "6e9e8381135bb0bcae3f3e80f51d067a8a5ed931bd4aa05a15c073e2236bf226",
+      "size": 1154
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest-admin/scripts/research_quest_admin.py",
+      "role": "helper",
+      "sha256": "7159bd9a8635110b671bdba8301eeca53f69f2d46c6110c80e7b28075c7d29f8",
+      "size": 14944
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest/SKILL.md",
+      "role": "instruction",
+      "sha256": "7606afc5e92f486a5b8911ad741cd2f5f75f87213b2352e542fd23198772f135",
+      "size": 2440
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest/agents/openai.yaml",
+      "role": "host-projection",
+      "sha256": "d39a46b827142b1f5190e12f3e2b74da47f75e344643f7f5c0719b8e6a21aa4d",
+      "size": 315
+    },
+    {
+      "gitState": "tracked-clean",
+      "mode": "100644",
+      "path": "skills/research-quest/scripts/research_quest.py",
+      "role": "helper",
+      "sha256": "dbf9df55283b6481efd1381d298008efa98cebf0c7f7658b3814c61962ac3511",
+      "size": 35730
+    }
+  ],
+  "relevantExcludedPaths": [
+    {
+      "category": "unrelated-dirty",
+      "path": "README.md",
+      "reason": "Repository documentation is not a pilot runtime dependency."
+    },
+    {
+      "category": "test-only",
+      "path": "evals/research-skills/test_research_gates.py",
+      "reason": "Source tests are not runtime package members."
+    },
+    {
+      "category": "non-pilot",
+      "path": "evals/research-skills/test_research_opportunities.py",
+      "reason": "Non-pilot source test."
+    },
+    {
+      "category": "test-only",
+      "path": "evals/research-skills/test_research_skill_contracts.py",
+      "reason": "Source tests are not runtime package members."
+    },
+    {
+      "category": "registry-wide",
+      "path": "registry/source-io-contracts.md",
+      "reason": "Registry-wide policy is evidence, not a direct package member."
+    },
+    {
+      "category": "unrelated-dirty",
+      "path": "scripts/audit-installed-links.sh",
+      "reason": "Host-link audit is outside Research runtime inputs."
+    },
+    {
+      "category": "unrelated-dirty",
+      "path": "scripts/install-links.sh",
+      "reason": "Host-link installation is outside Research runtime inputs."
+    },
+    {
+      "category": "unrelated-dirty",
+      "path": "scripts/manage-external-specialists.py",
+      "reason": "External-specialist management is outside pilot scope."
+    },
+    {
+      "category": "non-pilot",
+      "path": "scripts/validate-research-opportunities.py",
+      "reason": "Opportunity validator is not invoked by frozen pilot packages."
+    },
+    {
+      "category": "registry-wide",
+      "path": "scripts/validate-research-skills.py",
+      "reason": "Registry validator is not invoked by pilot skills at runtime."
+    },
+    {
+      "category": "non-pilot",
+      "path": "skills/research-opportunity-mining/SKILL.md",
+      "reason": "Opportunity mining is not a named pilot package."
+    },
+    {
+      "category": "non-pilot",
+      "path": "skills/research-opportunity-mining/opportunity-template.md",
+      "reason": "Opportunity mining is not a named pilot package."
+    },
+    {
+      "category": "unreferenced-example",
+      "path": "skills/research-quest-admin/templates/research-event.json",
+      "reason": "Admin helper constructs events programmatically and does not reference this file."
+    },
+    {
+      "category": "unreferenced-example",
+      "path": "skills/research-quest-admin/templates/research-quest.yaml",
+      "reason": "Admin helper constructs state programmatically and does not reference this file."
+    },
+    {
+      "category": "non-pilot",
+      "path": "skills/research-synthesis/SKILL.md",
+      "reason": "Synthesis is not a named pilot package."
+    },
+    {
+      "category": "non-pilot",
+      "path": "skills/research-synthesis/problem-checkpoint-template.md",
+      "reason": "Synthesis is not a named pilot package."
+    },
+    {
+      "category": "unrelated-dirty",
+      "path": "tests/test_manage_external_specialists.py",
+      "reason": "External-specialist test is outside pilot scope."
+    }
+  ],
+  "relevantSourceStatus": [
+    " M README.md",
+    " M evals/research-skills/test_research_gates.py",
+    " M evals/research-skills/test_research_skill_contracts.py",
+    " M registry/source-io-contracts.md",
+    " M scripts/audit-installed-links.sh",
+    " M scripts/install-links.sh",
+    " M scripts/manage-external-specialists.py",
+    " M scripts/validate-research-gates.py",
+    " M scripts/validate-research-skills.py",
+    " M skills/research-ideation/SKILL.md",
+    " M skills/research-literature/SKILL.md",
+    " M skills/research-opportunity-mining/SKILL.md",
+    " M skills/research-opportunity-mining/opportunity-template.md",
+    " M skills/research-synthesis/SKILL.md",
+    " M tests/test_manage_external_specialists.py",
+    "?? evals/research-skills/test_research_opportunities.py",
+    "?? scripts/validate-research-opportunities.py",
+    "?? skills/research-ideation/opportunity-board-template.md",
+    "?? skills/research-synthesis/problem-checkpoint-template.md"
+  ],
+  "schemaVersion": 1,
+  "selectionReason": "thin-skill-research-orchestration-pilot",
+  "sourceRepository": "/Users/zhangbowen/Projects/agent-skills-private"
+}

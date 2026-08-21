@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/research/architecture-evidence.md","reason":"Check implementation against verified current behavior, source simplification boundaries, and pilot risks."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check schema, event, reducer, projection, immutable identity, and single-writer Quest behavior."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check command signatures, dry-run/write behavior, structured results, resolution, and historical compatibility."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check worker authority ceiling, Context content, no nested invocation, and Result/Proposal ownership."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check Claude/Codex parity and prevent host-native Skill discovery inside managed workers."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check focused/full test placement, timeouts, exact-oracle updates, and regression coverage."}

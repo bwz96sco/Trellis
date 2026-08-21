@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/research/architecture-evidence.md","reason":"Verified Trellis runtime anchors, source-skill boundaries, current source state, and pilot constraints."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Target executable contracts for normalized package identity, workflow/gate events, Quest route state, import/export, and historical replay."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Target command signatures, preview/write behavior, resolution modes, workflow commands, gate commands, and Quest cutover behavior."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Managed Context package identity and proposal-only worker authority that later children must preserve."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Claude/Codex parity and prohibition on host-native Skill discovery inside managed workers."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Cross-layer test placement, exact-oracle, timeout, and source-fixture conventions for later implementation."}

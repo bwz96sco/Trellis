@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/research/architecture-evidence.md","reason":"Check source inventory and contracts against authenticated architecture evidence and simplification boundaries."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check event/entity payloads, replay compatibility, single-writer state, and no historical mutation."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check exact signatures, deterministic errors, preview/write semantics, and no automatic execution."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check normalized managed identity does not expand worker authority or permit nested execution."}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Check host parity and managed Context restrictions remain intact."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check future test obligations are concrete and correctly placed without adding unnecessary assurance lanes."}
