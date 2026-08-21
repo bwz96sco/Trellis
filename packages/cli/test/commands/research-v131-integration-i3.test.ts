@@ -7,7 +7,10 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { classifyI3WorktreeScope } from "../../scripts/research-v131-installed-package-audit-i3.mjs";
+import {
+  classifyI3WorktreeScope,
+  classifyI3WorktreeScopeForMode,
+} from "../../scripts/research-v131-installed-package-audit-i3.mjs";
 
 const cliRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -803,6 +806,29 @@ describe("v1.3.1 I3 installed-package evidence", () => {
       unexpectedDirtyPaths: T0A_RUNTIME_INVENTORY,
       unexpectedStagedPaths: T0A_RUNTIME_INVENTORY,
     });
+  });
+
+  it("keeps stored-record verification independent of unrelated worktree changes", () => {
+    const unrelated = ".trellis/tasks/unrelated/task.json";
+    const scope = {
+      dirty: [unrelated],
+      staged: [unrelated],
+      baseIsAncestor: false,
+      commitsSinceBase: -1,
+      changedSinceBase: [],
+    };
+
+    expect(classifyI3WorktreeScopeForMode("verify", scope)).toEqual({
+      unexpectedDirtyPaths: [],
+      unexpectedStagedPaths: [],
+    });
+    expect(classifyI3WorktreeScopeForMode("write", scope)).toEqual({
+      unexpectedDirtyPaths: [unrelated],
+      unexpectedStagedPaths: [unrelated],
+    });
+    expect(() => classifyI3WorktreeScopeForMode("invalid", scope)).toThrow(
+      "Expected I3 worktree scope mode to be write or verify",
+    );
   });
 
   it("allows the exact bootstrap governance inventory on the correction descendant", () => {

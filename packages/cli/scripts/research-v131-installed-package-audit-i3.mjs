@@ -1284,6 +1284,16 @@ export function classifyI3WorktreeScope({
   };
 }
 
+export function classifyI3WorktreeScopeForMode(mode, scope) {
+  if (mode === "verify") {
+    return { unexpectedDirtyPaths: [], unexpectedStagedPaths: [] };
+  }
+  if (mode !== "write") {
+    throw new Error("Expected I3 worktree scope mode to be write or verify");
+  }
+  return classifyI3WorktreeScope(scope);
+}
+
 function currentI3RuntimeScopeState() {
   const currentHead = gitText(["rev-parse", "HEAD"]).trim();
   const stateForBase = (baseCommit) => {
@@ -1324,11 +1334,11 @@ function currentI3RuntimeScopeState() {
   };
 }
 
-function buildProtectedAudit() {
+function buildProtectedAudit(mode = "write") {
   const dirty = worktreeStatusPaths();
   const staged = stagedPaths();
   const { unexpectedDirtyPaths, unexpectedStagedPaths } =
-    classifyI3WorktreeScope({
+    classifyI3WorktreeScopeForMode(mode, {
       dirty,
       staged,
       ...currentI3RuntimeScopeState(),
@@ -2750,7 +2760,7 @@ function verifyStoredRecords() {
       "I3 input attestation drifted from current authenticated inputs",
     );
   }
-  const expectedProtected = buildProtectedAudit();
+  const expectedProtected = buildProtectedAudit("verify");
   if (!loaded.protected.bytes.equals(canonicalBytes(expectedProtected))) {
     throw new Error(
       "I3 protected-path audit drifted from current protected state",
