@@ -103,6 +103,24 @@ const T0A_CORRECTION_INVENTORY = [
   "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
   "packages/cli/test/commands/research-v131-integration-i3.test.ts",
 ];
+const M0_CORRECTION_BOOTSTRAP_BASE = "4b1bb3cd34e574888025187247c2288f3be5195d";
+const M0_CORRECTION_GOVERNANCE_INVENTORY = [
+  ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/check.jsonl",
+  ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/design.md",
+  ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/implement.jsonl",
+  ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/implement.md",
+  ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/prd.md",
+  ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/task.json",
+];
+const M0_CORRECTION_BOOTSTRAP_CHANGED_INVENTORY = [
+  ...T0A_CORRECTION_INVENTORY,
+  ...M0_CORRECTION_GOVERNANCE_INVENTORY,
+].sort();
+const M0_REVIEWER_DEFINITION_INVENTORY = [
+  ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json",
+  ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/reviewer-assignment.json",
+  ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/mal1-review.py",
+];
 const EXPECTED_PROJECTS = [
   "dist-mutating",
   "methodology-116-production",
@@ -785,6 +803,148 @@ describe("v1.3.1 I3 installed-package evidence", () => {
       unexpectedDirtyPaths: T0A_RUNTIME_INVENTORY,
       unexpectedStagedPaths: T0A_RUNTIME_INVENTORY,
     });
+  });
+
+  it("allows the exact bootstrap governance inventory on the correction descendant", () => {
+    expect(
+      classifyI3WorktreeScope({
+        dirty: M0_CORRECTION_GOVERNANCE_INVENTORY,
+        staged: M0_CORRECTION_GOVERNANCE_INVENTORY,
+        baseIsAncestor: false,
+        commitsSinceBase: -1,
+        changedSinceBase: [],
+        bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_BASE,
+        bootstrapBaseIsAncestor: true,
+        bootstrapCommitsSinceBase: 1,
+        bootstrapChangedSinceBase: T0A_CORRECTION_INVENTORY,
+      }),
+    ).toEqual({ unexpectedDirtyPaths: [], unexpectedStagedPaths: [] });
+
+    expect(
+      classifyI3WorktreeScope({
+        dirty: M0_REVIEWER_DEFINITION_INVENTORY,
+        staged: M0_REVIEWER_DEFINITION_INVENTORY,
+        baseIsAncestor: false,
+        commitsSinceBase: -1,
+        changedSinceBase: [],
+        bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_BASE,
+        bootstrapBaseIsAncestor: true,
+        bootstrapCommitsSinceBase: 1,
+        bootstrapChangedSinceBase: T0A_CORRECTION_INVENTORY,
+      }),
+    ).toEqual({
+      unexpectedDirtyPaths: M0_REVIEWER_DEFINITION_INVENTORY,
+      unexpectedStagedPaths: M0_REVIEWER_DEFINITION_INVENTORY,
+    });
+  });
+
+  it("allows the exact bootstrap M0 inventory on the governance descendant", () => {
+    expect(
+      classifyI3WorktreeScope({
+        dirty: M0_REVIEWER_DEFINITION_INVENTORY,
+        staged: M0_REVIEWER_DEFINITION_INVENTORY,
+        baseIsAncestor: false,
+        commitsSinceBase: -1,
+        changedSinceBase: [],
+        bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_BASE,
+        bootstrapBaseIsAncestor: true,
+        bootstrapCommitsSinceBase: 2,
+        bootstrapChangedSinceBase: M0_CORRECTION_BOOTSTRAP_CHANGED_INVENTORY,
+      }),
+    ).toEqual({ unexpectedDirtyPaths: [], unexpectedStagedPaths: [] });
+
+    expect(
+      classifyI3WorktreeScope({
+        dirty: M0_CORRECTION_GOVERNANCE_INVENTORY,
+        staged: M0_CORRECTION_GOVERNANCE_INVENTORY,
+        baseIsAncestor: false,
+        commitsSinceBase: -1,
+        changedSinceBase: [],
+        bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_BASE,
+        bootstrapBaseIsAncestor: true,
+        bootstrapCommitsSinceBase: 2,
+        bootstrapChangedSinceBase: M0_CORRECTION_BOOTSTRAP_CHANGED_INVENTORY,
+      }),
+    ).toEqual({
+      unexpectedDirtyPaths: M0_CORRECTION_GOVERNANCE_INVENTORY,
+      unexpectedStagedPaths: M0_CORRECTION_GOVERNANCE_INVENTORY,
+    });
+  });
+
+  it("rejects mismatched bootstrap topology and inventory", () => {
+    const exactCorrectionState = {
+      baseIsAncestor: false,
+      commitsSinceBase: -1,
+      changedSinceBase: [],
+      bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_BASE,
+      bootstrapBaseIsAncestor: true,
+      bootstrapCommitsSinceBase: 1,
+      bootstrapChangedSinceBase: T0A_CORRECTION_INVENTORY,
+    };
+    const unrelated = ".trellis/tasks/unrelated/task.json";
+    expect(
+      classifyI3WorktreeScope({
+        dirty: [...M0_CORRECTION_GOVERNANCE_INVENTORY, unrelated],
+        staged: [...M0_CORRECTION_GOVERNANCE_INVENTORY, unrelated],
+        ...exactCorrectionState,
+      }),
+    ).toEqual({
+      unexpectedDirtyPaths: [unrelated],
+      unexpectedStagedPaths: [unrelated],
+    });
+
+    for (const topologyOverride of [
+      { bootstrapBaseCommit: "0".repeat(40) },
+      { bootstrapBaseIsAncestor: false },
+      { bootstrapCommitsSinceBase: 0 },
+      { bootstrapCommitsSinceBase: 3 },
+      {
+        bootstrapChangedSinceBase: T0A_CORRECTION_INVENTORY.slice(1),
+      },
+      {
+        bootstrapChangedSinceBase: [...T0A_CORRECTION_INVENTORY, unrelated],
+      },
+      {
+        bootstrapChangedSinceBase: [...T0A_CORRECTION_INVENTORY].reverse(),
+      },
+    ]) {
+      expect(
+        classifyI3WorktreeScope({
+          dirty: M0_CORRECTION_GOVERNANCE_INVENTORY,
+          staged: M0_CORRECTION_GOVERNANCE_INVENTORY,
+          ...exactCorrectionState,
+          ...topologyOverride,
+        }),
+      ).toEqual({
+        unexpectedDirtyPaths: M0_CORRECTION_GOVERNANCE_INVENTORY,
+        unexpectedStagedPaths: M0_CORRECTION_GOVERNANCE_INVENTORY,
+      });
+    }
+
+    for (const changedInventory of [
+      M0_CORRECTION_BOOTSTRAP_CHANGED_INVENTORY.filter(
+        (entry) => entry !== M0_CORRECTION_GOVERNANCE_INVENTORY[0],
+      ),
+      [...M0_CORRECTION_BOOTSTRAP_CHANGED_INVENTORY, unrelated],
+      [...M0_CORRECTION_BOOTSTRAP_CHANGED_INVENTORY].reverse(),
+    ]) {
+      expect(
+        classifyI3WorktreeScope({
+          dirty: M0_REVIEWER_DEFINITION_INVENTORY,
+          staged: M0_REVIEWER_DEFINITION_INVENTORY,
+          baseIsAncestor: false,
+          commitsSinceBase: -1,
+          changedSinceBase: [],
+          bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_BASE,
+          bootstrapBaseIsAncestor: true,
+          bootstrapCommitsSinceBase: 2,
+          bootstrapChangedSinceBase: changedInventory,
+        }),
+      ).toEqual({
+        unexpectedDirtyPaths: M0_REVIEWER_DEFINITION_INVENTORY,
+        unexpectedStagedPaths: M0_REVIEWER_DEFINITION_INVENTORY,
+      });
+    }
   });
 
   it("authenticates the exact candidate, dynamic lanes, artifacts, consumers, and ledger", () => {

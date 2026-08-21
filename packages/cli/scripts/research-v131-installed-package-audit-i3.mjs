@@ -73,6 +73,27 @@ const T0A_ATTEMPT_4_RUNTIME_SCOPE = Object.freeze({
     ".trellis/tasks/08-20-amend-t0-authorize-t6-mal1-attempt-4/task.json",
   ]),
 });
+const M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE = Object.freeze({
+  baseCommit: "4b1bb3cd34e574888025187247c2288f3be5195d",
+  correctionInventory: Object.freeze([
+    ".trellis/spec/cli/unit-test/conventions.md",
+    "packages/cli/scripts/research-v131-installed-package-audit-i3.mjs",
+    "packages/cli/test/commands/research-v131-integration-i3.test.ts",
+  ]),
+  governanceInventory: Object.freeze([
+    ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/check.jsonl",
+    ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/design.md",
+    ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/implement.jsonl",
+    ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/implement.md",
+    ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/prd.md",
+    ".trellis/tasks/08-21-govern-t6-mal1-attempt-4-m0-correction/task.json",
+  ]),
+  m0Inventory: Object.freeze([
+    ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/task.json",
+    ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/reviewer-assignment.json",
+    ".trellis/tasks/08-12-assure-v1-3-1-complete-system-mal1/research/reviewer/mal1-review.py",
+  ]),
+});
 const FINAL_I3 = Object.freeze({
   commit: "88626c04828afbdc137f3318bca0bb2fd69474e3",
   parent: "8793c5aeda09fe8ada263733733569516cb492f5",
@@ -1211,15 +1232,41 @@ export function classifyI3WorktreeScope({
   baseIsAncestor,
   commitsSinceBase,
   changedSinceBase,
+  bootstrapBaseCommit = null,
+  bootstrapBaseIsAncestor = false,
+  bootstrapCommitsSinceBase = -1,
+  bootstrapChangedSinceBase = [],
 }) {
   const exactCorrectionDescendant =
     baseIsAncestor === true &&
     commitsSinceBase === 1 &&
     JSON.stringify([...changedSinceBase].sort()) ===
       JSON.stringify(T0A_ATTEMPT_4_RUNTIME_SCOPE.correctionInventory);
+  const bootstrapChangedInventory = JSON.stringify(bootstrapChangedSinceBase);
+  const exactBootstrapCorrectionDescendant =
+    bootstrapBaseCommit === M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.baseCommit &&
+    bootstrapBaseIsAncestor === true &&
+    bootstrapCommitsSinceBase === 1 &&
+    bootstrapChangedInventory ===
+      JSON.stringify(M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.correctionInventory);
+  const exactBootstrapGovernanceDescendant =
+    bootstrapBaseCommit === M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.baseCommit &&
+    bootstrapBaseIsAncestor === true &&
+    bootstrapCommitsSinceBase === 2 &&
+    bootstrapChangedInventory ===
+      JSON.stringify(
+        [
+          ...M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.correctionInventory,
+          ...M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.governanceInventory,
+        ].sort(),
+      );
   const runtimeSuccessorInventory = exactCorrectionDescendant
     ? T0A_ATTEMPT_4_RUNTIME_SCOPE.successorInventory
-    : [];
+    : exactBootstrapCorrectionDescendant
+      ? M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.governanceInventory
+      : exactBootstrapGovernanceDescendant
+        ? M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.m0Inventory
+        : [];
   const allowedDirty = new Set([
     ...I3_INVENTORY,
     ...POST_I3_ALLOWED_INVENTORY,
@@ -1239,38 +1286,42 @@ export function classifyI3WorktreeScope({
 
 function currentI3RuntimeScopeState() {
   const currentHead = gitText(["rev-parse", "HEAD"]).trim();
-  let baseIsAncestor = true;
-  try {
-    gitBuffer([
-      "merge-base",
-      "--is-ancestor",
-      T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit,
-      currentHead,
-    ]);
-  } catch {
-    baseIsAncestor = false;
-  }
-  if (!baseIsAncestor) {
-    return { baseIsAncestor, commitsSinceBase: -1, changedSinceBase: [] };
-  }
-  const commitsSinceBase = Number.parseInt(
-    gitText([
-      "rev-list",
-      "--count",
-      `${T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit}..${currentHead}`,
-    ]).trim(),
-    10,
+  const stateForBase = (baseCommit) => {
+    let baseIsAncestor = true;
+    try {
+      gitBuffer(["merge-base", "--is-ancestor", baseCommit, currentHead]);
+    } catch {
+      baseIsAncestor = false;
+    }
+    if (!baseIsAncestor) {
+      return { baseIsAncestor, commitsSinceBase: -1, changedSinceBase: [] };
+    }
+    const commitsSinceBase = Number.parseInt(
+      gitText(["rev-list", "--count", `${baseCommit}..${currentHead}`]).trim(),
+      10,
+    );
+    const changedSinceBase = gitText([
+      "diff",
+      "--name-only",
+      "-z",
+      `${baseCommit}..${currentHead}`,
+    ])
+      .split("\0")
+      .filter(Boolean)
+      .sort();
+    return { baseIsAncestor, commitsSinceBase, changedSinceBase };
+  };
+  const state = stateForBase(T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit);
+  const bootstrapState = stateForBase(
+    M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.baseCommit,
   );
-  const changedSinceBase = gitText([
-    "diff",
-    "--name-only",
-    "-z",
-    `${T0A_ATTEMPT_4_RUNTIME_SCOPE.baseCommit}..${currentHead}`,
-  ])
-    .split("\0")
-    .filter(Boolean)
-    .sort();
-  return { baseIsAncestor, commitsSinceBase, changedSinceBase };
+  return {
+    ...state,
+    bootstrapBaseCommit: M0_CORRECTION_BOOTSTRAP_RUNTIME_SCOPE.baseCommit,
+    bootstrapBaseIsAncestor: bootstrapState.baseIsAncestor,
+    bootstrapCommitsSinceBase: bootstrapState.commitsSinceBase,
+    bootstrapChangedSinceBase: bootstrapState.changedSinceBase,
+  };
 }
 
 function buildProtectedAudit() {
