@@ -34,6 +34,7 @@ import { InvalidArgumentError } from "commander";
 
 import {
   ResearchActivationError,
+  ResearchCliError,
   ResearchDispatchContextError,
   ResearchDispatchFileError,
 } from "./errors.js";
@@ -356,7 +357,8 @@ export function renderResearchError(error: unknown, json: boolean): void {
   }
 
   const stableCode =
-    error instanceof ResearchActivationError
+    error instanceof ResearchActivationError ||
+    error instanceof ResearchCliError
       ? error.code
       : typeof error === "object" &&
           error !== null &&

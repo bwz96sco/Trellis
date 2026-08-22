@@ -201,7 +201,7 @@ describe("Research-only CLI surface", () => {
     ]);
   });
 
-  it("exposes exactly the eleven supported Research command groups", async () => {
+  it("exposes exactly the thirteen supported Research command groups", async () => {
     const result = await runCli(["research", "--help"]);
 
     expect(result.commanderCode).toBe("commander.helpDisplayed");
@@ -210,6 +210,8 @@ describe("Research-only CLI surface", () => {
       "status",
       "validate",
       "rebuild",
+      "skill",
+      "workflow",
       "repo",
       "quest",
       "campaign",
@@ -217,6 +219,27 @@ describe("Research-only CLI surface", () => {
       "evidence",
       "claim",
       "dispatch",
+    ]);
+  });
+
+  it("exposes exactly the three read-only Skill children", async () => {
+    const result = await runCli(["research", "skill", "--help"]);
+
+    expect(result.commanderCode).toBe("commander.helpDisplayed");
+    expect(commandNames(result.stdout)).toEqual(["list", "show", "context"]);
+  });
+
+  it("exposes exactly the six Workflow state children", async () => {
+    const result = await runCli(["research", "workflow", "--help"]);
+
+    expect(result.commanderCode).toBe("commander.helpDisplayed");
+    expect(commandNames(result.stdout)).toEqual([
+      "bind",
+      "complete",
+      "transition",
+      "close",
+      "status",
+      "next",
     ]);
   });
 

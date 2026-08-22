@@ -760,7 +760,7 @@ Correct: keep the digest external and reconstruct the recoverable projection fro
 
 ### 1. Scope / Trigger
 
-This planned CLI contract applies to schema-v3 thin-skill inspection and deterministic Research routing. C1 freezes signatures and errors; later children implement them. Commands never contain scientific methodology or execute a model implicitly.
+This CLI contract applies to schema-v3 thin-skill inspection and deterministic Research routing. C3 implements Skill inspection/Context plus Workflow bind/complete/transition/close/status/next; later children implement scientific gates and Quest cutover. Commands never contain scientific methodology or execute a model implicitly.
 
 ### 2. Signatures
 
@@ -795,10 +795,10 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 
 ### 3. Contracts
 
-- Skill commands resolve one normalized execution package project-first and fail closed. `context` is read-only, loads one `SKILL.md` plus explicitly requested allowed members, and never executes a model.
+- Skill commands resolve one normalized execution package project-first and fail closed. Discovery authenticates every discovered ID/version candidate; a symlinked, non-directory, malformed, or otherwise invalid project candidate fails the entire read instead of being skipped or replaced by a partial/bundled result. `context` is read-only, loads one `SKILL.md` plus explicitly requested allowed members, and never executes a model.
 - `context --profile lightweight` requires `entrypointType: "model-context"` and a declared `lightweight` profile. A package with `invocationSource: "operator-explicit"` additionally requires the package to have been selected by this explicit operator command; it is never eligible for implicit model selection.
 - Managed Context selection uses the same normalized identity but still requires existing Dispatch/Activation/Approval commands. `operator-explicit` managed packages require an explicit operator-selected workflow/Activation binding before Context; `skill context` itself does not grant authority. A `root-command` package has no model profile and never enters either model Context.
-- Workflow mutations preview by default and require explicit `--write`. Bind/complete/transition/close each append only their typed event. No command chains to another mutation or model call.
+- Workflow mutations preview by default and require explicit `--write`. Bind/complete/transition/close each append only their typed event. Same-key replay succeeds only when exactly one canonical Workflow event matches the command family, explicit target, and command-specific payload shape; any unrelated, multi-event, or differently shaped ownership returns `IDEMPOTENCY_KEY_CONFLICT` before preview/write success. No command chains to another mutation or model call.
 - `status` and `next` read canonical workflow-instance/gate projections. They return exact instance/workflow/node/package identity, legal transitions, missing requirements, allowed profiles, and stop reason; they never infer current node from Quest stage.
 - `gate record` parses explicit operator decision bytes, records H1/H2 only, and returns after preview/write. It never invokes `workflow transition`.
 - Quest import preview returns source digest, exact mapping, conflicts, preserved extensions, and export-loss report. Write requires unchanged source bytes and exact preview token/idempotency binding.
@@ -811,12 +811,14 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 | Input/state | Error / behavior |
 |---|---|
 | Package manifest/instructions/members invalid | Fail selected project package; no bundled fallback. |
+| Skill discovery encounters a symlinked, non-directory, malformed, or invalid project ID/version candidate | Fail the entire read with the source-specific Skill resolution error; return no partial list and do not substitute a bundle. |
 | Model implicitly selects an `operator-explicit` package, or any model Context targets a `root-command` | `research_skill_invocation_forbidden`; zero-write. |
 | Requested member undeclared, root-only, or escaping | `research_skill_member_forbidden`; zero-write. |
 | Workflow is cyclic or embeds methodology/command text | `research_workflow_invalid`; zero-write. |
 | Quest already has active workflow instance | `research_workflow_active_conflict`; zero-write. |
 | Complete targets wrong node or missing accepted refs | `research_workflow_completion_invalid`; zero-write. |
 | Transition is illegal, unselected, or gate-incomplete | `research_workflow_transition_blocked`; zero-write. |
+| Workflow idempotency key owns another command family, target, payload shape, or multi-event batch | `IDEMPOTENCY_KEY_CONFLICT`; report no replay success and append nothing. |
 | Gate decision is inferred, malformed, empty-rationale, or set-invalid | `research_gate_invalid`; zero-write. |
 | Gate write succeeds | Return gate record only; no transition or worker launch. |
 | Import source changes after preview | `research_quest_source_drift`; zero-write. |
@@ -836,7 +838,8 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 - Exact command tree/options and `--json` payload ordering.
 - Built CLI read-only snapshots proving list/show/context/status/next produce no writes.
 - One-package Context, omitted on-demand members, rejection of implicit selection for explicit-only packages, explicit-only managed evaluation acceptance after operator binding, root-command rejection from model Context, and identical normalized digest across profiles.
-- Workflow preview/write/replay tests for bind, complete, transition, close, active conflict, missing gate, and no automatic continuation.
+- Workflow preview/write/replay tests for bind, complete, transition, close, active conflict, missing gate, no automatic continuation, differently shaped same-command keys, and keys owned by another command family.
+- Skill discovery tests prove every candidate is authenticated and a symlinked/non-directory/invalid project candidate fails the complete read without a partial result or bundled substitution.
 - Gate decision parser and structural set/evidence validation; explicit assertion that no workflow or Dispatch command is called.
 - Quest import mapping/error fixtures, source-drift token, idempotency, export round-trip/loss report, writer transfer, and pre-write source-admin refusal.
 - Historical Procedure Context/recording command tests remain unchanged and green.
@@ -846,6 +849,12 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 ```text
 Wrong: `research workflow next` selects or runs the next skill.
 Correct: it reports legal operator choices and missing requirements only.
+
+Wrong: Skill discovery skips a symlinked or malformed project candidate and returns the remaining list.
+Correct: authenticate every candidate and fail the whole read so metadata is never partial or silently substituted.
+
+Wrong: any canonical events sharing a Workflow command's idempotency key count as successful replay.
+Correct: replay only one matching Workflow event with the exact command family, target, and payload shape; otherwise return `IDEMPOTENCY_KEY_CONFLICT`.
 
 Wrong: `research gate record --write` records H2 and immediately launches evaluation.
 Correct: it records one gate event and stops; a later explicit transition and execution are separate.

@@ -105,6 +105,8 @@ describe("research command helpers", () => {
       "status",
       "validate",
       "rebuild",
+      "skill",
+      "workflow",
       "repo",
       "quest",
       "campaign",
@@ -112,6 +114,19 @@ describe("research command helpers", () => {
       "evidence",
       "claim",
       "dispatch",
+    ]);
+    expect(childNames(commandAt(research, "skill"))).toEqual([
+      "list",
+      "show",
+      "context",
+    ]);
+    expect(childNames(commandAt(research, "workflow"))).toEqual([
+      "bind",
+      "complete",
+      "transition",
+      "close",
+      "status",
+      "next",
     ]);
     expect(childNames(commandAt(research, "repo"))).toEqual([
       "add",

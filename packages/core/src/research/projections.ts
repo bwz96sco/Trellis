@@ -6,6 +6,7 @@ import type { ResearchPaths } from "./paths.js";
 import {
   RESEARCH_SCHEMA_VERSION,
   type Projected,
+  type QuestWorkflowProjection,
   type ResearchEvent,
   type ResearchState,
 } from "./types.js";
@@ -142,6 +143,34 @@ export function writeResearchProjections(
       );
       files.push(file);
     }
+  }
+
+  for (const quest of sortedValues(state.quests)) {
+    const instanceIds = state.workflowInstanceIdsByQuestId[quest.id] ?? [];
+    if (instanceIds.length === 0) continue;
+    const workflowSeq = state.entitySeq[`workflow:${quest.id}`];
+    if (workflowSeq === undefined) {
+      throw new Error(`Missing Workflow projection sequence for Quest '${quest.id}'`);
+    }
+    const data: QuestWorkflowProjection = {
+      questId: quest.id,
+      activeWorkflowInstanceId: state.activeWorkflowByQuestId[quest.id] ?? null,
+      instances: instanceIds.map((instanceId) => {
+        const instance = state.workflowInstances[instanceId];
+        if (instance === undefined) {
+          throw new Error(`Missing Workflow instance '${instanceId}'`);
+        }
+        return instance;
+      }),
+    };
+    const file = path.join(paths.questsDir, quest.id, "workflow.json");
+    atomicWrite(
+      file,
+      stableResearchJson(
+        projected(data, headSeq, timestampAt(events, workflowSeq)),
+      ),
+    );
+    files.push(file);
   }
   return files.sort();
 }

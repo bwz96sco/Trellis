@@ -1,1 +1,3 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Authoritative normalized execution-package identity, Workflow DAG schema/digest, canonical event payloads, reducer invariants, validation matrix, and compatibility boundary."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Authoritative C3 Skill/Workflow command signatures, preview/write semantics, output behavior, stable errors, zero-write cases, and required tests."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Authority boundary for model Context, generic workers, managed Dispatch/Activation/Approval, member visibility, and prohibition on nested or implicit execution."}

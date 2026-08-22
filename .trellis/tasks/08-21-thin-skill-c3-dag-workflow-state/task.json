@@ -3,7 +3,7 @@
   "name": "thin-skill-c3-dag-workflow-state",
   "title": "Add Research DAG workflow state",
   "description": "Add canonical workflow instance state, deterministic transitions, and lightweight one-skill Context.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

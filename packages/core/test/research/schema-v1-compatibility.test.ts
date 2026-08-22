@@ -163,6 +163,9 @@ describe("schema-v1 golden research compatibility", () => {
       activationByDispatchId,
       approvals,
       approvalIdsByActivationId,
+      workflowInstances,
+      workflowInstanceIdsByQuestId,
+      activeWorkflowByQuestId,
       ...schemaV1State
     } = reducedState;
     expect(schemaV1State).toEqual(expectedState);
@@ -171,11 +174,17 @@ describe("schema-v1 golden research compatibility", () => {
       activationByDispatchId,
       approvals,
       approvalIdsByActivationId,
+      workflowInstances,
+      workflowInstanceIdsByQuestId,
+      activeWorkflowByQuestId,
     }).toEqual({
       activations: {},
       activationByDispatchId: {},
       approvals: {},
       approvalIdsByActivationId: {},
+      workflowInstances: {},
+      workflowInstanceIdsByQuestId: {},
+      activeWorkflowByQuestId: {},
     });
 
     const {
@@ -183,6 +192,9 @@ describe("schema-v1 golden research compatibility", () => {
       activationByDispatchId: readActivationByDispatchId,
       approvals: readApprovals,
       approvalIdsByActivationId: readApprovalIdsByActivationId,
+      workflowInstances: readWorkflowInstances,
+      workflowInstanceIdsByQuestId: readWorkflowInstanceIdsByQuestId,
+      activeWorkflowByQuestId: readActiveWorkflowByQuestId,
       ...readSchemaV1State
     } = await readResearchState(root);
     expect(readSchemaV1State).toEqual(expectedState);
@@ -191,11 +203,17 @@ describe("schema-v1 golden research compatibility", () => {
       readActivationByDispatchId,
       readApprovals,
       readApprovalIdsByActivationId,
+      readWorkflowInstances,
+      readWorkflowInstanceIdsByQuestId,
+      readActiveWorkflowByQuestId,
     }).toEqual({
       readActivations: {},
       readActivationByDispatchId: {},
       readApprovals: {},
       readApprovalIdsByActivationId: {},
+      readWorkflowInstances: {},
+      readWorkflowInstanceIdsByQuestId: {},
+      readActiveWorkflowByQuestId: {},
     });
 
     const dispatch = reducedState.dispatches[

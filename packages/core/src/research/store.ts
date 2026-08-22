@@ -42,6 +42,7 @@ import {
 import {
   RESEARCH_EVENT_SCHEMA_VERSION,
   RESEARCH_SCHEMA_VERSION,
+  RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
   type ApprovalId,
   type ArtifactRef,
   type CampaignId,
@@ -66,13 +67,26 @@ import {
   type ResearchEventKind,
   type ResearchProvenance,
   type ResearchSchemaV2EventKind,
+  type ResearchSchemaV3EventKind,
   type ResearchState,
   type Result,
   type ResultId,
   type RunId,
   type RunStatus,
+  type WorkflowAcceptedRef,
+  type WorkflowCloseOutcome,
+  type WorkflowInstanceId,
   type WorkspaceId,
 } from "./types.js";
+import {
+  ResearchWorkflowError,
+  findResearchWorkflowNode,
+  findResearchWorkflowTransition,
+  isResearchWorkflowTerminalNode,
+  missingResearchWorkflowRequiredRefs,
+  normalizeWorkflowAcceptedRefs,
+  type ParsedResearchWorkflowDefinitionV1,
+} from "./workflow.js";
 
 export type ResearchMutation =
   | {
@@ -164,7 +178,36 @@ export type ResearchMutation =
     }
   | { kind: "result.record"; result: Result }
   | { kind: "proposal.record"; proposal: Proposal }
-  | { kind: "decision.record"; decision: Decision };
+  | { kind: "decision.record"; decision: Decision }
+  | {
+      kind: "workflow.bind";
+      workflowInstanceId: WorkflowInstanceId;
+      questId: QuestId;
+      startNodeId: string;
+      workflow: ParsedResearchWorkflowDefinitionV1;
+    }
+  | {
+      kind: "workflow.node.complete";
+      workflowInstanceId: WorkflowInstanceId;
+      nodeId: string;
+      acceptedRefs: readonly WorkflowAcceptedRef[];
+      workflow: ParsedResearchWorkflowDefinitionV1;
+    }
+  | {
+      kind: "workflow.transition.record";
+      workflowInstanceId: WorkflowInstanceId;
+      transitionId: string;
+      selectedBy: string;
+      workflow: ParsedResearchWorkflowDefinitionV1;
+    }
+  | {
+      kind: "workflow.close";
+      workflowInstanceId: WorkflowInstanceId;
+      outcome: WorkflowCloseOutcome;
+      closedBy: string;
+      rationale: string;
+      workflow: ParsedResearchWorkflowDefinitionV1;
+    };
 
 export interface CommitResearchBatchInput {
   root: string;
@@ -209,8 +252,9 @@ export class ResearchProjectionError extends Error {
 interface EventDraft {
   schemaVersion:
     | typeof RESEARCH_SCHEMA_VERSION
-    | typeof RESEARCH_EVENT_SCHEMA_VERSION;
-  kind: ResearchEventKind | ResearchSchemaV2EventKind;
+    | typeof RESEARCH_EVENT_SCHEMA_VERSION
+    | typeof RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION;
+  kind: ResearchEventKind | ResearchSchemaV2EventKind | ResearchSchemaV3EventKind;
   aggregate: ResearchEvent["aggregate"];
   related: ResearchEvent["related"];
   payload: Record<string, unknown>;
@@ -503,6 +547,32 @@ function mutationToEventDraft(
     return comparable as EventDraft;
   }
   return draft;
+}
+
+function requireWorkflowState(state: ResearchState | undefined): ResearchState {
+  if (state === undefined) {
+    throw new ResearchWorkflowError(
+      "RESEARCH_WORKFLOW_INVALID",
+      "Workflow mutations require canonical Research state",
+    );
+  }
+  return state;
+}
+
+function assertWorkflowDefinitionBinding(
+  instance: ResearchState["workflowInstances"][WorkflowInstanceId],
+  workflow: ParsedResearchWorkflowDefinitionV1,
+): void {
+  if (
+    workflow.definition.id !== instance.workflowId ||
+    workflow.definition.version !== instance.workflowVersion ||
+    workflow.workflowDigest !== instance.workflowDigest
+  ) {
+    throw new ResearchWorkflowError(
+      "RESEARCH_WORKFLOW_INVALID",
+      `Workflow definition does not match bound instance '${instance.workflowInstanceId}'`,
+    );
+  }
 }
 
 function buildMutationEventDraft(
@@ -829,6 +899,221 @@ function buildMutationEventDraft(
           { type: "quest", id: proposal.questId },
         ],
         payload: { proposal },
+      };
+    }
+    case "workflow.bind": {
+      const current = requireWorkflowState(state);
+      if (!current.quests[mutation.questId]) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_INVALID",
+          `Unknown research Quest '${mutation.questId}'`,
+        );
+      }
+      if (current.activeWorkflowByQuestId[mutation.questId]) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_ACTIVE_CONFLICT",
+          `Quest '${mutation.questId}' already has an active Workflow`,
+        );
+      }
+      if (current.workflowInstances[mutation.workflowInstanceId]) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_ACTIVE_CONFLICT",
+          `Workflow instance '${mutation.workflowInstanceId}' already exists`,
+        );
+      }
+      if (!mutation.workflow.definition.startNodeIds.includes(mutation.startNodeId)) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_INVALID",
+          `Workflow start node '${mutation.startNodeId}' is not declared`,
+        );
+      }
+      const payload = {
+        workflowInstanceId: mutation.workflowInstanceId,
+        questId: mutation.questId,
+        workflowId: mutation.workflow.definition.id,
+        workflowVersion: mutation.workflow.definition.version,
+        workflowDigest: mutation.workflow.workflowDigest,
+        startNodeId: mutation.startNodeId,
+        boundAt: timestamp,
+      };
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "workflow.bound",
+        aggregate: { type: "workflow", id: mutation.workflowInstanceId },
+        related: [{ type: "quest", id: mutation.questId }],
+        payload,
+      };
+    }
+    case "workflow.node.complete": {
+      const current = requireWorkflowState(state);
+      const instance = current.workflowInstances[mutation.workflowInstanceId];
+      if (instance?.status !== "active") {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_COMPLETION_INVALID",
+          `Workflow instance '${mutation.workflowInstanceId}' is not active`,
+        );
+      }
+      assertWorkflowDefinitionBinding(instance, mutation.workflow);
+      if (
+        mutation.nodeId !== instance.currentNodeId ||
+        instance.nodeCompletions[mutation.nodeId]
+      ) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_COMPLETION_INVALID",
+          `Workflow node '${mutation.nodeId}' is not the incomplete current node`,
+        );
+      }
+      const node = findResearchWorkflowNode(
+        mutation.workflow.definition,
+        mutation.nodeId,
+      );
+      if (!node?.allowedProfiles.includes("lightweight")) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_COMPLETION_INVALID",
+          `Workflow node '${mutation.nodeId}' does not allow lightweight completion`,
+        );
+      }
+      let acceptedRefs: readonly WorkflowAcceptedRef[];
+      try {
+        acceptedRefs = normalizeWorkflowAcceptedRefs(mutation.acceptedRefs);
+      } catch (error) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_COMPLETION_INVALID",
+          "Workflow accepted references are invalid",
+          { cause: error },
+        );
+      }
+      if (acceptedRefs.length === 0) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_COMPLETION_INVALID",
+          "Workflow completion requires at least one accepted reference",
+        );
+      }
+      const payload = {
+        workflowInstanceId: instance.workflowInstanceId,
+        questId: instance.questId,
+        workflowId: instance.workflowId,
+        workflowVersion: instance.workflowVersion,
+        workflowDigest: instance.workflowDigest,
+        nodeId: mutation.nodeId,
+        executionPackage: node.executionPackage,
+        executionProfile: "lightweight" as const,
+        acceptedRefs: [...acceptedRefs],
+        completedAt: timestamp,
+      };
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "workflow.node_completed",
+        aggregate: { type: "workflow", id: instance.workflowInstanceId },
+        related: [
+          { type: "quest", id: instance.questId },
+          ...acceptedRefs.map((ref) => ({ type: ref.kind, id: ref.id })),
+        ],
+        payload,
+      };
+    }
+    case "workflow.transition.record": {
+      const current = requireWorkflowState(state);
+      const instance = current.workflowInstances[mutation.workflowInstanceId];
+      if (instance?.status !== "active") {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_TRANSITION_BLOCKED",
+          `Workflow instance '${mutation.workflowInstanceId}' is not active`,
+        );
+      }
+      assertWorkflowDefinitionBinding(instance, mutation.workflow);
+      const transition = findResearchWorkflowTransition(
+        mutation.workflow.definition,
+        mutation.transitionId,
+      );
+      const completion = instance.nodeCompletions[instance.currentNodeId];
+      if (
+        transition?.fromNodeId !== instance.currentNodeId ||
+        completion === undefined
+      ) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_TRANSITION_BLOCKED",
+          `Workflow transition '${mutation.transitionId}' is not legal from the completed current node`,
+        );
+      }
+      const missingRefs = missingResearchWorkflowRequiredRefs(
+        transition,
+        completion.acceptedRefs,
+      );
+      if (missingRefs.length > 0) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_TRANSITION_BLOCKED",
+          `Workflow transition '${transition.id}' is missing required refs: ${missingRefs.join(", ")}`,
+        );
+      }
+      if (transition.requiredGateIds.length > 0) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_TRANSITION_BLOCKED",
+          `Workflow transition '${transition.id}' is missing gates: ${transition.requiredGateIds.join(", ")}`,
+        );
+      }
+      const selectedBy = parseNonEmptyString(mutation.selectedBy, "selectedBy");
+      const payload = {
+        workflowInstanceId: instance.workflowInstanceId,
+        questId: instance.questId,
+        workflowId: instance.workflowId,
+        workflowVersion: instance.workflowVersion,
+        workflowDigest: instance.workflowDigest,
+        transitionId: transition.id,
+        fromNodeId: transition.fromNodeId,
+        toNodeId: transition.toNodeId,
+        selectedBy,
+        gateRecordIds: [],
+        selectedAt: timestamp,
+      };
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "workflow.transition_recorded",
+        aggregate: { type: "workflow", id: instance.workflowInstanceId },
+        related: [{ type: "quest", id: instance.questId }],
+        payload,
+      };
+    }
+    case "workflow.close": {
+      const current = requireWorkflowState(state);
+      const instance = current.workflowInstances[mutation.workflowInstanceId];
+      if (instance?.status !== "active") {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_INVALID",
+          `Workflow instance '${mutation.workflowInstanceId}' is not active`,
+        );
+      }
+      assertWorkflowDefinitionBinding(instance, mutation.workflow);
+      if (
+        mutation.outcome === "completed" &&
+        (!instance.nodeCompletions[instance.currentNodeId] ||
+          !isResearchWorkflowTerminalNode(
+            mutation.workflow.definition,
+            instance.currentNodeId,
+          ))
+      ) {
+        throw new ResearchWorkflowError(
+          "RESEARCH_WORKFLOW_INVALID",
+          "A completed Workflow must be on a completed terminal node",
+        );
+      }
+      const payload = {
+        workflowInstanceId: instance.workflowInstanceId,
+        questId: instance.questId,
+        workflowId: instance.workflowId,
+        workflowVersion: instance.workflowVersion,
+        workflowDigest: instance.workflowDigest,
+        outcome: mutation.outcome,
+        closedBy: parseNonEmptyString(mutation.closedBy, "closedBy"),
+        rationale: parseNonEmptyString(mutation.rationale, "rationale"),
+        closedAt: timestamp,
+      };
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "workflow.closed",
+        aggregate: { type: "workflow", id: instance.workflowInstanceId },
+        related: [{ type: "quest", id: instance.questId }],
+        payload,
       };
     }
     case "decision.record": {

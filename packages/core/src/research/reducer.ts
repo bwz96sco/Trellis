@@ -39,9 +39,14 @@ import type {
   ResearchSchemaV2AggregateRef,
   ResearchSchemaV2Event,
   ResearchState,
+  ResearchWorkflowInstance,
   Result,
   Run,
   RunStatus,
+  WorkflowBindPayload,
+  WorkflowClosePayload,
+  WorkflowNodeCompletePayload,
+  WorkflowTransitionRecordPayload,
   Workspace,
 } from "./types.js";
 
@@ -63,6 +68,9 @@ export function emptyResearchState(): ResearchState {
     activationByDispatchId: {},
     approvals: {},
     approvalIdsByActivationId: {},
+    workflowInstances: {},
+    workflowInstanceIdsByQuestId: {},
+    activeWorkflowByQuestId: {},
     entitySeq: {},
     projectedThroughSeq: 0,
     updatedAt: null,
@@ -222,6 +230,50 @@ function dispatchHasProposal(state: ResearchState, dispatchId: string): boolean 
   return Object.values(state.proposals).some(
     (proposal) => proposal.dispatchId === dispatchId,
   );
+}
+
+function assertWorkflowBinding(
+  instance: ResearchWorkflowInstance,
+  payload:
+    | WorkflowNodeCompletePayload
+    | WorkflowTransitionRecordPayload
+    | WorkflowClosePayload,
+): void {
+  if (
+    payload.questId !== instance.questId ||
+    payload.workflowId !== instance.workflowId ||
+    payload.workflowVersion !== instance.workflowVersion ||
+    payload.workflowDigest !== instance.workflowDigest
+  ) {
+    throw new Error(
+      `Workflow event binding does not match instance '${instance.workflowInstanceId}'`,
+    );
+  }
+}
+
+function artifactBelongsToQuest(
+  state: ResearchState,
+  questId: string,
+  artifactId: string,
+): boolean {
+  const quest = state.quests[questId as keyof typeof state.quests];
+  if (quest?.artifactRefs.some((artifact) => artifact.id === artifactId)) return true;
+  if (
+    Object.values(state.evidence).some(
+      (evidence) =>
+        evidence.questId === questId &&
+        evidence.artifactRefs.some((artifact) => artifact.id === artifactId),
+    )
+  ) {
+    return true;
+  }
+  return Object.values(state.results).some((result) => {
+    const dispatch = state.dispatches[result.dispatchId];
+    return (
+      dispatch?.questId === questId &&
+      result.artifactRefs.some((artifact) => artifact.id === artifactId)
+    );
+  });
 }
 
 function applyEvent(state: ResearchState, event: ResearchEvent): void {
@@ -781,6 +833,154 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         resultId,
         proposalId,
       };
+      return;
+    }
+    case "workflow.bound": {
+      const payload = event.payload as unknown as WorkflowBindPayload;
+      requireEntity(state.quests, payload.questId, "quest");
+      if (state.workflowInstances[payload.workflowInstanceId]) {
+        throw new Error(
+          `Research workflow instance '${payload.workflowInstanceId}' already exists`,
+        );
+      }
+      if (state.activeWorkflowByQuestId[payload.questId]) {
+        throw new Error(`Quest '${payload.questId}' already has an active Workflow`);
+      }
+      if (payload.boundAt !== event.timestamp) {
+        throw new Error("Workflow boundAt must equal its event timestamp");
+      }
+      const instance: ResearchWorkflowInstance = {
+        workflowInstanceId: payload.workflowInstanceId,
+        questId: payload.questId,
+        workflowId: payload.workflowId,
+        workflowVersion: payload.workflowVersion,
+        workflowDigest: payload.workflowDigest,
+        startNodeId: payload.startNodeId,
+        currentNodeId: payload.startNodeId,
+        status: "active",
+        boundAt: payload.boundAt,
+        nodeCompletions: {},
+        transitions: [],
+        updatedAt: event.timestamp,
+      };
+      state.workflowInstances[payload.workflowInstanceId] = instance;
+      state.workflowInstanceIdsByQuestId[payload.questId] = [
+        ...(state.workflowInstanceIdsByQuestId[payload.questId] ?? []),
+        payload.workflowInstanceId,
+      ];
+      state.activeWorkflowByQuestId[payload.questId] = payload.workflowInstanceId;
+      mark(state, payload.workflowInstanceId, event);
+      mark(state, `workflow:${payload.questId}`, event);
+      return;
+    }
+    case "workflow.node_completed": {
+      const payload = event.payload as unknown as WorkflowNodeCompletePayload;
+      const instance = requireEntity(
+        state.workflowInstances,
+        payload.workflowInstanceId,
+        "workflow instance",
+      );
+      assertWorkflowBinding(instance, payload);
+      if (instance.status !== "active") {
+        throw new Error(`Workflow instance '${instance.workflowInstanceId}' is closed`);
+      }
+      if (payload.nodeId !== instance.currentNodeId) {
+        throw new Error(
+          `Workflow completion node '${payload.nodeId}' is not current node '${instance.currentNodeId}'`,
+        );
+      }
+      if (instance.nodeCompletions[payload.nodeId]) {
+        throw new Error(`Workflow node '${payload.nodeId}' is already completed`);
+      }
+      if (payload.executionProfile !== "lightweight") {
+        throw new Error("C3 Workflow completion requires the lightweight profile");
+      }
+      if (payload.completedAt !== event.timestamp) {
+        throw new Error("Workflow completedAt must equal its event timestamp");
+      }
+      for (const ref of payload.acceptedRefs) {
+        if (ref.kind === "result") {
+          const result = requireEntity(state.results, ref.id, "result");
+          const dispatch = requireEntity(
+            state.dispatches,
+            result.dispatchId,
+            "dispatch",
+          );
+          if (dispatch.questId !== instance.questId) {
+            throw new Error(`Result '${ref.id}' does not belong to Quest '${instance.questId}'`);
+          }
+        } else {
+          requireEntity(state.artifacts, ref.id, "artifact");
+          if (!artifactBelongsToQuest(state, instance.questId, ref.id)) {
+            throw new Error(
+              `Artifact '${ref.id}' does not belong to Quest '${instance.questId}'`,
+            );
+          }
+        }
+      }
+      instance.nodeCompletions[payload.nodeId] = {
+        ...payload,
+        executionPackage: { ...payload.executionPackage },
+        acceptedRefs: payload.acceptedRefs.map((ref) => ({ ...ref })),
+      };
+      instance.updatedAt = event.timestamp;
+      mark(state, instance.workflowInstanceId, event);
+      mark(state, `workflow:${instance.questId}`, event);
+      return;
+    }
+    case "workflow.transition_recorded": {
+      const payload = event.payload as unknown as WorkflowTransitionRecordPayload;
+      const instance = requireEntity(
+        state.workflowInstances,
+        payload.workflowInstanceId,
+        "workflow instance",
+      );
+      assertWorkflowBinding(instance, payload);
+      if (instance.status !== "active") {
+        throw new Error(`Workflow instance '${instance.workflowInstanceId}' is closed`);
+      }
+      if (
+        payload.fromNodeId !== instance.currentNodeId ||
+        !instance.nodeCompletions[payload.fromNodeId]
+      ) {
+        throw new Error("Workflow transition source must be the completed current node");
+      }
+      if (payload.gateRecordIds.length !== 0) {
+        throw new Error("C3 Workflow transitions cannot reference gate records");
+      }
+      if (payload.selectedAt !== event.timestamp) {
+        throw new Error("Workflow selectedAt must equal its event timestamp");
+      }
+      instance.transitions = [
+        ...instance.transitions,
+        { ...payload, gateRecordIds: [...payload.gateRecordIds] },
+      ];
+      instance.currentNodeId = payload.toNodeId;
+      instance.updatedAt = event.timestamp;
+      mark(state, instance.workflowInstanceId, event);
+      mark(state, `workflow:${instance.questId}`, event);
+      return;
+    }
+    case "workflow.closed": {
+      const payload = event.payload as unknown as WorkflowClosePayload;
+      const instance = requireEntity(
+        state.workflowInstances,
+        payload.workflowInstanceId,
+        "workflow instance",
+      );
+      assertWorkflowBinding(instance, payload);
+      if (instance.status !== "active") {
+        throw new Error(`Workflow instance '${instance.workflowInstanceId}' is closed`);
+      }
+      if (payload.closedAt !== event.timestamp) {
+        throw new Error("Workflow closedAt must equal its event timestamp");
+      }
+      instance.status = payload.outcome;
+      instance.closure = { ...payload };
+      instance.updatedAt = event.timestamp;
+      Reflect.deleteProperty(state.activeWorkflowByQuestId, instance.questId);
+      mark(state, instance.workflowInstanceId, event);
+      mark(state, `workflow:${instance.questId}`, event);
       return;
     }
     case "decision.recorded": {

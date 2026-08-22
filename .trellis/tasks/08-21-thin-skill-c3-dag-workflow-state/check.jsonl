@@ -1,1 +1,4 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check strict Workflow definition/event/replay/projection contracts, one-active-instance invariant, no Quest-stage inference, and historical event compatibility."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check exact command tree, one-Skill Context, preview-by-default writes, read-only status/next, error codes, and no automatic continuation."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check C3 does not bypass managed authority, expose root-only members, invoke providers/workers, or restore host-native Skill discovery."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check focused deterministic fixture coverage, byte-level zero-write assertions, and compatibility tests follow repository test conventions."}

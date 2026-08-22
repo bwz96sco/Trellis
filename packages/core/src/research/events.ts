@@ -35,6 +35,7 @@ import {
 import {
   RESEARCH_EVENT_SCHEMA_VERSION,
   RESEARCH_SCHEMA_VERSION,
+  RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
   type ResearchAggregateRef,
   type ResearchEvent,
   type ResearchEventKind,
@@ -42,7 +43,20 @@ import {
   type ResearchSchemaV2AggregateRef,
   type ResearchSchemaV2Event,
   type ResearchSchemaV2EventKind,
+  type ResearchSchemaV3AggregateRef,
+  type ResearchSchemaV3Event,
+  type ResearchSchemaV3EventKind,
+  type WorkflowBindPayload,
+  type WorkflowClosePayload,
+  type WorkflowNodeCompletePayload,
+  type WorkflowTransitionRecordPayload,
 } from "./types.js";
+import {
+  parseWorkflowBindPayload,
+  parseWorkflowClosePayload,
+  parseWorkflowNodeCompletePayload,
+  parseWorkflowTransitionRecordPayload,
+} from "./workflow.js";
 
 export const RESEARCH_EVENT_KINDS: readonly ResearchEventKind[] = [
   "workspace.created",
@@ -73,6 +87,13 @@ export const RESEARCH_SCHEMA_V2_EVENT_KINDS: readonly ResearchSchemaV2EventKind[
   "approval.granted",
   "approval.revoked",
   "approval.consumed",
+];
+
+export const RESEARCH_SCHEMA_V3_EVENT_KINDS: readonly ResearchSchemaV3EventKind[] = [
+  "workflow.bound",
+  "workflow.node_completed",
+  "workflow.transition_recorded",
+  "workflow.closed",
 ];
 
 function object(
@@ -313,6 +334,86 @@ function validateSchemaV2Relations(event: ResearchSchemaV2Event): void {
   }
 }
 
+function parseSchemaV3AggregateRef(input: unknown): ResearchSchemaV3AggregateRef {
+  const value = object(input, "research event aggregate ref", ["type", "id"]);
+  if (
+    value.type !== "workflow" &&
+    value.type !== "quest" &&
+    value.type !== "result" &&
+    value.type !== "artifact"
+  ) {
+    throw new Error(
+      "schema-v3 aggregate ref type must be workflow, quest, result, or artifact",
+    );
+  }
+  return {
+    type: value.type,
+    id: parseNonEmptyString(value.id, "research event aggregate ref.id"),
+  };
+}
+
+function parseSchemaV3Payload(
+  kind: ResearchSchemaV3EventKind,
+  input: unknown,
+): Record<string, unknown> {
+  switch (kind) {
+    case "workflow.bound":
+      return parseWorkflowBindPayload(input) as unknown as Record<string, unknown>;
+    case "workflow.node_completed":
+      return parseWorkflowNodeCompletePayload(input) as unknown as Record<string, unknown>;
+    case "workflow.transition_recorded":
+      return parseWorkflowTransitionRecordPayload(input) as unknown as Record<string, unknown>;
+    case "workflow.closed":
+      return parseWorkflowClosePayload(input) as unknown as Record<string, unknown>;
+  }
+}
+
+function assertSchemaV3Ref(
+  refs: readonly ResearchSchemaV3AggregateRef[],
+  index: number,
+  type: ResearchSchemaV3AggregateRef["type"],
+  id: string,
+): void {
+  const ref = refs[index];
+  if (ref?.type !== type || ref.id !== id) {
+    throw new Error(
+      `research event.related[${index}] must be ${type}:${id}`,
+    );
+  }
+}
+
+function validateSchemaV3Relations(event: ResearchSchemaV3Event): void {
+  const payload = event.payload as unknown as
+    | WorkflowBindPayload
+    | WorkflowNodeCompletePayload
+    | WorkflowTransitionRecordPayload
+    | WorkflowClosePayload;
+  if (
+    event.aggregate.type !== "workflow" ||
+    event.aggregate.id !== payload.workflowInstanceId
+  ) {
+    throw new Error(
+      `${event.kind} aggregate must be workflow:${payload.workflowInstanceId}`,
+    );
+  }
+  assertSchemaV3Ref(event.related, 0, "quest", payload.questId);
+  if (event.kind === "workflow.node_completed") {
+    const completion = payload as WorkflowNodeCompletePayload;
+    if (event.related.length !== completion.acceptedRefs.length + 1) {
+      throw new Error(
+        "workflow.node_completed related refs must contain Quest then accepted refs",
+      );
+    }
+    completion.acceptedRefs.forEach((ref, index) =>
+      assertSchemaV3Ref(event.related, index + 1, ref.kind, ref.id),
+    );
+    return;
+  }
+  if (event.related.length !== 1) {
+    throw new Error(`${event.kind} must contain exactly one Quest related ref`);
+  }
+}
+
 export function parseResearchEvent(input: unknown): ResearchEvent {
   const value = object(input, "research event", [
     "schemaVersion",
@@ -329,10 +430,11 @@ export function parseResearchEvent(input: unknown): ResearchEvent {
   ]);
   if (
     value.schemaVersion !== RESEARCH_SCHEMA_VERSION &&
-    value.schemaVersion !== RESEARCH_EVENT_SCHEMA_VERSION
+    value.schemaVersion !== RESEARCH_EVENT_SCHEMA_VERSION &&
+    value.schemaVersion !== RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION
   ) {
     throw new Error(
-      `research event.schemaVersion must be one of: ${RESEARCH_SCHEMA_VERSION}, ${RESEARCH_EVENT_SCHEMA_VERSION}`,
+      `research event.schemaVersion must be one of: ${RESEARCH_SCHEMA_VERSION}, ${RESEARCH_EVENT_SCHEMA_VERSION}, ${RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION}`,
     );
   }
   if (
@@ -382,37 +484,70 @@ export function parseResearchEvent(input: unknown): ResearchEvent {
     } satisfies ResearchSchemaV1Event;
   }
 
+  if (value.schemaVersion === RESEARCH_EVENT_SCHEMA_VERSION) {
+    if (
+      !RESEARCH_SCHEMA_V2_EVENT_KINDS.includes(
+        value.kind as ResearchSchemaV2EventKind,
+      )
+    ) {
+      throw new Error(
+        `schema-v2 research event.kind must be one of: ${RESEARCH_SCHEMA_V2_EVENT_KINDS.join(", ")}`,
+      );
+    }
+    const event = {
+      schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+      eventId: common.eventId,
+      seq: common.seq,
+      timestamp: parseResearchSchemaV2Timestamp(
+        value.timestamp,
+        "research event.timestamp",
+      ),
+      kind: value.kind as ResearchSchemaV2EventKind,
+      aggregate: researchSchemaV2AggregateRefSchema.parse(value.aggregate),
+      related: value.related.map((entry) =>
+        researchSchemaV2AggregateRefSchema.parse(entry),
+      ),
+      payload: parseSchemaV2Payload(
+        value.kind as ResearchSchemaV2EventKind,
+        value.payload,
+      ),
+      actor: common.actor,
+      idempotencyKey: common.idempotencyKey,
+      provenance: common.provenance,
+    } satisfies ResearchSchemaV2Event;
+    validateSchemaV2Relations(event);
+    return event;
+  }
+
   if (
-    !RESEARCH_SCHEMA_V2_EVENT_KINDS.includes(
-      value.kind as ResearchSchemaV2EventKind,
+    !RESEARCH_SCHEMA_V3_EVENT_KINDS.includes(
+      value.kind as ResearchSchemaV3EventKind,
     )
   ) {
     throw new Error(
-      `schema-v2 research event.kind must be one of: ${RESEARCH_SCHEMA_V2_EVENT_KINDS.join(", ")}`,
+      `schema-v3 research event.kind must be one of: ${RESEARCH_SCHEMA_V3_EVENT_KINDS.join(", ")}`,
     );
   }
   const event = {
-    schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
+    schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
     eventId: common.eventId,
     seq: common.seq,
     timestamp: parseResearchSchemaV2Timestamp(
       value.timestamp,
       "research event.timestamp",
     ),
-    kind: value.kind as ResearchSchemaV2EventKind,
-    aggregate: researchSchemaV2AggregateRefSchema.parse(value.aggregate),
-    related: value.related.map((entry) =>
-      researchSchemaV2AggregateRefSchema.parse(entry),
-    ),
-    payload: parseSchemaV2Payload(
-      value.kind as ResearchSchemaV2EventKind,
+    kind: value.kind as ResearchSchemaV3EventKind,
+    aggregate: parseSchemaV3AggregateRef(value.aggregate),
+    related: value.related.map(parseSchemaV3AggregateRef),
+    payload: parseSchemaV3Payload(
+      value.kind as ResearchSchemaV3EventKind,
       value.payload,
     ),
     actor: common.actor,
     idempotencyKey: common.idempotencyKey,
     provenance: common.provenance,
-  } satisfies ResearchSchemaV2Event;
-  validateSchemaV2Relations(event);
+  } satisfies ResearchSchemaV3Event;
+  validateSchemaV3Relations(event);
   return event;
 }
 

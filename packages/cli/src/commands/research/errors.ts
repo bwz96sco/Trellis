@@ -72,6 +72,30 @@ export class ResearchActivationError extends Error {
   }
 }
 
+export type ResearchCliErrorCode =
+  | "research_skill_not_found"
+  | "research_skill_version_required"
+  | "research_skill_invocation_forbidden"
+  | "research_skill_member_forbidden"
+  | "research_workflow_invalid"
+  | "research_workflow_active_conflict"
+  | "research_workflow_completion_invalid"
+  | "research_workflow_transition_blocked";
+
+export class ResearchCliError extends Error {
+  readonly code: ResearchCliErrorCode;
+
+  constructor(
+    code: ResearchCliErrorCode,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "ResearchCliError";
+    this.code = code;
+  }
+}
+
 export class ResearchDispatchFileError extends Error {
   readonly committed = true;
   readonly headSeq: number;

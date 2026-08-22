@@ -14,6 +14,7 @@ export type {
   DecisionId,
   ActivationId,
   ApprovalId,
+  WorkflowInstanceId,
   QuestStatus,
   QuestStage,
   CampaignStatus,
@@ -48,16 +49,29 @@ export type {
   ExecutionPackageApprovalGrant,
   ResearchApprovalGrant,
   ResearchApprovalState,
+  WorkflowAcceptedRef,
+  WorkflowBindPayload,
+  WorkflowNodeCompletePayload,
+  WorkflowTransitionRecordPayload,
+  WorkflowCloseOutcome,
+  WorkflowClosePayload,
+  WorkflowStatus,
+  ResearchWorkflowInstance,
+  QuestWorkflowProjection,
   ResearchAggregateType,
   ResearchAggregateRef,
   ResearchSchemaV2AggregateType,
   ResearchSchemaV2AggregateRef,
+  ResearchSchemaV3AggregateType,
+  ResearchSchemaV3AggregateRef,
   ResearchActor,
   ResearchProvenance,
   ResearchEventKind,
   ResearchSchemaV2EventKind,
+  ResearchSchemaV3EventKind,
   ResearchSchemaV1Event,
   ResearchSchemaV2Event,
+  ResearchSchemaV3Event,
   ResearchEvent,
   Projected,
   ResearchState,
@@ -65,6 +79,7 @@ export type {
 export {
   RESEARCH_SCHEMA_VERSION,
   RESEARCH_EVENT_SCHEMA_VERSION,
+  RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
 } from "./types.js";
 
 export {
@@ -85,6 +100,7 @@ export {
   createDecisionId,
   createActivationId,
   createApprovalId,
+  createWorkflowInstanceId,
 } from "./ids.js";
 export type { ResearchIdKind } from "./ids.js";
 
@@ -472,6 +488,7 @@ export {
 export {
   RESEARCH_EVENT_KINDS,
   RESEARCH_SCHEMA_V2_EVENT_KINDS,
+  RESEARCH_SCHEMA_V3_EVENT_KINDS,
   researchEventSchema,
   parseResearchEvent,
   parseResearchLedger,
@@ -499,6 +516,31 @@ export type {
 } from "./store.js";
 
 export { stableResearchJson } from "./projections.js";
+
+export {
+  ResearchWorkflowError,
+  parseResearchWorkflowDefinitionV1,
+  parseWorkflowAcceptedRef,
+  serializeWorkflowAcceptedRef,
+  normalizeWorkflowAcceptedRefs,
+  findResearchWorkflowNode,
+  findResearchWorkflowTransition,
+  listResearchWorkflowOutgoingTransitions,
+  isResearchWorkflowTerminalNode,
+  missingResearchWorkflowRequiredRefs,
+  sameResearchExecutionPackageIdentity,
+  parseWorkflowBindPayload,
+  parseWorkflowNodeCompletePayload,
+  parseWorkflowTransitionRecordPayload,
+  parseWorkflowClosePayload,
+} from "./workflow.js";
+export type {
+  ResearchWorkflowErrorCode,
+  ResearchWorkflowNodeV1,
+  ResearchWorkflowTransitionV1,
+  ResearchWorkflowDefinitionV1,
+  ParsedResearchWorkflowDefinitionV1,
+} from "./workflow.js";
 
 export {
   digestDispatchRequest,

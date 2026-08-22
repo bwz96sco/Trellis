@@ -822,16 +822,11 @@ function skillNotFound(skillId: string, version: string): never {
   );
 }
 
-async function resolveSelectedResearchSkill(input: {
+export async function inspectResearchSkillExecutionPackage(input: {
   readonly root: string;
   readonly id: string;
   readonly version: string;
-  readonly invocationSource: ResearchSkillInvocationSource;
-  readonly profile?: ResearchExecutionProfile;
-  readonly audience: ResearchSkillMemberAudience;
-  readonly requestedMemberPaths?: readonly string[];
-  readonly expectedIdentity?: ResolvedExecutionPackageIdentity;
-}): Promise<ResolvedResearchSkillExecutionPackage> {
+}): Promise<ParsedResearchSkillExecutionPackage> {
   let parsed: ParsedResearchSkillExecutionPackage;
   let project: ReturnType<typeof inspectDirectoryPath>;
   try {
@@ -893,6 +888,85 @@ async function resolveSelectedResearchSkill(input: {
     version: input.version,
     packageKind: "skill",
   });
+  return parsed;
+}
+
+function discoverDirectoryCandidates(
+  root: string,
+  source: "project" | "bundled",
+): string[] {
+  if (!fs.existsSync(root)) return [];
+  const rootStat = fs.lstatSync(root);
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+    throw new ResearchSkillResolutionError(
+      source === "project" ? "INVALID_PROJECT_SKILL" : "INVALID_BUNDLED_SKILL",
+      `${source === "project" ? "Project" : "Bundled"} Research Skill root is invalid`,
+    );
+  }
+  const candidates: string[] = [];
+  for (const idEntry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!idEntry.isDirectory() || idEntry.isSymbolicLink()) {
+      throw new ResearchSkillResolutionError(
+        source === "project"
+          ? "INVALID_PROJECT_SKILL"
+          : "INVALID_BUNDLED_SKILL",
+        `${source === "project" ? "Project" : "Bundled"} Research Skill candidate '${idEntry.name}' is invalid`,
+      );
+    }
+    const idRoot = path.join(root, idEntry.name);
+    for (const versionEntry of fs.readdirSync(idRoot, {
+      withFileTypes: true,
+    })) {
+      if (!versionEntry.isDirectory() || versionEntry.isSymbolicLink()) {
+        throw new ResearchSkillResolutionError(
+          source === "project"
+            ? "INVALID_PROJECT_SKILL"
+            : "INVALID_BUNDLED_SKILL",
+          `${source === "project" ? "Project" : "Bundled"} Research Skill candidate '${idEntry.name}@${versionEntry.name}' is invalid`,
+        );
+      }
+      candidates.push(`${idEntry.name}\0${versionEntry.name}`);
+    }
+  }
+  return candidates;
+}
+
+export async function discoverResearchSkillExecutionPackages(input: {
+  readonly root: string;
+}): Promise<readonly ParsedResearchSkillExecutionPackage[]> {
+  const projectRoot = path.join(input.root, ".trellis", "research", "skills");
+  const bundledRoot = getBundledResearchSkillRoot();
+  const candidates = new Set([
+    ...discoverDirectoryCandidates(projectRoot, "project"),
+    ...discoverDirectoryCandidates(bundledRoot, "bundled"),
+  ]);
+  const selected = [...candidates].sort().map((candidate) => {
+    const [id, version] = candidate.split("\0");
+    return { id: id as string, version: version as string };
+  });
+  return Object.freeze(
+    await Promise.all(
+      selected.map((candidate) =>
+        inspectResearchSkillExecutionPackage({
+          root: input.root,
+          ...candidate,
+        }),
+      ),
+    ),
+  );
+}
+
+async function resolveSelectedResearchSkill(input: {
+  readonly root: string;
+  readonly id: string;
+  readonly version: string;
+  readonly invocationSource: ResearchSkillInvocationSource;
+  readonly profile?: ResearchExecutionProfile;
+  readonly audience: ResearchSkillMemberAudience;
+  readonly requestedMemberPaths?: readonly string[];
+  readonly expectedIdentity?: ResolvedExecutionPackageIdentity;
+}): Promise<ResolvedResearchSkillExecutionPackage> {
+  const parsed = await inspectResearchSkillExecutionPackage(input);
   if (input.expectedIdentity !== undefined) {
     assertResearchExecutionPackageIdentity(
       parsed.identity,

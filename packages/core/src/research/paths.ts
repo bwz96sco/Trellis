@@ -8,6 +8,7 @@ export interface ResearchPaths {
   workspaceFile: string;
   repositoriesFile: string;
   questsDir: string;
+  workflowsDir: string;
   campaignsDir: string;
   runsDir: string;
   evidenceDir: string;
@@ -34,6 +35,7 @@ export function researchPaths(root: string): ResearchPaths {
     workspaceFile: path.join(researchDir, "workspace.json"),
     repositoriesFile: path.join(researchDir, "repositories.json"),
     questsDir: path.join(researchDir, "quests"),
+    workflowsDir: path.join(researchDir, "workflows"),
     campaignsDir: path.join(researchDir, "campaigns"),
     runsDir: path.join(researchDir, "runs"),
     evidenceDir: path.join(researchDir, "evidence"),

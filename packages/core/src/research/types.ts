@@ -2,6 +2,7 @@ import type { ResolvedExecutionPackageIdentity } from "./execution-package.js";
 
 export const RESEARCH_SCHEMA_VERSION = 1 as const;
 export const RESEARCH_EVENT_SCHEMA_VERSION = 2 as const;
+export const RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION = 3 as const;
 
 export type WorkspaceId = `wsp_${string}`;
 export type RepositoryId = `rep_${string}`;
@@ -18,6 +19,7 @@ export type ProposalId = `prp_${string}`;
 export type DecisionId = `dec_${string}`;
 export type ActivationId = `act_${string}`;
 export type ApprovalId = `apr_${string}`;
+export type WorkflowInstanceId = `wfi_${string}`;
 
 export type QuestStatus = "active" | "paused" | "completed" | "abandoned";
 export type QuestStage =
@@ -324,6 +326,89 @@ export type ResearchApprovalState =
       proposalId: ProposalId;
     };
 
+export type WorkflowAcceptedRef =
+  | { kind: "result"; id: ResultId }
+  | { kind: "artifact"; id: ArtifactId };
+
+export interface WorkflowBindPayload {
+  workflowInstanceId: WorkflowInstanceId;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  startNodeId: string;
+  boundAt: string;
+}
+
+export interface WorkflowNodeCompletePayload {
+  workflowInstanceId: WorkflowInstanceId;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  nodeId: string;
+  executionPackage: ResolvedExecutionPackageIdentity;
+  executionProfile: "lightweight" | "managed";
+  acceptedRefs: WorkflowAcceptedRef[];
+  completedAt: string;
+}
+
+export interface WorkflowTransitionRecordPayload {
+  workflowInstanceId: WorkflowInstanceId;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  transitionId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  selectedBy: string;
+  gateRecordIds: string[];
+  selectedAt: string;
+}
+
+export type WorkflowCloseOutcome =
+  | "completed"
+  | "blocked"
+  | "cancelled"
+  | "superseded";
+
+export interface WorkflowClosePayload {
+  workflowInstanceId: WorkflowInstanceId;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  outcome: WorkflowCloseOutcome;
+  closedBy: string;
+  rationale: string;
+  closedAt: string;
+}
+
+export type WorkflowStatus = "active" | WorkflowCloseOutcome;
+
+export interface ResearchWorkflowInstance {
+  workflowInstanceId: WorkflowInstanceId;
+  questId: QuestId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  startNodeId: string;
+  currentNodeId: string;
+  status: WorkflowStatus;
+  boundAt: string;
+  nodeCompletions: Record<string, WorkflowNodeCompletePayload>;
+  transitions: WorkflowTransitionRecordPayload[];
+  closure?: WorkflowClosePayload;
+  updatedAt: string;
+}
+
+export interface QuestWorkflowProjection {
+  questId: QuestId;
+  activeWorkflowInstanceId: WorkflowInstanceId | null;
+  instances: ResearchWorkflowInstance[];
+}
+
 export type ResearchAggregateType =
   | "workspace"
   | "repository"
@@ -350,6 +435,13 @@ export type ResearchSchemaV2AggregateType =
 
 export interface ResearchSchemaV2AggregateRef {
   type: ResearchSchemaV2AggregateType;
+  id: string;
+}
+
+export type ResearchSchemaV3AggregateType = ResearchAggregateType | "workflow";
+
+export interface ResearchSchemaV3AggregateRef {
+  type: ResearchSchemaV3AggregateType;
   id: string;
 }
 
@@ -392,6 +484,12 @@ export type ResearchSchemaV2EventKind =
   | "approval.revoked"
   | "approval.consumed";
 
+export type ResearchSchemaV3EventKind =
+  | "workflow.bound"
+  | "workflow.node_completed"
+  | "workflow.transition_recorded"
+  | "workflow.closed";
+
 export interface ResearchSchemaV1Event {
   schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
   eventId: EventId;
@@ -420,7 +518,24 @@ export interface ResearchSchemaV2Event {
   provenance: ResearchProvenance;
 }
 
-export type ResearchEvent = ResearchSchemaV1Event | ResearchSchemaV2Event;
+export interface ResearchSchemaV3Event {
+  schemaVersion: typeof RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION;
+  eventId: EventId;
+  seq: number;
+  timestamp: string;
+  kind: ResearchSchemaV3EventKind;
+  aggregate: ResearchSchemaV3AggregateRef;
+  related: ResearchSchemaV3AggregateRef[];
+  payload: Record<string, unknown>;
+  actor: ResearchActor;
+  idempotencyKey: string;
+  provenance: ResearchProvenance;
+}
+
+export type ResearchEvent =
+  | ResearchSchemaV1Event
+  | ResearchSchemaV2Event
+  | ResearchSchemaV3Event;
 
 export interface Projected<T> {
   schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
@@ -446,6 +561,9 @@ export interface ResearchState {
   activationByDispatchId: Partial<Record<DispatchId, ActivationId>>;
   approvals: Record<ApprovalId, ResearchApprovalState>;
   approvalIdsByActivationId: Partial<Record<ActivationId, ApprovalId[]>>;
+  workflowInstances: Record<WorkflowInstanceId, ResearchWorkflowInstance>;
+  workflowInstanceIdsByQuestId: Partial<Record<QuestId, WorkflowInstanceId[]>>;
+  activeWorkflowByQuestId: Partial<Record<QuestId, WorkflowInstanceId>>;
   entitySeq: Record<string, number>;
   projectedThroughSeq: number;
   updatedAt: string | null;

@@ -46,6 +46,20 @@ import {
   type GetResearchDispatchContextOptions,
 } from "./dispatch-context.js";
 import {
+  getResearchSkillContext,
+  listResearchSkills,
+  showResearchSkill,
+} from "./skill-command.js";
+import {
+  bindResearchWorkflow,
+  closeResearchWorkflow,
+  completeResearchWorkflowNode,
+  getResearchWorkflowNext,
+  getResearchWorkflowStatus,
+  recordResearchWorkflowTransition,
+  type ResearchWorkflowMutationOptions,
+} from "./workflow-command.js";
+import {
   addResearchRepository,
   bindResearchRepository,
   listResearchRepositories,
@@ -84,12 +98,15 @@ import type {
   ProposalId,
   QuestId,
   ResearchExecutionHost,
+  ResearchExecutionProfile,
   QuestStage,
   QuestStatus,
   RepositoryId,
   RepositoryKind,
   RunId,
   RunStatus,
+  WorkflowCloseOutcome,
+  WorkflowInstanceId,
 } from "@mindfoldhq/trellis-core/research";
 
 interface InitOptions extends ResearchMutationOptions {
@@ -245,6 +262,40 @@ function parseResearchHostArgument(value: string): ResearchExecutionHost {
   return value;
 }
 
+function parseResearchExecutionProfileArgument(
+  value: string,
+): ResearchExecutionProfile {
+  if (value !== "lightweight" && value !== "managed") {
+    throw new InvalidArgumentError("profile must be lightweight or managed");
+  }
+  return value;
+}
+
+function parseWorkflowInstanceIdArgument(value: string): WorkflowInstanceId {
+  return parseResearchIdArgument<WorkflowInstanceId>(
+    value,
+    "wfi",
+    "Workflow instance ID",
+  );
+}
+
+function parseWorkflowCloseOutcomeArgument(
+  value: string,
+): WorkflowCloseOutcome {
+  const outcomes: WorkflowCloseOutcome[] = [
+    "completed",
+    "blocked",
+    "cancelled",
+    "superseded",
+  ];
+  if (!outcomes.includes(value as WorkflowCloseOutcome)) {
+    throw new InvalidArgumentError(
+      `Workflow outcome must be one of: ${outcomes.join(", ")}`,
+    );
+  }
+  return value as WorkflowCloseOutcome;
+}
+
 function parseRepositoryKindArgument(value: string): RepositoryKind {
   const kinds: RepositoryKind[] = ["code", "paper", "notes", "data", "other"];
   if (!kinds.includes(value as RepositoryKind)) {
@@ -257,6 +308,13 @@ function parseRepositoryKindArgument(value: string): RepositoryKind {
 
 function collectString(value: string, previous: string[]): string[] {
   return [...previous, value];
+}
+
+function collectRequiredString(
+  value: string,
+  previous: string[] | undefined,
+): string[] {
+  return [...(previous ?? []), value];
 }
 
 function collectRepositoryId(
@@ -286,6 +344,13 @@ function addMutationOptions(command: Command): Command {
   return addOutputOptions(command)
     .option("--idempotency-key <key>", "durable retry key")
     .option("--dry-run", "validate the prospective mutation without writing");
+}
+
+function addWorkflowMutationOptions(command: Command): Command {
+  return addOutputOptions(command)
+    .option("--idempotency-key <key>", "durable retry key")
+    .option("--dry-run", "preview the Workflow mutation without writing")
+    .option("--write", "commit exactly one Workflow event");
 }
 
 function collectEvidenceId(
@@ -351,6 +416,76 @@ function renderExtendedResearchResult(result: unknown, json: boolean): void {
     console.log(`${String(value.repositoryId)} bound=${String(value.path)}`);
     return;
   }
+  if (value.command === "research skill list") {
+    const skills = value.skills as {
+      id: string;
+      version: string;
+      source: string;
+      skillKind: string;
+      invocationSource: string;
+      allowedProfiles: string[];
+    }[];
+    for (const skill of skills) {
+      console.log(
+        `${skill.id}@${skill.version} source=${skill.source} kind=${skill.skillKind} invocation=${skill.invocationSource} profiles=${skill.allowedProfiles.join(",")}`,
+      );
+    }
+    return;
+  }
+  if (value.command === "research skill show") {
+    const manifest = value.manifest as { id: string; version: string };
+    const instructions = value.instructions as {
+      byteLength: number;
+      digest: string;
+    };
+    const members = value.members as unknown[];
+    console.log(
+      `${manifest.id}@${manifest.version} source=${String(value.source)} instructions=${instructions.byteLength} digest=${instructions.digest} members=${members.length}`,
+    );
+    return;
+  }
+  if (value.command === "research skill context") {
+    console.log(String(value.instructions));
+    const members = value.members as { path: string; content: string }[];
+    for (const member of members) {
+      console.log(`\n--- ${member.path} ---\n${member.content}`);
+    }
+    return;
+  }
+  if (value.command === "research workflow status") {
+    const instance = value.instance as null | {
+      workflowInstanceId: string;
+      workflowId: string;
+      workflowVersion: string;
+      currentNodeId: string;
+      status: string;
+    };
+    console.log(
+      instance === null
+        ? `${String(value.questId)} state=${String(value.state)}`
+        : `${String(value.questId)} state=${String(value.state)} instance=${instance.workflowInstanceId} workflow=${instance.workflowId}@${instance.workflowVersion} node=${instance.currentNodeId} status=${instance.status}`,
+    );
+    return;
+  }
+  if (value.command === "research workflow next") {
+    const choices = value.choices as {
+      id: string;
+      fromNodeId: string;
+      toNodeId: string;
+      legal: boolean;
+      missingRefs: string[];
+      missingGateIds: string[];
+    }[];
+    console.log(
+      `${String(value.questId)} instance=${String(value.workflowInstanceId ?? "none")} node=${String(value.currentNodeId ?? "none")} stop=${String(value.stopReason)}`,
+    );
+    for (const choice of choices) {
+      console.log(
+        `${choice.id} ${choice.fromNodeId}->${choice.toNodeId} legal=${choice.legal} missingRefs=${choice.missingRefs.join(",")} missingGates=${choice.missingGateIds.join(",")}`,
+      );
+    }
+    return;
+  }
   console.log(JSON.stringify(result));
 }
 
@@ -411,6 +546,182 @@ export function registerResearchCommand(program: Command): void {
       ),
   ).action(async (options: ResearchOutputOptions) => {
     await runAction(options.json, () => rebuildResearch(options));
+  });
+
+  const skill = research
+    .command("skill")
+    .description("Inspect authenticated Research Skill packages");
+
+  addOutputOptions(
+    skill.command("list").description("List Research Skills"),
+  ).action(async (options: ResearchOutputOptions) => {
+    await runAction(options.json, () => listResearchSkills(options));
+  });
+
+  addOutputOptions(
+    skill
+      .command("show")
+      .description("Show authenticated Research Skill metadata")
+      .requiredOption("--skill <id>", "exact Research Skill ID")
+      .option("--version <version>", "exact Research Skill version"),
+  ).action(
+    async (
+      options: ResearchOutputOptions & { skill: string; version?: string },
+    ) => {
+      await runAction(options.json, () => showResearchSkill(options));
+    },
+  );
+
+  addOutputOptions(
+    skill
+      .command("context")
+      .description("Emit one read-only lightweight Research Skill Context")
+      .requiredOption("--skill <id>", "exact Research Skill ID")
+      .requiredOption(
+        "--profile <profile>",
+        "execution profile",
+        parseResearchExecutionProfileArgument,
+      )
+      .option(
+        "--member <path>",
+        "explicit optional member path (repeatable)",
+        collectString,
+        [] as string[],
+      )
+      .option("--quest <quest-id>", "Quest context", parseQuestIdArgument),
+  ).action(
+    async (
+      options: ResearchOutputOptions & {
+        skill: string;
+        profile: ResearchExecutionProfile;
+        member: string[];
+        quest?: QuestId;
+      },
+    ) => {
+      await runAction(options.json, () => getResearchSkillContext(options));
+    },
+  );
+
+  const workflow = research
+    .command("workflow")
+    .description("Manage explicit Research Workflow state");
+
+  addWorkflowMutationOptions(
+    workflow
+      .command("bind")
+      .description("Preview or bind an exact Workflow definition")
+      .requiredOption("--quest <quest-id>", "Quest ID", parseQuestIdArgument)
+      .requiredOption("--workflow <id>", "exact Workflow ID")
+      .requiredOption("--version <version>", "exact Workflow version")
+      .requiredOption("--start-node <node>", "declared start node ID"),
+  ).action(
+    async (
+      options: ResearchWorkflowMutationOptions & {
+        quest: QuestId;
+        workflow: string;
+        version: string;
+        startNode: string;
+      },
+    ) => {
+      await runAction(options.json, () => bindResearchWorkflow(options));
+    },
+  );
+
+  addWorkflowMutationOptions(
+    workflow
+      .command("complete")
+      .description("Preview or record one lightweight node completion")
+      .requiredOption(
+        "--instance <wfi-id>",
+        "Workflow instance ID",
+        parseWorkflowInstanceIdArgument,
+      )
+      .requiredOption("--node <id>", "current Workflow node ID")
+      .requiredOption(
+        "--accepted-ref <ref>",
+        "accepted result:<id> or artifact:<id> reference (repeatable)",
+        collectRequiredString,
+      ),
+  ).action(
+    async (
+      options: ResearchWorkflowMutationOptions & {
+        instance: WorkflowInstanceId;
+        node: string;
+        acceptedRef: string[];
+      },
+    ) => {
+      await runAction(options.json, () =>
+        completeResearchWorkflowNode(options),
+      );
+    },
+  );
+
+  addWorkflowMutationOptions(
+    workflow
+      .command("transition")
+      .description("Preview or record one explicit Workflow transition")
+      .requiredOption(
+        "--instance <wfi-id>",
+        "Workflow instance ID",
+        parseWorkflowInstanceIdArgument,
+      )
+      .requiredOption("--transition <id>", "declared transition ID"),
+  ).action(
+    async (
+      options: ResearchWorkflowMutationOptions & {
+        instance: WorkflowInstanceId;
+        transition: string;
+      },
+    ) => {
+      await runAction(options.json, () =>
+        recordResearchWorkflowTransition(options),
+      );
+    },
+  );
+
+  addWorkflowMutationOptions(
+    workflow
+      .command("close")
+      .description("Preview or close one active Workflow instance")
+      .requiredOption(
+        "--instance <wfi-id>",
+        "Workflow instance ID",
+        parseWorkflowInstanceIdArgument,
+      )
+      .requiredOption(
+        "--outcome <outcome>",
+        "completed, blocked, cancelled, or superseded",
+        parseWorkflowCloseOutcomeArgument,
+      )
+      .requiredOption("--rationale <text>", "non-empty closure rationale"),
+  ).action(
+    async (
+      options: ResearchWorkflowMutationOptions & {
+        instance: WorkflowInstanceId;
+        outcome: WorkflowCloseOutcome;
+        rationale: string;
+      },
+    ) => {
+      await runAction(options.json, () => closeResearchWorkflow(options));
+    },
+  );
+
+  addOutputOptions(
+    workflow
+      .command("status")
+      .description("Read canonical Workflow status for one Quest")
+      .requiredOption("--quest <quest-id>", "Quest ID", parseQuestIdArgument),
+  ).action(async (options: ResearchOutputOptions & { quest: QuestId }) => {
+    await runAction(options.json, () => getResearchWorkflowStatus(options));
+  });
+
+  addOutputOptions(
+    workflow
+      .command("next")
+      .description("List explicit legal and blocked outgoing transitions")
+      .requiredOption("--quest <quest-id>", "Quest ID", parseQuestIdArgument),
+  ).action(async (options: ResearchOutputOptions & { quest: QuestId }) => {
+    await runAction(options.json, () => getResearchWorkflowNext(options));
   });
 
   const repo = research

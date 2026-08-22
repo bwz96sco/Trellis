@@ -642,8 +642,8 @@ describe("mixed schema-v1/schema-v2 event parsing", () => {
     workspace.schemaVersion = 2;
     expect(() => parseResearchEvent(workspace)).toThrow(/schema-v2.*kind/);
 
-    const unknownVersion = { ...activation, schemaVersion: 3 };
-    expect(() => parseResearchEvent(unknownVersion)).toThrow(/one of: 1, 2/);
+    const unknownVersion = { ...activation, schemaVersion: 4 };
+    expect(() => parseResearchEvent(unknownVersion)).toThrow(/one of: 1, 2, 3/);
 
     const expandedYear = JSON.parse(JSON.stringify(activationEvent())) as Record<
       string,
