@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import path from "node:path";
+
 const PACKED_ROOT = "package/";
 
 /** Historical stage Skill names — forbidden in packed payload after C09. */
@@ -41,6 +44,10 @@ export const RESEARCH_PROCEDURE_VERSIONS = [
   "2.0.1",
   "2.0.2",
   "2.0.3",
+  "2.0.4",
+  "2.0.5",
+  "2.0.6",
+  "2.0.7",
 ];
 
 /** Optional procedures exist only from 2.0.0+ (no 1.0.0 fixture). */
@@ -406,6 +413,305 @@ export function normalizeTarEntry(rawEntry) {
 
 export function parseTarListing(output) {
   return output.split(/\r?\n/).map(normalizeTarEntry).filter(Boolean);
+}
+
+const PACKED_PROCEDURE_MANIFEST =
+  /^package\/dist\/templates\/research\/procedures\/([^/]+)\/([^/]+)\/methodology\/pack\.json$/;
+const PACKED_SKILL_MANIFEST =
+  /^package\/dist\/templates\/research\/skills\/([^/]+)\/([^/]+)\/skill\.json$/;
+const LOWER_SHA256 = /^[0-9a-f]{64}$/;
+const SKILL_ID = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+const EXACT_SEMVER =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+const MAX_SKILL_MANIFEST_BYTES = 64 * 1024;
+const MAX_SKILL_INSTRUCTION_BYTES = 256 * 1024;
+const MAX_SKILL_MEMBER_COUNT = 256;
+const MAX_SKILL_MEMBER_BYTES = 1024 * 1024;
+const MAX_SKILL_AGGREGATE_MEMBER_BYTES = 8 * 1024 * 1024;
+const STRICT_UTF8 = new TextDecoder("utf-8", { fatal: true });
+
+function hasUtf8Bom(bytes) {
+  return (
+    bytes.byteLength >= 3 &&
+    bytes[0] === 0xef &&
+    bytes[1] === 0xbb &&
+    bytes[2] === 0xbf
+  );
+}
+
+function packedManifestObject(value, label) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be a JSON object`);
+  }
+  return value;
+}
+
+function packedRelativePath(value, label) {
+  if (
+    typeof value !== "string" ||
+    value.length === 0 ||
+    value.includes("\0") ||
+    value.includes("\\") ||
+    path.posix.isAbsolute(value) ||
+    /^[A-Za-z]:/.test(value) ||
+    value.split("/").some((segment) =>
+      segment === "" || segment === "." || segment === ".."
+    )
+  ) {
+    throw new Error(`${label} is unsafe: ${String(value)}`);
+  }
+  return value;
+}
+
+function packedEntryBytes(entry, normalizedEntries, readEntry) {
+  if (!normalizedEntries.has(entry)) {
+    throw new Error(`missing declared packed member ${entry}`);
+  }
+  const value = readEntry(entry);
+  if (typeof value === "string") return Buffer.from(value, "utf8");
+  if (value instanceof Uint8Array) return Buffer.from(value);
+  throw new Error(`packed member reader returned no bytes for ${entry}`);
+}
+
+function packedManifestJson(entry, normalizedEntries, readEntry, maximumBytes) {
+  const bytes = packedEntryBytes(entry, normalizedEntries, readEntry);
+  if (maximumBytes !== undefined && bytes.byteLength > maximumBytes) {
+    throw new Error(
+      `${entry} exceeds ${maximumBytes} bytes (${bytes.byteLength})`,
+    );
+  }
+  let text;
+  try {
+    text = STRICT_UTF8.decode(bytes);
+  } catch (error) {
+    throw new Error(`${entry} is not valid UTF-8`, { cause: error });
+  }
+  if (hasUtf8Bom(bytes) || text.includes("\0")) {
+    throw new Error(`${entry} contains a BOM or NUL`);
+  }
+  try {
+    return packedManifestObject(JSON.parse(text), entry);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`${entry} is not valid JSON`, { cause: error });
+    }
+    throw error;
+  }
+}
+
+function auditDeclaredPackedMember(input) {
+  const memberPath = packedRelativePath(input.member.path, `${input.label}.path`);
+  if (
+    typeof input.member.sha256 !== "string" ||
+    !LOWER_SHA256.test(input.member.sha256)
+  ) {
+    throw new Error(`${input.label}.sha256 must be 64 lowercase hexadecimal characters`);
+  }
+  if (
+    typeof input.member.maxBytes !== "number" ||
+    !Number.isInteger(input.member.maxBytes) ||
+    input.member.maxBytes <= 0 ||
+    (input.maximumMemberBytes !== undefined &&
+      input.member.maxBytes > input.maximumMemberBytes)
+  ) {
+    throw new Error(`${input.label}.maxBytes is invalid`);
+  }
+  const packedPath = path.posix.join(input.base, memberPath);
+  const bytes = packedEntryBytes(
+    packedPath,
+    input.normalizedEntries,
+    input.readEntry,
+  );
+  if (bytes.byteLength > input.member.maxBytes) {
+    throw new Error(
+      `${packedPath} exceeds maxBytes (${bytes.byteLength} > ${input.member.maxBytes})`,
+    );
+  }
+  const actual = createHash("sha256").update(bytes).digest("hex");
+  if (actual !== input.member.sha256) {
+    throw new Error(
+      `${packedPath} sha256 mismatch (declared ${input.member.sha256}, actual ${actual})`,
+    );
+  }
+  if (input.requireText) {
+    let text;
+    try {
+      text = STRICT_UTF8.decode(bytes);
+    } catch (error) {
+      throw new Error(`${packedPath} is not valid UTF-8`, { cause: error });
+    }
+    if (hasUtf8Bom(bytes) || text.includes("\0")) {
+      throw new Error(`${packedPath} contains a BOM or NUL`);
+    }
+  }
+  return bytes.byteLength;
+}
+
+/**
+ * Discover execution-package manifests from the packed tarball and authenticate
+ * every member they declare. The callback must return the exact bytes for a
+ * normalized tar entry (for example via `tar -xOf`).
+ */
+export function auditPackedExecutionPackageManifests(entries, readEntry) {
+  const normalizedEntries = new Set(
+    entries.map(normalizeTarEntry).filter(Boolean),
+  );
+  const procedureManifests = [...normalizedEntries]
+    .filter((entry) => PACKED_PROCEDURE_MANIFEST.test(entry))
+    .sort();
+  const skillManifests = [...normalizedEntries]
+    .filter((entry) => PACKED_SKILL_MANIFEST.test(entry))
+    .sort();
+  const failures = [];
+  let procedureMemberCount = 0;
+  let skillMemberCount = 0;
+
+  for (const manifestEntry of procedureManifests) {
+    try {
+      const match = PACKED_PROCEDURE_MANIFEST.exec(manifestEntry);
+      if (match === null) continue;
+      const [, procedureId, version] = match;
+      const manifest = packedManifestJson(
+        manifestEntry,
+        normalizedEntries,
+        readEntry,
+      );
+      if (
+        manifest.schemaVersion !== 1 ||
+        manifest.procedureId !== procedureId ||
+        manifest.procedureVersion !== version ||
+        !Array.isArray(manifest.entries)
+      ) {
+        throw new Error(
+          `${manifestEntry} does not match its Procedure directory identity`,
+        );
+      }
+      const seen = new Set();
+      const base = path.posix.dirname(manifestEntry);
+      for (const [index, rawMember] of manifest.entries.entries()) {
+        const member = packedManifestObject(
+          rawMember,
+          `${manifestEntry}.entries[${index}]`,
+        );
+        if (seen.has(member.path)) {
+          throw new Error(`${manifestEntry} declares duplicate member ${member.path}`);
+        }
+        seen.add(member.path);
+        auditDeclaredPackedMember({
+          member,
+          label: `${manifestEntry}.entries[${index}]`,
+          base,
+          normalizedEntries,
+          readEntry,
+          requireText: false,
+        });
+        procedureMemberCount += 1;
+      }
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  for (const manifestEntry of skillManifests) {
+    try {
+      const match = PACKED_SKILL_MANIFEST.exec(manifestEntry);
+      if (match === null) continue;
+      const [, skillId, version] = match;
+      const manifest = packedManifestJson(
+        manifestEntry,
+        normalizedEntries,
+        readEntry,
+        MAX_SKILL_MANIFEST_BYTES,
+      );
+      if (
+        manifest.schemaVersion !== 3 ||
+        manifest.packageKind !== "skill" ||
+        manifest.id !== skillId ||
+        manifest.version !== version ||
+        !SKILL_ID.test(skillId) ||
+        !EXACT_SEMVER.test(version) ||
+        version.includes("+") ||
+        manifest.instructionFile !== "SKILL.md" ||
+        !Array.isArray(manifest.members) ||
+        manifest.members.length > MAX_SKILL_MEMBER_COUNT
+      ) {
+        throw new Error(
+          `${manifestEntry} does not match its schema-v3 Skill directory identity`,
+        );
+      }
+      const base = path.posix.dirname(manifestEntry);
+      const instructionPath = path.posix.join(base, "SKILL.md");
+      const instructionBytes = packedEntryBytes(
+        instructionPath,
+        normalizedEntries,
+        readEntry,
+      );
+      if (
+        instructionBytes.byteLength === 0 ||
+        instructionBytes.byteLength > MAX_SKILL_INSTRUCTION_BYTES
+      ) {
+        throw new Error(`${instructionPath} has an invalid byte length`);
+      }
+      let instructions;
+      try {
+        instructions = STRICT_UTF8.decode(instructionBytes);
+      } catch (error) {
+        throw new Error(`${instructionPath} is not valid UTF-8`, { cause: error });
+      }
+      if (hasUtf8Bom(instructionBytes) || instructions.includes("\0")) {
+        throw new Error(`${instructionPath} contains a BOM or NUL`);
+      }
+
+      const seen = new Set();
+      let aggregateBytes = 0;
+      for (const [index, rawMember] of manifest.members.entries()) {
+        const member = packedManifestObject(
+          rawMember,
+          `${manifestEntry}.members[${index}]`,
+        );
+        if (member.path === "skill.json" || member.path === "SKILL.md") {
+          throw new Error(`${manifestEntry} declares reserved member ${member.path}`);
+        }
+        if (seen.has(member.path)) {
+          throw new Error(`${manifestEntry} declares duplicate member ${member.path}`);
+        }
+        seen.add(member.path);
+        aggregateBytes += auditDeclaredPackedMember({
+          member,
+          label: `${manifestEntry}.members[${index}]`,
+          base,
+          normalizedEntries,
+          readEntry,
+          maximumMemberBytes: MAX_SKILL_MEMBER_BYTES,
+          requireText: true,
+        });
+        skillMemberCount += 1;
+      }
+      if (aggregateBytes > MAX_SKILL_AGGREGATE_MEMBER_BYTES) {
+        throw new Error(
+          `${manifestEntry} member bytes exceed ${MAX_SKILL_AGGREGATE_MEMBER_BYTES}`,
+        );
+      }
+    } catch (error) {
+      failures.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  if (failures.length > 0) {
+    throw new Error(
+      `Packed CLI execution-package manifests failed audit:\n${failures
+        .sort()
+        .map((failure) => `  - ${failure}`)
+        .join("\n")}`,
+    );
+  }
+
+  return {
+    procedureManifestCount: procedureManifests.length,
+    procedureMemberCount,
+    skillManifestCount: skillManifests.length,
+    skillMemberCount,
+  };
 }
 
 export function auditPackedActiveContent(contents) {

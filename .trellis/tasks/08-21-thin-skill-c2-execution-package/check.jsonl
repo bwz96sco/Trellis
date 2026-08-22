@@ -1,1 +1,4 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check implementation against frozen identity, package-policy, replay, Activation, and historical compatibility assertions."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check managed identity/member boundaries without prematurely implementing C5 worker Context."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check deterministic fixtures, historical verifier behavior, and package audit testing conventions."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/README.md","reason":"Confirm C2 does not read mutable source Skills or migrate pilot bytes owned by C6."}

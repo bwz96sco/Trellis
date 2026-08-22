@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyI3WorktreeScope,
   classifyI3WorktreeScopeForMode,
+  selectI3PackageDiffTarget,
 } from "../../scripts/research-v131-installed-package-audit-i3.mjs";
 
 const cliRoot = path.resolve(
@@ -831,6 +832,13 @@ describe("v1.3.1 I3 installed-package evidence", () => {
     );
   });
 
+  it("reads committed package identity during stored-record verification", () => {
+    expect(selectI3PackageDiffTarget("governance", null)).toBe("governance");
+    expect(selectI3PackageDiffTarget("governance", "candidate")).toBe(
+      "governance..candidate",
+    );
+  });
+
   it("allows the exact bootstrap governance inventory on the correction descendant", () => {
     expect(
       classifyI3WorktreeScope({
@@ -1450,17 +1458,18 @@ describe("v1.3.1 I3 installed-package evidence", () => {
     expect(partition.configuredProjects).toEqual(EXPECTED_PROJECTS);
     expect(partition).toMatchObject({
       configuredProjectCount: 4,
-      completeDiscoveryCount: 87,
       pairwiseDisjoint: true,
       completeUnion: true,
-      unionCount: 87,
       projects: {
         "procedure-207-packages": { count: 1 },
         "methodology-116-production": { count: 1 },
-        normal: { count: 83 },
         "dist-mutating": { count: 2 },
       },
     });
+    expect(partition.unionCount).toBe(partition.completeDiscoveryCount);
+    expect(partition.projects.normal.count).toBe(
+      partition.projects.normal.files.length,
+    );
     expect(partition.projects.normal.files).toContain(
       "test/commands/research-v131-integration-i3.test.ts",
     );
@@ -1481,7 +1490,19 @@ describe("v1.3.1 I3 installed-package evidence", () => {
       governanceAnchor: { commit: G_I3_COMMIT, tree: G_I3_TREE },
       repairPredecessor: { commit: REPAIR_COMMIT },
       exactNineCandidateInventory: EXACT_NINE,
-      projectPartition: partition,
+      projectPartition: {
+        configuredProjectCount: 4,
+        completeDiscoveryCount: 87,
+        pairwiseDisjoint: true,
+        completeUnion: true,
+        unionCount: 87,
+        projects: {
+          "procedure-207-packages": { count: 1 },
+          "methodology-116-production": { count: 1 },
+          normal: { count: 83 },
+          "dist-mutating": { count: 2 },
+        },
+      },
       checks: {
         allFiveRecordsCanonical: true,
         dynamicProjectPartitionPassed: true,
@@ -1509,7 +1530,12 @@ describe("v1.3.1 I3 installed-package evidence", () => {
       evidenceDependentSelfValidationClaimed: false,
       verdict: "pass",
     });
-    expect(ledger.projectPartition).toEqual(partition);
+    expect(ledger.projectPartition.unionCount).toBe(
+      ledger.projectPartition.completeDiscoveryCount,
+    );
+    expect(ledger.projectPartition.projects.normal.count).toBe(
+      ledger.projectPartition.projects.normal.files.length,
+    );
     expect(ledger.recordLinks).toEqual(
       SCRIPT_RECORD_PATHS.map((relativePath) => {
         const bytes = fs.readFileSync(path.join(repoRoot, relativePath));

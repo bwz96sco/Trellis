@@ -3,7 +3,7 @@
   "name": "thin-skill-c2-execution-package",
   "title": "Generalize Research execution package identity",
   "description": "Generalize existing Procedure resolution into one normalized execution-package identity while preserving historical replay.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

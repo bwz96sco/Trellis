@@ -669,6 +669,15 @@ function authenticateFinalI3Subject() {
   return FINAL_I3.commit;
 }
 
+export function selectI3PackageDiffTarget(
+  governanceCommit,
+  candidateCommit = null,
+) {
+  return candidateCommit === null
+    ? governanceCommit
+    : `${governanceCommit}..${candidateCommit}`;
+}
+
 function buildPackageProof(candidateCommit = null) {
   const r3Anchor = assertAnchor(R3);
   const stabilizationAnchor = assertAnchor(STABILIZATION);
@@ -718,7 +727,7 @@ function buildPackageProof(candidateCommit = null) {
   const trackedPackageDiff = gitText([
     "diff",
     "--name-only",
-    G_I3.commit,
+    selectI3PackageDiffTarget(G_I3.commit, candidateCommit),
     "--",
     ...PACKAGE_PATHSPEC,
   ])

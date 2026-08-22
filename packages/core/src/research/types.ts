@@ -1,3 +1,5 @@
+import type { ResolvedExecutionPackageIdentity } from "./execution-package.js";
+
 export const RESEARCH_SCHEMA_VERSION = 1 as const;
 export const RESEARCH_EVENT_SCHEMA_VERSION = 2 as const;
 
@@ -246,17 +248,12 @@ export interface Decision {
 
 export type ApprovalStatus = "granted" | "revoked" | "consumed";
 
-export interface ResearchActivation {
+interface ResearchActivationBase {
   id: ActivationId;
   dispatchId: DispatchId;
   questId: QuestId;
   capabilityId: string;
   mode: "automatic" | "explicit";
-  procedure: {
-    id: string;
-    version: string;
-    digest: string;
-  };
   policyDigest: string;
   requestDigest: string;
   scopeHash: string;
@@ -265,7 +262,23 @@ export interface ResearchActivation {
   createdAt: string;
 }
 
-export interface ResearchApprovalGrant {
+export interface LegacyProcedureActivation extends ResearchActivationBase {
+  procedure: {
+    id: string;
+    version: string;
+    digest: string;
+  };
+}
+
+export interface ExecutionPackageActivation extends ResearchActivationBase {
+  executionPackage: ResolvedExecutionPackageIdentity;
+}
+
+export type ResearchActivation =
+  | LegacyProcedureActivation
+  | ExecutionPackageActivation;
+
+interface ResearchApprovalGrantBase {
   id: ApprovalId;
   activationId: ActivationId;
   dispatchId: DispatchId;
@@ -274,12 +287,23 @@ export interface ResearchApprovalGrant {
   approverLabel: string;
   rationale: string;
   requestDigest: string;
-  procedureDigest: string;
   policyDigest: string;
   scopeHash: string;
   grantedAt: string;
   expiresAt: string;
 }
+
+export interface LegacyProcedureApprovalGrant extends ResearchApprovalGrantBase {
+  procedureDigest: string;
+}
+
+export interface ExecutionPackageApprovalGrant extends ResearchApprovalGrantBase {
+  executionPackageDigest: string;
+}
+
+export type ResearchApprovalGrant =
+  | LegacyProcedureApprovalGrant
+  | ExecutionPackageApprovalGrant;
 
 export type ResearchApprovalState =
   | {

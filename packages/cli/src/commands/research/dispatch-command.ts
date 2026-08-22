@@ -36,6 +36,9 @@ import {
   type QuestId,
   type QuestStage,
   type RepositoryId,
+  isExecutionPackageActivation,
+  isExecutionPackageApprovalGrant,
+  type LegacyProcedureActivation,
   type ResearchActivation,
   type ResearchApprovalState,
   type ResearchEvent,
@@ -686,6 +689,18 @@ function approvedResultError(
   throw new ResearchActivationError(code, message, { cause });
 }
 
+function requireLegacyProcedureActivation(
+  activation: ResearchActivation,
+): LegacyProcedureActivation {
+  if (isExecutionPackageActivation(activation)) {
+    approvedResultError(
+      "APPROVAL_RELATION_MISMATCH",
+      "Procedure result commands cannot use an execution-package activation",
+    );
+  }
+  return activation;
+}
+
 function resolveApprovedResultPreflight(
   options: RecordApprovedResearchDispatchResultOptions,
 ): {
@@ -816,7 +831,7 @@ function validateApprovedResultHierarchy(
 function requireApprovedResultActivation(
   state: ResearchState,
   dispatch: Dispatch,
-): ResearchActivation {
+): LegacyProcedureActivation {
   const activationId = state.activationByDispatchId[dispatch.id];
   if (activationId === undefined) {
     approvedResultError(
@@ -835,7 +850,7 @@ function requireApprovedResultActivation(
       "Dispatch activation index does not match canonical state",
     );
   }
-  return activation;
+  return requireLegacyProcedureActivation(activation);
 }
 
 function requireApprovedResultApproval(
@@ -851,6 +866,8 @@ function requireApprovedResultApproval(
     );
   }
   if (
+    isExecutionPackageActivation(activation) ||
+    isExecutionPackageApprovalGrant(approval.grant) ||
     approval.grant.id !== approvalId ||
     approval.grant.activationId !== activation.id ||
     approval.grant.dispatchId !== activation.dispatchId ||
@@ -869,7 +886,7 @@ function requireApprovedResultApproval(
 }
 
 function validateApprovedResultBindings(
-  activation: ResearchActivation,
+  activation: LegacyProcedureActivation,
   candidate: StagedDispatchRevalidation,
 ): void {
   if (
@@ -1237,7 +1254,9 @@ export async function recordApprovedResearchDispatchResult(
     const replayActivationForVersion =
       replayActivationIdForVersion === undefined
         ? undefined
-        : state.activations[replayActivationIdForVersion];
+        : requireLegacyProcedureActivation(
+            state.activations[replayActivationIdForVersion],
+          );
     const replayNeedsReportReconstruction =
       replayActivationForVersion !== undefined &&
       (replayActivationForVersion.procedure.version === "2.0.4" ||
@@ -1275,17 +1294,20 @@ export async function recordApprovedResearchDispatchResult(
       }
       const replayActivationId =
         state.activationByDispatchId[replayDispatch.id];
-      const replayActivation =
+      const storedReplayActivation =
         replayActivationId === undefined
           ? undefined
           : state.activations[replayActivationId];
-      if (replayActivation === undefined) {
+      if (storedReplayActivation === undefined) {
         approvedResultError(
           "ACTIVATION_REQUIRED",
           "Replayed Dispatch activation missing from canonical state",
         );
         throw new Error("unreachable: approvedResultError must throw");
       }
+      const replayActivation = requireLegacyProcedureActivation(
+        storedReplayActivation,
+      );
       const replayCandidate = await revalidateDispatchActivationStaged({
         root: preflight.root,
         state,

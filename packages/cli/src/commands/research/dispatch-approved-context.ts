@@ -12,6 +12,9 @@ import {
   type ProposalId,
   type QuestStage,
   type RepositoryId,
+  isExecutionPackageActivation,
+  isExecutionPackageApprovalGrant,
+  type LegacyProcedureActivation,
   type ResearchActivation,
   type ResearchApprovalState,
   type ResearchCapabilityDefinition,
@@ -142,6 +145,18 @@ function fail(
   throw new ResearchActivationError(code, message, { cause });
 }
 
+function requireLegacyProcedureActivation(
+  activation: ResearchActivation,
+): LegacyProcedureActivation {
+  if (isExecutionPackageActivation(activation)) {
+    fail(
+      "APPROVAL_RELATION_MISMATCH",
+      "Procedure dispatch context cannot use an execution-package activation",
+    );
+  }
+  return activation;
+}
+
 function deepFreeze<T>(value: T): T {
   if (typeof value !== "object" || value === null || Object.isFrozen(value)) {
     return value;
@@ -255,7 +270,7 @@ function compatibilityWarnings(
 function requireActivation(input: {
   readonly state: Awaited<ReturnType<typeof readResearchState>>;
   readonly dispatch: Dispatch;
-}): ResearchActivation {
+}): LegacyProcedureActivation {
   const activationId = input.state.activationByDispatchId[input.dispatch.id];
   const matchingActivations = Object.values(input.state.activations).filter(
     (activation) => activation.dispatchId === input.dispatch.id,
@@ -282,18 +297,20 @@ function requireActivation(input: {
       "Dispatch activation index does not match canonical activation state",
     );
   }
-  return activation;
+  return requireLegacyProcedureActivation(activation);
 }
 
 function validateActivationBindings(
   activation: ResearchActivation,
   candidate: StagedDispatchRevalidation,
 ): void {
+  const legacyActivation = requireLegacyProcedureActivation(activation);
   if (
-    candidate.authority.capabilityId !== activation.capabilityId ||
-    candidate.authority.activation !== activation.mode ||
-    candidate.authority.procedure.id !== activation.procedure.id ||
-    candidate.authority.procedure.version !== activation.procedure.version ||
+    candidate.authority.capabilityId !== legacyActivation.capabilityId ||
+    candidate.authority.activation !== legacyActivation.mode ||
+    candidate.authority.procedure.id !== legacyActivation.procedure.id ||
+    candidate.authority.procedure.version !==
+      legacyActivation.procedure.version ||
     candidate.authority.maxDurationMinutes !== activation.maxDurationMinutes ||
     candidate.authority.maxDispatches !== activation.maxDispatches
   ) {
@@ -308,6 +325,12 @@ function sameApprovalBindings(
   approval: ResearchApprovalState,
   activation: ResearchActivation,
 ): boolean {
+  if (
+    isExecutionPackageActivation(activation) ||
+    isExecutionPackageApprovalGrant(approval.grant)
+  ) {
+    return false;
+  }
   return (
     approval.grant.activationId === activation.id &&
     approval.grant.dispatchId === activation.dispatchId &&
@@ -441,7 +464,7 @@ function readMaterializations(input: {
 function normalizedContext(input: {
   readonly host: ResearchExecutionHost;
   readonly dispatch: Dispatch;
-  readonly activation: ResearchActivation;
+  readonly activation: LegacyProcedureActivation;
   readonly approval: ResearchApprovalState;
   readonly candidate: StagedDispatchRevalidation;
   readonly resultId: ResultId;

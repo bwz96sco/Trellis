@@ -517,7 +517,7 @@ Correct: worker returns bounded artifacts plus Result/Proposal; root independent
 
 ### 1. Scope / Trigger
 
-This C1 contract applies when a schema-v3 thin Skill is selected for the managed profile. C1 defines future Context and worker boundaries only; it does not change current adapters, workers, package resolution, or runtime behavior. C2 and C5 implement this contract without adding a second Skill replay path or converting `SKILL.md` into a fabricated historical `PROCEDURE.md`.
+This contract applies when a schema-v3 thin Skill is selected for the managed profile. C1 defined the Context and worker boundary. C2 implements normalized package identity, secure resolution, and additive ledger records while keeping current adapters and workers Procedure-only; C5 implements managed Skill Context and launch. Neither stage adds a second replay path or converts `SKILL.md` into a fabricated historical `PROCEDURE.md`.
 
 ### 2. Signatures
 
@@ -558,6 +558,7 @@ interface ManagedExecutionPackageContext {
 ### 3. Contracts
 
 - Historical Procedure schema-v1/v2 Activation fields and `activation-recorded` replay remain readable with unchanged meaning. New schema-v3 managed activations add `executionPackage`; readers normalize both forms through one resolver.
+- C2 readers and reducers may parse/store the new record shape, but every pre-C5 live Dispatch, revalidation, Approval-authority, and approved-Context path rejects it before write or launch. Parsing support is not runtime cutover authority.
 - Root Context validates package identity, capability binding, policy, Activation, Approval, requested members, member visibility, and all digests before worker launch.
 - A thin Skill allowing managed execution must use `entrypointType=model-context`, include `managed` in `allowedProfiles`, and bind one existing capability. `invocationSource=model` permits model selection; `invocationSource=operator-explicit` requires an explicit operator-selected workflow/Activation binding before Context but may then use the same managed worker boundary. A `root-command` package cannot enter worker Context.
 - Context embeds exact `SKILL.md` instructions and approved member content. Host adapters and workers must not list package roots, discover versions, read manifests, load `SKILL.md`, resolve members, or substitute ambient source files.

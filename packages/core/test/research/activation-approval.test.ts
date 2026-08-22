@@ -21,6 +21,8 @@ import {
   researchApprovalStateSchema,
   researchPaths,
   serializeResearchEvents,
+  type ResearchActivation,
+  type ResearchApprovalGrant,
   type ResearchEvent,
 } from "../../src/research/index.js";
 
@@ -41,6 +43,15 @@ const DIGEST_C = `sha256:${"c".repeat(64)}`;
 const DIGEST_D = `sha256:${"d".repeat(64)}`;
 const ACTOR = { type: "agent" as const, id: "test" };
 const PROVENANCE = { source: "activation-approval test", sourceId: "C02" };
+const EXECUTION_PACKAGE = {
+  id: "research-literature",
+  version: "1.0.0",
+  schemaVersion: 3,
+  packageKind: "skill",
+  packageDigest: DIGEST_A,
+  instructionDigest: DIGEST_B,
+  memberInventoryDigest: DIGEST_C,
+} as const;
 
 function eventId(seq: number): `evt_${string}` {
   return `evt_${String(seq).padStart(8, "0")}-0000-4000-8000-${String(seq).padStart(12, "0")}`;
@@ -240,6 +251,34 @@ function activationEvent(
   });
 }
 
+function executionPackageActivationEvent(seq = 7): ResearchEvent {
+  const activation = {
+    id: ACTIVATION_ID,
+    dispatchId: DISPATCH_ID,
+    questId: QUEST_ID,
+    capabilityId: "research.literature.search",
+    mode: "automatic",
+    executionPackage: EXECUTION_PACKAGE,
+    policyDigest: DIGEST_B,
+    requestDigest: DIGEST_C,
+    scopeHash: DIGEST_D,
+    maxDurationMinutes: 15,
+    maxDispatches: 1,
+    createdAt: "2026-07-24T00:06:00.000Z",
+  } as const;
+  return event(seq, {
+    schemaVersion: 2,
+    timestamp: activation.createdAt,
+    kind: "activation.planned",
+    aggregate: { type: "activation", id: activation.id },
+    related: [
+      { type: "dispatch", id: activation.dispatchId },
+      { type: "quest", id: activation.questId },
+    ],
+    payload: { activation },
+  });
+}
+
 function approvalEvent(
   seq = 8,
   options: {
@@ -266,6 +305,41 @@ function approvalEvent(
     grantedAt,
     expiresAt,
     ...options.overrides,
+  };
+  return event(seq, {
+    schemaVersion: 2,
+    timestamp: grantedAt,
+    kind: "approval.granted",
+    aggregate: { type: "approval", id: approval.id as string },
+    related: [
+      { type: "activation", id: ACTIVATION_ID },
+      { type: "dispatch", id: DISPATCH_ID },
+      { type: "quest", id: QUEST_ID },
+    ],
+    payload: { approval },
+  });
+}
+
+function executionPackageApprovalEvent(
+  seq = 8,
+  overrides: Record<string, unknown> = {},
+): ResearchEvent {
+  const grantedAt = "2026-07-24T00:07:00.000Z";
+  const approval = {
+    id: APPROVAL_ID,
+    activationId: ACTIVATION_ID,
+    dispatchId: DISPATCH_ID,
+    host: "claude",
+    mode: "automatic",
+    approverLabel: "trellis-policy-v1",
+    rationale: "Eligible under immutable registry and project policy.",
+    requestDigest: DIGEST_C,
+    executionPackageDigest: DIGEST_A,
+    policyDigest: DIGEST_B,
+    scopeHash: DIGEST_D,
+    grantedAt,
+    expiresAt: "2026-07-24T00:22:00.000Z",
+    ...overrides,
   };
   return event(seq, {
     schemaVersion: 2,
@@ -460,6 +534,51 @@ describe("activation and approval schemas", () => {
       }).status,
     ).toBe("consumed");
   });
+
+  it("accepts exactly one legacy or execution-package binding", () => {
+    const legacyActivation = activationEvent().payload.activation as Record<
+      string,
+      unknown
+    >;
+    const packageActivation = executionPackageActivationEvent().payload
+      .activation as Record<string, unknown>;
+    expect(researchActivationSchema.parse(packageActivation)).toEqual(
+      packageActivation,
+    );
+    expect(() =>
+      researchActivationSchema.parse({
+        ...packageActivation,
+        executionPackage: { ...EXECUTION_PACKAGE, schemaVersion: 2 },
+      }),
+    ).toThrow(/schemaVersion does not match packageKind/);
+    expect(() =>
+      researchActivationSchema.parse({
+        ...legacyActivation,
+        executionPackage: EXECUTION_PACKAGE,
+      }),
+    ).toThrow(/exactly one of procedure or executionPackage/);
+    const activationWithoutBinding = { ...packageActivation };
+    delete activationWithoutBinding.executionPackage;
+    expect(() => researchActivationSchema.parse(activationWithoutBinding)).toThrow(
+      /exactly one of procedure or executionPackage/,
+    );
+
+    const legacyGrant = approvalEvent().payload.approval as Record<string, unknown>;
+    const packageGrant = executionPackageApprovalEvent().payload
+      .approval as Record<string, unknown>;
+    expect(researchApprovalGrantSchema.parse(packageGrant)).toEqual(packageGrant);
+    expect(() =>
+      researchApprovalGrantSchema.parse({
+        ...legacyGrant,
+        executionPackageDigest: DIGEST_A,
+      }),
+    ).toThrow(/exactly one of procedureDigest or executionPackageDigest/);
+    const grantWithoutBinding = { ...packageGrant };
+    delete grantWithoutBinding.executionPackageDigest;
+    expect(() => researchApprovalGrantSchema.parse(grantWithoutBinding)).toThrow(
+      /exactly one of procedureDigest or executionPackageDigest/,
+    );
+  });
 });
 
 describe("mixed schema-v1/schema-v2 event parsing", () => {
@@ -472,6 +591,28 @@ describe("mixed schema-v1/schema-v2 event parsing", () => {
       true,
     );
     expect(events.slice(6).every((entry) => entry.schemaVersion === 2)).toBe(true);
+  });
+
+  it("round-trips execution-package bindings without rewriting legacy events", () => {
+    const legacyEvents = [...setupEvents(), activationEvent(), approvalEvent()];
+    const executionPackageEvents = [
+      ...setupEvents(),
+      executionPackageActivationEvent(),
+      executionPackageApprovalEvent(),
+    ];
+
+    expect(parseResearchLedger(serializeResearchEvents(legacyEvents))).toEqual(
+      legacyEvents,
+    );
+    expect(
+      parseResearchLedger(serializeResearchEvents(executionPackageEvents)),
+    ).toEqual(executionPackageEvents);
+    expect(serializeResearchEvents(legacyEvents)).not.toContain(
+      "executionPackage",
+    );
+    expect(serializeResearchEvents(executionPackageEvents)).not.toContain(
+      '"procedure"',
+    );
   });
 
   it("keeps legacy v1 ISO timestamp acceptance separate from strict v2", () => {
@@ -571,6 +712,57 @@ describe("activation and approval replay", () => {
       grant: approvalEvent().payload.approval,
       status: "granted",
     });
+  });
+
+  it("reduces execution-package activations and approvals without mutable aliases", () => {
+    const activation = executionPackageActivationEvent();
+    const approval = executionPackageApprovalEvent();
+    const state = reduceResearchEvents([...setupEvents(), activation, approval]);
+    const storedActivation = state.activations[ACTIVATION_ID];
+    expect(storedActivation && "executionPackage" in storedActivation).toBe(true);
+    if (!storedActivation || !("executionPackage" in storedActivation)) {
+      throw new Error("Expected execution-package activation");
+    }
+    expect(storedActivation.executionPackage).toEqual(EXECUTION_PACKAGE);
+    expect(Object.isFrozen(storedActivation.executionPackage)).toBe(true);
+    expect(state.approvals[APPROVAL_ID]).toEqual({
+      grant: executionPackageApprovalEvent().payload.approval,
+      status: "granted",
+    });
+
+    const parsedIdentity = (
+      activation.payload.activation as {
+        executionPackage: { packageDigest: string };
+      }
+    ).executionPackage;
+    parsedIdentity.packageDigest = DIGEST_D;
+    expect(storedActivation.executionPackage.packageDigest).toBe(DIGEST_A);
+  });
+
+  it("rejects mixed legacy/execution-package grant bindings and digest drift", () => {
+    expect(() =>
+      reduceResearchEvents([
+        ...setupEvents(),
+        executionPackageActivationEvent(),
+        approvalEvent(),
+      ]),
+    ).toThrow(/bindings do not match/);
+    expect(() =>
+      reduceResearchEvents([
+        ...setupEvents(),
+        activationEvent(),
+        executionPackageApprovalEvent(),
+      ]),
+    ).toThrow(/bindings do not match/);
+    expect(() =>
+      reduceResearchEvents([
+        ...setupEvents(),
+        executionPackageActivationEvent(),
+        executionPackageApprovalEvent(8, {
+          executionPackageDigest: DIGEST_D,
+        }),
+      ]),
+    ).toThrow(/bindings do not match/);
   });
 
   it("rejects duplicate Dispatch activation and mismatched grant bindings", () => {
@@ -772,6 +964,72 @@ describe("mixed ledger store compatibility", () => {
     fs.mkdirSync(paths.researchDir, { recursive: true });
     return root;
   }
+
+  it("records execution-package activation and approval mutations", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(
+      researchPaths(root).eventsFile,
+      serializeResearchEvents(setupEvents()),
+      "utf-8",
+    );
+    const activation = executionPackageActivationEvent().payload
+      .activation as ResearchActivation;
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "plan-execution-package",
+      timestamp: activation.createdAt,
+      mutations: [{ kind: "activation.plan", activation }],
+    });
+    const approval = executionPackageApprovalEvent().payload
+      .approval as ResearchApprovalGrant;
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "grant-execution-package",
+      timestamp: approval.grantedAt,
+      mutations: [{ kind: "approval.grant", approval }],
+    });
+
+    const ledger = await readResearchLedger(root);
+    expect(ledger.slice(-2).map(({ kind, payload }) => ({ kind, payload }))).toEqual([
+      { kind: "activation.planned", payload: { activation } },
+      { kind: "approval.granted", payload: { approval } },
+    ]);
+    const state = await readResearchState(root);
+    expect(state.activations[ACTIVATION_ID]).toEqual(activation);
+    expect(state.approvals[APPROVAL_ID]).toEqual({ grant: approval, status: "granted" });
+  });
+
+  it("does not append an invalid mixed-representation approval", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(
+      researchPaths(root).eventsFile,
+      serializeResearchEvents([
+        ...setupEvents(),
+        executionPackageActivationEvent(),
+      ]),
+      "utf-8",
+    );
+    const eventsFile = researchPaths(root).eventsFile;
+    const before = fs.readFileSync(eventsFile, "utf-8");
+    const legacyApproval = approvalEvent().payload
+      .approval as ResearchApprovalGrant;
+
+    await expect(
+      commitResearchBatch({
+        root,
+        actor: ACTOR,
+        provenance: PROVENANCE,
+        idempotencyKey: "invalid-mixed-grant",
+        timestamp: legacyApproval.grantedAt,
+        mutations: [{ kind: "approval.grant", approval: legacyApproval }],
+      }),
+    ).rejects.toThrow(/bindings do not match/);
+    expect(fs.readFileSync(eventsFile, "utf-8")).toBe(before);
+  });
 
   it("records Result, Proposal, and approval consumption after activation", async () => {
     const root = tempRoot();

@@ -1,1 +1,6 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Frozen normalized execution-package identity, schema-v3 policy, managed Activation, replay, and compatibility contract."}
+{"file":".trellis/spec/core/backend/research-procedure-packages.md","reason":"Historical Procedure package schema and digest invariants that C2 must preserve."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Managed thin-Skill Activation, Context identity, member visibility, and worker boundary contract."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/design.md","reason":"C1 decision that new managed schema-v3 Activations use additive normalized executionPackage identity."}
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/design.md","reason":"Parent one-registry/two-profile architecture, package layout, policy dimensions, and C2/C5 boundaries."}
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/implement.md","reason":"Parent C2 work, tests, compatibility, rollback, and ordering requirements."}

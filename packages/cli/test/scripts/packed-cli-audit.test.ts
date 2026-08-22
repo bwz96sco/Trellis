@@ -1,4 +1,5 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -9,12 +10,14 @@ import { describe, expect, it } from "vitest";
 import {
   auditPackedActiveContent,
   auditPackedEntries,
+  auditPackedExecutionPackageManifests,
   buildPackedCliInventory,
   normalizeTarEntry,
   PACKED_ACTIVE_FORBIDDEN_MUTATIONS,
   PACKED_ACTIVE_RESEARCH_ENTRIES,
   parseTarListing,
   RESEARCH_PROCEDURE_IDS,
+  RESEARCH_PROCEDURE_VERSIONS,
   RESEARCH_STAGE_SKILLS,
 } from "../../scripts/packed-cli-audit.js";
 
@@ -103,8 +106,21 @@ function createPackedCliFixture(mutation?: {
     .sort();
   const inventory = buildPackedCliInventory(migrationManifestNames);
 
+  const packedProcedureRoot = path.join(
+    packageRoot,
+    "dist",
+    "templates",
+    "research",
+    "procedures",
+  );
+  fs.cpSync(
+    path.join(CLI_DIR, "src", "templates", "research", "procedures"),
+    packedProcedureRoot,
+    { recursive: true },
+  );
   for (const packedEntry of inventory.requiredEntries) {
     const target = path.join(root, ...packedEntry.split("/"));
+    if (fs.existsSync(target)) continue;
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, "fixture\n");
   }
@@ -132,6 +148,87 @@ function createPackedCliFixture(mutation?: {
   const archive = path.join(root, "trellis-packed-fixture.tgz");
   execFileSync("tar", ["-czf", archive, "-C", root, "package"]);
   return { archive, root };
+}
+
+function sha256(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function auditManifestContents(
+  contents: ReadonlyMap<string, string | Uint8Array>,
+) {
+  return auditPackedExecutionPackageManifests(
+    [...contents.keys()],
+    (entry: string) => {
+      const value = contents.get(entry);
+      if (value === undefined) throw new Error(`missing test entry ${entry}`);
+      return value;
+    },
+  );
+}
+
+function supportPackContents(): Map<string, string> {
+  const base =
+    "package/dist/templates/research/procedures/example-v1/2.0.0/methodology";
+  const memberPath = "instructions/checkpoints.md";
+  const member = "# Checkpoints\n";
+  return new Map([
+    [
+      `${base}/pack.json`,
+      JSON.stringify({
+        schemaVersion: 1,
+        procedureId: "example-v1",
+        procedureVersion: "2.0.0",
+        entries: [
+          {
+            path: memberPath,
+            role: "instructions",
+            mediaType: "text/markdown",
+            contractVersion: "example-v1",
+            provenanceId: "example",
+            sha256: sha256(member),
+            maxBytes: 1_024,
+          },
+        ],
+      }),
+    ],
+    [`${base}/${memberPath}`, member],
+  ]);
+}
+
+function skillContents(): Map<string, string> {
+  const base =
+    "package/dist/templates/research/skills/research-example/1.0.0";
+  const memberPath = "references/default.md";
+  const member = "# Reference\n";
+  return new Map([
+    [
+      `${base}/skill.json`,
+      JSON.stringify({
+        schemaVersion: 3,
+        packageKind: "skill",
+        id: "research-example",
+        version: "1.0.0",
+        skillKind: "bounded",
+        invocationSource: "model",
+        entrypointType: "model-context",
+        instructionFile: "SKILL.md",
+        allowedProfiles: ["lightweight"],
+        members: [
+          {
+            path: memberPath,
+            role: "reference",
+            load: "default",
+            visibility: "worker-visible",
+            sha256: sha256(member),
+            maxBytes: 1_024,
+          },
+        ],
+      }),
+    ],
+    [`${base}/SKILL.md`, "# Example Skill\n"],
+    [`${base}/${memberPath}`, member],
+  ]);
 }
 
 describe("packed CLI inventory audit", () => {
@@ -211,6 +308,73 @@ describe("packed CLI inventory audit", () => {
         inventory,
       ),
     ).toEqual({ entryCount: 2, requiredEntryCount: 1 });
+  });
+
+  it("authenticates every manifest-declared Procedure support member", () => {
+    const contents = supportPackContents();
+    expect(auditManifestContents(contents)).toEqual({
+      procedureManifestCount: 1,
+      procedureMemberCount: 1,
+      skillManifestCount: 0,
+      skillMemberCount: 0,
+    });
+
+    const memberEntry = [...contents.keys()].find((entry) =>
+      entry.endsWith("instructions/checkpoints.md"),
+    );
+    if (memberEntry === undefined) throw new Error("Missing support member fixture");
+    contents.delete(memberEntry);
+    expect(() => auditManifestContents(contents)).toThrow(
+      `missing declared packed member ${memberEntry}`,
+    );
+  });
+
+  it("rejects packed support-member digest drift and unsafe paths", () => {
+    const drifted = supportPackContents();
+    const memberEntry = [...drifted.keys()].find((entry) =>
+      entry.endsWith("instructions/checkpoints.md"),
+    );
+    if (memberEntry === undefined) throw new Error("Missing support member fixture");
+    drifted.set(memberEntry, "tampered\n");
+    expect(() => auditManifestContents(drifted)).toThrow("sha256 mismatch");
+
+    const unsafe = supportPackContents();
+    const manifestEntry = [...unsafe.keys()].find((entry) =>
+      entry.endsWith("methodology/pack.json"),
+    );
+    if (manifestEntry === undefined) throw new Error("Missing support manifest fixture");
+    const manifest = JSON.parse(unsafe.get(manifestEntry) ?? "") as {
+      entries: { path: string }[];
+    };
+    const firstEntry = manifest.entries[0];
+    if (firstEntry === undefined) throw new Error("Missing support member manifest entry");
+    firstEntry.path = "../outside.md";
+    unsafe.set(manifestEntry, JSON.stringify(manifest));
+    expect(() => auditManifestContents(unsafe)).toThrow(
+      ".entries[0].path is unsafe: ../outside.md",
+    );
+  });
+
+  it("uses future bundled Skill manifests without requiring a production Skill", () => {
+    const contents = skillContents();
+    expect(auditManifestContents(contents)).toEqual({
+      procedureManifestCount: 0,
+      procedureMemberCount: 0,
+      skillManifestCount: 1,
+      skillMemberCount: 1,
+    });
+
+    const instructionEntry = [...contents.keys()].find((entry) =>
+      entry.endsWith("/SKILL.md"),
+    );
+    if (instructionEntry === undefined) throw new Error("Missing Skill instructions fixture");
+    contents.set(instructionEntry, "﻿# Example Skill\n");
+    expect(() => auditManifestContents(contents)).toThrow("contains a BOM or NUL");
+
+    contents.delete(instructionEntry);
+    expect(() => auditManifestContents(contents)).toThrow(
+      `missing declared packed member ${instructionEntry}`,
+    );
   });
 
   it("accepts successor active command, worker, hook, and workflow content", () => {
@@ -300,7 +464,9 @@ describe("packed CLI inventory audit", () => {
           `package/dist/templates/research/procedures/${procedureId}/1.0.0/PROCEDURE.md`,
         );
       }
-      for (const version of ["2.0.0", "2.0.1", "2.0.2"] as const) {
+      for (const version of RESEARCH_PROCEDURE_VERSIONS.filter(
+        (candidate) => candidate !== "1.0.0",
+      )) {
         expect(inventory.requiredEntries).toContain(
           `package/dist/templates/research/procedures/${procedureId}/${version}/procedure.json`,
         );
@@ -309,6 +475,22 @@ describe("packed CLI inventory audit", () => {
         );
       }
     }
+    expect(RESEARCH_PROCEDURE_VERSIONS).toEqual([
+      "1.0.0",
+      "2.0.0",
+      "2.0.1",
+      "2.0.2",
+      "2.0.3",
+      "2.0.4",
+      "2.0.5",
+      "2.0.6",
+      "2.0.7",
+    ]);
+    expect(
+      inventory.requiredEntries.some((entry) =>
+        entry.includes("/templates/research/skills/"),
+      ),
+    ).toBe(false);
     expect(inventory.requiredEntries).toContain(
       "package/dist/migrations/manifests/0.6.7.json",
     );

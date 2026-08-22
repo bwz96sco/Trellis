@@ -14,7 +14,7 @@ import {
   type Dispatch,
   type NormalizedDispatchScopeV1,
   type ParsedResearchProcedure,
-  type ResearchActivation,
+  type LegacyProcedureActivation as ResearchActivation,
   type ResearchAutomaticEligibility,
   type ResearchEffectiveAuthority,
   type ResearchState,

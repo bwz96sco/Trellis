@@ -29,6 +29,47 @@ import {
   snapshotTree,
 } from "../fixtures/research-dispatch.js";
 
+function convertLedgerToExecutionPackageBindings(root: string): void {
+  const eventsFile = researchCore.researchPaths(root).eventsFile;
+  const events = fs
+    .readFileSync(eventsFile, "utf8")
+    .trimEnd()
+    .split("\n")
+    .map((line) => JSON.parse(line) as Record<string, unknown>);
+  let packageDigest: string | undefined;
+  for (const event of events) {
+    if (event.kind === "activation.planned") {
+      const payload = event.payload as {
+        activation: Record<string, unknown> & {
+          procedure: { digest: string };
+        };
+      };
+      packageDigest = payload.activation.procedure.digest;
+      delete payload.activation.procedure;
+      payload.activation.executionPackage = {
+        id: "research-literature",
+        version: "1.0.0",
+        schemaVersion: 3,
+        packageKind: "skill",
+        packageDigest,
+        instructionDigest: `sha256:${"a".repeat(64)}`,
+        memberInventoryDigest: `sha256:${"b".repeat(64)}`,
+      };
+    }
+    if (event.kind === "approval.granted") {
+      const payload = event.payload as {
+        approval: Record<string, unknown> & { procedureDigest: string };
+      };
+      delete payload.approval.procedureDigest;
+      payload.approval.executionPackageDigest = packageDigest;
+    }
+  }
+  fs.writeFileSync(
+    eventsFile,
+    `${events.map((event) => JSON.stringify(event)).join("\n")}\n`,
+  );
+}
+
 describe("approved Research Dispatch Context", { timeout: 30_000 }, () => {
   let sandbox: string;
 
@@ -92,6 +133,30 @@ describe("approved Research Dispatch Context", { timeout: 30_000 }, () => {
     ]);
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.context.procedure)).toBe(true);
+    expect(snapshotTree(sandbox)).toEqual(before);
+  });
+
+  it("rejects execution-package bindings before the C5 dispatch cutover", async () => {
+    const fixture = await createResearchDispatchFixture(sandbox, {
+      automaticEnabled: true,
+    });
+    const granted = await authorizeResearchDispatch({
+      root: fixture.root,
+      dispatchId: fixture.ids.dispatchId,
+      host: "claude",
+      idempotencyKey: "pre-c5-execution-package-context",
+    });
+    convertLedgerToExecutionPackageBindings(fixture.root);
+    const before = snapshotTree(sandbox);
+
+    await expect(
+      resolveApprovedResearchDispatchContext({
+        root: fixture.root,
+        dispatchId: fixture.ids.dispatchId,
+        host: "claude",
+        now: new Date(Date.parse(granted.approval.grant.grantedAt) + 1),
+      }),
+    ).rejects.toMatchObject({ code: "APPROVAL_RELATION_MISMATCH" });
     expect(snapshotTree(sandbox)).toEqual(before);
   });
 

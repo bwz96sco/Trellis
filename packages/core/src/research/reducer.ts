@@ -1,4 +1,12 @@
 import { proposalStatusForDecision } from "./dispatch.js";
+import {
+  cloneResearchActivation,
+  cloneResearchApprovalGrant,
+  getResearchActivationPackageDigest,
+  getResearchApprovalPackageDigest,
+  isExecutionPackageActivation,
+  isExecutionPackageApprovalGrant,
+} from "./execution-package-bindings.js";
 import { validateArtifactRepositories } from "./repositories.js";
 import {
   assertCampaignStatusTransition,
@@ -601,10 +609,7 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       if (activation.createdAt !== event.timestamp) {
         throw new Error("Activation createdAt must equal its event timestamp");
       }
-      state.activations[activation.id] = {
-        ...activation,
-        procedure: { ...activation.procedure },
-      };
+      state.activations[activation.id] = cloneResearchActivation(activation);
       state.activationByDispatchId[dispatch.id] = activation.id;
       return;
     }
@@ -637,8 +642,11 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         );
       }
       if (
+        isExecutionPackageActivation(activation) !==
+          isExecutionPackageApprovalGrant(grant) ||
         grant.requestDigest !== activation.requestDigest ||
-        grant.procedureDigest !== activation.procedure.digest ||
+        getResearchApprovalPackageDigest(grant) !==
+          getResearchActivationPackageDigest(activation) ||
         grant.policyDigest !== activation.policyDigest ||
         grant.scopeHash !== activation.scopeHash
       ) {
@@ -677,7 +685,7 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         }
       }
       state.approvals[grant.id] = {
-        grant: { ...grant },
+        grant: cloneResearchApprovalGrant(grant),
         status: "granted",
       };
       state.approvalIdsByActivationId[activation.id] = [

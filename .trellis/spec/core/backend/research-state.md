@@ -1007,7 +1007,7 @@ This guard changes neither historical mixed-ledger parsing nor replay of already
 
 ### 1. Scope / Trigger
 
-This planned contract applies when Trellis adds thin Research skills without adding a second replay registry. C1 freezes the contract only; C2–C5 implement it. Historical Procedure schema-v1/schema-v2 events and dormant Procedure `2.0.7` behavior remain unchanged.
+This contract applies when Trellis adds thin Research skills without adding a second replay registry. C1 froze the contract. C2 implements package identity, parsing, secure resolution, and additive ledger records; C3–C5 add commands, workflow state, gates, and live managed execution. Historical Procedure schema-v1/schema-v2 events and dormant Procedure `2.0.7` behavior remain unchanged.
 
 ### 2. Signatures
 
@@ -1022,11 +1022,75 @@ interface ResolvedExecutionPackageIdentity {
   memberInventoryDigest: `sha256:${string}`;
 }
 
+interface ResearchSkillManifestV3 {
+  schemaVersion: 3;
+  packageKind: "skill";
+  id: string;
+  version: string;
+  skillKind: "bounded" | "workflow" | "advisory" | "admin";
+  invocationSource: "model" | "operator-explicit";
+  entrypointType: "model-context" | "root-command";
+  instructionFile: "SKILL.md";
+  allowedProfiles: Array<"lightweight" | "managed">;
+  managedBinding?: { capabilityId: string };
+  members: Array<{
+    path: string;
+    role: "reference" | "template" | "validator" | "helper";
+    load: "default" | "on-demand";
+    visibility: "worker-visible" | "root-only";
+    sha256: string;
+    maxBytes: number;
+  }>;
+  outputs?: {
+    primary: string[];
+    defaultPersistence: "ephemeral" | "request-dependent" | "durable-required";
+  };
+  handoff?: {
+    suggestedSkillIds: string[];
+    autoInvoke: false;
+  };
+}
+
 interface ThinSkillExecutionPolicy {
   invocationSource: "model" | "operator-explicit";
   entrypointType: "model-context" | "root-command";
   allowedProfiles: Array<"lightweight" | "managed">;
 }
+
+type ResearchExecutionPackageSelector =
+  | { packageKind: "procedure"; mode: "registry-current"; capabilityId: string }
+  | {
+      packageKind: "procedure";
+      mode: "activation-recorded";
+      capabilityId: string;
+      id: string;
+      version: string;
+    }
+  | { packageKind: "skill"; mode: "exact"; id: string; version: string };
+
+interface LegacyProcedureActivation extends ResearchActivationBase {
+  procedure: { id: string; version: string; digest: string };
+}
+
+interface ExecutionPackageActivation extends ResearchActivationBase {
+  executionPackage: ResolvedExecutionPackageIdentity;
+}
+
+type ResearchActivation =
+  | LegacyProcedureActivation
+  | ExecutionPackageActivation;
+
+interface LegacyProcedureApprovalGrant extends ResearchApprovalGrantBase {
+  procedureDigest: string;
+}
+
+interface ExecutionPackageApprovalGrant extends ResearchApprovalGrantBase {
+  executionPackageDigest: string;
+}
+
+type ResearchApprovalGrant =
+  | LegacyProcedureApprovalGrant
+  | ExecutionPackageApprovalGrant;
 
 interface ResearchWorkflowDefinitionV1 {
   schemaVersion: 1;
@@ -1150,6 +1214,18 @@ Planned canonical mutations are typed `workflow.bind`, `workflow.node.complete`,
 - `entrypointType: "model-context"` may allow `lightweight`, `managed`, or both. A `root-command` has no model execution profile and uses an empty `allowedProfiles` array.
 - The pilot bindings are exact: literature and ideation are `model + model-context + [lightweight, managed]`; idea evaluation is `operator-explicit + model-context + [managed]`; Quest read/routing is `model + model-context + [lightweight]`; Quest admin is `operator-explicit + root-command + []`.
 
+#### C2 package and ledger boundary
+
+- `skill.json` is a closed canonical schema-v3 document with exactly one final LF. Alternate key order, CRLF, BOM, unknown keys, invalid SemVer, or inconsistent package kind/schema version fails before package resolution.
+- `SKILL.md` must be non-empty strict UTF-8 without NUL. Declared members may be zero bytes, but still require exact SHA-256 authentication, a normalized contained path, regular non-symlink file identity, and declared size bounds.
+- Resolver limits are enforced before file content reads: manifest <= 64 KiB, instructions <= 256 KiB, at most 256 members, each member <= declared `maxBytes` and 1 MiB, aggregate members <= 8 MiB.
+- New normalized digests use `uint64-big-endian(byteLength) || bytes` framing. Instruction, inventory, and schema-v3 package domains are respectively `trellis-research-execution-package-instruction-v1\0`, `trellis-research-execution-package-member-inventory-v1\0`, and `trellis-research-execution-package-digest-v3\0`.
+- Procedure-v1 inventory is canonical `[]\n`; Procedure-v2 inventory reuses the existing support-pack inventory serializer. Existing Procedure package digest functions and fixed historical vectors remain unchanged.
+- Exact project package wins. A present invalid project package blocks bundled fallback. Missing project package may fall back to the exact bundled ID/version. There is no `latest`, alias, case folding, host discovery, or source-repository lookup.
+- Legacy schema-v2 Activation/Approval events remain closed around `procedure` and `procedureDigest`. New schema-v3 records are closed around `executionPackage` and `executionPackageDigest`; opposite binding fields are rejected.
+- The reducer accepts mixed old/new ledgers through package-neutral binding helpers. Before C5, live Dispatch, revalidation, authority, and approved Context explicitly reject execution-package records without append or worker launch.
+- Packed CLI verification reads manifests from the actual tarball and requires every declared Procedure or future Skill member. Source-tree or dirty `dist` inventory is not package evidence.
+
 #### Workflow-instance state
 
 - Pilot workflow definitions are closed `ResearchWorkflowDefinitionV1` objects containing identities, exact package refs, legal transitions, required refs, gates, profiles, and stops only. Unknown keys, duplicate node/transition IDs, missing start/endpoint nodes, self-edges, and cycles are invalid; methodology prose, prompt text, shell commands, and automatic actions have no schema field.
@@ -1220,6 +1296,13 @@ Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an
 |---|---|
 | Thin skill resolves through a second registry or replay path | Reject configuration/implementation; one normalized resolver is required. |
 | Existing package ID/version bytes change | Digest mismatch; fail closed. |
+| `skill.json` is noncanonical, schema/package-kind inconsistent, or contains unknown keys | Reject as invalid Skill manifest before member projection. |
+| Instruction/member/count/aggregate size exceeds the fixed package limits | Reject from file metadata before reading oversized content. |
+| Member is duplicate, absolute, escaping, symlinked, undeclared, digest-mismatched, or exceeds `maxBytes` | Reject the whole package; return no partial member projection. |
+| Worker requests a root-only member or an unrequested on-demand member appears automatically | `research_skill_member_forbidden` or omit the on-demand member; never leak bytes. |
+| Project package exists but is invalid | Fail closed; never inspect bundled alternate for the same ID/version. |
+| Legacy event contains `executionPackage` or schema-v3 event contains `procedure` | Reject the closed event variant without ledger append. |
+| Pre-C5 live Dispatch receives an execution-package Activation/Approval | Reject zero-write before Context or worker launch. |
 | Model selects an `operator-explicit` package without a prior explicit operator binding | Reject before Context creation. |
 | Any model Context targets a `root-command` package | Reject before Context creation; route only through the root command. |
 | Managed profile is undeclared or lacks capability binding | Reject before Activation. |
@@ -1241,6 +1324,11 @@ Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an
 ### 6. Tests Required
 
 - Historical Procedure `1.0.0` and recorded `2.0.4`–`2.0.7` replay fixtures remain byte/exact-identity compatible.
+- Independent fixed vectors assert exact schema-v3 package, instruction, and inventory digests plus Procedure-v1/v2 normalized identities.
+- Schema-v3 parser rejects noncanonical manifest bytes, invalid package-kind/schema pairs, unsafe members, and oversized files before content reads; a zero-byte digest-bound declared member remains valid.
+- Project-first resolver tests cover project-only success, bundled fallback only on absence, present-invalid no-fallback, symlink/containment/replacement checks, full-inventory authentication, audience projection, and on-demand omission.
+- Mixed-ledger tests cover legacy/new Activation and Approval parsing, binding mismatch, reduction, and schema-version-aware store emission. Pre-C5 Dispatch and approved Context reject new execution-package records zero-write.
+- Real packed-tarball tests derive every Procedure and future Skill member from extracted manifests; retained Procedure versions through `2.0.7` are required and no production Skill ships in C2.
 - Schema-v3 package parser, exact digest, project-first fail-closed resolution, exact five-package pilot bindings, invocation/entrypoint/profile separation, explicit-only managed evaluation, root-command Quest admin with no model profile, and identical lightweight/managed instruction digest.
 - Workflow DAG validation; bind/complete/transition/close reducers; one-active-instance invariant; no stage inference; no automatic continuation.
 - Scientific gate structural validation, H1/H2 versus Approval separation, and no same-mutation transition.

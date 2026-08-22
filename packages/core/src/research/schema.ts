@@ -2,6 +2,7 @@ import {
   normalizeArtifactPath,
   normalizeRepositoryLocator,
 } from "./artifacts.js";
+import type { ResolvedExecutionPackageIdentity } from "./execution-package.js";
 import { RESEARCH_ID_PREFIXES, type ResearchIdKind } from "./ids.js";
 import type {
   ActivationId,
@@ -1007,27 +1008,87 @@ export const proposalIdSchema = schema<ProposalId>((input) =>
   idValue<ProposalId>(input, "proposalId", "proposal"),
 );
 
+export const resolvedExecutionPackageIdentitySchema =
+  schema<ResolvedExecutionPackageIdentity>((input) => {
+    const value = object(input, "execution package", [
+      "id",
+      "version",
+      "schemaVersion",
+      "packageKind",
+      "packageDigest",
+      "instructionDigest",
+      "memberInventoryDigest",
+    ]);
+    const schemaVersion = positiveInteger(
+      value.schemaVersion,
+      "execution package.schemaVersion",
+    );
+    const packageKind = enumValue(
+      value.packageKind,
+      "execution package.packageKind",
+      ["procedure", "skill"] as const,
+    );
+    if (
+      (packageKind === "procedure" &&
+        schemaVersion !== 1 &&
+        schemaVersion !== 2) ||
+      (packageKind === "skill" && schemaVersion !== 3)
+    ) {
+      throw new Error(
+        "execution package schemaVersion does not match packageKind",
+      );
+    }
+    return {
+      id: stringValue(value.id, "execution package.id", { nonEmpty: true }),
+      version: stringValue(value.version, "execution package.version", {
+        nonEmpty: true,
+      }),
+      schemaVersion,
+      packageKind,
+      packageDigest: sha256Binding(
+        value.packageDigest,
+        "execution package.packageDigest",
+      ) as `sha256:${string}`,
+      instructionDigest: sha256Binding(
+        value.instructionDigest,
+        "execution package.instructionDigest",
+      ) as `sha256:${string}`,
+      memberInventoryDigest: sha256Binding(
+        value.memberInventoryDigest,
+        "execution package.memberInventoryDigest",
+      ) as `sha256:${string}`,
+    };
+  });
+
+const ACTIVATION_COMMON_KEYS = [
+  "id",
+  "dispatchId",
+  "questId",
+  "capabilityId",
+  "mode",
+  "policyDigest",
+  "requestDigest",
+  "scopeHash",
+  "maxDurationMinutes",
+  "maxDispatches",
+  "createdAt",
+] as const;
+
 export const researchActivationSchema = schema<ResearchActivation>((input) => {
-  const value = object(input, "activation", [
-    "id",
-    "dispatchId",
-    "questId",
-    "capabilityId",
-    "mode",
-    "procedure",
-    "policyDigest",
-    "requestDigest",
-    "scopeHash",
-    "maxDurationMinutes",
-    "maxDispatches",
-    "createdAt",
-  ]);
-  const procedure = object(value.procedure, "activation.procedure", [
-    "id",
-    "version",
-    "digest",
-  ]);
-  return {
+  const value = object(
+    input,
+    "activation",
+    [...ACTIVATION_COMMON_KEYS, "procedure", "executionPackage"],
+    ACTIVATION_COMMON_KEYS,
+  );
+  const hasProcedure = value.procedure !== undefined;
+  const hasExecutionPackage = value.executionPackage !== undefined;
+  if (hasProcedure === hasExecutionPackage) {
+    throw new Error(
+      "activation must contain exactly one of procedure or executionPackage",
+    );
+  }
+  const common = {
     id: idValue<ActivationId>(value.id, "activation.id", "activation"),
     dispatchId: idValue<DispatchId>(
       value.dispatchId,
@@ -1042,18 +1103,6 @@ export const researchActivationSchema = schema<ResearchActivation>((input) => {
       "automatic",
       "explicit",
     ] as const),
-    procedure: {
-      id: stringValue(procedure.id, "activation.procedure.id", {
-        nonEmpty: true,
-      }),
-      version: stringValue(procedure.version, "activation.procedure.version", {
-        nonEmpty: true,
-      }),
-      digest: sha256Binding(
-        procedure.digest,
-        "activation.procedure.digest",
-      ),
-    },
     policyDigest: sha256Binding(
       value.policyDigest,
       "activation.policyDigest",
@@ -1073,26 +1122,69 @@ export const researchActivationSchema = schema<ResearchActivation>((input) => {
     ),
     createdAt: schemaV2Timestamp(value.createdAt, "activation.createdAt"),
   };
+  if (hasProcedure) {
+    object(input, "activation", [...ACTIVATION_COMMON_KEYS, "procedure"]);
+    const procedure = object(value.procedure, "activation.procedure", [
+      "id",
+      "version",
+      "digest",
+    ]);
+    return {
+      ...common,
+      procedure: {
+        id: stringValue(procedure.id, "activation.procedure.id", {
+          nonEmpty: true,
+        }),
+        version: stringValue(procedure.version, "activation.procedure.version", {
+          nonEmpty: true,
+        }),
+        digest: sha256Binding(
+          procedure.digest,
+          "activation.procedure.digest",
+        ),
+      },
+    };
+  }
+  object(input, "activation", [...ACTIVATION_COMMON_KEYS, "executionPackage"]);
+  return {
+    ...common,
+    executionPackage: resolvedExecutionPackageIdentitySchema.parse(
+      value.executionPackage,
+    ),
+  };
 });
+
+const APPROVAL_COMMON_KEYS = [
+  "id",
+  "activationId",
+  "dispatchId",
+  "host",
+  "mode",
+  "approverLabel",
+  "rationale",
+  "requestDigest",
+  "policyDigest",
+  "scopeHash",
+  "grantedAt",
+  "expiresAt",
+] as const;
 
 export const researchApprovalGrantSchema = schema<ResearchApprovalGrant>(
   (input) => {
-    const value = object(input, "approval", [
-      "id",
-      "activationId",
-      "dispatchId",
-      "host",
-      "mode",
-      "approverLabel",
-      "rationale",
-      "requestDigest",
-      "procedureDigest",
-      "policyDigest",
-      "scopeHash",
-      "grantedAt",
-      "expiresAt",
-    ]);
-    return {
+    const value = object(
+      input,
+      "approval",
+      [...APPROVAL_COMMON_KEYS, "procedureDigest", "executionPackageDigest"],
+      APPROVAL_COMMON_KEYS,
+    );
+    const hasProcedureDigest = value.procedureDigest !== undefined;
+    const hasExecutionPackageDigest = value.executionPackageDigest !== undefined;
+    if (hasProcedureDigest === hasExecutionPackageDigest) {
+      throw new Error(
+        "approval must contain exactly one of procedureDigest or executionPackageDigest",
+      );
+    }
+    const common = {
       id: idValue<ApprovalId>(value.id, "approval.id", "approval"),
       activationId: idValue<ActivationId>(
         value.activationId,
@@ -1119,10 +1211,6 @@ export const researchApprovalGrantSchema = schema<ResearchApprovalGrant>(
         value.requestDigest,
         "approval.requestDigest",
       ),
-      procedureDigest: sha256Binding(
-        value.procedureDigest,
-        "approval.procedureDigest",
-      ),
       policyDigest: sha256Binding(
         value.policyDigest,
         "approval.policyDigest",
@@ -1130,6 +1218,27 @@ export const researchApprovalGrantSchema = schema<ResearchApprovalGrant>(
       scopeHash: sha256Binding(value.scopeHash, "approval.scopeHash"),
       grantedAt: schemaV2Timestamp(value.grantedAt, "approval.grantedAt"),
       expiresAt: schemaV2Timestamp(value.expiresAt, "approval.expiresAt"),
+    };
+    if (hasProcedureDigest) {
+      object(input, "approval", [...APPROVAL_COMMON_KEYS, "procedureDigest"]);
+      return {
+        ...common,
+        procedureDigest: sha256Binding(
+          value.procedureDigest,
+          "approval.procedureDigest",
+        ),
+      };
+    }
+    object(input, "approval", [
+      ...APPROVAL_COMMON_KEYS,
+      "executionPackageDigest",
+    ]);
+    return {
+      ...common,
+      executionPackageDigest: sha256Binding(
+        value.executionPackageDigest,
+        "approval.executionPackageDigest",
+      ),
     };
   },
 );

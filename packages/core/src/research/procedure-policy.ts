@@ -1,5 +1,9 @@
 import { createHash } from "node:crypto";
 
+import {
+  normalizeResearchProcedureExecutionPackageIdentity,
+  type ResolvedExecutionPackageIdentity,
+} from "./execution-package.js";
 import { stableResearchJson } from "./projections.js";
 import {
   V131_ACCEPTED_CONTRACT_DIGEST,
@@ -137,6 +141,7 @@ export interface ParsedResearchProcedure {
   readonly canonicalManifestJson: string;
   readonly instructions: string;
   readonly digest: string;
+  readonly identity: ResolvedExecutionPackageIdentity;
   /** Present only when a methodology support pack was bound into a v2 digest. */
   readonly digestDomain?: "v1" | "v2";
   /** Procedure package schema discriminator used for digest/support-pack rules. */
@@ -712,6 +717,16 @@ export function parseResearchProcedure(
       instructionBytes,
     });
   }
+  const identity = normalizeResearchProcedureExecutionPackageIdentity({
+    procedureId: manifest.id,
+    procedureVersion: manifest.version,
+    packageSchemaVersion,
+    packageDigest: digest,
+    instructionBytes,
+    ...(supportPack === undefined
+      ? {}
+      : { supportPackInventory: supportPack.inventoryItems }),
+  });
   return Object.freeze({
     capability,
     source: input.source,
@@ -719,6 +734,7 @@ export function parseResearchProcedure(
     canonicalManifestJson,
     instructions,
     digest,
+    identity,
     digestDomain,
     packageSchemaVersion,
     ...(supportPack !== undefined ? { supportPack } : {}),

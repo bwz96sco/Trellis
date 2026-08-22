@@ -57,6 +57,7 @@ import { fileURLToPath } from "node:url";
 import {
   auditPackedActiveContent,
   auditPackedEntries,
+  auditPackedExecutionPackageManifests,
   buildPackedCliInventory,
   PACKED_ACTIVE_RESEARCH_ENTRIES,
   RESEARCH_STAGE_SKILLS,
@@ -543,6 +544,7 @@ function verifyPackedCli() {
 
     let audit;
     let activeAudit;
+    let executionPackageAudit;
     try {
       audit = auditPackedEntries(entries, inventory);
       const activeContents = new Map(
@@ -555,6 +557,13 @@ function verifyPackedCli() {
         ]),
       );
       activeAudit = auditPackedActiveContent(activeContents);
+      executionPackageAudit = auditPackedExecutionPackageManifests(
+        entries,
+        (entry) =>
+          execFileSync("tar", ["-xOf", packed, entry], {
+            stdio: ["pipe", "pipe", "pipe"],
+          }),
+      );
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
     }
@@ -582,6 +591,13 @@ function verifyPackedCli() {
       `${GREEN}ok${RESET} packed CLI inventory: ${audit.entryCount} entries; ` +
         `${audit.requiredEntryCount} required Research/compatibility entries present; ` +
         `no forbidden generic entries.`,
+    );
+    console.log(
+      `${GREEN}ok${RESET} packed CLI execution packages: ` +
+        `${executionPackageAudit.procedureManifestCount} Procedure manifests with ` +
+        `${executionPackageAudit.procedureMemberCount} authenticated members; ` +
+        `${executionPackageAudit.skillManifestCount} Skill manifests with ` +
+        `${executionPackageAudit.skillMemberCount} authenticated members.`,
     );
     console.log(
       `${GREEN}ok${RESET} packed CLI active content: ${activeAudit.activeEntryCount} ` +

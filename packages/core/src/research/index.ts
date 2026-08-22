@@ -41,7 +41,11 @@ export type {
   Proposal,
   Decision,
   ApprovalStatus,
+  LegacyProcedureActivation,
+  ExecutionPackageActivation,
   ResearchActivation,
+  LegacyProcedureApprovalGrant,
+  ExecutionPackageApprovalGrant,
   ResearchApprovalGrant,
   ResearchApprovalState,
   ResearchAggregateType,
@@ -307,6 +311,36 @@ export {
 export type { RootCompositionAction } from "./dispatch-composition.js";
 
 export {
+  ResearchExecutionPackageError,
+  assertResearchExecutionPackageIdentity,
+  computeResearchExecutionPackageInstructionDigest,
+  computeResearchExecutionPackageMemberInventoryDigest,
+  computeResearchSkillPackageDigest,
+  normalizeResearchProcedureExecutionPackageIdentity,
+  parseResearchSkillExecutionPackage,
+  selectResearchSkillMembers,
+  serializeResearchSkillManifestV3,
+  validateResearchSkillInvocation,
+} from "./execution-package.js";
+export type {
+  ParsedResearchSkillExecutionPackage,
+  ResearchExecutionPackageErrorCode,
+  ResearchExecutionPackageKind,
+  ResearchExecutionProfile,
+  ResearchSkillEntrypointType,
+  ResearchSkillInventoryItemV3,
+  ResearchSkillInvocationSource,
+  ResearchSkillKind,
+  ResearchSkillManifestV3,
+  ResearchSkillMemberAudience,
+  ResearchSkillMemberLoad,
+  ResearchSkillMemberRole,
+  ResearchSkillMemberV3,
+  ResearchSkillMemberVisibility,
+  ResolvedExecutionPackageIdentity,
+} from "./execution-package.js";
+
+export {
   CONSERVATIVE_RESEARCH_PROJECT_POLICY_JSON,
   ResearchProcedurePolicyError,
   computeResearchProcedureDigest,
@@ -384,6 +418,15 @@ export type {
 } from "./procedure-support-pack.js";
 
 export {
+  cloneResearchActivation,
+  cloneResearchApprovalGrant,
+  getResearchActivationPackageDigest,
+  getResearchApprovalPackageDigest,
+  isExecutionPackageActivation,
+  isExecutionPackageApprovalGrant,
+} from "./execution-package-bindings.js";
+
+export {
   workspaceSchema,
   repositorySchema,
   artifactRefSchema,
@@ -399,6 +442,7 @@ export {
   decisionSchema,
   activationIdSchema,
   approvalIdSchema,
+  resolvedExecutionPackageIdentitySchema,
   researchActivationSchema,
   researchApprovalGrantSchema,
   researchApprovalStateSchema,

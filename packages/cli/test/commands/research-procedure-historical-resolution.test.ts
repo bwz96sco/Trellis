@@ -7,6 +7,10 @@ import { describe, expect, it } from "vitest";
 import {
   RESEARCH_CAPABILITY_REGISTRY,
   RESEARCH_PROCEDURE_CURRENT_VERSION,
+  buildSupportPackInventory,
+  computeResearchProcedureDigestV2,
+  normalizeResearchProcedureExecutionPackageIdentity,
+  parseSupportPackManifest,
 } from "@mindfoldhq/trellis-core/research";
 
 import { getBundledResearchProcedureRoot } from "../../src/commands/research/bundled-procedure-root.js";
@@ -19,8 +23,60 @@ if (capability === undefined) {
   throw new Error("Missing research.ideation.generate capability");
 }
 
+function normalizeByteFrozenHistoricalPackage(
+  version: "2.0.4" | "2.0.5",
+) {
+  const directory = path.join(
+    getBundledResearchProcedureRoot(),
+    capability.procedure.id,
+    version,
+  );
+  const manifestBytes = new Uint8Array(
+    fs.readFileSync(path.join(directory, "procedure.json")),
+  );
+  const instructionBytes = new Uint8Array(
+    fs.readFileSync(path.join(directory, "PROCEDURE.md")),
+  );
+  const packJsonBytes = new Uint8Array(
+    fs.readFileSync(path.join(directory, "methodology", "pack.json")),
+  );
+  const manifest = parseSupportPackManifest({
+    packJsonBytes,
+    procedureId: capability.procedure.id,
+    procedureVersion: version,
+  });
+  const files = Object.fromEntries(
+    manifest.entries.map((entry) => [
+      entry.path,
+      new Uint8Array(
+        fs.readFileSync(
+          path.join(directory, "methodology", ...entry.path.split("/")),
+        ),
+      ),
+    ]),
+  );
+  const inventoryItems = buildSupportPackInventory({ manifest, files });
+  const digest = computeResearchProcedureDigestV2({
+    canonicalManifestBytes: manifestBytes,
+    instructionBytes,
+    packJsonBytes,
+    inventoryItems,
+  });
+  return {
+    digest,
+    identity: normalizeResearchProcedureExecutionPackageIdentity({
+      procedureId: capability.procedure.id,
+      procedureVersion: version,
+      packageSchemaVersion: 2,
+      packageDigest: digest,
+      instructionBytes,
+      supportPackInventory: inventoryItems,
+    }),
+  };
+}
+
 describe("historical Procedure resolution", () => {
-  it("registry-current selects v1 while recorded 1.0.0/2.0.0/2.0.1 still resolve", async () => {
+  it("normalizes current 1.0.0 and retained 2.0.0 through 2.0.7 without changing package digests", async () => {
     // Completion Wave-0 containment: future selection is 1.0.0; dormant 2.0.x remain replayable.
     expect(RESEARCH_PROCEDURE_CURRENT_VERSION).toBe("1.0.0");
     expect(capability.procedure.version).toBe("1.0.0");
@@ -32,10 +88,25 @@ describe("historical Procedure resolution", () => {
     });
     expect(current.manifest.version).toBe("1.0.0");
     expect(current.digestDomain ?? "v1").toBe("v1");
+    expect(current.identity).toMatchObject({
+      id: capability.procedure.id,
+      version: "1.0.0",
+      schemaVersion: 1,
+      packageKind: "procedure",
+      packageDigest: current.digest,
+    });
 
     const digests = new Set<string>([current.digest]);
 
-    for (const version of ["1.0.0", "2.0.0", "2.0.1"] as const) {
+    for (const version of [
+      "1.0.0",
+      "2.0.0",
+      "2.0.1",
+      "2.0.2",
+      "2.0.3",
+      "2.0.6",
+      "2.0.7",
+    ] as const) {
       const recorded = await resolveResearchProcedure({
         root: os.tmpdir(),
         capabilityId: capability.id,
@@ -52,6 +123,16 @@ describe("historical Procedure resolution", () => {
         expect(recorded.digestDomain).toBe("v2");
         expect(recorded.digest).not.toBe(current.digest);
       }
+      expect(recorded.identity).toEqual({
+        id: capability.procedure.id,
+        version,
+        schemaVersion: version === "1.0.0" ? 1 : 2,
+        packageKind: "procedure",
+        packageDigest: recorded.digest,
+        instructionDigest: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+        memberInventoryDigest: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+      });
+      expect(Object.isFrozen(recorded.identity)).toBe(true);
       digests.add(recorded.digest);
 
       const onDisk = path.join(
@@ -63,8 +144,23 @@ describe("historical Procedure resolution", () => {
       expect(fs.existsSync(onDisk)).toBe(true);
     }
 
-    // Distinct bytes per package generation (1.0.0 equals registry-current).
-    expect(digests.size).toBe(3);
+    for (const version of ["2.0.4", "2.0.5"] as const) {
+      const frozen = normalizeByteFrozenHistoricalPackage(version);
+      expect(frozen.identity).toEqual({
+        id: capability.procedure.id,
+        version,
+        schemaVersion: 2,
+        packageKind: "procedure",
+        packageDigest: frozen.digest,
+        instructionDigest: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+        memberInventoryDigest: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+      });
+      expect(Object.isFrozen(frozen.identity)).toBe(true);
+      digests.add(frozen.digest);
+    }
+
+    // Distinct exact bytes per package generation (1.0.0 equals registry-current).
+    expect(digests.size).toBe(9);
   });
 
   it("activation-recorded uses exact recorded Procedure id even when registry id matches", async () => {
