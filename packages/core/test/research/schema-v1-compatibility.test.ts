@@ -59,9 +59,7 @@ describe("schema-v1 golden research compatibility", () => {
     const ledgerText = fixtureText(LEDGER_FILE);
     const events = parseResearchLedger(ledgerText, "schema-v1 golden ledger");
 
-    expect(
-      events.map(({ kind, aggregate }) => ({ kind, aggregate })),
-    ).toEqual([
+    expect(events.map(({ kind, aggregate }) => ({ kind, aggregate }))).toEqual([
       {
         kind: "workspace.created",
         aggregate: {
@@ -166,6 +164,9 @@ describe("schema-v1 golden research compatibility", () => {
       workflowInstances,
       workflowInstanceIdsByQuestId,
       activeWorkflowByQuestId,
+      scientificGateRecords,
+      scientificGateRecordIdsByWorkflowInstanceId,
+      effectiveScientificGateRecordIdByScope,
       ...schemaV1State
     } = reducedState;
     expect(schemaV1State).toEqual(expectedState);
@@ -177,6 +178,9 @@ describe("schema-v1 golden research compatibility", () => {
       workflowInstances,
       workflowInstanceIdsByQuestId,
       activeWorkflowByQuestId,
+      scientificGateRecords,
+      scientificGateRecordIdsByWorkflowInstanceId,
+      effectiveScientificGateRecordIdByScope,
     }).toEqual({
       activations: {},
       activationByDispatchId: {},
@@ -185,6 +189,9 @@ describe("schema-v1 golden research compatibility", () => {
       workflowInstances: {},
       workflowInstanceIdsByQuestId: {},
       activeWorkflowByQuestId: {},
+      scientificGateRecords: {},
+      scientificGateRecordIdsByWorkflowInstanceId: {},
+      effectiveScientificGateRecordIdByScope: {},
     });
 
     const {
@@ -195,6 +202,11 @@ describe("schema-v1 golden research compatibility", () => {
       workflowInstances: readWorkflowInstances,
       workflowInstanceIdsByQuestId: readWorkflowInstanceIdsByQuestId,
       activeWorkflowByQuestId: readActiveWorkflowByQuestId,
+      scientificGateRecords: readScientificGateRecords,
+      scientificGateRecordIdsByWorkflowInstanceId:
+        readScientificGateRecordIdsByWorkflowInstanceId,
+      effectiveScientificGateRecordIdByScope:
+        readEffectiveScientificGateRecordIdByScope,
       ...readSchemaV1State
     } = await readResearchState(root);
     expect(readSchemaV1State).toEqual(expectedState);
@@ -206,6 +218,9 @@ describe("schema-v1 golden research compatibility", () => {
       readWorkflowInstances,
       readWorkflowInstanceIdsByQuestId,
       readActiveWorkflowByQuestId,
+      readScientificGateRecords,
+      readScientificGateRecordIdsByWorkflowInstanceId,
+      readEffectiveScientificGateRecordIdByScope,
     }).toEqual({
       readActivations: {},
       readActivationByDispatchId: {},
@@ -214,11 +229,13 @@ describe("schema-v1 golden research compatibility", () => {
       readWorkflowInstances: {},
       readWorkflowInstanceIdsByQuestId: {},
       readActiveWorkflowByQuestId: {},
+      readScientificGateRecords: {},
+      readScientificGateRecordIdsByWorkflowInstanceId: {},
+      readEffectiveScientificGateRecordIdByScope: {},
     });
 
-    const dispatch = reducedState.dispatches[
-      "dsp_77777777-7777-4777-8777-777777777777"
-    ];
+    const dispatch =
+      reducedState.dispatches["dsp_77777777-7777-4777-8777-777777777777"];
     expect(dispatch).toMatchObject({
       ownerSkill: "trellis-research-runner",
       taskRef: "tasks/07-18-golden-research",
@@ -265,13 +282,16 @@ describe("schema-v1 golden research compatibility", () => {
     expect(runProjection.data.dispatchId).toBe(
       "dsp_77777777-7777-4777-8777-777777777777",
     );
-    expect(fs.existsSync(path.join(paths.researchDir, "dispatches"))).toBe(false);
+    expect(fs.existsSync(path.join(paths.researchDir, "dispatches"))).toBe(
+      false,
+    );
 
     await rebuildResearchProjections(root);
     for (const [relative, expected] of first) {
-      expect(fixtureText(path.join(paths.researchDir, relative)), relative).toBe(
-        expected,
-      );
+      expect(
+        fixtureText(path.join(paths.researchDir, relative)),
+        relative,
+      ).toBe(expected);
     }
   });
 
@@ -279,7 +299,10 @@ describe("schema-v1 golden research compatibility", () => {
     const lines = fixtureText(LEDGER_FILE).trimEnd().split("\n");
 
     expect(() =>
-      parseResearchLedger(`${lines[0]}\n{malformed}\n`, "golden-malformed.jsonl"),
+      parseResearchLedger(
+        `${lines[0]}\n{malformed}\n`,
+        "golden-malformed.jsonl",
+      ),
     ).toThrow(/golden-malformed\.jsonl line 2: malformed JSON/);
 
     const gap = JSON.parse(lines[1] ?? "{}") as Record<string, unknown>;

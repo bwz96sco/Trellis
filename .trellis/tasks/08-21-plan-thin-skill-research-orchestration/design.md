@@ -330,7 +330,8 @@ Rules:
 - H1/H2 record scientific scope, not filesystem/network/worker authority;
 - a gate may permit a transition but never selects or executes the next node;
 - evaluation cannot be invoked in the same command that records H2;
-- validators check structure and approved-set containment, not scientific truth.
+- C4 validators check explicit decision, selected-ref string integrity/disjointness, and canonical evidence containment, not scientific truth;
+- candidate-universe membership/coverage waits for C4b because C4 has no canonical candidate/opportunity projection.
 
 ## 7. Command Surface
 
@@ -381,15 +382,22 @@ Behavior:
 
 ```text
 trellis research gate record \
-  --quest <id> --workflow <id> --node <id> --gate <H1|H2> \
-  --decision-file <path> [--dry-run] [--write] [--json]
+  --instance <id> --gate <H1|H2> --decision <approve|reject> \
+  --actor <label> --rationale <text> \
+  [--approved-ref <scientific-ref>...] [--rejected-ref <scientific-ref>...] \
+  --evidence-ref <artifact:art-id>... [--source-artifact <artifact:art-id>] \
+  [--idempotency-key <key>] [--dry-run] [--write] [--json]
+trellis research gate status --instance <id> [--json]
 ```
 
 Behavior:
 
+- Quest/workflow/node identity derives from exact active instance;
+- approved/rejected scientific refs remain separate from canonical evidence Artifacts;
 - preview by default;
 - write requires explicit `--write`;
-- same-command execution of next node is forbidden.
+- status is read-only;
+- same-command transition or next-node execution is forbidden.
 
 ### 7.4 Quest import and export
 
@@ -596,10 +604,11 @@ Do not mutate bytes under an existing package ID/version. New thin packages use 
 2. Generalize package resolver and new Activation identity while preserving historical schema-v1/v2 replay; do not change live capability selection.
 3. Add one project-local literature package and read-only lightweight Context spike.
 4. Add DAG resolver plus canonical workflow bind/complete/transition state before status/next commands.
-5. Add scientific gate events, exact Quest import/export mapping, and coordinated source-admin refusal.
-6. Add managed pilot mappings using the same normalized package identity and instruction digest.
-7. Run required A/B/C cases.
-8. Decide whether to migrate additional skills.
+5. Add canonical scientific gate events and make Workflow routing consume them.
+6. Separately add exact Quest import/export mapping and coordinated source-admin refusal after gate behavior is proven.
+7. Add managed pilot mappings using the same normalized package identity and instruction digest.
+8. Run required A/B/C cases.
+9. Decide whether to migrate additional skills.
 
 ### Rollback
 

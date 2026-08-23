@@ -20,6 +20,7 @@ export type DecisionId = `dec_${string}`;
 export type ActivationId = `act_${string}`;
 export type ApprovalId = `apr_${string}`;
 export type WorkflowInstanceId = `wfi_${string}`;
+export type ScientificGateRecordId = `gtr_${string}`;
 
 export type QuestStatus = "active" | "paused" | "completed" | "abandoned";
 export type QuestStage =
@@ -353,6 +354,28 @@ export interface WorkflowNodeCompletePayload {
   completedAt: string;
 }
 
+export type ScientificGateId = "H1" | "H2";
+export type ScientificGateDecision = "approve" | "reject";
+
+export interface ScientificGateRecord {
+  id: ScientificGateRecordId;
+  questId: QuestId;
+  workflowInstanceId: WorkflowInstanceId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  nodeId: string;
+  gateId: ScientificGateId;
+  decision: ScientificGateDecision;
+  actor: string;
+  rationale: string;
+  approvedRefs: string[];
+  rejectedRefs: string[];
+  evidenceRefs: ArtifactId[];
+  sourceArtifactId?: ArtifactId;
+  recordedAt: string;
+}
+
 export interface WorkflowTransitionRecordPayload {
   workflowInstanceId: WorkflowInstanceId;
   questId: QuestId;
@@ -363,7 +386,7 @@ export interface WorkflowTransitionRecordPayload {
   fromNodeId: string;
   toNodeId: string;
   selectedBy: string;
-  gateRecordIds: string[];
+  gateRecordIds: ScientificGateRecordId[];
   selectedAt: string;
 }
 
@@ -409,6 +432,19 @@ export interface QuestWorkflowProjection {
   instances: ResearchWorkflowInstance[];
 }
 
+export interface QuestScientificGateProjection {
+  schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
+  questId: QuestId;
+  records: ScientificGateRecord[];
+  effective: {
+    workflowInstanceId: WorkflowInstanceId;
+    nodeId: string;
+    gateId: ScientificGateId;
+    recordId: ScientificGateRecordId;
+  }[];
+  updatedAt: string;
+}
+
 export type ResearchAggregateType =
   | "workspace"
   | "repository"
@@ -438,7 +474,10 @@ export interface ResearchSchemaV2AggregateRef {
   id: string;
 }
 
-export type ResearchSchemaV3AggregateType = ResearchAggregateType | "workflow";
+export type ResearchSchemaV3AggregateType =
+  | ResearchAggregateType
+  | "workflow"
+  | "scientific-gate";
 
 export interface ResearchSchemaV3AggregateRef {
   type: ResearchSchemaV3AggregateType;
@@ -488,7 +527,8 @@ export type ResearchSchemaV3EventKind =
   | "workflow.bound"
   | "workflow.node_completed"
   | "workflow.transition_recorded"
-  | "workflow.closed";
+  | "workflow.closed"
+  | "scientific-gate.recorded";
 
 export interface ResearchSchemaV1Event {
   schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
@@ -564,6 +604,14 @@ export interface ResearchState {
   workflowInstances: Record<WorkflowInstanceId, ResearchWorkflowInstance>;
   workflowInstanceIdsByQuestId: Partial<Record<QuestId, WorkflowInstanceId[]>>;
   activeWorkflowByQuestId: Partial<Record<QuestId, WorkflowInstanceId>>;
+  scientificGateRecords: Record<ScientificGateRecordId, ScientificGateRecord>;
+  scientificGateRecordIdsByWorkflowInstanceId: Partial<
+    Record<WorkflowInstanceId, ScientificGateRecordId[]>
+  >;
+  effectiveScientificGateRecordIdByScope: Record<
+    string,
+    ScientificGateRecordId
+  >;
   entitySeq: Record<string, number>;
   projectedThroughSeq: number;
   updatedAt: string | null;

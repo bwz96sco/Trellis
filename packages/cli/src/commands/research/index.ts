@@ -46,6 +46,11 @@ import {
   type GetResearchDispatchContextOptions,
 } from "./dispatch-context.js";
 import {
+  getResearchScientificGateStatus,
+  recordResearchScientificGate,
+  type ResearchGateMutationOptions,
+} from "./gate-command.js";
+import {
   getResearchSkillContext,
   listResearchSkills,
   showResearchSkill,
@@ -88,6 +93,7 @@ import {
 } from "./common.js";
 import type {
   ApprovalId,
+  ArtifactId,
   CampaignId,
   CampaignStatus,
   ClaimId,
@@ -105,6 +111,8 @@ import type {
   RepositoryKind,
   RunId,
   RunStatus,
+  ScientificGateDecision,
+  ScientificGateId,
   WorkflowCloseOutcome,
   WorkflowInstanceId,
 } from "@mindfoldhq/trellis-core/research";
@@ -279,6 +287,37 @@ function parseWorkflowInstanceIdArgument(value: string): WorkflowInstanceId {
   );
 }
 
+function parseScientificGateIdArgument(value: string): ScientificGateId {
+  if (value !== "H1" && value !== "H2") {
+    throw new InvalidArgumentError("scientific gate must be exactly H1 or H2");
+  }
+  return value;
+}
+
+function parseScientificGateDecisionArgument(
+  value: string,
+): ScientificGateDecision {
+  if (value !== "approve" && value !== "reject") {
+    throw new InvalidArgumentError(
+      "scientific gate decision must be exactly approve or reject",
+    );
+  }
+  return value;
+}
+
+function parseArtifactReferenceArgument(value: string): ArtifactId {
+  if (!value.startsWith("artifact:")) {
+    throw new InvalidArgumentError(
+      "Artifact reference must use artifact:<art-id>",
+    );
+  }
+  return parseResearchIdArgument<ArtifactId>(
+    value.slice("artifact:".length),
+    "art",
+    "Artifact ID",
+  );
+}
+
 function parseWorkflowCloseOutcomeArgument(
   value: string,
 ): WorkflowCloseOutcome {
@@ -317,6 +356,13 @@ function collectRequiredString(
   return [...(previous ?? []), value];
 }
 
+function collectArtifactReference(
+  value: string,
+  previous: ArtifactId[] | undefined,
+): ArtifactId[] {
+  return [...(previous ?? []), parseArtifactReferenceArgument(value)];
+}
+
 function collectRepositoryId(
   value: string,
   previous: RepositoryId[],
@@ -353,6 +399,13 @@ function addWorkflowMutationOptions(command: Command): Command {
     .option("--write", "commit exactly one Workflow event");
 }
 
+function addGateMutationOptions(command: Command): Command {
+  return addOutputOptions(command)
+    .option("--idempotency-key <key>", "durable retry key")
+    .option("--dry-run", "preview the scientific gate record without writing")
+    .option("--write", "commit exactly one scientific gate event");
+}
+
 function collectEvidenceId(
   value: string,
   previous: EvidenceId[],
@@ -381,6 +434,37 @@ function renderExtendedResearchResult(result: unknown, json: boolean): void {
     console.log(
       `research dispatch context: ${context.dispatch.id} host=${context.host} stage=${context.capability.stage} capability=${context.capability.id} approval=${context.approval.id} head=${String(value.ledgerHead)} repository=${context.repository.id}`,
     );
+    return;
+  }
+  if (value.command === "research gate record") {
+    const record = value.record as {
+      id: string;
+      workflowInstanceId: string;
+      nodeId: string;
+      gateId: string;
+      decision: string;
+    };
+    console.log(
+      `${record.id} instance=${record.workflowInstanceId} node=${record.nodeId} gate=${record.gateId} decision=${record.decision} state=${String(value.state)} head=${String(value.headSeq)}`,
+    );
+    return;
+  }
+  if (value.command === "research gate status") {
+    console.log(
+      `${String(value.workflowInstanceId)} workflow=${String(value.workflowId)}@${String(value.workflowVersion)} node=${String(value.currentNodeId)} completed=${String(value.currentNodeCompleted)} gates=${(value.declaredGateIds as string[]).join(",")} history=${(value.history as unknown[]).length}`,
+    );
+    const effective = value.effective as Record<
+      string,
+      null | { id: string; decision: string }
+    >;
+    for (const gateId of ["H1", "H2"]) {
+      const record = effective[gateId];
+      console.log(
+        record === null || record === undefined
+          ? `${gateId} none`
+          : `${gateId} ${record.id} decision=${record.decision}`,
+      );
+    }
     return;
   }
   if ("events" in value || "counts" in value || "valid" in value) {
@@ -475,13 +559,14 @@ function renderExtendedResearchResult(result: unknown, json: boolean): void {
       legal: boolean;
       missingRefs: string[];
       missingGateIds: string[];
+      satisfyingGateRecordIds: string[];
     }[];
     console.log(
       `${String(value.questId)} instance=${String(value.workflowInstanceId ?? "none")} node=${String(value.currentNodeId ?? "none")} stop=${String(value.stopReason)}`,
     );
     for (const choice of choices) {
       console.log(
-        `${choice.id} ${choice.fromNodeId}->${choice.toNodeId} legal=${choice.legal} missingRefs=${choice.missingRefs.join(",")} missingGates=${choice.missingGateIds.join(",")}`,
+        `${choice.id} ${choice.fromNodeId}->${choice.toNodeId} legal=${choice.legal} missingRefs=${choice.missingRefs.join(",")} missingGates=${choice.missingGateIds.join(",")} satisfyingGateRecords=${choice.satisfyingGateRecordIds.join(",")}`,
       );
     }
     return;
@@ -723,6 +808,94 @@ export function registerResearchCommand(program: Command): void {
   ).action(async (options: ResearchOutputOptions & { quest: QuestId }) => {
     await runAction(options.json, () => getResearchWorkflowNext(options));
   });
+
+  const gate = research
+    .command("gate")
+    .description("Record and inspect explicit scientific gate decisions");
+
+  addGateMutationOptions(
+    gate
+      .command("record")
+      .description("Preview or record one explicit H1/H2 decision")
+      .requiredOption(
+        "--instance <wfi-id>",
+        "Workflow instance ID",
+        parseWorkflowInstanceIdArgument,
+      )
+      .requiredOption(
+        "--gate <H1|H2>",
+        "scientific gate ID",
+        parseScientificGateIdArgument,
+      )
+      .requiredOption(
+        "--decision <approve|reject>",
+        "explicit scientific decision",
+        parseScientificGateDecisionArgument,
+      )
+      .requiredOption("--actor <label>", "explicit operator label")
+      .requiredOption("--rationale <text>", "non-empty scientific rationale")
+      .option(
+        "--approved-ref <ref>",
+        "approved scientific reference (repeatable)",
+        collectString,
+        [] as string[],
+      )
+      .option(
+        "--rejected-ref <ref>",
+        "rejected scientific reference (repeatable)",
+        collectString,
+        [] as string[],
+      )
+      .requiredOption(
+        "--evidence-ref <artifact:art-id>",
+        "accepted evidence Artifact reference (repeatable)",
+        collectArtifactReference,
+      )
+      .option(
+        "--source-artifact <artifact:art-id>",
+        "source Artifact included in evidence",
+        parseArtifactReferenceArgument,
+      ),
+  ).action(
+    async (
+      options: ResearchGateMutationOptions & {
+        instance: WorkflowInstanceId;
+        gate: ScientificGateId;
+        decision: ScientificGateDecision;
+        actor: string;
+        rationale: string;
+        approvedRef: string[];
+        rejectedRef: string[];
+        evidenceRef: ArtifactId[];
+        sourceArtifact?: ArtifactId;
+      },
+    ) => {
+      await runAction(options.json, () =>
+        recordResearchScientificGate(options),
+      );
+    },
+  );
+
+  addOutputOptions(
+    gate
+      .command("status")
+      .description(
+        "Read canonical scientific gate status for one Workflow instance",
+      )
+      .requiredOption(
+        "--instance <wfi-id>",
+        "Workflow instance ID",
+        parseWorkflowInstanceIdArgument,
+      ),
+  ).action(
+    async (
+      options: ResearchOutputOptions & { instance: WorkflowInstanceId },
+    ) => {
+      await runAction(options.json, () =>
+        getResearchScientificGateStatus(options),
+      );
+    },
+  );
 
   const repo = research
     .command("repo")

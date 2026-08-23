@@ -15,6 +15,7 @@ import type {
   RepositoryId,
   ResultId,
   RunId,
+  ScientificGateRecordId,
   WorkflowInstanceId,
   WorkspaceId,
 } from "./types.js";
@@ -36,6 +37,7 @@ export const RESEARCH_ID_PREFIXES = {
   activation: "act",
   approval: "apr",
   workflowInstance: "wfi",
+  scientificGateRecord: "gtr",
 } as const;
 
 export type ResearchIdKind = keyof typeof RESEARCH_ID_PREFIXES;
@@ -75,3 +77,5 @@ export const createApprovalId = (): ApprovalId =>
   createResearchId("approval") as ApprovalId;
 export const createWorkflowInstanceId = (): WorkflowInstanceId =>
   createResearchId("workflowInstance") as WorkflowInstanceId;
+export const createScientificGateRecordId = (): ScientificGateRecordId =>
+  createResearchId("scientificGateRecord") as ScientificGateRecordId;

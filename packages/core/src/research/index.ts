@@ -15,6 +15,7 @@ export type {
   ActivationId,
   ApprovalId,
   WorkflowInstanceId,
+  ScientificGateRecordId,
   QuestStatus,
   QuestStage,
   CampaignStatus,
@@ -50,6 +51,9 @@ export type {
   ResearchApprovalGrant,
   ResearchApprovalState,
   WorkflowAcceptedRef,
+  ScientificGateId,
+  ScientificGateDecision,
+  ScientificGateRecord,
   WorkflowBindPayload,
   WorkflowNodeCompletePayload,
   WorkflowTransitionRecordPayload,
@@ -58,6 +62,7 @@ export type {
   WorkflowStatus,
   ResearchWorkflowInstance,
   QuestWorkflowProjection,
+  QuestScientificGateProjection,
   ResearchAggregateType,
   ResearchAggregateRef,
   ResearchSchemaV2AggregateType,
@@ -101,6 +106,7 @@ export {
   createActivationId,
   createApprovalId,
   createWorkflowInstanceId,
+  createScientificGateRecordId,
 } from "./ids.js";
 export type { ResearchIdKind } from "./ids.js";
 
@@ -518,6 +524,18 @@ export type {
 export { stableResearchJson } from "./projections.js";
 
 export {
+  ResearchScientificGateError,
+  parseScientificGateRecordId,
+  parseScientificGateId,
+  parseScientificGateDecision,
+  normalizeScientificGateRefs,
+  normalizeScientificGateEvidenceRefs,
+  parseScientificGateRecord,
+  scientificGateScopeKey,
+  getEffectiveScientificGateRecord,
+} from "./scientific-gate.js";
+
+export {
   ResearchWorkflowError,
   parseResearchWorkflowDefinitionV1,
   parseWorkflowAcceptedRef,
@@ -567,7 +585,4 @@ export {
 } from "./dispatch.js";
 
 export { buildResearchContext } from "./context.js";
-export type {
-  ResearchContextSelection,
-  ResearchContext,
-} from "./context.js";
+export type { ResearchContextSelection, ResearchContext } from "./context.js";

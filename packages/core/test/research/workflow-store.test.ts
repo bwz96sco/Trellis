@@ -9,6 +9,7 @@ import {
   createArtifactId,
   createQuestId,
   createRepositoryId,
+  createScientificGateRecordId,
   createWorkflowInstanceId,
   createWorkspaceId,
   parseResearchEvent,
@@ -16,9 +17,11 @@ import {
   readResearchLedger,
   readResearchState,
   rebuildResearchProjections,
+  reduceResearchEvents,
   ResearchWorkflowError,
   validateResearchBatchReadOnly,
   type QuestId,
+  type ResearchEvent,
   type ResearchMutation,
 } from "../../src/research/index.js";
 
@@ -186,7 +189,9 @@ describe("Research Workflow store and replay", () => {
     };
     extraPayload.payload.extra = true;
     expect(() => parseResearchEvent(extraPayload)).toThrow(/not supported/);
-    const missingQuestRelation = JSON.parse(JSON.stringify(bound.events[0])) as {
+    const missingQuestRelation = JSON.parse(
+      JSON.stringify(bound.events[0]),
+    ) as {
       related: unknown[];
     };
     missingQuestRelation.related = [];
@@ -199,8 +204,9 @@ describe("Research Workflow store and replay", () => {
       acceptedRefs: [{ kind: "artifact", id: artifactId }],
       workflow: definition,
     });
-    expect((await readResearchState(root)).workflowInstances[workflowInstanceId])
-      .toMatchObject({ currentNodeId: "one", status: "active" });
+    expect(
+      (await readResearchState(root)).workflowInstances[workflowInstanceId],
+    ).toMatchObject({ currentNodeId: "one", status: "active" });
 
     await commit("transition", "2026-08-21T00:03:00.000Z", {
       kind: "workflow.transition.record",
@@ -209,8 +215,9 @@ describe("Research Workflow store and replay", () => {
       selectedBy: "test",
       workflow: definition,
     });
-    expect((await readResearchState(root)).workflowInstances[workflowInstanceId])
-      .toMatchObject({ currentNodeId: "two", status: "active" });
+    expect(
+      (await readResearchState(root)).workflowInstances[workflowInstanceId],
+    ).toMatchObject({ currentNodeId: "two", status: "active" });
 
     await commit("complete-two", "2026-08-21T00:04:00.000Z", {
       kind: "workflow.node.complete",
@@ -248,6 +255,18 @@ describe("Research Workflow store and replay", () => {
       "workflow.json",
     );
     const before = fs.readFileSync(projection, "utf8");
+    expect(
+      fs.existsSync(
+        path.join(
+          root,
+          ".trellis",
+          "research",
+          "quests",
+          questId,
+          "gates.json",
+        ),
+      ),
+    ).toBe(false);
     await rebuildResearchProjections(root);
     expect(fs.readFileSync(projection, "utf8")).toBe(before);
     expect(JSON.parse(before)).toMatchObject({
@@ -258,8 +277,11 @@ describe("Research Workflow store and replay", () => {
         instances: [{ workflowInstanceId, status: "completed" }],
       },
     });
-    expect((await readResearchLedger(root)).slice(-5).map((event) => event.schemaVersion))
-      .toEqual([3, 3, 3, 3, 3]);
+    expect(
+      (await readResearchLedger(root))
+        .slice(-5)
+        .map((event) => event.schemaVersion),
+    ).toEqual([3, 3, 3, 3, 3]);
   });
 
   it("keeps read-only validation byte-identical and rejects a second active binding", async () => {
@@ -294,8 +316,8 @@ describe("Research Workflow store and replay", () => {
     expect(snapshot(root)).toEqual(before);
   });
 
-  it("blocks every H1/H2 transition in C3 and completed closure before a completed terminal node", async () => {
-    const definition = workflow(["H1"]);
+  it("uses the latest exact-scope H1/H2 decisions and freezes approving records in gate order", async () => {
+    const definition = workflow(["H2", "H1"]);
     const workflowInstanceId = createWorkflowInstanceId();
     await commit("bind", "2026-08-21T00:01:00.000Z", {
       kind: "workflow.bind",
@@ -330,5 +352,151 @@ describe("Research Workflow store and replay", () => {
         workflow: definition,
       }),
     ).rejects.toThrow(ResearchWorkflowError);
+
+    const rejectedH1 = createScientificGateRecordId();
+    await commit("reject-h1", "2026-08-21T00:04:00.000Z", {
+      kind: "scientific-gate.record",
+      recordId: rejectedH1,
+      workflowInstanceId,
+      gateId: "H1",
+      decision: "reject",
+      actor: "reviewer",
+      rationale: "Needs revision",
+      approvedRefs: [],
+      rejectedRefs: ["candidate:one"],
+      evidenceRefs: [artifactId],
+      workflow: definition,
+    });
+    const approvedH2 = createScientificGateRecordId();
+    await commit("approve-h2", "2026-08-21T00:05:00.000Z", {
+      kind: "scientific-gate.record",
+      recordId: approvedH2,
+      workflowInstanceId,
+      gateId: "H2",
+      decision: "approve",
+      actor: "reviewer",
+      rationale: "Audit passed",
+      approvedRefs: ["audit:one"],
+      rejectedRefs: [],
+      evidenceRefs: [artifactId],
+      sourceArtifactId: artifactId,
+      workflow: definition,
+    });
+    await expect(
+      commit("still-blocked", "2026-08-21T00:06:00.000Z", {
+        kind: "workflow.transition.record",
+        workflowInstanceId,
+        transitionId: "advance",
+        selectedBy: "test",
+        workflow: definition,
+      }),
+    ).rejects.toThrow(/missing gates: H1/);
+
+    const approvedH1 = createScientificGateRecordId();
+    await commit("approve-h1", "2026-08-21T00:07:00.000Z", {
+      kind: "scientific-gate.record",
+      recordId: approvedH1,
+      workflowInstanceId,
+      gateId: "H1",
+      decision: "approve",
+      actor: " reviewer ",
+      rationale: " revision accepted ",
+      approvedRefs: ["candidate:one"],
+      rejectedRefs: [],
+      evidenceRefs: [artifactId],
+      workflow: definition,
+    });
+    const transitioned = await commit(
+      "transition",
+      "2026-08-21T00:08:00.000Z",
+      {
+        kind: "workflow.transition.record",
+        workflowInstanceId,
+        transitionId: "advance",
+        selectedBy: "test",
+        workflow: definition,
+      },
+    );
+    expect(transitioned.events[0]).toMatchObject({
+      kind: "workflow.transition_recorded",
+      related: [
+        { type: "quest", id: questId },
+        { type: "scientific-gate", id: approvedH1 },
+        { type: "scientific-gate", id: approvedH2 },
+      ],
+      payload: { gateRecordIds: [approvedH1, approvedH2] },
+    });
+
+    const state = await readResearchState(root);
+    expect(
+      state.scientificGateRecordIdsByWorkflowInstanceId[workflowInstanceId],
+    ).toEqual([rejectedH1, approvedH2, approvedH1]);
+    expect(state.scientificGateRecords[approvedH1]).toMatchObject({
+      actor: " reviewer ",
+      rationale: " revision accepted ",
+    });
+    const gatesFile = path.join(
+      root,
+      ".trellis",
+      "research",
+      "quests",
+      questId,
+      "gates.json",
+    );
+    const gatesProjection = JSON.parse(
+      fs.readFileSync(gatesFile, "utf8"),
+    ) as {
+      schemaVersion: number;
+      records: { id: string }[];
+      effective: { recordId: string }[];
+      updatedAt: string;
+    };
+    expect(gatesProjection).toMatchObject({
+      schemaVersion: 1,
+      updatedAt: "2026-08-21T00:07:00.000Z",
+    });
+    expect(gatesProjection.records.map((record) => record.id)).toEqual([
+      rejectedH1,
+      approvedH2,
+      approvedH1,
+    ]);
+    expect(gatesProjection.effective.map((record) => record.recordId)).toEqual([
+      approvedH1,
+      approvedH2,
+    ]);
+
+    const gateProjectionBytes = fs.readFileSync(gatesFile, "utf8");
+    await rebuildResearchProjections(root);
+    expect(fs.readFileSync(gatesFile, "utf8")).toBe(gateProjectionBytes);
+
+    const canonicalEvents = await readResearchLedger(root);
+    const gateRelationDrift = structuredClone(canonicalEvents);
+    const gateEvent = gateRelationDrift.find(
+      (event) =>
+        event.kind === "scientific-gate.recorded" &&
+        event.aggregate.id === approvedH1,
+    );
+    if (gateEvent === undefined) throw new Error("Missing approved H1 event");
+    gateEvent.related = [{ type: "quest", id: questId }];
+    expect(() => reduceResearchEvents(gateRelationDrift)).toThrow(
+      /scientific-gate.recorded related refs do not match canonical state/,
+    );
+
+    const transitionRelationDrift: ResearchEvent[] =
+      structuredClone(canonicalEvents);
+    const transitionEvent = transitionRelationDrift.find(
+      (event) => event.kind === "workflow.transition_recorded",
+    );
+    if (transitionEvent === undefined) {
+      throw new Error("Missing Workflow transition event");
+    }
+    transitionEvent.related = [
+      { type: "quest", id: questId },
+      { type: "scientific-gate", id: approvedH2 },
+      { type: "scientific-gate", id: approvedH1 },
+    ];
+    expect(() => reduceResearchEvents(transitionRelationDrift)).toThrow(
+      /workflow.transition_recorded related refs do not match canonical state/,
+    );
   });
 });

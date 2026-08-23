@@ -1181,6 +1181,7 @@ interface ScientificGateRecord {
   workflowInstanceId: string;
   workflowId: string;
   workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
   nodeId: string;
   gateId: "H1" | "H2";
   decision: "approve" | "reject";
@@ -1189,6 +1190,7 @@ interface ScientificGateRecord {
   approvedRefs: string[];
   rejectedRefs: string[];
   evidenceRefs: ArtifactId[];
+  sourceArtifactId?: ArtifactId;
   recordedAt: string;
 }
 
@@ -1238,8 +1240,12 @@ Planned canonical mutations are typed `workflow.bind`, `workflow.node.complete`,
 #### Scientific gates
 
 - H1/H2 are scientific authority, not operational Approval.
-- Gate records preserve actor, rationale, approved/rejected refs, evidence refs, exact workflow instance, and node.
-- Validators check structure, stable-ID membership, set disjointness/coverage, and evidence containment. They do not judge scientific truth.
+- Gate records preserve actor, rationale, approved/rejected scientific refs, canonical evidence refs, optional source Artifact, exact workflow instance/digest, and node. Actor and rationale must be trim-nonempty; their decoded values are preserved verbatim.
+- C4 validators require non-empty scientific-ref strings equal to their trimmed value, duplicate/disjoint-set integrity, and evidence Artifact ownership/accepted-ref containment. They do not judge scientific truth.
+- Records are append-only. Latest valid record for exact `workflowInstanceId + nodeId + gateId` scope is effective; only `approve` satisfies a transition. A later reject cannot rewrite an earlier transition because each transition freezes its satisfying gate-record IDs in H1-before-H2 order.
+- Schema-v3 gate replay independently validates the aggregate ID and exact ordered Quest/Workflow/evidence relation set. Transition replay independently validates exact Quest-plus-gate relation order. Reducer entry points never assume event-parser validation already occurred.
+- Per-Quest `gates.json` keeps records in ledger order and effective scopes in structural order. Historical ledgers without gate records produce no gate projection and retain existing Workflow projection bytes.
+- C4 does not claim scientific-ref universe membership or total coverage: no canonical candidate/opportunity universe exists before C4b. C4b adds those checks only after exact source mapping provides that universe.
 - `opportunity_board.md`, `ideas.md`, and candidate attacks remain evidence. Decision Markdown may be imported/exported as compatibility projection but is not duplicate canonical authority after cutover.
 
 #### Quest import, route, and writer authority
@@ -1309,7 +1315,7 @@ Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an
 | Second active workflow instance targets one Quest | Reject without append. |
 | Node completion targets non-current/already-completed node | Reject without append. |
 | Transition source is incomplete, illegal, unselected, or missing gate refs | Reject without append. |
-| Gate record has inferred actor/decision, empty rationale, overlapping refs, or unknown stable IDs | Reject without append. |
+| Gate record has inferred actor/decision, blank actor/rationale, padded/duplicate/overlapping refs, or invalid evidence ownership/containment | Reject without append. |
 | Quest source has blocking mapping conflict | Preview reports exact conflict; write fails zero-write. |
 | Source admin sees `writer=trellis` | Every mutating operation fails before filesystem mutation. |
 | Export validates but no transfer event exists | Keep `writer=trellis`. |
@@ -1331,7 +1337,7 @@ Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an
 - Real packed-tarball tests derive every Procedure and future Skill member from extracted manifests; retained Procedure versions through `2.0.7` are required and no production Skill ships in C2.
 - Schema-v3 package parser, exact digest, project-first fail-closed resolution, exact five-package pilot bindings, invocation/entrypoint/profile separation, explicit-only managed evaluation, root-command Quest admin with no model profile, and identical lightweight/managed instruction digest.
 - Workflow DAG validation; bind/complete/transition/close reducers; one-active-instance invariant; no stage inference; no automatic continuation.
-- Scientific gate structural validation, H1/H2 versus Approval separation, and no same-mutation transition.
+- Scientific gate tests cover structural validation, H1/H2 versus Approval separation, append-only latest-scope semantics, direct-reducer aggregate/relation rejection, H1-before-H2 transition relation order, deterministic `gates.json`, and no same-mutation transition.
 - Quest schema-0.2 and supported legacy mapping, unknown extension preservation, blocking conflict matrix, reviewed milestone order, export round-trip, and writer-transfer behavior.
 - Integration fixture proving real source admin mutating commands leave a byte-identical filesystem when `writer=trellis`.
 

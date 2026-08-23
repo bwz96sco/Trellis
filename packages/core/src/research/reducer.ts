@@ -9,6 +9,10 @@ import {
 } from "./execution-package-bindings.js";
 import { validateArtifactRepositories } from "./repositories.js";
 import {
+  parseScientificGateRecord,
+  scientificGateScopeKey,
+} from "./scientific-gate.js";
+import {
   assertCampaignStatusTransition,
   assertClaimStatusTransition,
   assertEvidenceStatusTransition,
@@ -38,9 +42,12 @@ import type {
   ResearchEvent,
   ResearchSchemaV2AggregateRef,
   ResearchSchemaV2Event,
+  ResearchSchemaV3AggregateRef,
+  ResearchSchemaV3Event,
   ResearchState,
   ResearchWorkflowInstance,
   Result,
+  ScientificGateRecord,
   Run,
   RunStatus,
   WorkflowBindPayload,
@@ -71,6 +78,9 @@ export function emptyResearchState(): ResearchState {
     workflowInstances: {},
     workflowInstanceIdsByQuestId: {},
     activeWorkflowByQuestId: {},
+    scientificGateRecords: {},
+    scientificGateRecordIdsByWorkflowInstanceId: {},
+    effectiveScientificGateRecordIdByScope: {},
     entitySeq: {},
     projectedThroughSeq: 0,
     updatedAt: null,
@@ -168,7 +178,8 @@ function assertAggregate(
 }
 
 function requireWorkspace(state: ResearchState): Workspace {
-  if (!state.workspace) throw new Error("Research workspace has not been created");
+  if (!state.workspace)
+    throw new Error("Research workspace has not been created");
   return state.workspace;
 }
 
@@ -220,13 +231,43 @@ function assertSchemaV2Related(
   }
 }
 
+function assertSchemaV3Aggregate(
+  event: ResearchSchemaV3Event,
+  type: "workflow" | "scientific-gate",
+  id: string,
+): void {
+  if (event.aggregate.type !== type || event.aggregate.id !== id) {
+    throw new Error(
+      `${event.kind} aggregate must be ${type}:${id}, received ${event.aggregate.type}:${event.aggregate.id}`,
+    );
+  }
+}
+
+function assertSchemaV3Related(
+  event: ResearchSchemaV3Event,
+  expected: readonly ResearchSchemaV3AggregateRef[],
+): void {
+  if (
+    event.related.length !== expected.length ||
+    expected.some((ref, index) => {
+      const actual = event.related[index];
+      return actual?.type !== ref.type || actual.id !== ref.id;
+    })
+  ) {
+    throw new Error(`${event.kind} related refs do not match canonical state`);
+  }
+}
+
 function dispatchHasResult(state: ResearchState, dispatchId: string): boolean {
   return Object.values(state.results).some(
     (result) => result.dispatchId === dispatchId,
   );
 }
 
-function dispatchHasProposal(state: ResearchState, dispatchId: string): boolean {
+function dispatchHasProposal(
+  state: ResearchState,
+  dispatchId: string,
+): boolean {
   return Object.values(state.proposals).some(
     (proposal) => proposal.dispatchId === dispatchId,
   );
@@ -237,7 +278,8 @@ function assertWorkflowBinding(
   payload:
     | WorkflowNodeCompletePayload
     | WorkflowTransitionRecordPayload
-    | WorkflowClosePayload,
+    | WorkflowClosePayload
+    | ScientificGateRecord,
 ): void {
   if (
     payload.questId !== instance.questId ||
@@ -257,7 +299,8 @@ function artifactBelongsToQuest(
   artifactId: string,
 ): boolean {
   const quest = state.quests[questId as keyof typeof state.quests];
-  if (quest?.artifactRefs.some((artifact) => artifact.id === artifactId)) return true;
+  if (quest?.artifactRefs.some((artifact) => artifact.id === artifactId))
+    return true;
   if (
     Object.values(state.evidence).some(
       (evidence) =>
@@ -287,7 +330,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         workspace.campaignIds.length > 0 ||
         workspace.repositoryIds.length > 0
       ) {
-        throw new Error("A new research workspace must start with empty indexes");
+        throw new Error(
+          "A new research workspace must start with empty indexes",
+        );
       }
       state.workspace = { ...workspace };
       mark(state, "workspace", event);
@@ -297,7 +342,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       const repository = event.payload.repository as Repository;
       assertAggregate(event, "repository", repository.id);
       if (state.repositories[repository.id]) {
-        throw new Error(`Research repository '${repository.id}' already exists`);
+        throw new Error(
+          `Research repository '${repository.id}' already exists`,
+        );
       }
       state.repositories[repository.id] = { ...repository };
       const workspace = touchWorkspace(state, event);
@@ -324,7 +371,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         throw new Error(`Research quest '${quest.id}' already exists`);
       }
       if (quest.status !== "active" || quest.stage !== "setup") {
-        throw new Error("A new research quest must start active at setup stage");
+        throw new Error(
+          "A new research quest must start active at setup stage",
+        );
       }
       for (const repositoryId of quest.repositoryIds) {
         requireEntity(state.repositories, repositoryId, "repository");
@@ -381,7 +430,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       );
       assertAggregate(event, "campaign", campaign.id);
       if (campaign.status !== "draft") {
-        throw new Error(`Campaign '${campaign.id}' protocol is immutable after frozen`);
+        throw new Error(
+          `Campaign '${campaign.id}' protocol is immutable after frozen`,
+        );
       }
       campaign.protocolDigest = event.payload.protocolDigest as string;
       campaign.updatedAt = event.timestamp;
@@ -396,7 +447,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       );
       assertAggregate(event, "campaign", campaign.id);
       if (campaign.protocolDigest.trim().length === 0) {
-        throw new Error(`Campaign '${campaign.id}' requires a protocol digest before freeze`);
+        throw new Error(
+          `Campaign '${campaign.id}' requires a protocol digest before freeze`,
+        );
       }
       assertCampaignStatusTransition(campaign.status, "frozen");
       campaign.status = "frozen";
@@ -413,7 +466,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       assertAggregate(event, "campaign", campaign.id);
       const status = event.payload.status as CampaignStatus;
       if (status === "frozen") {
-        throw new Error("Campaign freeze must use the explicit freeze mutation");
+        throw new Error(
+          "Campaign freeze must use the explicit freeze mutation",
+        );
       }
       assertCampaignStatusTransition(campaign.status, status);
       campaign.status = status;
@@ -429,7 +484,8 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         run.campaignId,
         "campaign",
       );
-      if (state.runs[run.id]) throw new Error(`Research run '${run.id}' already exists`);
+      if (state.runs[run.id])
+        throw new Error(`Research run '${run.id}' already exists`);
       if (run.status !== "planned") {
         throw new Error("A new research run must start as planned");
       }
@@ -445,7 +501,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       assertAggregate(event, "run", run.id);
       const status = event.payload.status as RunStatus;
       if (status === "invalidated") {
-        throw new Error("Run invalidation must use the explicit invalidate mutation");
+        throw new Error(
+          "Run invalidation must use the explicit invalidate mutation",
+        );
       }
       assertRunStatusTransition(run.status, status);
       run.status = status;
@@ -525,14 +583,21 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       assertAggregate(event, "dispatch", dispatch.id);
       const quest = requireEntity(state.quests, dispatch.questId, "quest");
       const run = requireEntity(state.runs, dispatch.runId, "run");
-      const campaign = requireEntity(state.campaigns, run.campaignId, "campaign");
+      const campaign = requireEntity(
+        state.campaigns,
+        run.campaignId,
+        "campaign",
+      );
       requireEntity(state.repositories, dispatch.repositoryId, "repository");
       if (campaign.questId !== quest.id) {
         throw new Error(
           `Dispatch quest '${quest.id}' does not match run campaign quest '${campaign.questId}'`,
         );
       }
-      if (dispatch.campaignId !== undefined && dispatch.campaignId !== campaign.id) {
+      if (
+        dispatch.campaignId !== undefined &&
+        dispatch.campaignId !== campaign.id
+      ) {
         throw new Error(
           `Dispatch campaign '${dispatch.campaignId}' does not match run campaign '${campaign.id}'`,
         );
@@ -543,7 +608,8 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       if (run.status !== "planned" && run.status !== "running") {
         throw new Error(`Terminal run '${run.id}' is immutable`);
       }
-      if (run.dispatchId) throw new Error(`Run '${run.id}' already has a dispatch`);
+      if (run.dispatchId)
+        throw new Error(`Run '${run.id}' already has a dispatch`);
       for (const context of dispatch.context) {
         if (context.artifact) {
           validateArtifactRepositories([context.artifact], state.repositories);
@@ -607,7 +673,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
           (existing) => existing.dispatchId === proposal.dispatchId,
         )
       ) {
-        throw new Error(`Dispatch '${proposal.dispatchId}' already has a proposal`);
+        throw new Error(
+          `Dispatch '${proposal.dispatchId}' already has a proposal`,
+        );
       }
       if (proposal.status !== "pending") {
         throw new Error("New research proposals must start pending");
@@ -640,14 +708,17 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         dispatch.questId !== quest.id ||
         campaign.questId !== quest.id ||
         run.dispatchId !== dispatch.id ||
-        (dispatch.campaignId !== undefined && dispatch.campaignId !== campaign.id)
+        (dispatch.campaignId !== undefined &&
+          dispatch.campaignId !== campaign.id)
       ) {
         throw new Error(
           `Activation '${activation.id}' does not match its Dispatch hierarchy`,
         );
       }
       if (state.activations[activation.id]) {
-        throw new Error(`Research activation '${activation.id}' already exists`);
+        throw new Error(
+          `Research activation '${activation.id}' already exists`,
+        );
       }
       if (state.activationByDispatchId[dispatch.id]) {
         throw new Error(`Dispatch '${dispatch.id}' already has an activation`);
@@ -656,7 +727,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         dispatchHasResult(state, dispatch.id) ||
         dispatchHasProposal(state, dispatch.id)
       ) {
-        throw new Error(`Activation for Dispatch '${dispatch.id}' was planned too late`);
+        throw new Error(
+          `Activation for Dispatch '${dispatch.id}' was planned too late`,
+        );
       }
       if (activation.createdAt !== event.timestamp) {
         throw new Error("Activation createdAt must equal its event timestamp");
@@ -702,7 +775,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         grant.policyDigest !== activation.policyDigest ||
         grant.scopeHash !== activation.scopeHash
       ) {
-        throw new Error(`Approval '${grant.id}' bindings do not match activation`);
+        throw new Error(
+          `Approval '${grant.id}' bindings do not match activation`,
+        );
       }
       if (state.approvals[grant.id]) {
         throw new Error(`Research approval '${grant.id}' already exists`);
@@ -724,7 +799,8 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
           `Approval '${grant.id}' expiresAt does not match activation duration`,
         );
       }
-      for (const approvalId of state.approvalIdsByActivationId[activation.id] ?? []) {
+      for (const approvalId of state.approvalIdsByActivationId[activation.id] ??
+        []) {
         const existing = requireEntity(state.approvals, approvalId, "approval");
         if (
           existing.status === "granted" &&
@@ -770,7 +846,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         revokedAt !== event.timestamp ||
         Date.parse(revokedAt) < Date.parse(approval.grant.grantedAt)
       ) {
-        throw new Error("Approval revokedAt must equal a valid event timestamp");
+        throw new Error(
+          "Approval revokedAt must equal a valid event timestamp",
+        );
       }
       state.approvals[approvalId] = {
         grant: approval.grant,
@@ -844,7 +922,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         );
       }
       if (state.activeWorkflowByQuestId[payload.questId]) {
-        throw new Error(`Quest '${payload.questId}' already has an active Workflow`);
+        throw new Error(
+          `Quest '${payload.questId}' already has an active Workflow`,
+        );
       }
       if (payload.boundAt !== event.timestamp) {
         throw new Error("Workflow boundAt must equal its event timestamp");
@@ -868,7 +948,8 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         ...(state.workflowInstanceIdsByQuestId[payload.questId] ?? []),
         payload.workflowInstanceId,
       ];
-      state.activeWorkflowByQuestId[payload.questId] = payload.workflowInstanceId;
+      state.activeWorkflowByQuestId[payload.questId] =
+        payload.workflowInstanceId;
       mark(state, payload.workflowInstanceId, event);
       mark(state, `workflow:${payload.questId}`, event);
       return;
@@ -882,7 +963,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       );
       assertWorkflowBinding(instance, payload);
       if (instance.status !== "active") {
-        throw new Error(`Workflow instance '${instance.workflowInstanceId}' is closed`);
+        throw new Error(
+          `Workflow instance '${instance.workflowInstanceId}' is closed`,
+        );
       }
       if (payload.nodeId !== instance.currentNodeId) {
         throw new Error(
@@ -890,10 +973,14 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
         );
       }
       if (instance.nodeCompletions[payload.nodeId]) {
-        throw new Error(`Workflow node '${payload.nodeId}' is already completed`);
+        throw new Error(
+          `Workflow node '${payload.nodeId}' is already completed`,
+        );
       }
       if (payload.executionProfile !== "lightweight") {
-        throw new Error("C3 Workflow completion requires the lightweight profile");
+        throw new Error(
+          "C3 Workflow completion requires the lightweight profile",
+        );
       }
       if (payload.completedAt !== event.timestamp) {
         throw new Error("Workflow completedAt must equal its event timestamp");
@@ -907,7 +994,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
             "dispatch",
           );
           if (dispatch.questId !== instance.questId) {
-            throw new Error(`Result '${ref.id}' does not belong to Quest '${instance.questId}'`);
+            throw new Error(
+              `Result '${ref.id}' does not belong to Quest '${instance.questId}'`,
+            );
           }
         } else {
           requireEntity(state.artifacts, ref.id, "artifact");
@@ -928,8 +1017,101 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       mark(state, `workflow:${instance.questId}`, event);
       return;
     }
+    case "scientific-gate.recorded": {
+      const record = parseScientificGateRecord(event.payload);
+      assertSchemaV3Aggregate(event, "scientific-gate", record.id);
+      assertSchemaV3Related(event, [
+        { type: "quest", id: record.questId },
+        { type: "workflow", id: record.workflowInstanceId },
+        ...record.evidenceRefs.map((id) => ({
+          type: "artifact" as const,
+          id,
+        })),
+      ]);
+      const instance = requireEntity(
+        state.workflowInstances,
+        record.workflowInstanceId,
+        "workflow instance",
+      );
+      assertWorkflowBinding(instance, record);
+      if (instance.status !== "active") {
+        throw new Error(
+          `Workflow instance '${instance.workflowInstanceId}' is closed`,
+        );
+      }
+      if (record.nodeId !== instance.currentNodeId) {
+        throw new Error(
+          `Scientific gate node '${record.nodeId}' is not current node '${instance.currentNodeId}'`,
+        );
+      }
+      const completion = instance.nodeCompletions[record.nodeId];
+      if (!completion) {
+        throw new Error(
+          "Scientific gate requires the current node to be completed",
+        );
+      }
+      if (state.scientificGateRecords[record.id]) {
+        throw new Error(`Scientific gate record '${record.id}' already exists`);
+      }
+      if (record.recordedAt !== event.timestamp) {
+        throw new Error(
+          "Scientific gate recordedAt must equal its event timestamp",
+        );
+      }
+      const acceptedArtifactIds = new Set(
+        completion.acceptedRefs
+          .filter((ref) => ref.kind === "artifact")
+          .map((ref) => ref.id),
+      );
+      for (const artifactId of record.evidenceRefs) {
+        requireEntity(state.artifacts, artifactId, "artifact");
+        if (!artifactBelongsToQuest(state, instance.questId, artifactId)) {
+          throw new Error(
+            `Artifact '${artifactId}' does not belong to Quest '${instance.questId}'`,
+          );
+        }
+        if (!acceptedArtifactIds.has(artifactId)) {
+          throw new Error(
+            `Artifact '${artifactId}' is not accepted by Workflow node '${record.nodeId}'`,
+          );
+        }
+      }
+      state.scientificGateRecords[record.id] = {
+        ...record,
+        approvedRefs: [...record.approvedRefs],
+        rejectedRefs: [...record.rejectedRefs],
+        evidenceRefs: [...record.evidenceRefs],
+      };
+      state.scientificGateRecordIdsByWorkflowInstanceId[
+        instance.workflowInstanceId
+      ] = [
+        ...(state.scientificGateRecordIdsByWorkflowInstanceId[
+          instance.workflowInstanceId
+        ] ?? []),
+        record.id,
+      ];
+      state.effectiveScientificGateRecordIdByScope[
+        scientificGateScopeKey(
+          instance.workflowInstanceId,
+          record.nodeId,
+          record.gateId,
+        )
+      ] = record.id;
+      mark(state, record.id, event);
+      mark(state, `scientific-gate:${instance.questId}`, event);
+      return;
+    }
     case "workflow.transition_recorded": {
-      const payload = event.payload as unknown as WorkflowTransitionRecordPayload;
+      const payload =
+        event.payload as unknown as WorkflowTransitionRecordPayload;
+      assertSchemaV3Aggregate(event, "workflow", payload.workflowInstanceId);
+      assertSchemaV3Related(event, [
+        { type: "quest", id: payload.questId },
+        ...payload.gateRecordIds.map((id) => ({
+          type: "scientific-gate" as const,
+          id,
+        })),
+      ]);
       const instance = requireEntity(
         state.workflowInstances,
         payload.workflowInstanceId,
@@ -937,16 +1119,63 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       );
       assertWorkflowBinding(instance, payload);
       if (instance.status !== "active") {
-        throw new Error(`Workflow instance '${instance.workflowInstanceId}' is closed`);
+        throw new Error(
+          `Workflow instance '${instance.workflowInstanceId}' is closed`,
+        );
       }
       if (
         payload.fromNodeId !== instance.currentNodeId ||
         !instance.nodeCompletions[payload.fromNodeId]
       ) {
-        throw new Error("Workflow transition source must be the completed current node");
+        throw new Error(
+          "Workflow transition source must be the completed current node",
+        );
       }
-      if (payload.gateRecordIds.length !== 0) {
-        throw new Error("C3 Workflow transitions cannot reference gate records");
+      const seenGateIds = new Set<string>();
+      let previousGateOrder = -1;
+      for (const recordId of payload.gateRecordIds) {
+        const record = requireEntity(
+          state.scientificGateRecords,
+          recordId,
+          "scientific gate record",
+        );
+        if (
+          record.workflowInstanceId !== instance.workflowInstanceId ||
+          record.nodeId !== payload.fromNodeId
+        ) {
+          throw new Error(
+            `Scientific gate record '${recordId}' does not match the transition source`,
+          );
+        }
+        if (record.decision !== "approve") {
+          throw new Error(
+            `Scientific gate record '${recordId}' is not approved`,
+          );
+        }
+        if (seenGateIds.has(record.gateId)) {
+          throw new Error(
+            `Workflow transition repeats scientific gate '${record.gateId}'`,
+          );
+        }
+        seenGateIds.add(record.gateId);
+        const gateOrder = record.gateId === "H1" ? 0 : 1;
+        if (gateOrder <= previousGateOrder) {
+          throw new Error(
+            "Workflow transition gate records must be ordered H1 then H2",
+          );
+        }
+        previousGateOrder = gateOrder;
+        const effectiveId =
+          state.effectiveScientificGateRecordIdByScope[
+            scientificGateScopeKey(
+              instance.workflowInstanceId,
+              payload.fromNodeId,
+              record.gateId,
+            )
+          ];
+        if (effectiveId !== record.id) {
+          throw new Error(`Scientific gate record '${recordId}' is stale`);
+        }
       }
       if (payload.selectedAt !== event.timestamp) {
         throw new Error("Workflow selectedAt must equal its event timestamp");
@@ -970,7 +1199,9 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       );
       assertWorkflowBinding(instance, payload);
       if (instance.status !== "active") {
-        throw new Error(`Workflow instance '${instance.workflowInstanceId}' is closed`);
+        throw new Error(
+          `Workflow instance '${instance.workflowInstanceId}' is closed`,
+        );
       }
       if (payload.closedAt !== event.timestamp) {
         throw new Error("Workflow closedAt must equal its event timestamp");

@@ -7,6 +7,7 @@ import type {
 } from "./execution-package.js";
 import { stableResearchJson } from "./projections.js";
 import { resolvedExecutionPackageIdentitySchema } from "./schema.js";
+import { parseScientificGateRecordId } from "./scientific-gate.js";
 import { parseStrictResearchJson } from "./strict-json.js";
 import type {
   ArtifactId,
@@ -21,9 +22,11 @@ import type {
 } from "./types.js";
 
 const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
-const EXACT_SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+const EXACT_SEMVER =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const SHA256 = /^sha256:[0-9a-f]{64}$/;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const WORKFLOW_DIGEST_DOMAIN = "trellis-research-workflow-definition-v1\0";
 
 export type ResearchWorkflowErrorCode =
@@ -142,12 +145,18 @@ function uniqueSortedStrings(
   if (!Array.isArray(input) || (!allowEmpty && input.length === 0)) {
     fail(`${label} must be ${allowEmpty ? "an" : "a non-empty"} array`);
   }
-  const values = input.map((entry, index) => parser(entry, `${label}[${index}]`));
-  if (new Set(values).size !== values.length) fail(`${label} entries must be unique`);
+  const values = input.map((entry, index) =>
+    parser(entry, `${label}[${index}]`),
+  );
+  if (new Set(values).size !== values.length)
+    fail(`${label} entries must be unique`);
   return Object.freeze([...values].sort());
 }
 
-function parseProfiles(input: unknown, label: string): readonly ResearchExecutionProfile[] {
+function parseProfiles(
+  input: unknown,
+  label: string,
+): readonly ResearchExecutionProfile[] {
   if (!Array.isArray(input) || input.length === 0) {
     fail(`${label} must be a non-empty array`);
   }
@@ -157,7 +166,8 @@ function parseProfiles(input: unknown, label: string): readonly ResearchExecutio
     }
     return entry;
   });
-  if (new Set(values).size !== values.length) fail(`${label} entries must be unique`);
+  if (new Set(values).size !== values.length)
+    fail(`${label} entries must be unique`);
   return Object.freeze(
     (["lightweight", "managed"] as const).filter((profile) =>
       values.includes(profile),
@@ -220,7 +230,8 @@ function parseTransition(
     requiredRefs: uniqueSortedStrings(
       value.requiredRefs,
       `workflow.transitions[${index}].requiredRefs`,
-      (entry, label) => serializeWorkflowAcceptedRef(parseWorkflowAcceptedRef(entry, label)),
+      (entry, label) =>
+        serializeWorkflowAcceptedRef(parseWorkflowAcceptedRef(entry, label)),
       true,
     ),
     requiredGateIds: uniqueSortedStrings(
@@ -241,7 +252,10 @@ function validateGraph(definition: ResearchWorkflowDefinitionV1): void {
   }
   const outgoing = new Map<string, string[]>();
   for (const transition of definition.transitions) {
-    if (!nodeIds.has(transition.fromNodeId) || !nodeIds.has(transition.toNodeId)) {
+    if (
+      !nodeIds.has(transition.fromNodeId) ||
+      !nodeIds.has(transition.toNodeId)
+    ) {
       fail(`workflow transition '${transition.id}' references a missing node`);
     }
     if (transition.fromNodeId === transition.toNodeId) {
@@ -294,7 +308,10 @@ export function parseResearchWorkflowDefinitionV1(
   if (new Set(nodes.map((node) => node.id)).size !== nodes.length) {
     fail("workflow node IDs must be unique");
   }
-  if (new Set(transitions.map((transition) => transition.id)).size !== transitions.length) {
+  if (
+    new Set(transitions.map((transition) => transition.id)).size !==
+    transitions.length
+  ) {
     fail("workflow transition IDs must be unique");
   }
   const definition = Object.freeze({
@@ -306,7 +323,9 @@ export function parseResearchWorkflowDefinitionV1(
       "workflow.startNodeIds",
       slug,
     ),
-    nodes: Object.freeze([...nodes].sort((left, right) => left.id.localeCompare(right.id))),
+    nodes: Object.freeze(
+      [...nodes].sort((left, right) => left.id.localeCompare(right.id)),
+    ),
     transitions: Object.freeze(
       [...transitions].sort((left, right) => left.id.localeCompare(right.id)),
     ),
@@ -325,7 +344,8 @@ export function parseWorkflowAcceptedRef(
 ): WorkflowAcceptedRef {
   const value = nonEmptyString(input, label);
   const match = /^(result|artifact):(.+)$/.exec(value);
-  if (match === null) fail(`${label} must be result:<res_uuid> or artifact:<art_uuid>`);
+  if (match === null)
+    fail(`${label} must be result:<res_uuid> or artifact:<art_uuid>`);
   const kind = match[1] as "result" | "artifact";
   const id = match[2] as string;
   const prefix = kind === "result" ? "res" : "art";
@@ -349,7 +369,10 @@ export function normalizeWorkflowAcceptedRefs(
   const parsed = refs.map((ref, index) =>
     typeof ref === "string"
       ? parseWorkflowAcceptedRef(ref, `acceptedRefs[${index}]`)
-      : parseWorkflowAcceptedRef(serializeWorkflowAcceptedRef(ref), `acceptedRefs[${index}]`),
+      : parseWorkflowAcceptedRef(
+          serializeWorkflowAcceptedRef(ref),
+          `acceptedRefs[${index}]`,
+        ),
   );
   const serialized = parsed.map(serializeWorkflowAcceptedRef);
   if (new Set(serialized).size !== serialized.length) {
@@ -357,7 +380,9 @@ export function normalizeWorkflowAcceptedRefs(
   }
   return Object.freeze(
     [...parsed].sort((left, right) =>
-      serializeWorkflowAcceptedRef(left).localeCompare(serializeWorkflowAcceptedRef(right)),
+      serializeWorkflowAcceptedRef(left).localeCompare(
+        serializeWorkflowAcceptedRef(right),
+      ),
     ),
   );
 }
@@ -373,7 +398,9 @@ export function findResearchWorkflowTransition(
   definition: ResearchWorkflowDefinitionV1,
   transitionId: string,
 ): ResearchWorkflowTransitionV1 | undefined {
-  return definition.transitions.find((transition) => transition.id === transitionId);
+  return definition.transitions.find(
+    (transition) => transition.id === transitionId,
+  );
 }
 
 export function listResearchWorkflowOutgoingTransitions(
@@ -381,7 +408,9 @@ export function listResearchWorkflowOutgoingTransitions(
   nodeId: string,
 ): readonly ResearchWorkflowTransitionV1[] {
   return Object.freeze(
-    definition.transitions.filter((transition) => transition.fromNodeId === nodeId),
+    definition.transitions.filter(
+      (transition) => transition.fromNodeId === nodeId,
+    ),
   );
 }
 
@@ -389,7 +418,9 @@ export function isResearchWorkflowTerminalNode(
   definition: ResearchWorkflowDefinitionV1,
   nodeId: string,
 ): boolean {
-  return listResearchWorkflowOutgoingTransitions(definition, nodeId).length === 0;
+  return (
+    listResearchWorkflowOutgoingTransitions(definition, nodeId).length === 0
+  );
 }
 
 export function missingResearchWorkflowRequiredRefs(
@@ -409,7 +440,10 @@ export function sameResearchExecutionPackageIdentity(
   return isDeepStrictEqual(left, right);
 }
 
-function workflowId(input: unknown, label = "workflowInstanceId"): WorkflowInstanceId {
+function workflowId(
+  input: unknown,
+  label = "workflowInstanceId",
+): WorkflowInstanceId {
   const value = nonEmptyString(input, label);
   if (!value.startsWith("wfi_") || !UUID.test(value.slice(4))) {
     fail(`${label} must be a wfi_ prefixed UUID`);
@@ -491,7 +525,10 @@ export function parseWorkflowNodeCompletePayload(
     "acceptedRefs",
     "completedAt",
   ]);
-  if (value.executionProfile !== "lightweight" && value.executionProfile !== "managed") {
+  if (
+    value.executionProfile !== "lightweight" &&
+    value.executionProfile !== "managed"
+  ) {
     fail("executionProfile must be lightweight or managed");
   }
   if (!Array.isArray(value.acceptedRefs) || value.acceptedRefs.length === 0) {
@@ -532,9 +569,10 @@ export function parseWorkflowTransitionRecordPayload(
     "gateRecordIds",
     "selectedAt",
   ]);
-  if (!Array.isArray(value.gateRecordIds)) fail("gateRecordIds must be an array");
+  if (!Array.isArray(value.gateRecordIds))
+    fail("gateRecordIds must be an array");
   const gateRecordIds = value.gateRecordIds.map((entry, index) =>
-    nonEmptyString(entry, `gateRecordIds[${index}]`),
+    parseScientificGateRecordId(entry, `gateRecordIds[${index}]`),
   );
   if (new Set(gateRecordIds).size !== gateRecordIds.length) {
     fail("gateRecordIds entries must be unique");
@@ -545,12 +583,14 @@ export function parseWorkflowTransitionRecordPayload(
     fromNodeId: slug(value.fromNodeId, "fromNodeId"),
     toNodeId: slug(value.toNodeId, "toNodeId"),
     selectedBy: nonEmptyString(value.selectedBy, "selectedBy"),
-    gateRecordIds: [...gateRecordIds].sort(),
+    gateRecordIds: [...gateRecordIds],
     selectedAt: timestamp(value.selectedAt, "selectedAt"),
   };
 }
 
-export function parseWorkflowClosePayload(input: unknown): WorkflowClosePayload {
+export function parseWorkflowClosePayload(
+  input: unknown,
+): WorkflowClosePayload {
   const value = plainObject(input, "workflow close payload", [
     "workflowInstanceId",
     "questId",

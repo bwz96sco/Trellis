@@ -33,7 +33,9 @@ function childNames(command: Command): string[] {
 function commandAt(root: Command, ...names: string[]): Command {
   let current = root;
   for (const name of names) {
-    const child = current.commands.find((candidate) => candidate.name() === name);
+    const child = current.commands.find(
+      (candidate) => candidate.name() === name,
+    );
     if (!child) throw new Error(`Missing command ${names.join(" ")}`);
     current = child;
   }
@@ -107,6 +109,7 @@ describe("research command helpers", () => {
       "rebuild",
       "skill",
       "workflow",
+      "gate",
       "repo",
       "quest",
       "campaign",
@@ -128,6 +131,35 @@ describe("research command helpers", () => {
       "status",
       "next",
     ]);
+    expect(childNames(commandAt(research, "gate"))).toEqual([
+      "record",
+      "status",
+    ]);
+    expect(
+      commandAt(research, "gate", "record").options.map(
+        (option) => option.long,
+      ),
+    ).toEqual([
+      "--instance",
+      "--gate",
+      "--decision",
+      "--actor",
+      "--rationale",
+      "--approved-ref",
+      "--rejected-ref",
+      "--evidence-ref",
+      "--source-artifact",
+      "--root",
+      "--json",
+      "--idempotency-key",
+      "--dry-run",
+      "--write",
+    ]);
+    expect(
+      commandAt(research, "gate", "status").options.map(
+        (option) => option.long,
+      ),
+    ).toEqual(["--instance", "--root", "--json"]);
     expect(childNames(commandAt(research, "repo"))).toEqual([
       "add",
       "bind",
@@ -146,9 +178,9 @@ describe("research command helpers", () => {
       "reject",
     ]);
     const context = commandAt(research, "dispatch", "context");
-    expect(context.registeredArguments.map((argument) => argument.name())).toEqual([
-      "dispatch-id",
-    ]);
+    expect(
+      context.registeredArguments.map((argument) => argument.name()),
+    ).toEqual(["dispatch-id"]);
     expect(context.options.map((option) => option.long)).toEqual([
       "--host",
       "--root",
@@ -248,9 +280,9 @@ describe("research command helpers", () => {
 
     expect(log).toHaveBeenCalledTimes(1);
     expect(JSON.parse(String(log.mock.calls[0]?.[0]))).toEqual(result);
-    expect(shouldCheckForUpdates(["node", "trellis", "research", "status"])).toBe(
-      true,
-    );
+    expect(
+      shouldCheckForUpdates(["node", "trellis", "research", "status"]),
+    ).toBe(true);
     expect(
       shouldCheckForUpdates([
         "node",

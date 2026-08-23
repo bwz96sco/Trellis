@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check exact gate/Workflow command contracts, validation matrix, idempotency, and no-auto-continuation boundary."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Check append-only event language, replay invariants, state indexes, and deterministic projection behavior."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Check public export discipline and Core/CLI separation."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check regression coverage and full-suite ownership requirements."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check zero-write snapshots, command integration paths, and minimal mocking."}

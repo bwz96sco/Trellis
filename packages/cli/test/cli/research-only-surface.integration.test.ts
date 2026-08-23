@@ -169,7 +169,10 @@ describe("Research-only CLI surface", () => {
   function runBuiltAlias(
     alias: "trellis" | "tl",
     args: readonly string[],
-    options: { readonly cwd?: string; readonly input?: string | Uint8Array } = {},
+    options: {
+      readonly cwd?: string;
+      readonly input?: string | Uint8Array;
+    } = {},
   ): BuiltCliRun {
     if (!fs.existsSync(BUILT_ENTRY)) {
       throw new Error(`Built CLI entry is missing: ${BUILT_ENTRY}`);
@@ -201,7 +204,7 @@ describe("Research-only CLI surface", () => {
     ]);
   });
 
-  it("exposes exactly the thirteen supported Research command groups", async () => {
+  it("exposes exactly the fourteen supported Research command groups", async () => {
     const result = await runCli(["research", "--help"]);
 
     expect(result.commanderCode).toBe("commander.helpDisplayed");
@@ -212,6 +215,7 @@ describe("Research-only CLI surface", () => {
       "rebuild",
       "skill",
       "workflow",
+      "gate",
       "repo",
       "quest",
       "campaign",
@@ -241,6 +245,13 @@ describe("Research-only CLI surface", () => {
       "status",
       "next",
     ]);
+  });
+
+  it("exposes exactly the two scientific Gate children", async () => {
+    const result = await runCli(["research", "gate", "--help"]);
+
+    expect(result.commanderCode).toBe("commander.helpDisplayed");
+    expect(commandNames(result.stdout)).toEqual(["record", "status"]);
   });
 
   it("keeps the exact nine Dispatch children", async () => {
@@ -423,7 +434,9 @@ describe("Research-only CLI surface", () => {
           grant: { id: granted.approval.grant.id },
           status: "consumed",
         });
-        expect(output.events.map((event) => [event.schemaVersion, event.kind])).toEqual([
+        expect(
+          output.events.map((event) => [event.schemaVersion, event.kind]),
+        ).toEqual([
           [1, "result.recorded"],
           [1, "proposal.recorded"],
           [2, "approval.consumed"],
@@ -523,14 +536,17 @@ describe("Research-only CLI surface", () => {
           "--json",
         ],
       ],
-    ] as const)(`%s rejects legacy ${alias} syntax before writes`, (_name, args) => {
-      const before = snapshotTree(tmpDir);
-      const result = runBuiltAlias(alias, args);
+    ] as const)(
+      `%s rejects legacy ${alias} syntax before writes`,
+      (_name, args) => {
+        const before = snapshotTree(tmpDir);
+        const result = runBuiltAlias(alias, args);
 
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toMatch(/invalid for argument|unknown option/i);
-      expect(snapshotTree(tmpDir)).toEqual(before);
-    });
+        expect(result.status).not.toBe(0);
+        expect(result.stderr).toMatch(/invalid for argument|unknown option/i);
+        expect(snapshotTree(tmpDir)).toEqual(before);
+      },
+    );
   }
 
   it("maps trellis and tl to the same built parser with identical help", () => {

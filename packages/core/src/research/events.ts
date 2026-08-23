@@ -32,6 +32,7 @@ import {
   type RuntimeSchema,
   workspaceSchema,
 } from "./schema.js";
+import { parseScientificGateRecord } from "./scientific-gate.js";
 import {
   RESEARCH_EVENT_SCHEMA_VERSION,
   RESEARCH_SCHEMA_VERSION,
@@ -46,6 +47,7 @@ import {
   type ResearchSchemaV3AggregateRef,
   type ResearchSchemaV3Event,
   type ResearchSchemaV3EventKind,
+  type ScientificGateRecord,
   type WorkflowBindPayload,
   type WorkflowClosePayload,
   type WorkflowNodeCompletePayload,
@@ -82,19 +84,22 @@ export const RESEARCH_EVENT_KINDS: readonly ResearchEventKind[] = [
   "decision.recorded",
 ];
 
-export const RESEARCH_SCHEMA_V2_EVENT_KINDS: readonly ResearchSchemaV2EventKind[] = [
-  "activation.planned",
-  "approval.granted",
-  "approval.revoked",
-  "approval.consumed",
-];
+export const RESEARCH_SCHEMA_V2_EVENT_KINDS: readonly ResearchSchemaV2EventKind[] =
+  [
+    "activation.planned",
+    "approval.granted",
+    "approval.revoked",
+    "approval.consumed",
+  ];
 
-export const RESEARCH_SCHEMA_V3_EVENT_KINDS: readonly ResearchSchemaV3EventKind[] = [
-  "workflow.bound",
-  "workflow.node_completed",
-  "workflow.transition_recorded",
-  "workflow.closed",
-];
+export const RESEARCH_SCHEMA_V3_EVENT_KINDS: readonly ResearchSchemaV3EventKind[] =
+  [
+    "workflow.bound",
+    "workflow.node_completed",
+    "workflow.transition_recorded",
+    "workflow.closed",
+    "scientific-gate.recorded",
+  ];
 
 function object(
   input: unknown,
@@ -112,7 +117,8 @@ function object(
   }
   const value = input as Record<string, unknown>;
   for (const key of Object.keys(value)) {
-    if (!allowed.includes(key)) throw new Error(`${name}.${key} is not supported`);
+    if (!allowed.includes(key))
+      throw new Error(`${name}.${key} is not supported`);
   }
   for (const key of required) {
     if (!(key in value)) throw new Error(`${name}.${key} is required`);
@@ -189,8 +195,14 @@ function parseBoundedPayloadString(
   name: string,
   maximumLength: number,
 ): string {
-  if (typeof value !== "string" || value.length === 0 || value.length > maximumLength) {
-    throw new Error(`${name} must contain between 1 and ${maximumLength} characters`);
+  if (
+    typeof value !== "string" ||
+    value.length === 0 ||
+    value.length > maximumLength
+  ) {
+    throw new Error(
+      `${name} must contain between 1 and ${maximumLength} characters`,
+    );
   }
   return value;
 }
@@ -274,7 +286,9 @@ function validateSchemaV2Relations(event: ResearchSchemaV2Event): void {
         );
       }
       if (event.related.length !== 2) {
-        throw new Error("activation.planned must contain exactly 2 related refs");
+        throw new Error(
+          "activation.planned must contain exactly 2 related refs",
+        );
       }
       assertSchemaV2Ref(event.related, 0, "dispatch", activation.dispatchId);
       assertSchemaV2Ref(event.related, 1, "quest", activation.questId);
@@ -302,7 +316,10 @@ function validateSchemaV2Relations(event: ResearchSchemaV2Event): void {
     }
     case "approval.revoked": {
       const approvalId = event.payload.approvalId as string;
-      if (event.aggregate.type !== "approval" || event.aggregate.id !== approvalId) {
+      if (
+        event.aggregate.type !== "approval" ||
+        event.aggregate.id !== approvalId
+      ) {
         throw new Error(
           `approval.revoked aggregate must be approval:${approvalId}`,
         );
@@ -318,13 +335,18 @@ function validateSchemaV2Relations(event: ResearchSchemaV2Event): void {
       const approvalId = event.payload.approvalId as string;
       const resultId = event.payload.resultId as string;
       const proposalId = event.payload.proposalId as string;
-      if (event.aggregate.type !== "approval" || event.aggregate.id !== approvalId) {
+      if (
+        event.aggregate.type !== "approval" ||
+        event.aggregate.id !== approvalId
+      ) {
         throw new Error(
           `approval.consumed aggregate must be approval:${approvalId}`,
         );
       }
       if (event.related.length !== 4) {
-        throw new Error("approval.consumed must contain exactly 4 related refs");
+        throw new Error(
+          "approval.consumed must contain exactly 4 related refs",
+        );
       }
       assertSchemaV2Ref(event.related, 0, "activation");
       assertSchemaV2Ref(event.related, 1, "dispatch");
@@ -334,16 +356,19 @@ function validateSchemaV2Relations(event: ResearchSchemaV2Event): void {
   }
 }
 
-function parseSchemaV3AggregateRef(input: unknown): ResearchSchemaV3AggregateRef {
+function parseSchemaV3AggregateRef(
+  input: unknown,
+): ResearchSchemaV3AggregateRef {
   const value = object(input, "research event aggregate ref", ["type", "id"]);
   if (
     value.type !== "workflow" &&
     value.type !== "quest" &&
     value.type !== "result" &&
-    value.type !== "artifact"
+    value.type !== "artifact" &&
+    value.type !== "scientific-gate"
   ) {
     throw new Error(
-      "schema-v3 aggregate ref type must be workflow, quest, result, or artifact",
+      "schema-v3 aggregate ref type must be workflow, quest, result, artifact, or scientific-gate",
     );
   }
   return {
@@ -358,13 +383,30 @@ function parseSchemaV3Payload(
 ): Record<string, unknown> {
   switch (kind) {
     case "workflow.bound":
-      return parseWorkflowBindPayload(input) as unknown as Record<string, unknown>;
+      return parseWorkflowBindPayload(input) as unknown as Record<
+        string,
+        unknown
+      >;
     case "workflow.node_completed":
-      return parseWorkflowNodeCompletePayload(input) as unknown as Record<string, unknown>;
+      return parseWorkflowNodeCompletePayload(input) as unknown as Record<
+        string,
+        unknown
+      >;
     case "workflow.transition_recorded":
-      return parseWorkflowTransitionRecordPayload(input) as unknown as Record<string, unknown>;
+      return parseWorkflowTransitionRecordPayload(input) as unknown as Record<
+        string,
+        unknown
+      >;
     case "workflow.closed":
-      return parseWorkflowClosePayload(input) as unknown as Record<string, unknown>;
+      return parseWorkflowClosePayload(input) as unknown as Record<
+        string,
+        unknown
+      >;
+    case "scientific-gate.recorded":
+      return parseScientificGateRecord(input) as unknown as Record<
+        string,
+        unknown
+      >;
   }
 }
 
@@ -376,13 +418,34 @@ function assertSchemaV3Ref(
 ): void {
   const ref = refs[index];
   if (ref?.type !== type || ref.id !== id) {
-    throw new Error(
-      `research event.related[${index}] must be ${type}:${id}`,
-    );
+    throw new Error(`research event.related[${index}] must be ${type}:${id}`);
   }
 }
 
 function validateSchemaV3Relations(event: ResearchSchemaV3Event): void {
+  if (event.kind === "scientific-gate.recorded") {
+    const record = event.payload as unknown as ScientificGateRecord;
+    if (
+      event.aggregate.type !== "scientific-gate" ||
+      event.aggregate.id !== record.id
+    ) {
+      throw new Error(
+        `scientific-gate.recorded aggregate must be scientific-gate:${record.id}`,
+      );
+    }
+    if (event.related.length !== record.evidenceRefs.length + 2) {
+      throw new Error(
+        "scientific-gate.recorded related refs must contain Quest, Workflow, then evidence Artifacts",
+      );
+    }
+    assertSchemaV3Ref(event.related, 0, "quest", record.questId);
+    assertSchemaV3Ref(event.related, 1, "workflow", record.workflowInstanceId);
+    record.evidenceRefs.forEach((artifactId, index) =>
+      assertSchemaV3Ref(event.related, index + 2, "artifact", artifactId),
+    );
+    return;
+  }
+
   const payload = event.payload as unknown as
     | WorkflowBindPayload
     | WorkflowNodeCompletePayload
@@ -406,6 +469,18 @@ function validateSchemaV3Relations(event: ResearchSchemaV3Event): void {
     }
     completion.acceptedRefs.forEach((ref, index) =>
       assertSchemaV3Ref(event.related, index + 1, ref.kind, ref.id),
+    );
+    return;
+  }
+  if (event.kind === "workflow.transition_recorded") {
+    const transition = payload as WorkflowTransitionRecordPayload;
+    if (event.related.length !== transition.gateRecordIds.length + 1) {
+      throw new Error(
+        "workflow.transition_recorded related refs must contain Quest then gate records",
+      );
+    }
+    transition.gateRecordIds.forEach((recordId, index) =>
+      assertSchemaV3Ref(event.related, index + 1, "scientific-gate", recordId),
     );
     return;
   }
@@ -612,7 +687,9 @@ export function parseResearchLedger(
   return events;
 }
 
-export function serializeResearchEvents(events: readonly ResearchEvent[]): string {
+export function serializeResearchEvents(
+  events: readonly ResearchEvent[],
+): string {
   if (events.length === 0) return "";
   return `${events.map((event) => JSON.stringify(event)).join("\n")}\n`;
 }

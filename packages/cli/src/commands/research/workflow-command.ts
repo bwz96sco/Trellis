@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import {
   commitResearchBatch,
   createWorkflowInstanceId,
+  getEffectiveScientificGateRecord,
   listResearchWorkflowOutgoingTransitions,
   missingResearchWorkflowRequiredRefs,
   parseWorkflowAcceptedRef,
@@ -77,6 +78,7 @@ export interface ResearchWorkflowNextResult {
     legal: boolean;
     missingRefs: string[];
     missingGateIds: ("H1" | "H2")[];
+    satisfyingGateRecordIds: string[];
   }[];
   stopReason:
     | "no-active-workflow"
@@ -340,8 +342,7 @@ export async function recordResearchWorkflowTransition(
         event.payload as unknown as WorkflowTransitionRecordPayload;
       return (
         payload.transitionId === options.transition &&
-        payload.selectedBy === "trellis-cli" &&
-        payload.gateRecordIds.length === 0
+        payload.selectedBy === "trellis-cli"
       );
     },
     async (root) => {
@@ -529,7 +530,21 @@ export async function getResearchWorkflowNext(
                 completion.acceptedRefs,
               ),
             ];
-      const missingGateIds = [...transition.requiredGateIds];
+      const missingGateIds: ("H1" | "H2")[] = [];
+      const satisfyingGateRecordIds: string[] = [];
+      for (const gateId of transition.requiredGateIds) {
+        const record = getEffectiveScientificGateRecord(
+          state,
+          instance.workflowInstanceId,
+          instance.currentNodeId,
+          gateId,
+        );
+        if (record?.decision === "approve") {
+          satisfyingGateRecordIds.push(record.id);
+        } else {
+          missingGateIds.push(gateId);
+        }
+      }
       return {
         id: transition.id,
         fromNodeId: transition.fromNodeId,
@@ -540,6 +555,7 @@ export async function getResearchWorkflowNext(
           missingGateIds.length === 0,
         missingRefs,
         missingGateIds,
+        satisfyingGateRecordIds,
       };
     });
     const stopReason =

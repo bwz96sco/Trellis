@@ -80,7 +80,8 @@ export type ResearchCliErrorCode =
   | "research_workflow_invalid"
   | "research_workflow_active_conflict"
   | "research_workflow_completion_invalid"
-  | "research_workflow_transition_blocked";
+  | "research_workflow_transition_blocked"
+  | "research_gate_invalid";
 
 export class ResearchCliError extends Error {
   readonly code: ResearchCliErrorCode;

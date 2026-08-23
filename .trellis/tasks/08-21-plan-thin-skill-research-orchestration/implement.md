@@ -11,10 +11,11 @@ After planning approval, create one implementation parent and independently veri
 1. **C1 — Freeze contracts, mappings, and source baseline**
 2. **C2 — Generalize execution-package identity and resolver**
 3. **C3 — Add DAG workflow state and lightweight Context**
-4. **C4 — Add scientific gates and coordinated Quest cutover**
-5. **C5 — Integrate managed execution profile**
-6. **C6 — Migrate pilot packages**
-7. **C7 — Run A/B/C pilot and decide migration**
+4. **C4 — Add canonical scientific gates**
+5. **C4b — Add coordinated Quest cutover (deferred)**
+6. **C5 — Integrate managed execution profile**
+7. **C6 — Migrate pilot packages**
+8. **C7 — Run A/B/C pilot and decide migration**
 
 Do not implement all children in one task. Each child owns its tests, specs, commit, and rollback boundary.
 
@@ -169,15 +170,55 @@ Narrow the wildcard to exact new/focused test files before implementation commit
 - before any workflow write: remove new command registration and schema selection; static existing Research workflow remains available;
 - after workflow events exist: preserve ledger/history and disable new selection only; never delete recorded instance state.
 
-## C4 — Scientific Gates and Coordinated Quest Cutover
+## C4 — Canonical Scientific Gates
 
 ### Work
 
-- Run GitNexus impact before modifying Research entity, schema, reducer, store, projection, and Quest command symbols.
-- Add canonical scientific gate event/entity distinct from Approval.
-- Add structural H1/H2 validation: explicit decision, actor/rationale, approved/rejected refs, evidence binding, workflow-instance/node/gate binding, and approved-set containment.
-- Keep `opportunity_board.md`, `ideas.md`, and attacks as evidence. Do not require duplicate H1/H2 decision Markdown after cutover; support it only as import/export projection.
-- Add `research gate record` preview/write command; forbid transition or next-node execution in same command.
+- Run GitNexus impact before modifying Research event, reducer, store, projection, Workflow command, and command-registration symbols.
+- Add canonical H1/H2 scientific-gate events/entities distinct from operational Approval.
+- Add structural gate validation: explicit decision, actor/rationale, selected-ref integrity/disjointness, canonical evidence containment, and exact Workflow-instance/node/gate binding. Defer candidate-universe membership/coverage until C4b provides canonical source mapping.
+- Add `research gate record` preview/write plus read-only gate status.
+- Make `workflow next` and separately selected `workflow transition` consume canonical gate state and record exact satisfying gate-record IDs.
+- Forbid transition, next-node execution, model/Skill/worker/provider execution, or Quest authority mutation in the gate command.
+- Preserve Workflow one-node stop and explicit operator transition selection.
+
+### Tests
+
+- H1/H2 remain distinct from operational Approval and canonical in ledger;
+- gate preview/status/error paths are zero-write; write requires explicit `--write`;
+- empty, inferred, mixed, wrong-instance, wrong-node, undeclared, malformed, or structurally invalid decisions fail before append;
+- gate write does not transition or execute anything;
+- latest valid same-scope decision determines effective gate state while history remains append-only;
+- approved gate satisfies only matching Workflow instance/node/gate requirements;
+- rejected, stale, unrelated, or missing gate blocks transition;
+- successful transition records exact satisfying gate-record IDs and remains one separate event;
+- replay/rebuild and per-Quest gate projection are byte-stable;
+- ungated C3 transitions and historical event schemas remain compatible.
+
+### Focused validation
+
+```bash
+pnpm --dir packages/core exec vitest run \
+  test/research/scientific-gate.test.ts \
+  test/research/scientific-gate-store.test.ts \
+  test/research/workflow-store.test.ts
+pnpm --dir packages/cli exec vitest run \
+  test/commands/research-gate.integration.test.ts \
+  test/commands/research-workflow-state.integration.test.ts
+pnpm --dir packages/core typecheck
+pnpm --dir packages/cli typecheck
+```
+
+### Rollback
+
+- before any gate write: remove new command/schema/state/projection additions;
+- after gate events exist: preserve parsing, replay, and projections; disable new gate selection/recording only. Never delete gate history.
+
+## C4b — Coordinated Quest Cutover (Deferred)
+
+### Work
+
+- Re-plan against the then-current authenticated source `research-quest-admin` bytes after C4 is complete.
 - Implement C1 Quest field mapping exactly, including route state, source extensions, Claim/Artifact creation, reviewed milestone import, scalar legacy text, and blocking conflict behavior.
 - Add `research quest import` and `export` preview/write commands with exact source digest, preview token/idempotency key, and round-trip loss report.
 - On import write, atomically append canonical events and committed Trellis authority projection.
@@ -187,28 +228,15 @@ Narrow the wildcard to exact new/focused test files before implementation commit
 
 ### Tests
 
-- H1/H2 distinct from operational Approval and canonical in ledger;
-- gate preview is zero-write; write requires explicit intent and idempotency key;
-- empty/inferred/mixed decision rejected;
-- gate write does not transition; evaluation remains unavailable until separately selected transition after recorded H2;
 - imported/exported decision Markdown is projection only, not second canonical decision;
 - import preview performs no write and reports mapping/conflicts/loss;
 - every schema-0.2 source field maps or preserves under namespaced extension;
 - unknown stage/status, malformed reviewed event, missing owner, conflicting active owner, or escaping path fails closed;
 - import write creates canonical Quest/route/Claim/Artifact/milestone projection and authority record atomically;
 - repeated import is idempotent or conflicts deterministically;
-- real source admin `init`, `migrate`, `status --write`, and `append-event --write` refuse before mutation under Trellis authority; fixture filesystem snapshot remains byte-identical;
+- real source admin `init`, `migrate`, `status --write`, and `append-event --write` refuse before mutation under Trellis authority;
 - source read-only validate/status still work;
 - export/import round-trip passes source validators before explicit rollback transfer.
-
-### Focused validation
-
-```bash
-pnpm --dir packages/core exec vitest run test/research
-pnpm --dir packages/cli exec vitest run test/commands/research-quest*.test.ts
-pnpm --dir packages/core typecheck
-pnpm --dir packages/cli typecheck
-```
 
 ### Rollback
 

@@ -1,0 +1,5 @@
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Exact Research CLI signatures, preview/write behavior, Workflow state, event compatibility, and stable error contracts."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical Research event, reducer, store, replay, projection, and append-only authority contracts."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Core/CLI public Research subpath and package-boundary requirements."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Vitest structure, complete-gate expectations, isolation, and regression-test rules."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Function-level Research command tests, zero-write filesystem snapshots, and built-parser assertions."}

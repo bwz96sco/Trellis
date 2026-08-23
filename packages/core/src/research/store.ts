@@ -5,8 +5,21 @@ import { isDeepStrictEqual } from "node:util";
 import { verifyArtifactSha256 } from "./artifacts.js";
 import { proposalOperationsToMutations } from "./dispatch.js";
 import { createEventId } from "./ids.js";
+import {
+  getEffectiveScientificGateRecord,
+  normalizeScientificGateEvidenceRefs,
+  normalizeScientificGateRefs,
+  ResearchScientificGateError,
+  parseScientificGateDecision,
+  parseScientificGateId,
+  parseScientificGateRecord,
+} from "./scientific-gate.js";
 import { withResearchLock } from "./internal/lock.js";
-import { parseResearchLedger, parseResearchEvent, serializeResearchEvents } from "./events.js";
+import {
+  parseResearchLedger,
+  parseResearchEvent,
+  serializeResearchEvents,
+} from "./events.js";
 import { researchPaths } from "./paths.js";
 import {
   readProjectionCache,
@@ -44,6 +57,7 @@ import {
   RESEARCH_SCHEMA_VERSION,
   RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
   type ApprovalId,
+  type ArtifactId,
   type ArtifactRef,
   type CampaignId,
   type CampaignStatus,
@@ -73,6 +87,9 @@ import {
   type ResultId,
   type RunId,
   type RunStatus,
+  type ScientificGateDecision,
+  type ScientificGateId,
+  type ScientificGateRecordId,
   type WorkflowAcceptedRef,
   type WorkflowCloseOutcome,
   type WorkflowInstanceId,
@@ -83,6 +100,7 @@ import {
   findResearchWorkflowNode,
   findResearchWorkflowTransition,
   isResearchWorkflowTerminalNode,
+  listResearchWorkflowOutgoingTransitions,
   missingResearchWorkflowRequiredRefs,
   normalizeWorkflowAcceptedRefs,
   type ParsedResearchWorkflowDefinitionV1,
@@ -194,6 +212,20 @@ export type ResearchMutation =
       workflow: ParsedResearchWorkflowDefinitionV1;
     }
   | {
+      kind: "scientific-gate.record";
+      recordId: ScientificGateRecordId;
+      workflowInstanceId: WorkflowInstanceId;
+      gateId: ScientificGateId;
+      decision: ScientificGateDecision;
+      actor: string;
+      rationale: string;
+      approvedRefs: readonly string[];
+      rejectedRefs: readonly string[];
+      evidenceRefs: readonly ArtifactId[];
+      sourceArtifactId?: ArtifactId;
+      workflow: ParsedResearchWorkflowDefinitionV1;
+    }
+  | {
       kind: "workflow.transition.record";
       workflowInstanceId: WorkflowInstanceId;
       transitionId: string;
@@ -241,9 +273,12 @@ export class ResearchProjectionError extends Error {
   readonly headSeq: number;
 
   constructor(headSeq: number, cause: unknown) {
-    super(`Research events committed through seq ${headSeq}, but projection update failed`, {
-      cause,
-    });
+    super(
+      `Research events committed through seq ${headSeq}, but projection update failed`,
+      {
+        cause,
+      },
+    );
     this.name = "ResearchProjectionError";
     this.headSeq = headSeq;
   }
@@ -254,13 +289,18 @@ interface EventDraft {
     | typeof RESEARCH_SCHEMA_VERSION
     | typeof RESEARCH_EVENT_SCHEMA_VERSION
     | typeof RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION;
-  kind: ResearchEventKind | ResearchSchemaV2EventKind | ResearchSchemaV3EventKind;
+  kind:
+    | ResearchEventKind
+    | ResearchSchemaV2EventKind
+    | ResearchSchemaV3EventKind;
   aggregate: ResearchEvent["aggregate"];
   related: ResearchEvent["related"];
   payload: Record<string, unknown>;
 }
 
-export async function readResearchLedger(root: string): Promise<ResearchEvent[]> {
+export async function readResearchLedger(
+  root: string,
+): Promise<ResearchEvent[]> {
   const paths = researchPaths(root);
   let text: string;
   try {
@@ -349,7 +389,11 @@ export async function commitResearchBatch(
 
     try {
       const allEvents = [...existing, ...validation.events];
-      const files = writeResearchProjections(paths, validation.state, allEvents);
+      const files = writeResearchProjections(
+        paths,
+        validation.state,
+        allEvents,
+      );
       writeProjectionCache(paths, headSeq, files);
     } catch (error) {
       throw new ResearchProjectionError(headSeq, error);
@@ -424,7 +468,9 @@ function validateDispatchBatch(
   existingState: ResearchState,
   timestamp: string,
 ): void {
-  const resultEvents = events.filter((event) => event.kind === "result.recorded");
+  const resultEvents = events.filter(
+    (event) => event.kind === "result.recorded",
+  );
   const proposalEvents = events.filter(
     (event) => event.kind === "proposal.recorded",
   );
@@ -474,7 +520,9 @@ function validateDispatchBatch(
     decisionEvents.length !== 1 ||
     events.at(-1)?.kind !== "decision.recorded"
   ) {
-    throw new Error("A research Decision must be the final mutation in its batch");
+    throw new Error(
+      "A research Decision must be the final mutation in its batch",
+    );
   }
   const decision = decisionEvents[0]?.payload.decision as Decision;
   const proposal = existingState.proposals[decision.proposalId];
@@ -557,6 +605,32 @@ function requireWorkflowState(state: ResearchState | undefined): ResearchState {
     );
   }
   return state;
+}
+
+function gateArtifactBelongsToQuest(
+  state: ResearchState,
+  questId: QuestId,
+  artifactId: ArtifactId,
+): boolean {
+  const quest = state.quests[questId];
+  if (quest?.artifactRefs.some((artifact) => artifact.id === artifactId))
+    return true;
+  if (
+    Object.values(state.evidence).some(
+      (evidence) =>
+        evidence.questId === questId &&
+        evidence.artifactRefs.some((artifact) => artifact.id === artifactId),
+    )
+  ) {
+    return true;
+  }
+  return Object.values(state.results).some((result) => {
+    const dispatch = state.dispatches[result.dispatchId];
+    return (
+      dispatch?.questId === questId &&
+      result.artifactRefs.some((artifact) => artifact.id === artifactId)
+    );
+  });
 }
 
 function assertWorkflowDefinitionBinding(
@@ -745,7 +819,9 @@ function buildMutationEventDraft(
         aggregate: { type: "evidence", id: evidence.id },
         related: [
           { type: "quest", id: evidence.questId },
-          ...(evidence.runId ? [{ type: "run" as const, id: evidence.runId }] : []),
+          ...(evidence.runId
+            ? [{ type: "run" as const, id: evidence.runId }]
+            : []),
         ],
         payload: { evidence },
       };
@@ -818,7 +894,9 @@ function buildMutationEventDraft(
       const approval = mutation.approval;
       const activation = state?.activations[approval.activationId];
       if (!activation) {
-        throw new Error(`Unknown research activation '${approval.activationId}'`);
+        throw new Error(
+          `Unknown research activation '${approval.activationId}'`,
+        );
       }
       return {
         schemaVersion: RESEARCH_EVENT_SCHEMA_VERSION,
@@ -921,7 +999,11 @@ function buildMutationEventDraft(
           `Workflow instance '${mutation.workflowInstanceId}' already exists`,
         );
       }
-      if (!mutation.workflow.definition.startNodeIds.includes(mutation.startNodeId)) {
+      if (
+        !mutation.workflow.definition.startNodeIds.includes(
+          mutation.startNodeId,
+        )
+      ) {
         throw new ResearchWorkflowError(
           "RESEARCH_WORKFLOW_INVALID",
           `Workflow start node '${mutation.startNodeId}' is not declared`,
@@ -1012,6 +1094,104 @@ function buildMutationEventDraft(
         payload,
       };
     }
+    case "scientific-gate.record": {
+      const current = requireWorkflowState(state);
+      const instance = current.workflowInstances[mutation.workflowInstanceId];
+      if (instance?.status !== "active") {
+        throw new ResearchScientificGateError(
+          `Workflow instance '${mutation.workflowInstanceId}' is not active`,
+        );
+      }
+      assertWorkflowDefinitionBinding(instance, mutation.workflow);
+      const completion = instance.nodeCompletions[instance.currentNodeId];
+      if (!completion) {
+        throw new ResearchScientificGateError(
+          `Workflow node '${instance.currentNodeId}' must be completed before recording a scientific gate`,
+        );
+      }
+      const gateId = parseScientificGateId(mutation.gateId);
+      const gateDeclared = listResearchWorkflowOutgoingTransitions(
+        mutation.workflow.definition,
+        instance.currentNodeId,
+      ).some((transition) => transition.requiredGateIds.includes(gateId));
+      if (!gateDeclared) {
+        throw new ResearchScientificGateError(
+          `Scientific gate '${gateId}' is not declared by an outgoing transition from node '${instance.currentNodeId}'`,
+        );
+      }
+      const refs = normalizeScientificGateRefs({
+        approvedRefs: mutation.approvedRefs,
+        rejectedRefs: mutation.rejectedRefs,
+      });
+      const evidenceRefs = normalizeScientificGateEvidenceRefs(
+        mutation.evidenceRefs,
+      );
+      const acceptedArtifactIds = new Set(
+        completion.acceptedRefs
+          .filter((ref) => ref.kind === "artifact")
+          .map((ref) => ref.id),
+      );
+      for (const artifactId of evidenceRefs) {
+        if (!current.artifacts[artifactId]) {
+          throw new ResearchScientificGateError(
+            `Unknown research Artifact '${artifactId}'`,
+          );
+        }
+        if (
+          !gateArtifactBelongsToQuest(current, instance.questId, artifactId)
+        ) {
+          throw new ResearchScientificGateError(
+            `Artifact '${artifactId}' does not belong to Quest '${instance.questId}'`,
+          );
+        }
+        if (!acceptedArtifactIds.has(artifactId)) {
+          throw new ResearchScientificGateError(
+            `Artifact '${artifactId}' is not accepted by Workflow node '${instance.currentNodeId}'`,
+          );
+        }
+      }
+      if (
+        mutation.sourceArtifactId !== undefined &&
+        !evidenceRefs.includes(mutation.sourceArtifactId)
+      ) {
+        throw new ResearchScientificGateError(
+          "sourceArtifactId must also appear in evidenceRefs",
+        );
+      }
+      const record = parseScientificGateRecord({
+        id: mutation.recordId,
+        questId: instance.questId,
+        workflowInstanceId: instance.workflowInstanceId,
+        workflowId: instance.workflowId,
+        workflowVersion: instance.workflowVersion,
+        workflowDigest: instance.workflowDigest,
+        nodeId: instance.currentNodeId,
+        gateId,
+        decision: parseScientificGateDecision(mutation.decision),
+        actor: mutation.actor,
+        rationale: mutation.rationale,
+        ...refs,
+        evidenceRefs,
+        ...(mutation.sourceArtifactId === undefined
+          ? {}
+          : { sourceArtifactId: mutation.sourceArtifactId }),
+        recordedAt: timestamp,
+      });
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "scientific-gate.recorded",
+        aggregate: { type: "scientific-gate", id: record.id },
+        related: [
+          { type: "quest", id: instance.questId },
+          { type: "workflow", id: instance.workflowInstanceId },
+          ...record.evidenceRefs.map((id) => ({
+            type: "artifact" as const,
+            id,
+          })),
+        ],
+        payload: record as unknown as Record<string, unknown>,
+      };
+    }
     case "workflow.transition.record": {
       const current = requireWorkflowState(state);
       const instance = current.workflowInstances[mutation.workflowInstanceId];
@@ -1046,10 +1226,25 @@ function buildMutationEventDraft(
           `Workflow transition '${transition.id}' is missing required refs: ${missingRefs.join(", ")}`,
         );
       }
-      if (transition.requiredGateIds.length > 0) {
+      const missingGateIds: ScientificGateId[] = [];
+      const gateRecordIds: ScientificGateRecordId[] = [];
+      for (const gateId of transition.requiredGateIds) {
+        const record = getEffectiveScientificGateRecord(
+          current,
+          instance.workflowInstanceId,
+          instance.currentNodeId,
+          gateId,
+        );
+        if (record?.decision !== "approve") {
+          missingGateIds.push(gateId);
+        } else {
+          gateRecordIds.push(record.id);
+        }
+      }
+      if (missingGateIds.length > 0) {
         throw new ResearchWorkflowError(
           "RESEARCH_WORKFLOW_TRANSITION_BLOCKED",
-          `Workflow transition '${transition.id}' is missing gates: ${transition.requiredGateIds.join(", ")}`,
+          `Workflow transition '${transition.id}' is missing gates: ${missingGateIds.join(", ")}`,
         );
       }
       const selectedBy = parseNonEmptyString(mutation.selectedBy, "selectedBy");
@@ -1063,14 +1258,20 @@ function buildMutationEventDraft(
         fromNodeId: transition.fromNodeId,
         toNodeId: transition.toNodeId,
         selectedBy,
-        gateRecordIds: [],
+        gateRecordIds,
         selectedAt: timestamp,
       };
       return {
         schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
         kind: "workflow.transition_recorded",
         aggregate: { type: "workflow", id: instance.workflowInstanceId },
-        related: [{ type: "quest", id: instance.questId }],
+        related: [
+          { type: "quest", id: instance.questId },
+          ...gateRecordIds.map((id) => ({
+            type: "scientific-gate" as const,
+            id,
+          })),
+        ],
         payload,
       };
     }
@@ -1150,7 +1351,9 @@ function validateArtifactDigests(
           repositoryRoots?.[artifact.repositoryId],
         )
       ) {
-        throw new Error(`Artifact '${artifact.id}' sha256 does not match '${artifact.path}'`);
+        throw new Error(
+          `Artifact '${artifact.id}' sha256 does not match '${artifact.path}'`,
+        );
       }
     }
   }
@@ -1161,7 +1364,8 @@ function artifactsFromEvent(event: ResearchEvent): ArtifactRef[] {
     case "artifact.registered":
       return [event.payload.artifact as ArtifactRef];
     case "quest.created":
-      return (event.payload.quest as { artifactRefs: ArtifactRef[] }).artifactRefs;
+      return (event.payload.quest as { artifactRefs: ArtifactRef[] })
+        .artifactRefs;
     case "evidence.created":
       return (event.payload.evidence as { artifactRefs: ArtifactRef[] })
         .artifactRefs;

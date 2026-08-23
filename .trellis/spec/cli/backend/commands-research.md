@@ -781,8 +781,12 @@ trellis research workflow close --instance <id> --outcome <completed|blocked|can
 trellis research workflow status --quest <id> [--json]
 trellis research workflow next --quest <id> [--json]
 
-trellis research gate record --quest <id> --instance <id> --node <id> \
-  --gate <H1|H2> --decision-file <path> [--dry-run] [--write] [--json]
+trellis research gate record --instance <id> --gate <H1|H2> \
+  --decision <approve|reject> --actor <label> --rationale <text> \
+  [--approved-ref <scientific-ref>...] [--rejected-ref <scientific-ref>...] \
+  --evidence-ref <artifact:art-id>... [--source-artifact <artifact:art-id>] \
+  [--idempotency-key <key>] [--dry-run] [--write] [--json]
+trellis research gate status --instance <id> [--json]
 
 trellis research quest import --source <research-quest.yaml> \
   [--events <research-events.jsonl>] [--preview-token <token>] \
@@ -799,8 +803,11 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 - `context --profile lightweight` requires `entrypointType: "model-context"` and a declared `lightweight` profile. A package with `invocationSource: "operator-explicit"` additionally requires the package to have been selected by this explicit operator command; it is never eligible for implicit model selection.
 - Managed Context selection uses the same normalized identity but still requires existing Dispatch/Activation/Approval commands. `operator-explicit` managed packages require an explicit operator-selected workflow/Activation binding before Context; `skill context` itself does not grant authority. A `root-command` package has no model profile and never enters either model Context.
 - Workflow mutations preview by default and require explicit `--write`. Bind/complete/transition/close each append only their typed event. Same-key replay succeeds only when exactly one canonical Workflow event matches the command family, explicit target, and command-specific payload shape; any unrelated, multi-event, or differently shaped ownership returns `IDEMPOTENCY_KEY_CONFLICT` before preview/write success. No command chains to another mutation or model call.
-- `status` and `next` read canonical workflow-instance/gate projections. They return exact instance/workflow/node/package identity, legal transitions, missing requirements, allowed profiles, and stop reason; they never infer current node from Quest stage.
-- `gate record` parses explicit operator decision bytes, records H1/H2 only, and returns after preview/write. It never invokes `workflow transition`.
+- `status` and `next` read canonical workflow-instance/gate projections. They return exact instance/workflow/node/package identity, legal transitions, missing requirements, satisfying gate-record IDs, allowed profiles, and stop reason; they never infer current node from Quest stage.
+- `gate record` derives Quest/workflow/node identity from the exact active instance, accepts explicit inline decision fields, and records H1/H2 only. Actor and rationale must be trim-nonempty while preserving decoded values verbatim. Approved/rejected scientific refs remain separate from canonical evidence Artifact refs. It returns after preview/write and never invokes `workflow transition`.
+- C4 checks scientific-ref string integrity/disjointness plus evidence ownership/accepted-ref containment. Candidate-universe membership/coverage waits for C4b; gate recording never parses evidence Artifact bytes.
+- Gate same-key replay requires exactly one matching canonical gate event and successful parse plus reduction of the complete canonical ledger. Replay fails closed on semantic or relation corruption. After read-only validation, the command rereads canonical event IDs so a concurrent exact same-key commit is reported as `replayed`, not `preview`.
+- `gate status` is read-only and returns ledger-order history plus effective H1/H2 records for the instance's current node.
 - Quest import preview returns source digest, exact mapping, conflicts, preserved extensions, and export-loss report. Write requires unchanged source bytes and exact preview token/idempotency binding.
 - Quest export writes source-compatible YAML/JSONL and loss report but never transfers writer itself. `transfer-writer --to source` requires validated export digest. `--to trellis` requires successful import record.
 - Source admin guard consumes committed writer projection; CLI success text or sidecars cannot grant writer authority.
@@ -819,8 +826,11 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 | Complete targets wrong node or missing accepted refs | `research_workflow_completion_invalid`; zero-write. |
 | Transition is illegal, unselected, or gate-incomplete | `research_workflow_transition_blocked`; zero-write. |
 | Workflow idempotency key owns another command family, target, payload shape, or multi-event batch | `IDEMPOTENCY_KEY_CONFLICT`; report no replay success and append nothing. |
-| Gate decision is inferred, malformed, empty-rationale, or set-invalid | `research_gate_invalid`; zero-write. |
-| Gate write succeeds | Return gate record only; no transition or worker launch. |
+| Gate decision is inferred/malformed, actor or rationale is blank, scientific refs are empty/padded/duplicate/overlapping, or evidence ownership/containment is invalid | `research_gate_invalid`; zero-write. |
+| Gate idempotency key owns another command family, target, payload shape, or multi-event batch | `IDEMPOTENCY_KEY_CONFLICT`; zero-write. |
+| Matching gate event exists but complete canonical ledger parse/reduction or relation validation fails | Fail closed; never report replay success. |
+| Concurrent exact same-key commit lands after preview validation | Reread canonical IDs and return `replayed`; append nothing. |
+| Gate write succeeds | Return one gate record only; no transition, Approval, Dispatch, Skill, model, worker, or provider launch. |
 | Import source changes after preview | `research_quest_source_drift`; zero-write. |
 | Quest mapping has blocking conflict | `research_quest_import_conflict` with exact field/path; zero-write. |
 | Export target exists without explicit overwrite authority | Refuse before filesystem mutation. |
@@ -840,7 +850,7 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 - One-package Context, omitted on-demand members, rejection of implicit selection for explicit-only packages, explicit-only managed evaluation acceptance after operator binding, root-command rejection from model Context, and identical normalized digest across profiles.
 - Workflow preview/write/replay tests for bind, complete, transition, close, active conflict, missing gate, no automatic continuation, differently shaped same-command keys, and keys owned by another command family.
 - Skill discovery tests prove every candidate is authenticated and a symlinked/non-directory/invalid project candidate fails the complete read without a partial result or bundled substitution.
-- Gate decision parser and structural set/evidence validation; explicit assertion that no workflow or Dispatch command is called.
+- Gate preview/write/status/replay tests: actor/rationale validation, scientific-ref integrity/disjointness, evidence ownership/accepted-ref containment, exact same-key matching, full-ledger replay corruption rejection, concurrent exact-key preview classification, latest same-scope decision, H1/H2 transition-record ordering, deterministic gate projection, and explicit assertion that no Approval, Workflow mutation, Dispatch, Skill, model, worker, or provider command is called.
 - Quest import mapping/error fixtures, source-drift token, idempotency, export round-trip/loss report, writer transfer, and pre-write source-admin refusal.
 - Historical Procedure Context/recording command tests remain unchanged and green.
 

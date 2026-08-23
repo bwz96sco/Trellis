@@ -6,6 +6,7 @@ import type { ResearchPaths } from "./paths.js";
 import {
   RESEARCH_SCHEMA_VERSION,
   type Projected,
+  type QuestScientificGateProjection,
   type QuestWorkflowProjection,
   type ResearchEvent,
   type ResearchState,
@@ -134,7 +135,9 @@ export function writeResearchProjections(
   for (const group of groups) {
     for (const entity of sortedValues(group.values)) {
       if (state.entitySeq[entity.id] === undefined) {
-        throw new Error(`Missing projection sequence for entity '${entity.id}'`);
+        throw new Error(
+          `Missing projection sequence for entity '${entity.id}'`,
+        );
       }
       const file = path.join(group.dir, entity.id, group.fileName);
       atomicWrite(
@@ -150,7 +153,9 @@ export function writeResearchProjections(
     if (instanceIds.length === 0) continue;
     const workflowSeq = state.entitySeq[`workflow:${quest.id}`];
     if (workflowSeq === undefined) {
-      throw new Error(`Missing Workflow projection sequence for Quest '${quest.id}'`);
+      throw new Error(
+        `Missing Workflow projection sequence for Quest '${quest.id}'`,
+      );
     }
     const data: QuestWorkflowProjection = {
       questId: quest.id,
@@ -171,6 +176,59 @@ export function writeResearchProjections(
       ),
     );
     files.push(file);
+
+    const gateRecords = instanceIds
+      .flatMap(
+        (instanceId) =>
+          state.scientificGateRecordIdsByWorkflowInstanceId[instanceId] ?? [],
+      )
+      .map((recordId) => state.scientificGateRecords[recordId])
+      .filter((record) => record !== undefined)
+      .sort((left, right) => {
+        const leftSeq = state.entitySeq[left.id];
+        const rightSeq = state.entitySeq[right.id];
+        if (leftSeq === undefined || rightSeq === undefined) {
+          throw new Error("Missing scientific gate projection sequence");
+        }
+        return leftSeq - rightSeq;
+      });
+    if (gateRecords.length === 0) continue;
+    const gateSeq = state.entitySeq[`scientific-gate:${quest.id}`];
+    if (gateSeq === undefined) {
+      throw new Error(
+        `Missing scientific gate projection sequence for Quest '${quest.id}'`,
+      );
+    }
+    const effective = Object.values(
+      state.effectiveScientificGateRecordIdByScope,
+    )
+      .map((recordId) => state.scientificGateRecords[recordId])
+      .filter((record) => record?.questId === quest.id)
+      .sort((left, right) => {
+        const instanceOrder = left.workflowInstanceId.localeCompare(
+          right.workflowInstanceId,
+        );
+        if (instanceOrder !== 0) return instanceOrder;
+        const nodeOrder = left.nodeId.localeCompare(right.nodeId);
+        if (nodeOrder !== 0) return nodeOrder;
+        return left.gateId === right.gateId ? 0 : left.gateId === "H1" ? -1 : 1;
+      })
+      .map((record) => ({
+        workflowInstanceId: record.workflowInstanceId,
+        nodeId: record.nodeId,
+        gateId: record.gateId,
+        recordId: record.id,
+      }));
+    const gateData: QuestScientificGateProjection = {
+      schemaVersion: RESEARCH_SCHEMA_VERSION,
+      questId: quest.id,
+      records: gateRecords,
+      effective,
+      updatedAt: timestampAt(events, gateSeq),
+    };
+    const gateFile = path.join(paths.questsDir, quest.id, "gates.json");
+    atomicWrite(gateFile, stableResearchJson(gateData));
+    files.push(gateFile);
   }
   return files.sort();
 }
@@ -204,11 +262,7 @@ export function readProjectionCache(
   } catch {
     return null;
   }
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    Array.isArray(parsed)
-  ) {
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     return null;
   }
   const value = parsed as Record<string, unknown>;
