@@ -141,3 +141,46 @@ Implemented and verified exact managed Research Skill execution with package-neu
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: C6 Pilot Skill Packages
+
+**Date**: 2026-08-25
+**Task**: C6 Pilot Skill Packages
+**Package**: cli
+**Branch**: `claude-t6-mal1-reviewer-01-m0-correction-2`
+
+### Summary
+
+Migrated four authenticated thin Research Skills into schema-v3 packages, enforced packed distribution, preserved lightweight/managed authority boundaries, and recorded deferred review evidence.
+
+### Main Changes
+
+- Added four authenticated schema-v3 packages: bounded literature and ideation Skills, managed-only idea evaluation, and root-command-only Quest administration.
+- Preserved exact frozen C1 template bytes while replacing host metadata, source validators, and source Quest writers with Trellis package, gate, Workflow, and writer-authority contracts.
+- Enforced all four manifests, instructions, and three declared template members in packed CLI inventory; added bundled/project resolution, profile, invocation, member, Context, and real-tar coverage.
+- Kept lightweight execution model-call-neutral, managed evaluation root-owned and independently activated, Quest administration operator-explicit, and all handoffs non-automatic.
+- Recorded package identities, semantic replacement map, impact results, hook failures, and deferred review points in archived C6 evidence.
+- Stabilized one pre-existing approved-Result aggregate test with a scoped `120_000ms` timeout after repeated full-suite contention failures; product behavior stayed unchanged.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9f3d9763` | `feat(research): migrate pilot skill packages` |
+| `6ab5dc97` | `test(cli): stabilize approved result timeout` |
+
+### Testing
+
+- [OK] Focused pilot package, resolver, Context, packed-inventory, and real-tar tests passed.
+- [OK] Final normal hooks: Core 46 files / 714 passed / 1 skipped; CLI 95 files / 1,086 passed; Core and CLI builds passed.
+- [OK] Stabilized approved-Result case passed in `5.3s` during final full suite and `3.7s` in focused execution.
+- [OK] Task manifests and `git diff --check` passed; no provider/model/worker call, push, release, or publication occurred.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
