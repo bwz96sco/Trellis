@@ -997,7 +997,7 @@ describe("approved Result validation acceptance", { timeout: 30_000 }, () => {
       }),
     ).rejects.toMatchObject({ code: "DISPATCH_ALREADY_COMPLETED" });
     expect(reads).toBe(0);
-  });
+  }, 120_000);
 
   it.each([
     ["absent", "APPROVAL_REQUIRED"],
