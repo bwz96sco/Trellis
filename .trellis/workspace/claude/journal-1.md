@@ -80,3 +80,64 @@ Completed C4b Quest source cutover with canonical scientific universes, validate
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: C5 Managed Skill Execution
+
+**Date**: 2026-08-24
+**Task**: C5 Managed Skill Execution
+**Package**: cli
+**Branch**: `claude-t6-mal1-reviewer-01-m0-correction-2`
+
+### Summary
+
+Implemented and verified exact managed Research Skill execution with package-neutral authority, Context v3, explicit Workflow completion, and preserved Procedure compatibility.
+
+### Main Changes
+
+## C5 managed Research Skill execution
+
+- Generalized managed execution from Procedure-only to package-neutral Procedure/Skill handling while preserving historical Procedure Context v1/v2 and replay.
+- Bound exact schema-v3 Skill identity, approved member subset, optional active Workflow instance/current node, package-neutral Approval authority, and schema-v3 worker Context.
+- Kept Result/Proposal recording, Workflow completion, and Workflow transition as separate root actions. Workers remain proposal-only.
+- Review fixes: reject unrelated Quest Artifacts during managed completion; validate direct Core Workflow bindings; compare explicit capability during same-key replay; update legacy closure test mock with the package-kind discriminant.
+
+## Verification
+
+- One scoped `trellis-check` review completed; no second review panel.
+- Core typecheck/lint/build passed; CLI typecheck/lint/build passed.
+- Focused Core C5 tests passed; focused CLI C5 tests passed.
+- Closure compatibility file: 11/11 passed after fixture correction.
+- Packed/export checks: CLI 52/52; Core 19/19.
+- Core full suite: 46 files passed, 714 passed, 1 skipped.
+- Normal commit hooks: Core suite passed; CLI suite 94 files passed, 1070 tests passed; Core and CLI builds passed.
+- Task manifests and `git diff --check` passed.
+
+## Impact and boundaries
+
+- GitNexus reported HIGH/CRITICAL risk for central Research symbols. Final compare reported CRITICAL across 1,755 inherited branch files and 130 flows; this broad count includes pre-C5 branch history and unrelated protected files, not 1,755 C5-local edits.
+- Product commit: `6ed9b2efef96b6fa9e3cecf5cb9846da4e0c7798`.
+- Archive commit: `50bc71df03243ad551d57f588b2f387c49426887`.
+- No provider or managed worker invoked. No production package activated. No external source repository changed. No C6/C7 work started. No push, release, or publication.
+- Preserved unrelated `AGENTS.md`, `CLAUDE.md`, and GitNexus skill modifications outside C5 commits.
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6ed9b2efef96b6fa9e3cecf5cb9846da4e0c7798` | `feat(research): add managed skill execution` |
+
+### Testing
+
+- [OK] Core full suite: 46 files passed; 714 tests passed; 1 skipped.
+- [OK] CLI normal-hook suite: 94 files passed; 1,070 tests passed.
+- [OK] Focused C5, packed/export, typecheck, lint, build, manifest, and diff checks passed.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
