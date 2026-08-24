@@ -3,7 +3,7 @@
   "name": "thin-skill-c6-migrate-pilot-packages",
   "title": "Migrate Research pilot skill packages",
   "description": "Import frozen literature, ideation, evaluation, and Quest admin packages without restoring heavy workflow packs.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

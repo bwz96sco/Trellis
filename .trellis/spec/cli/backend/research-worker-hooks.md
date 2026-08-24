@@ -474,6 +474,74 @@ Wrong: worker validates dry-run, consumes Approval, replays output, or repairs s
 Correct: worker returns Result plus pending Proposal; root owns validation, commit, replay, and hardened recovery.
 ```
 
+## Scenario: C6 pilot Skill worker boundary
+
+### 1. Scope / Trigger
+
+This scenario applies when the existing lightweight root path or C5 managed Context consumes one of the three model-context C6 packages. `research-quest-admin` is excluded because it is root-command-only. C6 changes package instructions and packed inventory only; it does not restore host-installed Research stage Skills or modify generated Claude/Codex worker, hook, envelope, or provider behavior.
+
+### 2. Signatures
+
+```text
+lightweight root projection:
+  resolve research-literature|research-ideation @ 1.0.0
+
+managed worker projection:
+  approved Dispatch -> exact schema-v3 package identity -> SKILL.md
+                    -> explicitly requested worker-visible members
+                    -> existing Result plus pending Proposal output contract
+```
+
+Evaluation managed Context requires exact root selection of `research-idea-evaluation@1.0.0`, capability `research.ideation.evaluate`, and requested member `templates/attack-template.md` when template bytes are needed.
+
+### 3. Contracts
+
+- Root authenticates the complete schema-v3 package before projection. Workers and host adapters receive embedded instructions and approved member bytes; they do not list package roots, read manifests, load `SKILL.md`, or discover versions/members.
+- Literature and ideation may run lightweight in the root session or managed through existing Approval. Both profiles use one immutable package identity and exact instruction bytes.
+- On-demand note/opportunity/attack templates are absent unless explicitly requested and approved. No ambient source-repository, installed-host, or mutable helper path may substitute for a package member.
+- Evaluation uses one managed invocation per candidate. Each Activation/Approval/Context is independent, and the existing capability dispatch limit is not widened. A worker cannot launch another worker, Skill, Procedure, Workflow, capability, or Dispatch.
+- Instructions preserve scientific evidence boundaries but cannot widen immutable worker authority. Workers return only bounded Result plus pending Proposal and never record gates, closure, Workflow state, Quest writer authority, Approval consumption, or canonical output.
+- Handoffs are suggestions with `autoInvoke: false`. Root/operator action is required after the current bounded unit stops.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Context identity, instruction digest, inventory digest, member digest, or capability binding differs from Activation/Approval | Fail closed before worker launch; expose no partial package payload. |
+| On-demand member was not requested | Omit it from Context even though the full inventory remains authenticated. |
+| Worker requests an undeclared/root-only/ambient source file | Refuse access and return bounded blocked/partial output. |
+| Evaluation candidate set is missing or changed, or novelty remains unknown | Return blocked verdict; do not infer novelty or select a winner. |
+| Worker attempts nested execution, canonical state mutation, gate recording, or handoff invocation | Refuse under the existing authority ceiling; root state remains unchanged. |
+| Quest-admin is routed to a worker | Invocation failure before Context; no host/provider action. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: approved evaluation Context contains exact package identity, exact `SKILL.md`, and one digest-bound attack template; worker attacks one candidate, returns one verdict plus pending Proposal, and stops.
+- **Base**: managed literature Context requests no template, receives empty approved members, reviews one paper, and leaves parallelism to separately approved invocations.
+- **Bad**: adapter reads mutable C1 source, worker discovers package files, evaluation starts nested candidate workers, prose records H2/closure, or a handoff launches automatically.
+
+### 6. Tests Required
+
+- Cross-profile literature package identity/instruction parity and exact optional-member projection.
+- Real production evaluation prepare, interactive Approval simulation, and schema-v3 managed Context containing exact frozen attack-template digest/content.
+- Root-command quest-admin rejection before model or managed worker Context.
+- Claude/Codex normalized Context parity remains covered by existing C5 tests; C6 introduces no host-specific package projection.
+- Tests assert Context construction only: no provider/model/worker process is invoked, and no Workflow/gate/Quest/Result/Proposal mutation occurs from package resolution.
+- Existing generated worker/hook source, built, installed, and packed byte regressions remain green.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: worker reads packages/cli templates or the mutable source Skill repository to obtain methodology.
+Correct: root authenticates one package and embeds exact approved instructions/member bytes in Context.
+
+Wrong: evaluation launches parallel children internally because the source Skill used subagents.
+Correct: root creates one separately approved Activation per candidate and retains closure authority.
+
+Wrong: treat a suggested next Skill as execution authority.
+Correct: stop after one package; only a later explicit root/operator action may select a handoff.
+```
+
 ## Scenario: Evaluation contract v1.3.1 worker boundary
 
 ### 1. Scope / Trigger

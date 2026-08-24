@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json","reason":"Check exact source provenance, unchanged template bytes, and explicit treatment of excluded helpers/host projections."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check production package matrix, invocation/profile restrictions, deterministic handoffs, existing gate/Quest replacements, and stable command behavior."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check managed workers receive exact approved package bytes, remain proposal-only, and never launch nested evaluation work."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check independent digest vectors, deterministic fixtures, focused regression ownership, and normal-hook verification."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check real bundled filesystem, project-invalid fail-closed behavior, exact byte snapshots, packed tarball audit, and lifecycle action separation."}

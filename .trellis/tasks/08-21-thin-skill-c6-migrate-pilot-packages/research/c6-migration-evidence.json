@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "task": "08-21-thin-skill-c6-migrate-pilot-packages",
+  "sourceAuthority": {
+    "baseline": ".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/",
+    "manifest": ".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json",
+    "baseCommit": "e2b0d70e3a797f19461eb106601de12250000b69",
+    "fileCount": 19,
+    "byteCount": 101581,
+    "mutableExternalSourceRead": false
+  },
+  "sourceFiles": [
+    {
+      "path": "scripts/validate-research-gates.py",
+      "sha256": "958d6114f6d582601436c664ccad198b0ba7659476083d7ea807547fb313db74",
+      "bytes": 21419,
+      "disposition": "excluded-replaced",
+      "replacement": "Canonical trellis research gate status/record and workflow next/transition contracts; no package-local validator helper."
+    },
+    {
+      "path": "skills/research-idea-evaluation/SKILL.md",
+      "sha256": "ab2025452924fc581f257f33dc9d41851c98f6ec86079ada21d5ad1d9c1b7617",
+      "bytes": 3286,
+      "disposition": "adapted",
+      "replacement": "Concise managed-only one-candidate attack method, unknown-novelty blocker, explicit stop conditions, and root-owned selected-or-blocked closure."
+    },
+    {
+      "path": "skills/research-idea-evaluation/agents/openai.yaml",
+      "sha256": "43c1a641b19756f4aa2cf5ff0ed610c05f4e6d0977ce241bba1cb6ed200b8176",
+      "bytes": 307,
+      "disposition": "excluded-replaced",
+      "replacement": "schema-v3 skill.json invocationSource=operator-explicit, entrypointType=model-context, allowedProfiles=[managed], and managedBinding research.ideation.evaluate."
+    },
+    {
+      "path": "skills/research-idea-evaluation/attack-template.md",
+      "sha256": "ee43247517a2652cf9240261e6142e3b163db596fd29c80a75f08479916a4b15",
+      "bytes": 1293,
+      "disposition": "copied-byte-identical",
+      "replacement": "research-idea-evaluation/1.0.0/templates/attack-template.md as worker-visible on-demand template."
+    },
+    {
+      "path": "skills/research-ideation/SKILL.md",
+      "sha256": "b116c397ca1e3392ca3325ed849be5fd26f969bb75f3e4bc3dae8f1c3e5283db",
+      "bytes": 5608,
+      "disposition": "adapted",
+      "replacement": "One frozen 3-7 candidate portfolio, mechanism diversity, evidence distinctions, no evaluation/selection/automatic continuation, and explicit separate evaluation handoff."
+    },
+    {
+      "path": "skills/research-ideation/agents/openai.yaml",
+      "sha256": "357a183814d9a110cf1df02db13e38dc7de251c1787c065cdcc80fdb0a556a29",
+      "bytes": 315,
+      "disposition": "excluded-replaced",
+      "replacement": "schema-v3 skill.json model selection, lightweight/managed profiles, and managedBinding research.ideation.generate."
+    },
+    {
+      "path": "skills/research-ideation/opportunity-board-template.md",
+      "sha256": "4bdb5a549fe58b02cad078f76cc9f04f1e32dc9533211d7a85e36f28c883582b",
+      "bytes": 1661,
+      "disposition": "copied-byte-identical",
+      "replacement": "research-ideation/1.0.0/templates/opportunity-board-template.md as worker-visible on-demand template."
+    },
+    {
+      "path": "skills/research-literature/SKILL.md",
+      "sha256": "68ad19d654f519ac7c66d1b0d995251821f45ed2e6848ae7d1f7924ff2dd49ab",
+      "bytes": 3816,
+      "disposition": "adapted",
+      "replacement": "Question-scoped skeleton-first review, metadata verification, evidence-category separation, lightweight one-unit review, optional separately approved managed review, and no replacement-method ideation."
+    },
+    {
+      "path": "skills/research-literature/agents/openai.yaml",
+      "sha256": "4e8ce93b42780616a322bd4a484a107339d13839921f3af9a1b6fb4c7f4ad785",
+      "bytes": 314,
+      "disposition": "excluded-replaced",
+      "replacement": "schema-v3 skill.json model selection, lightweight/managed profiles, and managedBinding research.literature.review."
+    },
+    {
+      "path": "skills/research-literature/note-template.md",
+      "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71",
+      "bytes": 2499,
+      "disposition": "copied-byte-identical",
+      "replacement": "research-literature/1.0.0/templates/note-template.md as worker-visible on-demand template."
+    },
+    {
+      "path": "skills/research-quest-admin/SKILL.md",
+      "sha256": "a473ffab5b0fabc4591a86e8268e868a9ebe2dfa424d384cf0cb8524a235dbd3",
+      "bytes": 2506,
+      "disposition": "adapted",
+      "replacement": "Root-command-only import preview/write, export preview/write, and separate transfer-writer instructions using canonical Trellis authority."
+    },
+    {
+      "path": "skills/research-quest-admin/agents/openai.yaml",
+      "sha256": "91608eb0e7046ed020937d9d336d50cbd223cde6b81fd5a9c6a2b22c7cae9c8e",
+      "bytes": 292,
+      "disposition": "excluded-replaced",
+      "replacement": "schema-v3 skill.json operator-explicit root-command package with no profiles, managed binding, or members."
+    },
+    {
+      "path": "skills/research-quest-admin/references/campaign-index.md",
+      "sha256": "dc6d7cbd18d2e4822edbbe70c336ca3060229dfd4d5493f1f50f131f0a2b7bca",
+      "bytes": 936,
+      "disposition": "excluded-replaced",
+      "replacement": "Existing canonical Research Quest/Campaign commands and executable specs; not runtime Context."
+    },
+    {
+      "path": "skills/research-quest-admin/references/quest-pack.md",
+      "sha256": "8386f0f7a003eb054246fb1b91efaf5af3fe35e71c8e31b802f8cdec0d296a23",
+      "bytes": 2746,
+      "disposition": "excluded-replaced",
+      "replacement": "Existing deterministic Quest import/export planning, validation, evidence, and writer-transfer contracts."
+    },
+    {
+      "path": "skills/research-quest-admin/references/task-forest-bridge.md",
+      "sha256": "6e9e8381135bb0bcae3f3e80f51d067a8a5ed931bd4aa05a15c073e2236bf226",
+      "bytes": 1154,
+      "disposition": "excluded-replaced",
+      "replacement": "Canonical Quest/Workflow state; historical Task compatibility metadata is non-authoritative and no runtime bridge is packaged."
+    },
+    {
+      "path": "skills/research-quest-admin/scripts/research_quest_admin.py",
+      "sha256": "7159bd9a8635110b671bdba8301eeca53f69f2d46c6110c80e7b28075c7d29f8",
+      "bytes": 14944,
+      "disposition": "excluded-replaced",
+      "replacement": "trellis research quest import, export, and transfer-writer commands plus committed writer projection and source-admin pre-write refusal."
+    },
+    {
+      "path": "skills/research-quest/SKILL.md",
+      "sha256": "7606afc5e92f486a5b8911ad741cd2f5f75f87213b2352e542fd23198772f135",
+      "bytes": 2440,
+      "disposition": "excluded-no-fifth-package",
+      "replacement": "Existing Trellis Quest status/import/export/Workflow commands already own read-only and administrative behavior."
+    },
+    {
+      "path": "skills/research-quest/agents/openai.yaml",
+      "sha256": "d39a46b827142b1f5190e12f3e2b74da47f75e344643f7f5c0719b8e6a21aa4d",
+      "bytes": 315,
+      "disposition": "excluded-no-fifth-package",
+      "replacement": "No research-quest execution package or host projection is introduced."
+    },
+    {
+      "path": "skills/research-quest/scripts/research_quest.py",
+      "sha256": "dbf9df55283b6481efd1381d298008efa98cebf0c7f7658b3814c61962ac3511",
+      "bytes": 35730,
+      "disposition": "excluded-replaced",
+      "replacement": "Existing Core/CLI Quest strict readers, projections, import/export, and writer-authority contracts."
+    }
+  ],
+  "excludedSourceDependencies": {
+    "runtimeArtifactsNotPackaged": [
+      "opportunity_board.md",
+      "h1_decision.md",
+      "opportunity-index.md",
+      "problem-checkpoint.md",
+      "ideas.md",
+      "h2_decision.md",
+      "attacks/*.md",
+      "decision.md"
+    ],
+    "explicitlyExcludedCategories": [
+      "README and repository documentation",
+      "source-only tests and registry-wide validators",
+      "host-link and external-specialist scripts",
+      "non-pilot opportunity-mining and synthesis packages",
+      "unreferenced research-quest-admin example templates"
+    ],
+    "forbiddenPackageInputs": [
+      "agents/openai.yaml",
+      "scripts/validate-research-gates.py",
+      "source Quest Python helpers",
+      "Quest-admin reference pack",
+      "mutable external source paths"
+    ]
+  },
+  "packages": [
+    {
+      "manifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-idea-evaluation",
+        "version": "1.0.0",
+        "skillKind": "workflow",
+        "invocationSource": "operator-explicit",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": ["managed"],
+        "managedBinding": {"capabilityId": "research.ideation.evaluate"},
+        "members": [{"path": "templates/attack-template.md", "role": "template", "load": "on-demand", "visibility": "worker-visible", "sha256": "ee43247517a2652cf9240261e6142e3b163db596fd29c80a75f08479916a4b15", "maxBytes": 1293}],
+        "handoff": {"suggestedSkillIds": ["research-experiment"], "autoInvoke": false}
+      },
+      "identity": {
+        "id": "research-idea-evaluation",
+        "version": "1.0.0",
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "packageDigest": "sha256:dc58cc3abc0993956a4fc5b0fb873ff09b560af6468b9bb2bb4bc3db8891454a",
+        "instructionDigest": "sha256:4294c16a649778a1e763c143ee82893a1b7d370b3513fdd3ce5a9b97aaf8a03a",
+        "memberInventoryDigest": "sha256:880ef7179d8245730322dcc78c178425fbe56f8d6dc06597487b43f0069ef436"
+      }
+    },
+    {
+      "manifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-ideation",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": ["lightweight", "managed"],
+        "managedBinding": {"capabilityId": "research.ideation.generate"},
+        "members": [{"path": "templates/opportunity-board-template.md", "role": "template", "load": "on-demand", "visibility": "worker-visible", "sha256": "4bdb5a549fe58b02cad078f76cc9f04f1e32dc9533211d7a85e36f28c883582b", "maxBytes": 1661}],
+        "handoff": {"suggestedSkillIds": ["research-idea-evaluation"], "autoInvoke": false}
+      },
+      "identity": {
+        "id": "research-ideation",
+        "version": "1.0.0",
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "packageDigest": "sha256:f4f309dc92ef8c9ef8b91dab2183272ea805e019914731d8c4e38aaa41c62da0",
+        "instructionDigest": "sha256:166e1ca4bd472d1813d3678259e47a235df0de263b8694b9424753226c228d34",
+        "memberInventoryDigest": "sha256:d9dfaec07f25eacdb91364c78fca2947786ce4d281631cff9f8695969ce7544c"
+      }
+    },
+    {
+      "manifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-literature",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": ["lightweight", "managed"],
+        "managedBinding": {"capabilityId": "research.literature.review"},
+        "members": [{"path": "templates/note-template.md", "role": "template", "load": "on-demand", "visibility": "worker-visible", "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71", "maxBytes": 2499}],
+        "handoff": {"suggestedSkillIds": ["research-ideation"], "autoInvoke": false}
+      },
+      "identity": {
+        "id": "research-literature",
+        "version": "1.0.0",
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "packageDigest": "sha256:66d1ecd38b80ba983e7a783098cd0781c66952027ac7b1e679d23081c1cb5670",
+        "instructionDigest": "sha256:ead2668d93ce0c8ae40435435356af6dad3482b0dccbae91a45bbf95192a19c4",
+        "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed"
+      }
+    },
+    {
+      "manifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-quest-admin",
+        "version": "1.0.0",
+        "skillKind": "admin",
+        "invocationSource": "operator-explicit",
+        "entrypointType": "root-command",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [],
+        "members": []
+      },
+      "identity": {
+        "id": "research-quest-admin",
+        "version": "1.0.0",
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "packageDigest": "sha256:97e2a3dd3e1731b8899c502131c6d1017482f6c24737f39c8b7c45257fb9c37d",
+        "instructionDigest": "sha256:cf0ea546c6d2d2b9dfde7f00c7578705c993fb30d76df194cfe19569596593e5",
+        "memberInventoryDigest": "sha256:0ed9fa66664d261a53da5dc81101e083b4299c14da128895858ade8590340727"
+      }
+    }
+  ],
+  "modifiedCentralSymbols": [
+    {
+      "symbol": "buildPackedCliInventory",
+      "file": "packages/cli/scripts/packed-cli-audit.js",
+      "change": "Add fixed C6 package manifests, instructions, and declared members to required packed entries.",
+      "gitNexus": {
+        "primary": {
+          "source": "main-session fresh MCP impact",
+          "invocation": "impact({target: \"buildPackedCliInventory\", direction: \"upstream\"})",
+          "risk": "CRITICAL",
+          "impactedCount": 233,
+          "direct": 171,
+          "processes": 2,
+          "modules": 4
+        },
+        "additionalExactCliObservations": [
+          {
+            "invocation": "gitnexus impact buildPackedCliInventory --direction upstream --include-tests --repo /Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2 --summary-only",
+            "risk": "CRITICAL",
+            "impactedCount": 194,
+            "direct": 121,
+            "processes": 2,
+            "modules": 3
+          },
+          {
+            "invocation": "gitnexus impact buildPackedCliInventory --direction upstream --repo /Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2 --summary-only",
+            "risk": "LOW",
+            "impactedCount": 2,
+            "direct": 2,
+            "processes": 0,
+            "modules": 1
+          }
+        ],
+        "interpretation": "The fresh MCP result is the governing warning. CLI filter/front-end variants produce different graph closures, so no smaller observation is presented as the sole blast radius."
+      },
+      "scopeAssessment": "The governing impact is CRITICAL. Static associations include unrelated Core/Mem modules; the reviewed runtime diff remains limited to deterministic required-entry construction and is covered by exact missing-asset and real-tar authentication tests."
+    },
+    {
+      "symbol": "createPackedCliFixture",
+      "file": "packages/cli/test/scripts/packed-cli-audit.test.ts",
+      "change": "Copy real bundled Skill package bytes into the synthetic tarball because dynamic manifest audit parses every discovered schema-v3 package.",
+      "gitNexus": {
+        "exactCliObservations": [
+          {
+            "invocation": "gitnexus impact createPackedCliFixture --direction upstream --include-tests --repo /Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2 --summary-only",
+            "risk": "LOW",
+            "impactedCount": 0,
+            "direct": 0,
+            "processes": 0,
+            "modules": 0
+          },
+          {
+            "invocation": "gitnexus impact createPackedCliFixture --direction upstream --repo /Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2 --summary-only",
+            "risk": "CRITICAL",
+            "impactedCount": 94,
+            "direct": 38,
+            "processes": 2,
+            "modules": 4
+          }
+        ],
+        "interpretation": "The indexed CLI produces contradictory closures when test inclusion changes; both exact invocations are retained instead of misattributing the buildPackedCliInventory result to this fixture."
+      },
+      "scopeAssessment": "Test-fixture-only edit. The function copies authenticated package bytes into a synthetic tar root; focused real-tar tests cover its behavior, and no production lifecycle or resolver symbol changed."
+    }
+  ],
+  "unchangedCentralContracts": [
+    "Core schema-v3 parser and serializer",
+    "project-first Skill resolver",
+    "capability registry and research.ideation.evaluate maxDispatches=2",
+    "Workflow, gate, Quest writer, Dispatch, Activation, Approval, Result, Proposal, and Procedure replay behavior",
+    "historical host-installed Research stage Skill retirement inventory",
+    "generated Claude/Codex workers, hooks, and platform payload"
+  ],
+  "deferredReviewPoints": [
+    "C7 should assess scientific instruction quality and source-method fidelity; C6 proves package semantics and authority boundaries, not outcome quality.",
+    "Evaluation portfolios larger than the existing dispatch limit require sequential separately approved Activations; C6 intentionally does not widen research.ideation.evaluate authority.",
+    "Suggested handoffs are declarative only and use autoInvoke=false; later work may review availability and operator ergonomics without changing recorded C6 package bytes.",
+    "Packed dynamic authentication is intentionally exhaustive and the real-tar test is slow; optimization is deferred unless it can preserve byte-level authentication.",
+    "Historical predecessor prose in existing executable specs remains for replay/context; the appended C6 scenarios define the active pilot-package boundary without broad documentation cleanup."
+  ],
+  "verification": {
+    "focusedProductionPackageTests": "passed: 4",
+    "packedAuditTests": "passed: 49",
+    "historicalResolverAndLifecycleRegressions": "passed: 35 (19 Skill resolver/lifecycle tests; 16 Procedure resolution tests)",
+    "coreBuild": "passed",
+    "cliTypecheck": "passed",
+    "cliLint": "passed",
+    "cliBuild": "passed",
+    "workspaceTypecheck": "passed",
+    "actualPackedCliAudit": "passed: 1524 entries; 1029 required entries; 136 Procedure manifests/556 members; 4 Skill manifests/3 members; 7 active files; exact Core dependency 0.6.7",
+    "taskValidation": "passed: implement.jsonl 5 entries; check.jsonl 5 entries",
+    "jsonValidation": "passed: task metadata, evidence, four canonical manifests, and four production identity vectors",
+    "gitDiffCheck": "passed",
+    "preCommitAttempts": [
+      {
+        "attempt": 1,
+        "outcome": "terminated-by-outer-tool-limit",
+        "evidence": "Core full suite passed 714 tests with 1 skip; outer 10-minute command limit sent SIGTERM as the CLI suite started. No test failure was reported before termination."
+      },
+      {
+        "attempt": 2,
+        "outcome": "failed-two-timeouts",
+        "evidence": "Core full suite passed 714 tests with 1 skip. CLI completed 1084 tests and failed two timeout bounds: the new real-tar pilot-package audit exceeded 120000ms under full-suite contention, and an existing approved-Result case exceeded 30000ms. Isolated reruns passed in 80564ms and 3756ms respectively; only the C6-owned real-tar timeout was raised to 300000ms."
+      }
+    ],
+    "gitNexusDetectChanges": {
+      "compareBase": "variant/research-workflow",
+      "compareResult": "critical: 1759 files/3149 symbols/299 processes because the evidence branch diverges broadly from the base",
+      "unstagedResult": "critical: 20 files/8 indexed symbols/299 processes; includes pre-existing AGENTS.md, CLAUDE.md, and GitNexus skill edits and produces polluted associations from createPackedCliFixture",
+      "scopeAssessment": "Detection was run as required but is not a reliable isolated C6 blast-radius report in this dirty, broadly divergent worktree. Manual diff review confirms C6 production symbol scope is buildPackedCliInventory plus the new package declaration; remaining code changes are tests/new package files."
+    }
+  }
+}

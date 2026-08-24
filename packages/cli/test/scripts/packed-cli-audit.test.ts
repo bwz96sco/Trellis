@@ -16,6 +16,7 @@ import {
   PACKED_ACTIVE_FORBIDDEN_MUTATIONS,
   PACKED_ACTIVE_RESEARCH_ENTRIES,
   parseTarListing,
+  RESEARCH_PILOT_SKILL_PACKAGES,
   RESEARCH_PROCEDURE_IDS,
   RESEARCH_PROCEDURE_VERSIONS,
   RESEARCH_STAGE_SKILLS,
@@ -28,6 +29,14 @@ const MIGRATION_MANIFEST_DIR = path.join(
   "src",
   "migrations",
   "manifests",
+);
+const REQUIRED_PILOT_SKILL_ASSETS = RESEARCH_PILOT_SKILL_PACKAGES.flatMap(
+  ({ id, version, members }) => {
+    const base = `package/dist/templates/research/skills/${id}/${version}`;
+    return ["skill.json", "SKILL.md", ...members].map(
+      (member) => `${base}/${member}`,
+    );
+  },
 );
 
 function validActiveContents(): Map<string, string> {
@@ -116,6 +125,11 @@ function createPackedCliFixture(mutation?: {
   fs.cpSync(
     path.join(CLI_DIR, "src", "templates", "research", "procedures"),
     packedProcedureRoot,
+    { recursive: true },
+  );
+  fs.cpSync(
+    path.join(CLI_DIR, "src", "templates", "research", "skills"),
+    path.join(packageRoot, "dist", "templates", "research", "skills"),
     { recursive: true },
   );
   for (const packedEntry of inventory.requiredEntries) {
@@ -280,6 +294,19 @@ describe("packed CLI inventory audit", () => {
     );
   });
 
+  it.each(REQUIRED_PILOT_SKILL_ASSETS)(
+    "reports a missing required pilot Skill asset at %s",
+    (missingEntry) => {
+      const inventory = buildPackedCliInventory([]);
+      expect(() =>
+        auditPackedEntries(
+          inventory.requiredEntries.filter((entry) => entry !== missingEntry),
+          inventory,
+        ),
+      ).toThrow(`  - ${missingEntry}`);
+    },
+  );
+
   it("reports forbidden exact files and directory-prefix matches", () => {
     const inventory = {
       requiredEntries: ["package/package.json"],
@@ -377,6 +404,33 @@ describe("packed CLI inventory audit", () => {
     );
   });
 
+  it("authenticates all four pilot Skill packages from a real tarball", () => {
+    const fixture = createPackedCliFixture();
+    try {
+      const result = spawnSync(
+        process.execPath,
+        [RELEASE_PREFLIGHT, "verify-packed-cli"],
+        {
+          cwd: CLI_DIR,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            NODE_OPTIONS: "",
+            VITEST: "true",
+            TRELLIS_TEST_PACKED_CLI_TARBALL: fixture.archive,
+          },
+        },
+      );
+
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stdout).toContain(
+        "4 Skill manifests with 3 authenticated members",
+      );
+    } finally {
+      fs.rmSync(fixture.root, { recursive: true, force: true });
+    }
+  }, 300_000);
+
   it("accepts successor active command, worker, hook, and workflow content", () => {
     expect(auditPackedActiveContent(validActiveContents())).toEqual({
       activeEntryCount: 7,
@@ -425,7 +479,7 @@ describe("packed CLI inventory audit", () => {
     },
   );
 
-  it("builds the Research inventory with Procedures, retirement evidence, and no stage skills", () => {
+  it("builds the Research inventory with Procedures, pilot Skills, and retirement evidence", () => {
     const inventory = buildPackedCliInventory([
       "0.6.7.json",
       "0.7.0-beta.0.json",
@@ -486,11 +540,14 @@ describe("packed CLI inventory audit", () => {
       "2.0.6",
       "2.0.7",
     ]);
-    expect(
-      inventory.requiredEntries.some((entry) =>
-        entry.includes("/templates/research/skills/"),
-      ),
-    ).toBe(false);
+    for (const { id, version, members } of RESEARCH_PILOT_SKILL_PACKAGES) {
+      const base = `package/dist/templates/research/skills/${id}/${version}`;
+      expect(inventory.requiredEntries).toContain(`${base}/skill.json`);
+      expect(inventory.requiredEntries).toContain(`${base}/SKILL.md`);
+      for (const member of members) {
+        expect(inventory.requiredEntries).toContain(`${base}/${member}`);
+      }
+    }
     expect(inventory.requiredEntries).toContain(
       "package/dist/migrations/manifests/0.6.7.json",
     );

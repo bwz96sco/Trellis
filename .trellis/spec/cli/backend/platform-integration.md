@@ -325,3 +325,74 @@ Correct: keep host bytes frozen; root Context/recording own remediation.
 Wrong: infer packed byte stability from source or collector output.
 Correct: pack package, extract each active file from .tgz, compare exact established bytes.
 ```
+
+## Scenario: Package-internal C6 pilot Skills
+
+### 1. Scope / Trigger
+
+This scenario applies when building or packing the CLI after C6 adds four schema-v3 execution packages below `dist/templates/research/skills/`. These are package-internal resolver inputs, not host-installed `.claude/skills/**` or `.agents/skills/**` payload. Current platform detection, configure/collect output, retirement behavior, workers, hooks, and ownership hashes remain unchanged.
+
+### 2. Signatures
+
+```text
+src/templates/research/skills/<id>/1.0.0/
+  skill.json
+  SKILL.md
+  templates/<declared-member>  # model-context packages only
+
+copy-templates:
+  src/templates/** -> dist/templates/**
+
+packed root:
+  package/dist/templates/research/skills/<id>/1.0.0/**
+```
+
+Required IDs are exactly `research-literature`, `research-ideation`, `research-idea-evaluation`, and `research-quest-admin`, all at `1.0.0`.
+
+### 3. Contracts
+
+- Recursive template copying carries the four package trees byte-for-byte from source to clean `dist`; no new collector, host configurator, or installation branch is added.
+- Packed required inventory names every package `skill.json`, every `SKILL.md`, and all three declared template members. This fixed production inventory is separate from historical `RESEARCH_STAGE_SKILLS` retirement data.
+- Packed execution-package audit discovers every schema-v3 manifest in the actual tar listing, parses canonical manifest bytes, requires declared instruction/member entries, and authenticates member size and SHA-256.
+- The three template members retain exact C1 bytes: note template 2,499 bytes, opportunity board 1,661 bytes, and attack template 1,293 bytes with their frozen manifest digests.
+- No fifth `research-quest` package, source `agents/openai.yaml`, Python validator/helper, Quest reference pack, host-link metadata, or external source path ships in a C6 package.
+- Package-internal Skills do not reintroduce generated stage Skill paths. Fresh/update platform payload still emits zero `.claude/skills/trellis-research-*` and `.agents/skills/trellis-research-*` entries.
+
+### 4. Validation & Error Matrix
+
+| Packed/build condition | Required result |
+|---|---|
+| Any required pilot `skill.json`, `SKILL.md`, or declared member is absent | Packed inventory audit fails and names the exact `package/dist/...` path. |
+| Manifest bytes are noncanonical or schema-invalid | Execution-package audit fails before package acceptance. |
+| Declared member is absent, oversized, unsafe, BOM/NUL-bearing where text is required, or digest-drifted | Execution-package audit fails and names the package/member reason. |
+| Source tree exists but clean `dist` or real tarball omits it | Build/packed test failure; source inspection is insufficient. |
+| Host payload starts installing the package-internal tree | Configure/collect allowlist failure; do not widen platform output. |
+| Historical retired stage-Skill inventory is changed to represent C6 packages | Compatibility regression; keep inventories separate. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: clean build recursively copies four authenticated package trees, real `pnpm pack` contains every required asset, dynamic audit reports four Skill manifests and three authenticated members, and host payload remains unchanged.
+- **Base**: a project has no local package override, so runtime resolves the bundled tarball bytes without installing them into host Skill roots.
+- **Bad**: rely on dirty `dist`, require only manifests but not instructions/members, reuse retired stage-Skill inventory, copy source helper packs, add `research-quest`, or emit C6 packages through platform configurators.
+
+### 6. Tests Required
+
+- Source production-root test authenticates exactly four IDs/versions and exact frozen member size/digest.
+- Clean CLI build proves recursive source-to-`dist` package copy.
+- Packed inventory unit tests require every one of the four manifests, four instructions, and three template members; omission tests name each exact packed path.
+- Real tarball execution-package audit reports exactly four Skill manifests and three authenticated Skill members while retaining Procedure authentication and forbidden generic inventory checks.
+- Actual `pnpm pack` verification runs after clean Core/CLI builds; source-only or stale-`dist` assertions do not satisfy release evidence.
+- Existing Claude-only, Codex-only, dual-host, update, retirement, and packed active worker/hook parity tests remain green.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: install package-internal pilot Skills into `.claude/skills` or `.agents/skills` so models can find them.
+Correct: keep them under bundled execution-package templates and let the exact root resolver/Context embed approved bytes.
+
+Wrong: audit only `skill.json` paths or inspect source after pack.
+Correct: require manifest, instructions, and declared members, then authenticate all bytes extracted from the real `.tgz`.
+
+Wrong: append the four IDs to retired host-stage Skill inventory.
+Correct: maintain one separate immutable C6 package inventory for packed execution packages.
+```

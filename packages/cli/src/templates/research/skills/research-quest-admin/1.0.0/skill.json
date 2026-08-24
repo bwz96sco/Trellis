@@ -1,0 +1,1 @@
+{"schemaVersion":3,"packageKind":"skill","id":"research-quest-admin","version":"1.0.0","skillKind":"admin","invocationSource":"operator-explicit","entrypointType":"root-command","instructionFile":"SKILL.md","allowedProfiles":[],"members":[]}

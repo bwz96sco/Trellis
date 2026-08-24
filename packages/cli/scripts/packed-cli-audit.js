@@ -57,6 +57,30 @@ export const RESEARCH_OPTIONAL_PROCEDURE_IDS = new Set([
   "slides-v1",
 ]);
 
+/** Schema-v3 pilot Skills that must ship as package-internal execution packages. */
+export const RESEARCH_PILOT_SKILL_PACKAGES = Object.freeze([
+  {
+    id: "research-idea-evaluation",
+    version: "1.0.0",
+    members: ["templates/attack-template.md"],
+  },
+  {
+    id: "research-ideation",
+    version: "1.0.0",
+    members: ["templates/opportunity-board-template.md"],
+  },
+  {
+    id: "research-literature",
+    version: "1.0.0",
+    members: ["templates/note-template.md"],
+  },
+  {
+    id: "research-quest-admin",
+    version: "1.0.0",
+    members: [],
+  },
+]);
+
 export const PACKED_ACTIVE_RESEARCH_ENTRIES = {
   command: "package/dist/commands/research/index.js",
   context: "package/dist/commands/research/dispatch-context.js",
@@ -360,9 +384,19 @@ export function buildPackedCliInventory(migrationManifestNames) {
     }),
   );
 
+  const skillEntries = RESEARCH_PILOT_SKILL_PACKAGES.flatMap(
+    ({ id, version, members }) =>
+      ["skill.json", "SKILL.md", ...members].map((member) =>
+        withPackedRoot(
+          `dist/templates/research/skills/${id}/${version}/${member}`,
+        ),
+      ),
+  );
+
   const requiredEntries = [
     ...REQUIRED_RESEARCH_ENTRIES.map(withPackedRoot),
     ...procedureEntries,
+    ...skillEntries,
     ...migrationManifestNames.map((name) =>
       withPackedRoot(`dist/migrations/manifests/${name}`),
     ),

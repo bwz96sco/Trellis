@@ -922,3 +922,73 @@ Correct: export the complete control-plus-Artifact tree, run exact frozen valida
 Wrong: source admin scans arbitrary sibling directories or allows writes when no Trellis ancestor is found.
 Correct: require `TRELLIS_RESEARCH_ROOT` for sibling authority, validate its unique Repository binding, and fail closed before mutation when ownership is unknown.
 ```
+
+## Scenario: Bundled Research pilot Skill packages
+
+### 1. Scope / Trigger
+
+This scenario applies when discovering, inspecting, resolving, preparing, approving, or executing the four C6 schema-v3 pilot packages: `research-literature@1.0.0`, `research-ideation@1.0.0`, `research-idea-evaluation@1.0.0`, and `research-quest-admin@1.0.0`. It is a package-content cutover over the existing C2-C5 resolver and lifecycle, not a new registry, command tree, provider path, or replay model.
+
+### 2. Signatures
+
+```text
+packages/cli/src/templates/research/skills/<id>/1.0.0/{skill.json,SKILL.md,templates/...}
+
+research-literature       model             model-context  lightweight|managed  research.literature.review
+research-ideation         model             model-context  lightweight|managed  research.ideation.generate
+research-idea-evaluation  operator-explicit model-context  managed              research.ideation.evaluate
+research-quest-admin      operator-explicit root-command   none                 none
+```
+
+Each of the first three packages declares exactly one worker-visible, on-demand template member. Quest admin declares no profiles, binding, or members. There is no fifth `research-quest` package.
+
+### 3. Contracts
+
+- Every package resolves from the normal project-first exact resolver. A genuinely absent project version permits bundled fallback; a present-invalid project candidate fails closed.
+- `skill.json` is canonical one-line schema-v3 JSON with one final LF. Identity is derived from the exact manifest, `SKILL.md`, and complete member inventory; profile projection never creates a second identity or prompt copy.
+- Literature performs one question-scoped review/register unit and keeps author limitations, observed failures, and analyst inference distinct. Managed paper reviews are separately approved and optional rather than mandatory fan-out.
+- Ideation produces one frozen 3-7 candidate portfolio and stops before evaluation, selection, experiment design, transition, or automatic handoff. H1/H2 Markdown is compatibility evidence; canonical gate records remain authority.
+- Evaluation is operator-explicit and managed-only. One separately prepared and approved Activation attacks one candidate with the exact frozen attack template. Workers cannot aggregate closure or launch nested execution; root records selected-or-blocked closure and any experiment handoff is separate.
+- Quest admin is an explicit root-command instruction package for existing import preview/write, export preview/write, and separate writer transfer. It never enters model or managed Context, and canonical transfer events plus verified writer projection remain the only write authority.
+- All packages stop after one bounded unit. They cannot record gates, mutate Quest or Workflow state, consume Approval, record Result/Proposal state, invoke a provider, or continue to another package. Existing root commands own those actions.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required result |
+|---|---|
+| Bundled manifest, instructions, or declared member is absent, noncanonical, oversized, or digest-drifted | `INVALID_BUNDLED_SKILL`; no partial package or Context. |
+| Project package with the same exact ID/version is invalid | `INVALID_PROJECT_SKILL`; do not fall back to bundled bytes. |
+| Literature/ideation on-demand member is omitted | Return no member; instructions and identity remain exact. |
+| Lightweight and managed literature resolve the same version | Package, instruction, and member-inventory identities are equal. |
+| Evaluation lacks exact explicit managed selection, capability binding, Activation, Approval, or requested attack member | Fail before Context; no worker/provider launch. |
+| Quest admin is selected by model or for managed worker Context | `research_skill_invocation_forbidden`; zero-write. |
+| Worker prose requests gate, Workflow, Quest, Approval, Result/Proposal, or nested-execution mutation | Ignore as unauthorized and return bounded blocked/partial output. |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: root resolves the production evaluation package, prepares and explicitly approves one candidate Activation, and Context embeds the exact authenticated attack template; the worker returns one verdict and stops.
+- **Base**: lightweight literature resolves the same identity as managed literature with no on-demand member loaded, reviews one paper/register unit, and leaves later ideation to a separate selection.
+- **Bad**: skip an invalid project package, infer novelty, evaluate during ideation, fan out nested workers, treat decision Markdown as a gate, let quest-admin enter model Context, or auto-invoke a suggested handoff.
+
+### 6. Tests Required
+
+- Real bundled-root discovery authenticates exactly four IDs at `1.0.0`, canonical manifest bytes, exact profile/capability matrix, and no fifth package.
+- Exact C1 byte length and SHA-256 checks for note, opportunity-board, and attack templates.
+- Literature lightweight/managed identity and instruction parity; omitted/requested on-demand member behavior.
+- Valid project override precedence and present-invalid project fail-closed behavior using a production package ID.
+- Evaluation through real prepare, explicit Approval, and managed Context with exact attack-template content and digest, without provider/worker execution.
+- Quest-admin model and managed refusal plus root-command success with empty profiles/members.
+- Existing Procedure resolution, Activation/Approval replay, Workflow, gate, Quest writer, and Result/Proposal tests remain unchanged and green.
+
+### 7. Wrong vs Correct
+
+```text
+Wrong: copy host-native `$research-*` calls, Python gate validators, or Quest helper scripts into the packages.
+Correct: encode invocation/profile/capability in schema-v3 and use existing gate, Workflow, Quest, Approval, and writer-authority contracts.
+
+Wrong: let evaluation spawn one child per candidate and aggregate the winner inside a worker.
+Correct: prepare one separately approved Activation per candidate; root reviews Results and records selected-or-blocked closure.
+
+Wrong: give research-quest-admin a model profile because its instructions are Markdown.
+Correct: retain it as operator-explicit root-command guidance with no model/managed Context or worker-visible member.
+```
