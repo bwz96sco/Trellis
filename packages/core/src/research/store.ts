@@ -6,6 +6,26 @@ import { verifyArtifactSha256 } from "./artifacts.js";
 import { proposalOperationsToMutations } from "./dispatch.js";
 import { createEventId } from "./ids.js";
 import {
+  assertScientificGateCoversUniverse,
+  computeQuestScientificUniverseDigest,
+  getCurrentQuestScientificUniverse,
+  isScientificGateCurrentForUniverse,
+  parseQuestImportMilestone,
+  parseQuestImportRecord,
+  parseQuestRouteSnapshot,
+  parseQuestScientificUniverse,
+  parseQuestWriterTransfer,
+  questImportMilestoneRelatedRefs,
+  questImportRelatedRefs,
+  questRouteRelatedRefs,
+  questScientificUniverseRelatedRefs,
+  validateQuestImportMutationBatch,
+} from "./quest-cutover.js";
+import {
+  consumeValidatedQuestExportReceipt,
+  type ValidatedQuestExportReceipt,
+} from "./quest-export-receipt.js";
+import {
   getEffectiveScientificGateRecord,
   normalizeScientificGateEvidenceRefs,
   normalizeScientificGateRefs,
@@ -69,8 +89,14 @@ import {
   type EvidenceStatus,
   type Proposal,
   type ProposalId,
+  type QuestExportRecord,
   type QuestId,
+  type QuestImportMilestone,
+  type QuestImportRecord,
+  type QuestRouteSnapshot,
+  type QuestScientificUniverse,
   type QuestStage,
+  type QuestWriterTransfer,
   type QuestStatus,
   type Repository,
   type RepositoryId,
@@ -197,6 +223,34 @@ export type ResearchMutation =
   | { kind: "result.record"; result: Result }
   | { kind: "proposal.record"; proposal: Proposal }
   | { kind: "decision.record"; decision: Decision }
+  | {
+      kind: "quest.import.record";
+      record: Omit<QuestImportRecord, "importedAt">;
+    }
+  | {
+      kind: "quest.import.milestone";
+      milestone: QuestImportMilestone;
+    }
+  | {
+      kind: "quest.route.set";
+      route: Omit<QuestRouteSnapshot, "recordedAt">;
+    }
+  | {
+      kind: "quest.scientific-universe.record";
+      universe: Omit<QuestScientificUniverse, "universeDigest" | "recordedAt">;
+    }
+  | {
+      kind: "quest.export.record";
+      record: Omit<QuestExportRecord, "recordedAt">;
+    }
+  | {
+      kind: "quest.export.record.validated";
+      receipt: ValidatedQuestExportReceipt;
+    }
+  | {
+      kind: "quest-writer.transfer";
+      transfer: Omit<QuestWriterTransfer, "recordedAt">;
+    }
   | {
       kind: "workflow.bind";
       workflowInstanceId: WorkflowInstanceId;
@@ -330,9 +384,20 @@ export async function getResearchStatus(root: string): Promise<ResearchStatus> {
   };
 }
 
+function assertValidatedQuestExportBoundary(
+  mutations: readonly ResearchMutation[],
+): void {
+  if (mutations.some((mutation) => mutation.kind === "quest.export.record")) {
+    throw new Error(
+      "RESEARCH_QUEST_EXPORT_UNVALIDATED: direct quest.export.record input is forbidden",
+    );
+  }
+}
+
 export async function validateResearchBatch(
   input: CommitResearchBatchInput,
 ): Promise<ResearchBatchValidation> {
+  assertValidatedQuestExportBoundary(input.mutations);
   const paths = researchPaths(input.root);
   return withResearchLock(paths.lockFile, async () => {
     const events = await readResearchLedger(input.root);
@@ -340,6 +405,8 @@ export async function validateResearchBatch(
       (event) => event.idempotencyKey === input.idempotencyKey,
     );
     if (replay.length > 0) {
+      assertQuestImportReplayMatches(events, replay, input);
+      assertQuestExportReplayMatches(events, replay, input);
       return { events: replay, state: reduceResearchEvents(events) };
     }
     return buildValidatedBatch(events, input);
@@ -349,11 +416,14 @@ export async function validateResearchBatch(
 export async function validateResearchBatchReadOnly(
   input: CommitResearchBatchInput,
 ): Promise<ResearchBatchValidation> {
+  assertValidatedQuestExportBoundary(input.mutations);
   const events = await readResearchLedger(input.root);
   const replay = events.filter(
     (event) => event.idempotencyKey === input.idempotencyKey,
   );
   if (replay.length > 0) {
+    assertQuestImportReplayMatches(events, replay, input);
+    assertQuestExportReplayMatches(events, replay, input);
     return { events: replay, state: reduceResearchEvents(events) };
   }
   return buildValidatedBatch(events, input);
@@ -362,6 +432,7 @@ export async function validateResearchBatchReadOnly(
 export async function commitResearchBatch(
   input: CommitResearchBatchInput,
 ): Promise<ResearchCommitResult> {
+  assertValidatedQuestExportBoundary(input.mutations);
   const paths = researchPaths(input.root);
   return withResearchLock(paths.lockFile, async () => {
     const existing = await readResearchLedger(input.root);
@@ -370,6 +441,8 @@ export async function commitResearchBatch(
       (event) => event.idempotencyKey === input.idempotencyKey,
     );
     if (replay.length > 0) {
+      assertQuestImportReplayMatches(existing, replay, input);
+      assertQuestExportReplayMatches(existing, replay, input);
       return {
         events: replay,
         headSeq: existing.at(-1)?.seq ?? 0,
@@ -422,6 +495,9 @@ function buildValidatedBatch(
   if (input.mutations.length === 0) {
     throw new Error("Research event batch must contain at least one mutation");
   }
+  if (input.mutations.some((mutation) => mutation.kind === "quest.import.record")) {
+    validateQuestImportMutationBatch(input.mutations);
+  }
   const idempotencyKey = parseNonEmptyString(
     input.idempotencyKey,
     "idempotencyKey",
@@ -461,6 +537,136 @@ function buildValidatedBatch(
     input.artifactRepositoryRoots,
   );
   return { events, state };
+}
+
+function buildQuestImportReplayComparisonEvents(
+  existing: readonly ResearchEvent[],
+  input: CommitResearchBatchInput,
+  timestampInput: string,
+): ResearchEvent[] {
+  if (input.mutations.some((mutation) => mutation.kind === "quest.import.record")) {
+    validateQuestImportMutationBatch(input.mutations);
+  }
+  const idempotencyKey = parseNonEmptyString(input.idempotencyKey, "idempotencyKey");
+  const actor = researchActorSchema.parse(input.actor);
+  const provenance = researchProvenanceSchema.parse(input.provenance);
+  const timestamp = parseIsoTimestamp(timestampInput, "timestamp");
+  let candidateState = reduceResearchEvents(existing);
+  const events: ResearchEvent[] = [];
+  for (const mutation of input.mutations) {
+    const draft = mutationToEventDraft(mutation, timestamp, candidateState);
+    const event = parseResearchEvent({
+      schemaVersion: draft.schemaVersion,
+      eventId: createEventId(),
+      seq: existing.length + events.length + 1,
+      timestamp,
+      kind: draft.kind,
+      aggregate: draft.aggregate,
+      related: draft.related,
+      payload: draft.payload,
+      actor,
+      idempotencyKey,
+      provenance,
+    });
+    events.push(event);
+    candidateState = reduceResearchEvents([...existing, ...events]);
+  }
+  validateDispatchBatch(events, reduceResearchEvents(existing), timestamp);
+  return events;
+}
+
+function assertQuestImportReplayMatches(
+  existing: readonly ResearchEvent[],
+  replay: readonly ResearchEvent[],
+  input: CommitResearchBatchInput,
+): void {
+  if (!input.idempotencyKey.startsWith("research-quest-import:qip_")) return;
+  const first = replay[0];
+  if (first === undefined) return;
+  const prefix = existing.slice(0, first.seq - 1);
+  try {
+    const expected = buildQuestImportReplayComparisonEvents(
+      prefix,
+      input,
+      first.timestamp,
+    );
+    const comparable = (event: ResearchEvent): unknown => ({
+      schemaVersion: event.schemaVersion,
+      timestamp: event.timestamp,
+      kind: event.kind,
+      aggregate: event.aggregate,
+      related: event.related,
+      payload: event.payload,
+      actor: event.actor,
+      idempotencyKey: event.idempotencyKey,
+      provenance: event.provenance,
+    });
+    if (
+      expected.length !== replay.length ||
+      replay.some((event, index) => {
+        const planned = expected[index];
+        return planned === undefined || !isDeepStrictEqual(comparable(event), comparable(planned));
+      })
+    ) {
+      throw new Error("planned import batch differs from canonical replay");
+    }
+  } catch (error) {
+    throw new Error(
+      `IDEMPOTENCY_KEY_CONFLICT: Quest import preview token is owned by a different or partial batch`,
+      { cause: error },
+    );
+  }
+}
+
+function assertQuestExportReplayMatches(
+  existing: readonly ResearchEvent[],
+  replay: readonly ResearchEvent[],
+  input: CommitResearchBatchInput,
+): void {
+  if (
+    !input.mutations.some(
+      (mutation) => mutation.kind === "quest.export.record.validated",
+    )
+  )
+    return;
+  const first = replay[0];
+  if (first === undefined) return;
+  const prefix = existing.slice(0, first.seq - 1);
+  try {
+    const expected = buildQuestImportReplayComparisonEvents(
+      prefix,
+      input,
+      first.timestamp,
+    );
+    const comparable = (event: ResearchEvent): unknown => ({
+      schemaVersion: event.schemaVersion,
+      timestamp: event.timestamp,
+      kind: event.kind,
+      aggregate: event.aggregate,
+      related: event.related,
+      payload: event.payload,
+      actor: event.actor,
+      idempotencyKey: event.idempotencyKey,
+      provenance: event.provenance,
+    });
+    if (
+      expected.length !== replay.length ||
+      replay.some((event, index) => {
+        const planned = expected[index];
+        return (
+          planned === undefined ||
+          !isDeepStrictEqual(comparable(event), comparable(planned))
+        );
+      })
+    ) {
+      throw new Error("validated export differs from canonical replay");
+    }
+  } catch (error) {
+    throw new Error(
+      "IDEMPOTENCY_KEY_CONFLICT: validated Quest export replay is owned by different evidence",
+      { cause: error },
+    );
+  }
 }
 
 function validateDispatchBatch(
@@ -979,6 +1185,90 @@ function buildMutationEventDraft(
         payload: { proposal },
       };
     }
+    case "quest.import.record": {
+      const record = parseQuestImportRecord({
+        ...mutation.record,
+        importedAt: timestamp,
+      });
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "quest.import.recorded",
+        aggregate: { type: "quest-import", id: record.id },
+        related: questImportRelatedRefs(record),
+        payload: record as unknown as Record<string, unknown>,
+      };
+    }
+    case "quest.import.milestone": {
+      const milestone = parseQuestImportMilestone(mutation.milestone);
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "quest.import.milestone-recorded",
+        aggregate: { type: "quest-import-milestone", id: milestone.id },
+        related: questImportMilestoneRelatedRefs(milestone),
+        payload: milestone as unknown as Record<string, unknown>,
+      };
+    }
+    case "quest.route.set": {
+      const route = parseQuestRouteSnapshot({
+        ...mutation.route,
+        recordedAt: timestamp,
+      });
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "quest.route.recorded",
+        aggregate: { type: "quest-route", id: route.id },
+        related: questRouteRelatedRefs(route),
+        payload: route as unknown as Record<string, unknown>,
+      };
+    }
+    case "quest.scientific-universe.record": {
+      const universeDigest = computeQuestScientificUniverseDigest(
+        mutation.universe,
+      );
+      const universe = parseQuestScientificUniverse({
+        ...mutation.universe,
+        universeDigest,
+        recordedAt: timestamp,
+      });
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "quest.scientific-universe.recorded",
+        aggregate: { type: "quest-scientific-universe", id: universe.id },
+        related: questScientificUniverseRelatedRefs(universe),
+        payload: universe as unknown as Record<string, unknown>,
+      };
+    }
+    case "quest.export.record":
+      throw new Error(
+        "RESEARCH_QUEST_EXPORT_UNVALIDATED: direct quest.export.record input is forbidden",
+      );
+    case "quest.export.record.validated": {
+      const record = consumeValidatedQuestExportReceipt(
+        mutation.receipt,
+        requireWorkflowState(state),
+      );
+      const recorded = { ...record, recordedAt: timestamp };
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "quest.export.recorded",
+        aggregate: { type: "quest-export", id: recorded.id },
+        related: [{ type: "quest", id: recorded.questId }],
+        payload: recorded as unknown as Record<string, unknown>,
+      };
+    }
+    case "quest-writer.transfer": {
+      const transfer = parseQuestWriterTransfer({
+        ...mutation.transfer,
+        recordedAt: timestamp,
+      });
+      return {
+        schemaVersion: RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+        kind: "quest-writer.transferred",
+        aggregate: { type: "quest-writer", id: transfer.id },
+        related: [{ type: "quest", id: transfer.questId }],
+        payload: transfer as unknown as Record<string, unknown>,
+      };
+    }
     case "workflow.bind": {
       const current = requireWorkflowState(state);
       if (!current.quests[mutation.questId]) {
@@ -1123,6 +1413,14 @@ function buildMutationEventDraft(
         approvedRefs: mutation.approvedRefs,
         rejectedRefs: mutation.rejectedRefs,
       });
+      const universe = getCurrentQuestScientificUniverse(
+        current,
+        instance.questId,
+        gateId,
+      );
+      if (universe !== undefined) {
+        assertScientificGateCoversUniverse(refs, universe);
+      }
       const evidenceRefs = normalizeScientificGateEvidenceRefs(
         mutation.evidenceRefs,
       );
@@ -1235,7 +1533,10 @@ function buildMutationEventDraft(
           instance.currentNodeId,
           gateId,
         );
-        if (record?.decision !== "approve") {
+        if (
+          record?.decision !== "approve" ||
+          !isScientificGateCurrentForUniverse(current, record)
+        ) {
           missingGateIds.push(gateId);
         } else {
           gateRecordIds.push(record.id);

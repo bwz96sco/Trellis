@@ -230,6 +230,155 @@ export function writeResearchProjections(
     atomicWrite(gateFile, stableResearchJson(gateData));
     files.push(gateFile);
   }
+
+  for (const quest of sortedValues(state.quests)) {
+    const questDirectory = path.join(paths.questsDir, quest.id);
+    const importIds = state.questImportRecordIdsByQuestId[quest.id] ?? [];
+    if (importIds.length > 0) {
+      const seq = state.entitySeq[`quest-import:${quest.id}`];
+      if (seq === undefined) {
+        throw new Error(`Missing Quest import projection sequence for '${quest.id}'`);
+      }
+      const file = path.join(questDirectory, "import.json");
+      atomicWrite(
+        file,
+        stableResearchJson(
+          projected(
+            {
+              questId: quest.id,
+              latestImportRecordId:
+                state.latestQuestImportRecordIdByQuestId[quest.id] ?? null,
+              records: importIds.map((id) => state.questImportRecords[id]),
+            },
+            headSeq,
+            timestampAt(events, seq),
+          ),
+        ),
+      );
+      files.push(file);
+    }
+
+    const routeId = state.latestQuestRouteSnapshotIdByQuestId[quest.id];
+    if (routeId !== undefined) {
+      const seq = state.entitySeq[`quest-route:${quest.id}`];
+      const route = state.questRouteSnapshots[routeId];
+      if (seq === undefined || route === undefined) {
+        throw new Error(`Missing Quest route projection state for '${quest.id}'`);
+      }
+      const file = path.join(questDirectory, "route.json");
+      atomicWrite(
+        file,
+        stableResearchJson(projected(route, headSeq, timestampAt(events, seq))),
+      );
+      files.push(file);
+    }
+
+    const milestoneIds = state.questImportMilestoneIdsByQuestId[quest.id] ?? [];
+    if (milestoneIds.length > 0) {
+      const seq = state.entitySeq[`quest-import-milestone:${quest.id}`];
+      if (seq === undefined) {
+        throw new Error(`Missing Quest milestone projection sequence for '${quest.id}'`);
+      }
+      const file = path.join(questDirectory, "milestones.json");
+      atomicWrite(
+        file,
+        stableResearchJson(
+          projected(
+            {
+              questId: quest.id,
+              milestones: milestoneIds.map(
+                (id) => state.questImportMilestones[id],
+              ),
+            },
+            headSeq,
+            timestampAt(events, seq),
+          ),
+        ),
+      );
+      files.push(file);
+    }
+
+    const universes = Object.values(state.questScientificUniverses)
+      .filter((universe) => universe.questId === quest.id)
+      .sort((left, right) => {
+        const leftSeq = state.entitySeq[left.id];
+        const rightSeq = state.entitySeq[right.id];
+        if (leftSeq === undefined || rightSeq === undefined) {
+          throw new Error("Missing scientific universe projection sequence");
+        }
+        return leftSeq - rightSeq;
+      });
+    if (universes.length > 0) {
+      const seq = state.entitySeq[`quest-scientific-universe:${quest.id}`];
+      if (seq === undefined) {
+        throw new Error(`Missing scientific universe projection sequence for '${quest.id}'`);
+      }
+      const current = (["H1", "H2"] as const).flatMap((gateId) => {
+        const id =
+          state.latestQuestScientificUniverseIdByScope[`${quest.id}\0${gateId}`];
+        return id === undefined ? [] : [{ gateId, universeId: id }];
+      });
+      const file = path.join(questDirectory, "scientific-universes.json");
+      atomicWrite(
+        file,
+        stableResearchJson(
+          projected(
+            { questId: quest.id, universes, current },
+            headSeq,
+            timestampAt(events, seq),
+          ),
+        ),
+      );
+      files.push(file);
+    }
+
+    const authority = state.questWriterAuthorityByQuestId[quest.id];
+    if (authority !== undefined) {
+      const seq = state.entitySeq[`quest-writer:${quest.id}`];
+      if (seq === undefined) {
+        throw new Error(`Missing Quest writer projection sequence for '${quest.id}'`);
+      }
+      const transferIds = state.questWriterTransferIdsByQuestId[quest.id] ?? [];
+      const file = path.join(questDirectory, "writer.json");
+      atomicWrite(
+        file,
+        stableResearchJson(
+          projected(
+            {
+              authority,
+              transfers: transferIds.map((id) => state.questWriterTransfers[id]),
+            },
+            headSeq,
+            timestampAt(events, seq),
+          ),
+        ),
+      );
+      files.push(file);
+    }
+
+    const exportIds = state.questExportRecordIdsByQuestId[quest.id] ?? [];
+    if (exportIds.length > 0) {
+      const seq = state.entitySeq[`quest-export:${quest.id}`];
+      if (seq === undefined) {
+        throw new Error(`Missing Quest export projection sequence for '${quest.id}'`);
+      }
+      const file = path.join(questDirectory, "exports.json");
+      atomicWrite(
+        file,
+        stableResearchJson(
+          projected(
+            {
+              questId: quest.id,
+              records: exportIds.map((id) => state.questExportRecords[id]),
+            },
+            headSeq,
+            timestampAt(events, seq),
+          ),
+        ),
+      );
+      files.push(file);
+    }
+  }
   return files.sort();
 }
 

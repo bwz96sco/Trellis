@@ -9,6 +9,22 @@ import {
 } from "./execution-package-bindings.js";
 import { validateArtifactRepositories } from "./repositories.js";
 import {
+  assertScientificGateCoversUniverse,
+  getCurrentQuestScientificUniverse,
+  isScientificGateCurrentForUniverse,
+  parseQuestExportRecord,
+  parseQuestImportMilestone,
+  parseQuestImportRecord,
+  parseQuestRouteSnapshot,
+  parseQuestScientificUniverse,
+  parseQuestWriterTransfer,
+  questImportMilestoneRelatedRefs,
+  questImportRelatedRefs,
+  questRouteRelatedRefs,
+  questScientificUniverseRelatedRefs,
+  questScientificUniverseScopeKey,
+} from "./quest-cutover.js";
+import {
   parseScientificGateRecord,
   scientificGateScopeKey,
 } from "./scientific-gate.js";
@@ -81,6 +97,20 @@ export function emptyResearchState(): ResearchState {
     scientificGateRecords: {},
     scientificGateRecordIdsByWorkflowInstanceId: {},
     effectiveScientificGateRecordIdByScope: {},
+    questImportRecords: {},
+    questImportRecordIdsByQuestId: {},
+    latestQuestImportRecordIdByQuestId: {},
+    questRouteSnapshots: {},
+    latestQuestRouteSnapshotIdByQuestId: {},
+    questScientificUniverses: {},
+    latestQuestScientificUniverseIdByScope: {},
+    questImportMilestones: {},
+    questImportMilestoneIdsByQuestId: {},
+    questWriterTransfers: {},
+    questWriterTransferIdsByQuestId: {},
+    questWriterAuthorityByQuestId: {},
+    questExportRecords: {},
+    questExportRecordIdsByQuestId: {},
     entitySeq: {},
     projectedThroughSeq: 0,
     updatedAt: null,
@@ -913,6 +943,342 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       };
       return;
     }
+    case "quest.import.recorded": {
+      const record = parseQuestImportRecord(event.payload);
+      if (
+        event.aggregate.type !== "quest-import" ||
+        event.aggregate.id !== record.id
+      ) {
+        throw new Error(`quest.import.recorded aggregate must be quest-import:${record.id}`);
+      }
+      assertSchemaV3Related(event, questImportRelatedRefs(record));
+      requireEntity(state.quests, record.questId, "quest");
+      if (state.questImportRecords[record.id]) {
+        throw new Error(`Quest import record '${record.id}' already exists`);
+      }
+      if (state.questWriterAuthorityByQuestId[record.questId]?.writer === "trellis") {
+        throw new Error(`Quest '${record.questId}' is currently owned by the Trellis writer`);
+      }
+      for (const existing of Object.values(state.questImportRecords)) {
+        const sameIdentity =
+          existing.sourceIdentity.sourceQuestId === record.sourceIdentity.sourceQuestId &&
+          existing.sourceIdentity.projectSlug === record.sourceIdentity.projectSlug &&
+          existing.sourceIdentity.sourceQuestPath === record.sourceIdentity.sourceQuestPath &&
+          existing.sourceIdentity.sourceEventsPath === record.sourceIdentity.sourceEventsPath;
+        if (sameIdentity && existing.questId !== record.questId) {
+          throw new Error("Quest source identity is already bound to another Quest");
+        }
+        if (existing.questId === record.questId && !sameIdentity) {
+          throw new Error(`Quest '${record.questId}' has a conflicting source identity`);
+        }
+      }
+      for (const artifactId of record.artifactIds) {
+        requireEntity(state.artifacts, artifactId, "artifact");
+        if (!artifactBelongsToQuest(state, record.questId, artifactId)) {
+          throw new Error(`Artifact '${artifactId}' does not belong to Quest '${record.questId}'`);
+        }
+      }
+      for (const claimId of record.claimIds) {
+        const claim = requireEntity(state.claims, claimId, "claim");
+        if (claim.questId !== record.questId) {
+          throw new Error(`Claim '${claimId}' does not belong to Quest '${record.questId}'`);
+        }
+      }
+      if (record.importedAt !== event.timestamp) {
+        throw new Error("Quest import importedAt must equal its event timestamp");
+      }
+      state.questImportRecords[record.id] = structuredClone(record);
+      state.questImportRecordIdsByQuestId[record.questId] = [
+        ...(state.questImportRecordIdsByQuestId[record.questId] ?? []),
+        record.id,
+      ];
+      state.latestQuestImportRecordIdByQuestId[record.questId] = record.id;
+      mark(state, record.id, event);
+      mark(state, `quest-import:${record.questId}`, event);
+      return;
+    }
+    case "quest.route.recorded": {
+      const route = parseQuestRouteSnapshot(event.payload);
+      if (event.aggregate.type !== "quest-route" || event.aggregate.id !== route.id) {
+        throw new Error(`quest.route.recorded aggregate must be quest-route:${route.id}`);
+      }
+      assertSchemaV3Related(event, questRouteRelatedRefs(route));
+      requireEntity(state.quests, route.questId, "quest");
+      const importRecord = requireEntity(
+        state.questImportRecords,
+        route.importRecordId,
+        "Quest import record",
+      );
+      if (
+        importRecord.questId !== route.questId ||
+        state.latestQuestImportRecordIdByQuestId[route.questId] !== route.importRecordId
+      ) {
+        throw new Error("Quest route must bind the current import record");
+      }
+      if (state.questRouteSnapshots[route.id]) {
+        throw new Error(`Quest route snapshot '${route.id}' already exists`);
+      }
+      const artifactIds = [
+        ...route.firstReadArtifactIds,
+        ...route.ownerBindings.map((binding) => binding.artifactId),
+        ...route.branches.flatMap((branch) =>
+          branch.expectedArtifactId === undefined ? [] : [branch.expectedArtifactId],
+        ),
+        ...(route.currentDecision?.evidenceArtifactIds ?? []),
+        ...(route.nextAction?.expectedArtifactId === undefined
+          ? []
+          : [route.nextAction.expectedArtifactId]),
+      ];
+      for (const artifactId of artifactIds) {
+        requireEntity(state.artifacts, artifactId, "artifact");
+        if (!artifactBelongsToQuest(state, route.questId, artifactId)) {
+          throw new Error(`Artifact '${artifactId}' does not belong to Quest '${route.questId}'`);
+        }
+      }
+      if (route.recordedAt !== event.timestamp) {
+        throw new Error("Quest route recordedAt must equal its event timestamp");
+      }
+      state.questRouteSnapshots[route.id] = structuredClone(route);
+      state.latestQuestRouteSnapshotIdByQuestId[route.questId] = route.id;
+      mark(state, route.id, event);
+      mark(state, `quest-route:${route.questId}`, event);
+      return;
+    }
+    case "quest.scientific-universe.recorded": {
+      const universe = parseQuestScientificUniverse(event.payload);
+      if (
+        event.aggregate.type !== "quest-scientific-universe" ||
+        event.aggregate.id !== universe.id
+      ) {
+        throw new Error(
+          `quest.scientific-universe.recorded aggregate must be quest-scientific-universe:${universe.id}`,
+        );
+      }
+      assertSchemaV3Related(event, questScientificUniverseRelatedRefs(universe));
+      const importRecord = requireEntity(
+        state.questImportRecords,
+        universe.importRecordId,
+        "Quest import record",
+      );
+      if (
+        importRecord.questId !== universe.questId ||
+        state.latestQuestImportRecordIdByQuestId[universe.questId] !== universe.importRecordId ||
+        importRecord.sourceSnapshot.snapshotDigest !== universe.sourceSnapshotDigest
+      ) {
+        throw new Error("Scientific universe must bind the current exact import snapshot");
+      }
+      if (state.questScientificUniverses[universe.id]) {
+        throw new Error(`Quest scientific universe '${universe.id}' already exists`);
+      }
+      for (const artifactId of universe.sourceArtifactIds) {
+        requireEntity(state.artifacts, artifactId, "artifact");
+        if (!artifactBelongsToQuest(state, universe.questId, artifactId)) {
+          throw new Error(`Artifact '${artifactId}' does not belong to Quest '${universe.questId}'`);
+        }
+      }
+      if (universe.recordedAt !== event.timestamp) {
+        throw new Error("Scientific universe recordedAt must equal its event timestamp");
+      }
+      state.questScientificUniverses[universe.id] = structuredClone(universe);
+      state.latestQuestScientificUniverseIdByScope[
+        questScientificUniverseScopeKey(universe.questId, universe.gateId)
+      ] = universe.id;
+      mark(state, universe.id, event);
+      mark(state, `quest-scientific-universe:${universe.questId}`, event);
+      return;
+    }
+    case "quest.import.milestone-recorded": {
+      const milestone = parseQuestImportMilestone(event.payload);
+      if (
+        event.aggregate.type !== "quest-import-milestone" ||
+        event.aggregate.id !== milestone.id
+      ) {
+        throw new Error(
+          `quest.import.milestone-recorded aggregate must be quest-import-milestone:${milestone.id}`,
+        );
+      }
+      assertSchemaV3Related(event, questImportMilestoneRelatedRefs(milestone));
+      const importRecord = requireEntity(
+        state.questImportRecords,
+        milestone.importRecordId,
+        "Quest import record",
+      );
+      if (
+        importRecord.questId !== milestone.questId ||
+        state.latestQuestImportRecordIdByQuestId[milestone.questId] !== milestone.importRecordId
+      ) {
+        throw new Error("Quest import milestone must bind the current import record");
+      }
+      if (state.questImportMilestones[milestone.id]) {
+        throw new Error(`Quest import milestone '${milestone.id}' already exists`);
+      }
+      if (
+        Object.values(state.questImportMilestones).some(
+          (existing) =>
+            existing.importRecordId === milestone.importRecordId &&
+            existing.sourceEventId === milestone.sourceEventId,
+        )
+      ) {
+        throw new Error(`Duplicate source Quest event ID '${milestone.sourceEventId}'`);
+      }
+      const previousId = [
+        ...(state.questImportMilestoneIdsByQuestId[milestone.questId] ?? []),
+      ]
+        .reverse()
+        .find(
+          (id) =>
+            state.questImportMilestones[id]?.importRecordId ===
+            milestone.importRecordId,
+        );
+      const previous =
+        previousId === undefined ? undefined : state.questImportMilestones[previousId];
+      if (previous !== undefined && milestone.sourceLine <= previous.sourceLine) {
+        throw new Error("Quest import milestones must preserve ascending source order");
+      }
+      for (const artifactId of [
+        ...milestone.artifactIds,
+        ...milestone.evidenceArtifactIds,
+      ]) {
+        requireEntity(state.artifacts, artifactId, "artifact");
+        if (!artifactBelongsToQuest(state, milestone.questId, artifactId)) {
+          throw new Error(`Artifact '${artifactId}' does not belong to Quest '${milestone.questId}'`);
+        }
+      }
+      for (const claimId of milestone.claimIds) {
+        const claim = requireEntity(state.claims, claimId, "claim");
+        if (claim.questId !== milestone.questId) {
+          throw new Error(`Claim '${claimId}' does not belong to Quest '${milestone.questId}'`);
+        }
+      }
+      state.questImportMilestones[milestone.id] = structuredClone(milestone);
+      state.questImportMilestoneIdsByQuestId[milestone.questId] = [
+        ...(state.questImportMilestoneIdsByQuestId[milestone.questId] ?? []),
+        milestone.id,
+      ];
+      mark(state, milestone.id, event);
+      mark(state, `quest-import-milestone:${milestone.questId}`, event);
+      return;
+    }
+    case "quest.export.recorded": {
+      const record = parseQuestExportRecord(event.payload);
+      if (event.aggregate.type !== "quest-export" || event.aggregate.id !== record.id) {
+        throw new Error(`quest.export.recorded aggregate must be quest-export:${record.id}`);
+      }
+      assertSchemaV3Related(event, [{ type: "quest", id: record.questId }]);
+      requireEntity(state.quests, record.questId, "quest");
+      const importId = state.latestQuestImportRecordIdByQuestId[record.questId];
+      const importRecord =
+        importId === undefined ? undefined : state.questImportRecords[importId];
+      if (
+        state.questWriterAuthorityByQuestId[record.questId]?.writer !== "trellis" ||
+        importRecord?.sourceSnapshot.snapshotDigest !== record.sourceSnapshotDigest
+      ) {
+        throw new Error("Quest export must validate the current Trellis-owned import snapshot");
+      }
+      if (state.questExportRecords[record.id]) {
+        throw new Error(`Quest export record '${record.id}' already exists`);
+      }
+      if (record.recordedAt !== event.timestamp) {
+        throw new Error("Quest export recordedAt must equal its event timestamp");
+      }
+      state.questExportRecords[record.id] = structuredClone(record);
+      state.questExportRecordIdsByQuestId[record.questId] = [
+        ...(state.questExportRecordIdsByQuestId[record.questId] ?? []),
+        record.id,
+      ];
+      mark(state, record.id, event);
+      mark(state, `quest-export:${record.questId}`, event);
+      return;
+    }
+    case "quest-writer.transferred": {
+      const transfer = parseQuestWriterTransfer(event.payload);
+      if (event.aggregate.type !== "quest-writer" || event.aggregate.id !== transfer.id) {
+        throw new Error(
+          `quest-writer.transferred aggregate must be quest-writer:${transfer.id}`,
+        );
+      }
+      assertSchemaV3Related(event, [{ type: "quest", id: transfer.questId }]);
+      requireEntity(state.quests, transfer.questId, "quest");
+      if (state.questWriterTransfers[transfer.id]) {
+        throw new Error(`Quest writer transfer '${transfer.id}' already exists`);
+      }
+      const currentWriter =
+        state.questWriterAuthorityByQuestId[transfer.questId]?.writer ?? "source";
+      if (currentWriter !== transfer.from) {
+        throw new Error(
+          `Quest writer transfer expected ${currentWriter} as current writer, received ${transfer.from}`,
+        );
+      }
+      const importId = state.latestQuestImportRecordIdByQuestId[transfer.questId];
+      const importRecord =
+        importId === undefined ? undefined : state.questImportRecords[importId];
+      if (importRecord?.sourceSnapshot.snapshotDigest !== transfer.sourceSnapshotDigest) {
+        throw new Error("Quest writer transfer does not match the current import snapshot");
+      }
+      if (transfer.to === "source") {
+        const exportId = state.questExportRecordIdsByQuestId[transfer.questId]?.at(-1);
+        const exportRecord =
+          exportId === undefined ? undefined : state.questExportRecords[exportId];
+        if (
+          transfer.exportDigest === undefined ||
+          exportRecord?.exportDigest !== transfer.exportDigest ||
+          exportRecord.sourceSnapshotDigest !== transfer.sourceSnapshotDigest
+        ) {
+          throw new Error("Transfer to source requires the current validated export");
+        }
+        const exportSeq = state.entitySeq[exportRecord.id];
+        const currentRouteId =
+          state.latestQuestRouteSnapshotIdByQuestId[transfer.questId];
+        const mappedEntityIds = [
+          transfer.questId,
+          ...(importId === undefined ? [] : [importId]),
+          ...(currentRouteId === undefined ? [] : [currentRouteId]),
+          ...importRecord.claimIds,
+          ...Object.values(state.questScientificUniverses)
+            .filter(
+              (universe) =>
+                universe.questId === transfer.questId &&
+                universe.importRecordId === importId,
+            )
+            .map((universe) => universe.id),
+          ...Object.values(state.questImportMilestones)
+            .filter(
+              (milestone) =>
+                milestone.questId === transfer.questId &&
+                milestone.importRecordId === importId,
+            )
+            .map((milestone) => milestone.id),
+        ];
+        if (
+          exportSeq === undefined ||
+          mappedEntityIds.some(
+            (id) =>
+              (state.entitySeq[id] ?? Number.POSITIVE_INFINITY) > exportSeq,
+          )
+        ) {
+          throw new Error("Transfer to source requires a current mapped-state export");
+        }
+      } else if (transfer.exportDigest !== undefined) {
+        throw new Error("Transfer to Trellis must not claim validated export evidence");
+      }
+      if (transfer.recordedAt !== event.timestamp) {
+        throw new Error("Quest writer transfer recordedAt must equal its event timestamp");
+      }
+      state.questWriterTransfers[transfer.id] = structuredClone(transfer);
+      state.questWriterTransferIdsByQuestId[transfer.questId] = [
+        ...(state.questWriterTransferIdsByQuestId[transfer.questId] ?? []),
+        transfer.id,
+      ];
+      state.questWriterAuthorityByQuestId[transfer.questId] = {
+        questId: transfer.questId,
+        writer: transfer.to,
+        sourceSnapshotDigest: transfer.sourceSnapshotDigest,
+        recordedEventId: event.eventId,
+      };
+      mark(state, transfer.id, event);
+      mark(state, `quest-writer:${transfer.questId}`, event);
+      return;
+    }
     case "workflow.bound": {
       const payload = event.payload as unknown as WorkflowBindPayload;
       requireEntity(state.quests, payload.questId, "quest");
@@ -1076,6 +1442,14 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
           );
         }
       }
+      const universe = getCurrentQuestScientificUniverse(
+        state,
+        instance.questId,
+        record.gateId,
+      );
+      if (universe !== undefined) {
+        assertScientificGateCoversUniverse(record, universe);
+      }
       state.scientificGateRecords[record.id] = {
         ...record,
         approvedRefs: [...record.approvedRefs],
@@ -1175,6 +1549,11 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
           ];
         if (effectiveId !== record.id) {
           throw new Error(`Scientific gate record '${recordId}' is stale`);
+        }
+        if (!isScientificGateCurrentForUniverse(state, record)) {
+          throw new Error(
+            `Scientific gate record '${recordId}' is stale for the current universe`,
+          );
         }
       }
       if (payload.selectedAt !== event.timestamp) {

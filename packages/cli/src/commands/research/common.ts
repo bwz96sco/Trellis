@@ -373,6 +373,11 @@ export function renderResearchError(error: unknown, json: boolean): void {
             "INVALID_RESEARCH_PROCEDURE",
             "INVALID_RESEARCH_POLICY",
             "POLICY_WIDENS_AUTHORITY",
+            "research_quest_source_drift",
+            "research_quest_import_conflict",
+            "research_quest_transfer_unverified",
+            "research_quest_export_collision",
+            "IDEMPOTENCY_KEY_CONFLICT",
           ]).has(error.code)
         ? error.code
         : null;

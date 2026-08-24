@@ -21,6 +21,12 @@ export type ActivationId = `act_${string}`;
 export type ApprovalId = `apr_${string}`;
 export type WorkflowInstanceId = `wfi_${string}`;
 export type ScientificGateRecordId = `gtr_${string}`;
+export type QuestImportRecordId = `qir_${string}`;
+export type QuestImportMilestoneId = `qim_${string}`;
+export type QuestRouteSnapshotId = `qrs_${string}`;
+export type QuestScientificUniverseId = `qsu_${string}`;
+export type QuestWriterTransferId = `qwt_${string}`;
+export type QuestExportRecordId = `qex_${string}`;
 
 export type QuestStatus = "active" | "paused" | "completed" | "abandoned";
 export type QuestStage =
@@ -376,6 +382,144 @@ export interface ScientificGateRecord {
   recordedAt: string;
 }
 
+export interface QuestSourceIdentity {
+  sourceQuestId: string;
+  projectSlug: string;
+  sourceQuestPath: string;
+  sourceEventsPath?: string;
+}
+
+export interface QuestSourceSnapshot {
+  sourceSchemaVersion: string;
+  yamlDigest: `sha256:${string}`;
+  eventsDigest?: `sha256:${string}`;
+  snapshotDigest: `sha256:${string}`;
+}
+
+export interface QuestImportRecord {
+  id: QuestImportRecordId;
+  questId: QuestId;
+  sourceIdentity: QuestSourceIdentity;
+  sourceSnapshot: QuestSourceSnapshot;
+  sourceStatus: string;
+  sourceActiveStage: string;
+  sourceExtensions: Record<string, unknown>;
+  artifactIds: ArtifactId[];
+  claimIds: ClaimId[];
+  importedAt: string;
+}
+
+export interface QuestOwnerBinding {
+  name: string;
+  ownerSkill: string;
+  artifactId: ArtifactId;
+}
+
+export interface QuestRouteBranch {
+  id: string;
+  status: string;
+  ownerSkill: string;
+  objective: string;
+  expectedArtifactId?: ArtifactId;
+  sourceFields: Record<string, unknown>;
+}
+
+export interface QuestRouteDecision {
+  id: string;
+  verdict: string;
+  rationale: string;
+  evidenceArtifactIds: ArtifactId[];
+  sourceFields: Record<string, unknown>;
+}
+
+export interface QuestRouteNextAction {
+  ownerSkill: string;
+  action: string;
+  acceptanceGate: string;
+  expectedArtifactId?: ArtifactId;
+}
+
+export interface QuestRouteSnapshot {
+  id: QuestRouteSnapshotId;
+  questId: QuestId;
+  importRecordId: QuestImportRecordId;
+  firstReadArtifactIds: ArtifactId[];
+  ownerBindings: QuestOwnerBinding[];
+  branches: QuestRouteBranch[];
+  openQuestions: string[];
+  blockers: string[];
+  currentDecision?: QuestRouteDecision;
+  nextAction?: QuestRouteNextAction;
+  legacyNextActionText?: string;
+  legacyBoard?: Record<string, unknown>;
+  sourceExtensions: Record<string, unknown>;
+  recordedAt: string;
+}
+
+export interface QuestScientificUniverse {
+  id: QuestScientificUniverseId;
+  questId: QuestId;
+  importRecordId: QuestImportRecordId;
+  gateId: ScientificGateId;
+  refKind: "opportunity" | "candidate";
+  refs: string[];
+  sourceArtifactIds: ArtifactId[];
+  sourceSnapshotDigest: `sha256:${string}`;
+  universeDigest: `sha256:${string}`;
+  recordedAt: string;
+}
+
+export interface QuestImportMilestone {
+  id: QuestImportMilestoneId;
+  questId: QuestId;
+  importRecordId: QuestImportRecordId;
+  sourceEventId: string;
+  sourceLine: number;
+  reviewed: true;
+  timestamp: string;
+  actor: string;
+  eventType: string;
+  milestone: string;
+  stage?: string;
+  summary: string;
+  artifactIds: ArtifactId[];
+  evidenceArtifactIds: ArtifactId[];
+  claimIds: ClaimId[];
+  sourcePayload: Record<string, unknown>;
+  sourceExtensions: Record<string, unknown>;
+}
+
+export interface QuestWriterAuthority {
+  questId: QuestId;
+  writer: "trellis" | "source";
+  sourceSnapshotDigest: `sha256:${string}`;
+  recordedEventId: EventId;
+}
+
+export interface QuestWriterTransfer {
+  id: QuestWriterTransferId;
+  questId: QuestId;
+  from: "trellis" | "source";
+  to: "trellis" | "source";
+  sourceSnapshotDigest: `sha256:${string}`;
+  exportDigest?: `sha256:${string}`;
+  actor: string;
+  rationale: string;
+  recordedAt: string;
+}
+
+export interface QuestExportRecord {
+  id: QuestExportRecordId;
+  questId: QuestId;
+  sourceSnapshotDigest: `sha256:${string}`;
+  exportDigest: `sha256:${string}`;
+  mappedStateDigest: `sha256:${string}`;
+  validatorDigest: `sha256:${string}`;
+  lossReportDigest: `sha256:${string}`;
+  validated: true;
+  recordedAt: string;
+}
+
 export interface WorkflowTransitionRecordPayload {
   workflowInstanceId: WorkflowInstanceId;
   questId: QuestId;
@@ -477,7 +621,13 @@ export interface ResearchSchemaV2AggregateRef {
 export type ResearchSchemaV3AggregateType =
   | ResearchAggregateType
   | "workflow"
-  | "scientific-gate";
+  | "scientific-gate"
+  | "quest-import"
+  | "quest-import-milestone"
+  | "quest-route"
+  | "quest-scientific-universe"
+  | "quest-export"
+  | "quest-writer";
 
 export interface ResearchSchemaV3AggregateRef {
   type: ResearchSchemaV3AggregateType;
@@ -528,7 +678,13 @@ export type ResearchSchemaV3EventKind =
   | "workflow.node_completed"
   | "workflow.transition_recorded"
   | "workflow.closed"
-  | "scientific-gate.recorded";
+  | "scientific-gate.recorded"
+  | "quest.import.recorded"
+  | "quest.import.milestone-recorded"
+  | "quest.route.recorded"
+  | "quest.scientific-universe.recorded"
+  | "quest.export.recorded"
+  | "quest-writer.transferred";
 
 export interface ResearchSchemaV1Event {
   schemaVersion: typeof RESEARCH_SCHEMA_VERSION;
@@ -611,6 +767,43 @@ export interface ResearchState {
   effectiveScientificGateRecordIdByScope: Record<
     string,
     ScientificGateRecordId
+  >;
+  questImportRecords: Record<QuestImportRecordId, QuestImportRecord>;
+  questImportRecordIdsByQuestId: Partial<
+    Record<QuestId, QuestImportRecordId[]>
+  >;
+  latestQuestImportRecordIdByQuestId: Partial<
+    Record<QuestId, QuestImportRecordId>
+  >;
+  questRouteSnapshots: Record<QuestRouteSnapshotId, QuestRouteSnapshot>;
+  latestQuestRouteSnapshotIdByQuestId: Partial<
+    Record<QuestId, QuestRouteSnapshotId>
+  >;
+  questScientificUniverses: Record<
+    QuestScientificUniverseId,
+    QuestScientificUniverse
+  >;
+  latestQuestScientificUniverseIdByScope: Record<
+    string,
+    QuestScientificUniverseId
+  >;
+  questImportMilestones: Record<
+    QuestImportMilestoneId,
+    QuestImportMilestone
+  >;
+  questImportMilestoneIdsByQuestId: Partial<
+    Record<QuestId, QuestImportMilestoneId[]>
+  >;
+  questWriterTransfers: Record<QuestWriterTransferId, QuestWriterTransfer>;
+  questWriterTransferIdsByQuestId: Partial<
+    Record<QuestId, QuestWriterTransferId[]>
+  >;
+  questWriterAuthorityByQuestId: Partial<
+    Record<QuestId, QuestWriterAuthority>
+  >;
+  questExportRecords: Record<QuestExportRecordId, QuestExportRecord>;
+  questExportRecordIdsByQuestId: Partial<
+    Record<QuestId, QuestExportRecordId[]>
   >;
   entitySeq: Record<string, number>;
   projectedThroughSeq: number;

@@ -3,7 +3,7 @@
   "name": "thin-skill-c4b-quest-cutover",
   "title": "Add Research Quest cutover",
   "description": "Deferred child for exact Quest import/export and enforced Trellis/source single-writer cutover after canonical gates.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

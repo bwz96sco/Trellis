@@ -32,11 +32,29 @@ import {
   type RuntimeSchema,
   workspaceSchema,
 } from "./schema.js";
+import {
+  parseQuestExportRecord,
+  parseQuestImportMilestone,
+  parseQuestImportRecord,
+  parseQuestRouteSnapshot,
+  parseQuestScientificUniverse,
+  parseQuestWriterTransfer,
+  questImportMilestoneRelatedRefs,
+  questImportRelatedRefs,
+  questRouteRelatedRefs,
+  questScientificUniverseRelatedRefs,
+} from "./quest-cutover.js";
 import { parseScientificGateRecord } from "./scientific-gate.js";
 import {
   RESEARCH_EVENT_SCHEMA_VERSION,
   RESEARCH_SCHEMA_VERSION,
   RESEARCH_WORKFLOW_EVENT_SCHEMA_VERSION,
+  type QuestExportRecord,
+  type QuestImportMilestone,
+  type QuestImportRecord,
+  type QuestRouteSnapshot,
+  type QuestScientificUniverse,
+  type QuestWriterTransfer,
   type ResearchAggregateRef,
   type ResearchEvent,
   type ResearchEventKind,
@@ -99,6 +117,12 @@ export const RESEARCH_SCHEMA_V3_EVENT_KINDS: readonly ResearchSchemaV3EventKind[
     "workflow.transition_recorded",
     "workflow.closed",
     "scientific-gate.recorded",
+    "quest.import.recorded",
+    "quest.import.milestone-recorded",
+    "quest.route.recorded",
+    "quest.scientific-universe.recorded",
+    "quest.export.recorded",
+    "quest-writer.transferred",
   ];
 
 function object(
@@ -365,11 +389,16 @@ function parseSchemaV3AggregateRef(
     value.type !== "quest" &&
     value.type !== "result" &&
     value.type !== "artifact" &&
-    value.type !== "scientific-gate"
+    value.type !== "scientific-gate" &&
+    value.type !== "claim" &&
+    value.type !== "quest-import" &&
+    value.type !== "quest-import-milestone" &&
+    value.type !== "quest-route" &&
+    value.type !== "quest-scientific-universe" &&
+    value.type !== "quest-export" &&
+    value.type !== "quest-writer"
   ) {
-    throw new Error(
-      "schema-v3 aggregate ref type must be workflow, quest, result, artifact, or scientific-gate",
-    );
+    throw new Error("schema-v3 aggregate ref type is not supported");
   }
   return {
     type: value.type,
@@ -407,6 +436,24 @@ function parseSchemaV3Payload(
         string,
         unknown
       >;
+    case "quest.import.recorded":
+      return parseQuestImportRecord(input) as unknown as Record<string, unknown>;
+    case "quest.import.milestone-recorded":
+      return parseQuestImportMilestone(input) as unknown as Record<
+        string,
+        unknown
+      >;
+    case "quest.route.recorded":
+      return parseQuestRouteSnapshot(input) as unknown as Record<string, unknown>;
+    case "quest.scientific-universe.recorded":
+      return parseQuestScientificUniverse(input) as unknown as Record<
+        string,
+        unknown
+      >;
+    case "quest.export.recorded":
+      return parseQuestExportRecord(input) as unknown as Record<string, unknown>;
+    case "quest-writer.transferred":
+      return parseQuestWriterTransfer(input) as unknown as Record<string, unknown>;
   }
 }
 
@@ -423,6 +470,77 @@ function assertSchemaV3Ref(
 }
 
 function validateSchemaV3Relations(event: ResearchSchemaV3Event): void {
+  let aggregateType: ResearchSchemaV3AggregateRef["type"] | undefined;
+  let aggregateId: string | undefined;
+  let expectedRelated: ResearchSchemaV3AggregateRef[] | undefined;
+  switch (event.kind) {
+    case "quest.import.recorded": {
+      const record = event.payload as unknown as QuestImportRecord;
+      aggregateType = "quest-import";
+      aggregateId = record.id;
+      expectedRelated = questImportRelatedRefs(record);
+      break;
+    }
+    case "quest.import.milestone-recorded": {
+      const milestone = event.payload as unknown as QuestImportMilestone;
+      aggregateType = "quest-import-milestone";
+      aggregateId = milestone.id;
+      expectedRelated = questImportMilestoneRelatedRefs(milestone);
+      break;
+    }
+    case "quest.route.recorded": {
+      const route = event.payload as unknown as QuestRouteSnapshot;
+      aggregateType = "quest-route";
+      aggregateId = route.id;
+      expectedRelated = questRouteRelatedRefs(route);
+      break;
+    }
+    case "quest.scientific-universe.recorded": {
+      const universe = event.payload as unknown as QuestScientificUniverse;
+      aggregateType = "quest-scientific-universe";
+      aggregateId = universe.id;
+      expectedRelated = questScientificUniverseRelatedRefs(universe);
+      break;
+    }
+    case "quest.export.recorded": {
+      const record = event.payload as unknown as QuestExportRecord;
+      aggregateType = "quest-export";
+      aggregateId = record.id;
+      expectedRelated = [{ type: "quest", id: record.questId }];
+      break;
+    }
+    case "quest-writer.transferred": {
+      const transfer = event.payload as unknown as QuestWriterTransfer;
+      aggregateType = "quest-writer";
+      aggregateId = transfer.id;
+      expectedRelated = [{ type: "quest", id: transfer.questId }];
+      break;
+    }
+    default:
+      break;
+  }
+  if (
+    aggregateType !== undefined &&
+    aggregateId !== undefined &&
+    expectedRelated !== undefined
+  ) {
+    if (
+      event.aggregate.type !== aggregateType ||
+      event.aggregate.id !== aggregateId
+    ) {
+      throw new Error(
+        `${event.kind} aggregate must be ${aggregateType}:${aggregateId}`,
+      );
+    }
+    if (event.related.length !== expectedRelated.length) {
+      throw new Error(`${event.kind} related refs do not match canonical payload`);
+    }
+    expectedRelated.forEach((ref, index) =>
+      assertSchemaV3Ref(event.related, index, ref.type, ref.id),
+    );
+    return;
+  }
+
   if (event.kind === "scientific-gate.recorded") {
     const record = event.payload as unknown as ScientificGateRecord;
     if (

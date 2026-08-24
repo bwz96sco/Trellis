@@ -1194,15 +1194,98 @@ interface ScientificGateRecord {
   recordedAt: string;
 }
 
+interface QuestSourceIdentity {
+  sourceQuestId: string;
+  projectSlug: string;
+  sourceQuestPath: string;
+  sourceEventsPath?: string;
+}
+
+interface QuestSourceSnapshot {
+  sourceSchemaVersion: string;
+  yamlDigest: `sha256:${string}`;
+  eventsDigest?: `sha256:${string}`;
+  snapshotDigest: `sha256:${string}`;
+}
+
+interface QuestImportRecord {
+  id: QuestImportRecordId;
+  questId: QuestId;
+  sourceIdentity: QuestSourceIdentity;
+  sourceSnapshot: QuestSourceSnapshot;
+  sourceStatus: string;
+  sourceActiveStage: string;
+  sourceExtensions: Record<string, unknown>;
+  artifactIds: ArtifactId[];
+  claimIds: ClaimId[];
+  importedAt: string;
+}
+
+interface QuestScientificUniverse {
+  id: QuestScientificUniverseId;
+  questId: QuestId;
+  importRecordId: QuestImportRecordId;
+  gateId: "H1" | "H2";
+  refKind: "opportunity" | "candidate";
+  refs: string[];
+  sourceArtifactIds: ArtifactId[];
+  sourceSnapshotDigest: `sha256:${string}`;
+  universeDigest: `sha256:${string}`;
+  recordedAt: string;
+}
+
 interface QuestWriterAuthority {
   questId: QuestId;
   writer: "trellis" | "source";
   sourceSnapshotDigest: `sha256:${string}`;
   recordedEventId: EventId;
 }
+
+interface QuestWriterTransfer {
+  id: QuestWriterTransferId;
+  questId: QuestId;
+  from: "trellis" | "source";
+  to: "trellis" | "source";
+  sourceSnapshotDigest: `sha256:${string}`;
+  exportDigest?: `sha256:${string}`;
+  actor: string;
+  rationale: string;
+  recordedAt: string;
+}
+
+interface QuestExportRecord {
+  id: QuestExportRecordId;
+  questId: QuestId;
+  sourceSnapshotDigest: `sha256:${string}`;
+  exportDigest: `sha256:${string}`;
+  mappedStateDigest: `sha256:${string}`;
+  validatorDigest: `sha256:${string}`;
+  lossReportDigest: `sha256:${string}`;
+  validated: true;
+  recordedAt: string;
+}
+
+type ValidatedQuestExportReceipt = object;
+
+interface CreateValidatedQuestExportReceiptInput {
+  state: ResearchState;
+  questId: QuestId;
+  exportRecordId: QuestExportRecordId;
+  sourceSnapshotDigest: `sha256:${string}`;
+  outputRoot: string;
+  files: ReadonlyMap<string, Uint8Array>;
+  validatorPath: string;
+}
+
+function createValidatedQuestExportReceipt(
+  input: CreateValidatedQuestExportReceiptInput,
+): {
+  receipt: ValidatedQuestExportReceipt;
+  record: Omit<QuestExportRecord, "recordedAt">;
+};
 ```
 
-Planned canonical mutations are typed `workflow.bind`, `workflow.node.complete`, `workflow.transition.record`, `workflow.close`, `scientific-gate.record`, `quest.import.record`, `quest.import.milestone`, `quest.route.set`, and `quest-writer.transfer` emitters. Generic raw append remains forbidden.
+Canonical schema-v3 event kinds are closed around `quest.import.recorded`, `quest.import.milestone-recorded`, `quest.route.recorded`, `quest.scientific-universe.recorded`, `quest.export.recorded`, and `quest-writer.transferred`. Canonical mutations are typed `quest.import.record`, `quest.import.milestone`, `quest.route.set`, `quest.scientific-universe.record`, `quest.export.record.validated`, and `quest-writer.transfer` emitters beside existing Workflow/gate mutations. Direct `quest.export.record` input is a forbidden compatibility sentinel and fails with `RESEARCH_QUEST_EXPORT_UNVALIDATED`; generic raw append remains forbidden.
 
 ### 3. Contracts
 
@@ -1294,7 +1377,34 @@ Supported active-stage mapping is exact after applying only the source aliases `
 
 Missing owner, unknown stage/status, competing active owner, malformed reviewed event, unsupported authoritative type, or escaping path blocks import. `research-quest-admin`, `model-training-workflow`, and `experiment-adapter-builder` may be preserved as source owner text where non-authoritative, but they are not active-stage mappings. Scalar legacy `next_action` is preserved verbatim but cannot become a writable route until an operator supplies owner.
 
-Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an explicit loss report. Writer transfer occurs only after export validation; import/export alone never silently changes writer authority.
+Import planning is deterministic and complete before mutation construction. It binds exact source bytes, frozen C1 manifest identity, complete source-to-canonical mapping, preserved extension-path inventory, fixed mutation order, deterministic entity IDs, loss-report digest, and one `qip_...` preview token. The fixed import batch order is Artifact registration, Quest create/status/stage, Claim create/status, import record, route, H1 universe, H2 universe, source-order milestones, then `source -> trellis` writer transfer. A same-token replay must match this exact family/order/content; partial or cross-family ownership is `IDEMPOTENCY_KEY_CONFLICT`.
+
+Scientific-universe authority comes only from frozen-validator-recognized structures:
+
+- H1 requires authoritative owner-bound `opportunity_board.md`, an `Opportunity Board` table whose first column is `ID`, unique `P[1-9][0-9]*` / `B[1-9][0-9]*` rows, and the required H1 decision Artifact.
+- H2 requires authoritative owner-bound `ideas.md`, exact unique `## C[1-9][0-9]*` headings, an `Approved Opportunity Coverage` table whose candidate rows match the headings exactly and cite approved H1 opportunities, and the required H2 decision Artifact.
+- `sourceArtifactIds` is nonempty. Incidental `first_read` or evidence files cannot establish universe authority. Free-form headings, file names, positions, or generated labels never fabricate refs.
+
+For a Quest with a current universe, a new gate record must use only current refs and partition the universe exactly once across approved/rejected sets. Transition satisfaction additionally requires the effective gate event to occur after the current universe event in `entitySeq`; a later universe leaves old gate history readable but unsatisfying. Quests without C4b universes retain historical C4 behavior.
+
+Imported snapshots are append-only. Duplicate milestone source IDs and source-line ordering are scoped to one immutable `importRecordId`, so a later re-import may preserve the same historical source events without rewriting the earlier snapshot. Reducer replay independently validates exact aggregate IDs, ordered relations, import-owned Artifact/Claim sets, universe provenance, writer transitions, and deterministic state indexes.
+
+Per-Quest C4b projections are conditional and deterministic:
+
+```text
+.trellis/research/quests/<questId>/import.json
+.trellis/research/quests/<questId>/route.json
+.trellis/research/quests/<questId>/milestones.json
+.trellis/research/quests/<questId>/scientific-universes.json
+.trellis/research/quests/<questId>/writer.json
+.trellis/research/quests/<questId>/exports.json
+```
+
+Export reconstructs source-compatible schema-0.2 YAML, reviewed JSONL when milestones exist, both loss reports, and every referenced or frozen-validator-required Artifact at its canonical contained source-relative path. The four control files are mandatory outputs, not the complete inventory. Every path and exact byte participates in collision checks, framed export digesting, frozen H1/H2 validation, mapped-state comparison, replay/recovery, and loss reporting.
+
+`createValidatedQuestExportReceipt(...)` is the only mutation authority for new export evidence. It authenticates the exact recursive output tree, canonical Artifact inventory, current import/route/Claim/universe/milestone mapped state, source snapshot, Trellis writer, loss reports, and exact frozen validator bytes/result. Receipts are process-local runtime objects backed by private identity maps; shape-forged, stale, altered-output, altered-validator, or replay-forged receipts fail before append. Historical valid `quest.export.recorded` events remain replayable.
+
+Writer transfer is explicit and append-only. `source -> trellis` requires the current successful import snapshot and a deny-only fence before append. `trellis -> source` requires a current validated export whose mapped state still equals canonical state. Import/export alone never silently changes writer authority; no state permits concurrent writers.
 
 ### 4. Validation & Error Matrix
 
@@ -1316,16 +1426,23 @@ Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an
 | Node completion targets non-current/already-completed node | Reject without append. |
 | Transition source is incomplete, illegal, unselected, or missing gate refs | Reject without append. |
 | Gate record has inferred actor/decision, blank actor/rationale, padded/duplicate/overlapping refs, or invalid evidence ownership/containment | Reject without append. |
-| Quest source has blocking mapping conflict | Preview reports exact conflict; write fails zero-write. |
-| Source admin sees `writer=trellis` | Every mutating operation fails before filesystem mutation. |
+| Quest source has unsupported schema/value/type, missing owner, escaping path, malformed/unreviewed event, incomplete Artifact/Claim binding, or another mapping conflict | Preview reports deterministic field/path/line diagnostics; no mutation plan or write. |
+| H1/H2 source lacks exact frozen-validator table/headings/coverage/decision Artifacts, contains duplicate refs, or uses a non-authoritative Artifact | `research_quest_import_conflict`; no universe or partial batch. |
+| Imported gate refs are out of universe, overlap, duplicate, incomplete, or older than current universe | Reject the new record or keep the historical record unsatisfying; never infer a decision. |
+| Import preview token owns another family, partial batch, different Quest/source, or different event order/content | `IDEMPOTENCY_KEY_CONFLICT`; append nothing. |
+| Direct caller supplies `quest.export.record`, `validated: true`, arbitrary digests, or a forged/stale receipt | `RESEARCH_QUEST_EXPORT_UNVALIDATED`; append nothing. |
+| Export inventory omits/replaces/adds a required Artifact, escapes target, collides by path, changes after validation, or uses altered validator bytes | Reject before export evidence; target/canonical authority remain unchanged. |
+| Exact export target and event already exist but `exports.json` is missing | Authenticate exact bytes, rebuild projections, return replay, and append no event. |
+| Source admin sees active fence, `writer=trellis`, malformed/ambiguous authority, or source-identity mismatch | Every mutating operation fails before filesystem mutation. |
 | Export validates but no transfer event exists | Keep `writer=trellis`. |
-| Historical Procedure activation is replayed | Use unchanged activation-recorded historical interpretation. |
+| Transfer to source uses stale export/mapped state or transfer to Trellis uses a non-current import snapshot | `research_quest_transfer_unverified`; writer remains unchanged. |
+| Historical Procedure activation or historical valid C4b event is replayed | Preserve its accepted schema/event meaning without byte rewriting. |
 
 ### 5. Good / Base / Bad Cases
 
-- **Good**: one schema-v3 literature package resolves to identical lightweight/managed instruction digest; one node completes; operator separately selects legal next node.
-- **Base**: bounded lightweight work resolves one package, writes no ledger event, and stops with conversational output.
-- **Bad**: workflow infers progress from Quest stage, gate recording launches evaluation, source and Trellis both write, or schema-v3 Skill identity is serialized as a fabricated historical `PROCEDURE.md`.
+- **Good**: exact source bytes produce one deterministic import/cutover batch; current universes require total H1/H2 coverage; complete export bytes receive one authenticated export record; explicit transfer returns source authority.
+- **Base**: historical/non-imported Quest has no C4b projections or universe restrictions and retains existing C4 behavior.
+- **Bad**: import derives candidate IDs from arbitrary headings, export records caller-provided `validated: true`, stale gate/export evidence satisfies authority, source and Trellis both write, or Workflow/gate commands invoke the next execution step.
 
 ### 6. Tests Required
 
@@ -1338,8 +1455,11 @@ Export reconstructs source-compatible schema-0.2 YAML and reviewed JSONL plus an
 - Schema-v3 package parser, exact digest, project-first fail-closed resolution, exact five-package pilot bindings, invocation/entrypoint/profile separation, explicit-only managed evaluation, root-command Quest admin with no model profile, and identical lightweight/managed instruction digest.
 - Workflow DAG validation; bind/complete/transition/close reducers; one-active-instance invariant; no stage inference; no automatic continuation.
 - Scientific gate tests cover structural validation, H1/H2 versus Approval separation, append-only latest-scope semantics, direct-reducer aggregate/relation rejection, H1-before-H2 transition relation order, deterministic `gates.json`, and no same-mutation transition.
-- Quest schema-0.2 and supported legacy mapping, unknown extension preservation, blocking conflict matrix, reviewed milestone order, export round-trip, and writer-transfer behavior.
-- Integration fixture proving real source admin mutating commands leave a byte-identical filesystem when `writer=trellis`.
+- Quest schema-0.2 and supported legacy mapping: deterministic IDs/token/mutation order, complete extension inventory, exact owner/path/Claim/route/milestone bindings, complete conflict inventory, same-token replay, partial/cross-family idempotency rejection, re-import snapshot scoping, mixed historical/new ledger replay, and deterministic C4b projections.
+- Scientific-universe tests: authoritative H1 table and H2 headings-plus-coverage extraction, required decision Artifacts, strict `P`/`B`/`C` IDs, nonempty provenance, membership/total coverage, stale-universe invalidation, and unchanged behavior without a universe.
+- Validated-export tests: mandatory-plus-referenced exact inventory, fixed digest vectors, actual frozen-validator execution, mapped Claim/route/universe/milestone comparison, loss-extension inventory, forged/stale/changed-byte receipt rejection, historical event replay, exact same-key replay, and missing-projection recovery without target or ledger mutation.
+- Writer-state tests: legal source/Trellis transitions, deny-only fence retention/recovery, current import/export digest requirements, no same-writer conflicting replay, and no dual-writer state.
+- Integration fixture proving real source admin mutating commands leave a byte-identical filesystem under active fence or `writer=trellis`, including ancestor and explicit sibling-root layouts.
 
 ### 7. Wrong vs Correct
 
@@ -1350,6 +1470,12 @@ Correct: normalize historical Procedures and new thin Skills through one executi
 Wrong: use Quest.stage or an H2 record to automatically run evaluation.
 Correct: complete one node, stop, then require a separate operator-selected canonical transition.
 
+Wrong: derive H2 universe from arbitrary Markdown headings or treat selected refs as the complete universe.
+Correct: require exact frozen-validator headings plus coverage rows, record the universe, then require explicit total gate coverage.
+
+Wrong: append `quest.export.record` with caller-provided `validated: true` and digests.
+Correct: authenticate the complete output tree and current mapped state through `createValidatedQuestExportReceipt(...)`, then emit `quest.export.record.validated`.
+
 Wrong: import Quest state, leave source admin writable, and call Trellis canonical.
-Correct: atomically record Trellis authority and make real source mutations refuse before writes.
+Correct: create a deny-only fence, atomically record Trellis authority, verify projection, and make real source mutations refuse before writes.
 ```

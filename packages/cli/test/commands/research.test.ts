@@ -17,6 +17,7 @@ import {
   parseQuestStatusArgument,
   parseRunIdArgument,
   parseRunStatusArgument,
+  renderResearchError,
   renderResearchResult,
   resolveResearchRoot,
 } from "../../src/commands/research/common.js";
@@ -204,9 +205,51 @@ describe("research command helpers", () => {
       ),
     ).toEqual(["--host", "--root", "--idempotency-key"]);
     expect(childNames(commandAt(research, "quest"))).toEqual([
+      "import",
+      "export",
+      "transfer-writer",
       "create",
       "status",
       "stage",
+    ]);
+    expect(
+      commandAt(research, "quest", "import").options.map(
+        (option) => option.long,
+      ),
+    ).toEqual([
+      "--source",
+      "--events",
+      "--preview-token",
+      "--dry-run",
+      "--write",
+      "--root",
+      "--json",
+    ]);
+    expect(
+      commandAt(research, "quest", "export").options.map(
+        (option) => option.long,
+      ),
+    ).toEqual([
+      "--quest",
+      "--target",
+      "--dry-run",
+      "--write",
+      "--root",
+      "--json",
+    ]);
+    expect(
+      commandAt(research, "quest", "transfer-writer").options.map(
+        (option) => option.long,
+      ),
+    ).toEqual([
+      "--quest",
+      "--to",
+      "--rationale",
+      "--export-digest",
+      "--dry-run",
+      "--write",
+      "--root",
+      "--json",
     ]);
     expect(childNames(commandAt(research, "campaign"))).toEqual([
       "create",
@@ -250,6 +293,28 @@ describe("research command helpers", () => {
     ]) {
       expect(invalid).toThrow(InvalidArgumentError);
     }
+  });
+
+  it("renders stable Quest cutover errors in JSON and human modes", () => {
+    const error = Object.assign(new Error("source changed"), {
+      code: "research_quest_source_drift",
+    });
+    const output = vi.spyOn(console, "error").mockImplementation(noop);
+
+    renderResearchError(error, true);
+    expect(JSON.parse(String(output.mock.calls[0]?.[0]))).toEqual({
+      error: {
+        code: "research_quest_source_drift",
+        message: "source changed",
+      },
+    });
+
+    output.mockClear();
+    renderResearchError(error, false);
+    expect(output).toHaveBeenCalledWith(
+      expect.any(String),
+      "research_quest_source_drift: source changed",
+    );
   });
 
   it("emits one JSON document and suppresses update checks only for JSON argv", () => {

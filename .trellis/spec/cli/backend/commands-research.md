@@ -760,7 +760,7 @@ Correct: keep the digest external and reconstruct the recoverable projection fro
 
 ### 1. Scope / Trigger
 
-This CLI contract applies to schema-v3 thin-skill inspection and deterministic Research routing. C3 implements Skill inspection/Context plus Workflow bind/complete/transition/close/status/next; later children implement scientific gates and Quest cutover. Commands never contain scientific methodology or execute a model implicitly.
+This CLI contract applies to schema-v3 thin-skill inspection, deterministic Workflow/gate routing, and C4b Quest cutover. C3 owns Skill/Workflow commands, C4 owns scientific gates, and C4b owns exact Quest import/export plus writer transfer. Commands never contain scientific methodology, infer scientific decisions, or execute a model implicitly.
 
 ### 2. Signatures
 
@@ -795,7 +795,12 @@ trellis research quest export --quest <id> --target <directory> \
   [--dry-run] [--write] [--json]
 trellis research quest transfer-writer --quest <id> --to <trellis|source> \
   --rationale <text> --export-digest <sha256> [--dry-run] [--write] [--json]
+
+# Source research-quest-admin write guard
+TRELLIS_RESEARCH_ROOT=<trellis-control-root> research-quest-admin <mutating-command> --write
 ```
+
+`TRELLIS_RESEARCH_ROOT` is optional only when ancestor discovery finds the unique owning Trellis root. It is required for a sibling control root and affects source-admin write authorization only; Trellis Quest CLI signatures remain unchanged.
 
 ### 3. Contracts
 
@@ -808,9 +813,14 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 - C4 checks scientific-ref string integrity/disjointness plus evidence ownership/accepted-ref containment. Candidate-universe membership/coverage waits for C4b; gate recording never parses evidence Artifact bytes.
 - Gate same-key replay requires exactly one matching canonical gate event and successful parse plus reduction of the complete canonical ledger. Replay fails closed on semantic or relation corruption. After read-only validation, the command rereads canonical event IDs so a concurrent exact same-key commit is reported as `replayed`, not `preview`.
 - `gate status` is read-only and returns ledger-order history plus effective H1/H2 records for the instance's current node.
-- Quest import preview returns source digest, exact mapping, conflicts, preserved extensions, and export-loss report. Write requires unchanged source bytes and exact preview token/idempotency binding.
-- Quest export writes source-compatible YAML/JSONL and loss report but never transfers writer itself. `transfer-writer --to source` requires validated export digest. `--to trellis` requires successful import record.
-- Source admin guard consumes committed writer projection; CLI success text or sidecars cannot grant writer authority.
+- Quest import previews by default. It returns exact YAML/JSONL/Artifact digests, resolved/proposed IDs, complete source mapping, ordered mutations, H1/H2 universes, preserved extension paths, loss report, conflicts, and one opaque preview token. `--write` requires that exact token, acquires the normal Research mutation lock, rereads/replans before and after fence visibility, then appends one fixed typed batch. Source-byte/semantic drift is zero-write `research_quest_source_drift`; exact same-token replay requires the complete expected batch.
+- H1/H2 import uses only authoritative owner-bound frozen-validator structures. H1 requires `opportunity_board.md`, its `Opportunity Board` table, and H1 decision file. H2 requires `ideas.md`, exact `## Cn` headings, matching `Approved Opportunity Coverage`, and H2 decision file. Mandatory decision Artifacts are collected even when absent from `first_read`; missing files block import.
+- Source-to-Trellis import/transfer creates `.trellis/research/cutover-fences/<questId>.json` atomically before canonical authority append. The fence is deny-only. Pre-append drift removes a newly created fence; append/projection uncertainty retains it. Retry rebuilds projections and removes it only after exact `writer.json` verification.
+- Quest export previews the complete output inventory: mandatory `research-quest.yaml`, optional `research-events.jsonl`, both loss reports, plus every canonical referenced or validator-required Artifact at its normalized source-relative path. Every path/byte participates in collision checking, export digest, actual bundled frozen-validator execution, mapped-state comparison, exact-existing-target replay/recovery, and validated Core receipt construction. Export never transfers writer.
+- Fresh export writes a sibling temporary directory, validates it, atomically renames it, then records export evidence. Different/extra existing paths fail with `research_quest_export_collision`. A complete byte-identical existing target is read-only replay/recovery input; retry may append missing evidence or rebuild missing `exports.json` without rewriting target bytes or duplicating the event.
+- `transfer-writer --to source` requires the current authenticated export digest and unchanged mapped state. `--to trellis` requires the successful current import snapshot; the required `--export-digest` value equals that import snapshot digest and is compatibility syntax, not export evidence. Same-writer replay succeeds only for exact authority evidence.
+- Source admin mutating entrypoints consult the active fence and committed `writer.json` before command-specific reads or any mkdir/touch/open/copy/replace/append. `TRELLIS_RESEARCH_ROOT=<absolute-or-relative-root>` explicitly selects a sibling/remote control root and takes precedence over ancestor discovery. The selected root must contain valid Research control/runtime state and uniquely bind the source Repository; empty, missing, malformed, non-owning, or ambiguous values fail closed. If unset, ancestor discovery remains; identifiable sibling authority requires the explicit variable. Read-only `status`/`validate` skip write authorization and remain zero-write.
+- CLI text, preview tokens, target files, loss reports, uncommitted fences, or sidecars never grant writer authority. Only canonical transfer events and verified projections do.
 - User-facing slash wrappers are deferred and are not generated by these commands.
 
 ### 4. Validation & Error Matrix
@@ -831,17 +841,23 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 | Matching gate event exists but complete canonical ledger parse/reduction or relation validation fails | Fail closed; never report replay success. |
 | Concurrent exact same-key commit lands after preview validation | Reread canonical IDs and return `replayed`; append nothing. |
 | Gate write succeeds | Return one gate record only; no transition, Approval, Dispatch, Skill, model, worker, or provider launch. |
-| Import source changes after preview | `research_quest_source_drift`; zero-write. |
-| Quest mapping has blocking conflict | `research_quest_import_conflict` with exact field/path; zero-write. |
-| Export target exists without explicit overwrite authority | Refuse before filesystem mutation. |
-| Transfer to source lacks validated export digest | `research_quest_transfer_unverified`; keep Trellis writer. |
-| Read-only command succeeds | No lock, ledger, runtime, projection, cache, or target-file write. |
+| `--dry-run` and `--write` are combined | Reject before root/source parsing; zero-write. |
+| Import source bytes or semantic plan change after preview or fence visibility | `research_quest_source_drift`; append nothing and remove only a newly created pre-append fence. |
+| Quest mapping, owner/path/event, H1/H2 table/coverage, mandatory decision Artifact, or extension inventory has a blocking conflict | `research_quest_import_conflict` with deterministic field/path/line diagnostics; zero-write. |
+| Import token owns another family, source, Quest, partial batch, or different ordered content | `IDEMPOTENCY_KEY_CONFLICT`; no replay success or append. |
+| Export target contains a differing, extra, escaping, colliding, symlink, or special-file path | `research_quest_export_collision` before target mutation. |
+| Export target/validator/Artifact bytes or canonical mapped state differ during receipt construction/consumption | `research_quest_transfer_unverified` or `RESEARCH_QUEST_EXPORT_UNVALIDATED`; no export event and writer unchanged. |
+| Exact export bytes/event exist but projection is missing | Rebuild projections, return replay, preserve target bytes and ledger length. |
+| Transfer to source lacks current validated export digest or mapped state changed | `research_quest_transfer_unverified`; keep Trellis writer. |
+| Transfer to Trellis digest differs from current import snapshot | `research_quest_transfer_unverified`; source writer remains. |
+| Source-admin `TRELLIS_RESEARCH_ROOT` is empty/missing/invalid/non-owning/ambiguous, sibling authority is unselected, active fence exists, or writer is Trellis | Refuse before every source filesystem mutation; refusal tree remains byte-identical. |
+| Read-only command succeeds | No lock, ledger, runtime, projection, cache, fence, source, or target-file write. |
 
 ### 5. Good / Base / Bad Cases
 
-- **Good**: inspect literature package, build one lightweight Context, complete one workflow node, then separately select a gate-satisfied transition.
-- **Base**: list/show/context operate without a Quest and produce no durable state.
-- **Bad**: `gate record` launches evaluation, `workflow next` mutates current node, import silently drops unknown fields, or export re-enables source writes.
+- **Good**: preview exact import, write unchanged token under fence, record total-coverage gates, export complete validator-compatible tree, then explicitly transfer writer to source.
+- **Base**: preview import/export or run source `status`/`validate` under Trellis ownership; every observed filesystem and ledger byte stays unchanged.
+- **Bad**: infer H2 refs from headings alone, filter missing export Artifacts, accept caller-provided validation digests, discover the wrong sibling control root, or resume source writes before committed transfer.
 
 ### 6. Tests Required
 
@@ -851,7 +867,10 @@ trellis research quest transfer-writer --quest <id> --to <trellis|source> \
 - Workflow preview/write/replay tests for bind, complete, transition, close, active conflict, missing gate, no automatic continuation, differently shaped same-command keys, and keys owned by another command family.
 - Skill discovery tests prove every candidate is authenticated and a symlinked/non-directory/invalid project candidate fails the complete read without a partial result or bundled substitution.
 - Gate preview/write/status/replay tests: actor/rationale validation, scientific-ref integrity/disjointness, evidence ownership/accepted-ref containment, exact same-key matching, full-ledger replay corruption rejection, concurrent exact-key preview classification, latest same-scope decision, H1/H2 transition-record ordering, deterministic gate projection, and explicit assertion that no Approval, Workflow mutation, Dispatch, Skill, model, worker, or provider command is called.
-- Quest import mapping/error fixtures, source-drift token, idempotency, export round-trip/loss report, writer transfer, and pre-write source-admin refusal.
+- Quest import tests cover default preview, `--dry-run + --write` rejection, deterministic token/IDs/order, exact Artifact collection including mandatory decision files, complete conflict diagnostics, pre/post-fence drift, exact replay, partial/cross-family idempotency conflicts, retained-fence recovery, and byte-identical zero-write paths.
+- Export tests cover mandatory-plus-referenced inventory, actual frozen H1/H2 validator, source/build/tarball validator byte identity, path containment/collision/symlink/special-file refusal, extension loss inventory, exact existing-target replay, publication-before-event recovery, missing-projection rebuild, authenticated receipt rejection after any target/state/validator change, and no writer transfer.
+- Writer-transfer tests cover both digest directions, stale mapped state, same-writer replay/conflict, projection verification, fence retention/recovery, and export -> transfer -> source mutation end to end.
+- Real source-admin entrypoint tests invoke all four mutating commands plus read-only status/validate. Cover ancestor and sibling roots, explicit-root precedence, empty/missing/malformed/non-owning/Repository-ambiguous roots, active fence, Trellis/source writer, changed identity, malformed/ambiguous projection, and full-tree byte identity on every refusal.
 - Historical Procedure Context/recording command tests remain unchanged and green.
 
 ### 7. Wrong vs Correct
@@ -869,6 +888,9 @@ Correct: replay only one matching Workflow event with the exact command family, 
 Wrong: `research gate record --write` records H2 and immediately launches evaluation.
 Correct: it records one gate event and stops; a later explicit transition and execution are separate.
 
-Wrong: `quest export` flips authority because files were written successfully.
-Correct: export validates bytes; only an explicit verified writer-transfer mutation changes authority.
+Wrong: `quest export` writes only YAML/JSONL/loss reports, filters missing Artifact failures, then flips authority.
+Correct: export the complete control-plus-Artifact tree, run exact frozen validation and mapped comparison, record authenticated evidence, then require a separate writer transfer.
+
+Wrong: source admin scans arbitrary sibling directories or allows writes when no Trellis ancestor is found.
+Correct: require `TRELLIS_RESEARCH_ROOT` for sibling authority, validate its unique Repository binding, and fail closed before mutation when ownership is unknown.
 ```

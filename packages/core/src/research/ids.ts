@@ -11,7 +11,13 @@ import type {
   EvidenceId,
   EventId,
   ProposalId,
+  QuestExportRecordId,
   QuestId,
+  QuestImportMilestoneId,
+  QuestImportRecordId,
+  QuestRouteSnapshotId,
+  QuestScientificUniverseId,
+  QuestWriterTransferId,
   RepositoryId,
   ResultId,
   RunId,
@@ -38,6 +44,12 @@ export const RESEARCH_ID_PREFIXES = {
   approval: "apr",
   workflowInstance: "wfi",
   scientificGateRecord: "gtr",
+  questImportRecord: "qir",
+  questImportMilestone: "qim",
+  questRouteSnapshot: "qrs",
+  questScientificUniverse: "qsu",
+  questWriterTransfer: "qwt",
+  questExportRecord: "qex",
 } as const;
 
 export type ResearchIdKind = keyof typeof RESEARCH_ID_PREFIXES;
@@ -79,3 +91,15 @@ export const createWorkflowInstanceId = (): WorkflowInstanceId =>
   createResearchId("workflowInstance") as WorkflowInstanceId;
 export const createScientificGateRecordId = (): ScientificGateRecordId =>
   createResearchId("scientificGateRecord") as ScientificGateRecordId;
+export const createQuestImportRecordId = (): QuestImportRecordId =>
+  createResearchId("questImportRecord") as QuestImportRecordId;
+export const createQuestImportMilestoneId = (): QuestImportMilestoneId =>
+  createResearchId("questImportMilestone") as QuestImportMilestoneId;
+export const createQuestRouteSnapshotId = (): QuestRouteSnapshotId =>
+  createResearchId("questRouteSnapshot") as QuestRouteSnapshotId;
+export const createQuestScientificUniverseId = (): QuestScientificUniverseId =>
+  createResearchId("questScientificUniverse") as QuestScientificUniverseId;
+export const createQuestWriterTransferId = (): QuestWriterTransferId =>
+  createResearchId("questWriterTransfer") as QuestWriterTransferId;
+export const createQuestExportRecordId = (): QuestExportRecordId =>
+  createResearchId("questExportRecord") as QuestExportRecordId;

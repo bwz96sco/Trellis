@@ -74,6 +74,14 @@ import {
   type ResolveResearchRepositoryOptions,
 } from "./repository.js";
 import {
+  exportResearchQuest,
+  importResearchQuest,
+  transferResearchQuestWriter,
+  type ResearchQuestExportOptions,
+  type ResearchQuestImportOptions,
+  type ResearchQuestWriterTransferOptions,
+} from "./quest-cutover-command.js";
+import {
   parseCampaignIdArgument,
   parseCampaignStatusArgument,
   parseClaimIdArgument,
@@ -966,6 +974,65 @@ export function registerResearchCommand(program: Command): void {
   );
 
   const quest = research.command("quest").description("Manage research quests");
+
+  addOutputOptions(
+    quest
+      .command("import")
+      .description("Preview or import one source Research Quest")
+      .requiredOption(
+        "--source <research-quest.yaml>",
+        "source Quest YAML path",
+      )
+      .option(
+        "--events <research-events.jsonl>",
+        "source reviewed events JSONL path",
+      )
+      .option("--preview-token <token>", "exact token returned by preview")
+      .option("--dry-run", "preview without writing")
+      .option("--write", "commit the exact previewed import"),
+  ).action(async (options: ResearchQuestImportOptions) => {
+    await runAction(options.json, () => importResearchQuest(options));
+  });
+
+  addOutputOptions(
+    quest
+      .command("export")
+      .description("Preview or write one validated source-format export")
+      .requiredOption("--quest <quest-id>", "Quest ID", parseQuestIdArgument)
+      .requiredOption("--target <directory>", "new export target directory")
+      .option("--dry-run", "preview without writing")
+      .option("--write", "publish and record the exact export"),
+  ).action(async (options: ResearchQuestExportOptions) => {
+    await runAction(options.json, () => exportResearchQuest(options));
+  });
+
+  addOutputOptions(
+    quest
+      .command("transfer-writer")
+      .description("Preview or record one verified Quest writer transfer")
+      .requiredOption("--quest <quest-id>", "Quest ID", parseQuestIdArgument)
+      .requiredOption(
+        "--to <trellis|source>",
+        "new writer",
+        (value: string) => {
+          if (value !== "trellis" && value !== "source") {
+            throw new InvalidArgumentError(
+              "writer must be exactly trellis or source",
+            );
+          }
+          return value;
+        },
+      )
+      .requiredOption("--rationale <text>", "non-empty transfer rationale")
+      .requiredOption(
+        "--export-digest <sha256>",
+        "validated export or import snapshot digest",
+      )
+      .option("--dry-run", "preview without writing")
+      .option("--write", "commit the exact writer transfer"),
+  ).action(async (options: ResearchQuestWriterTransferOptions) => {
+    await runAction(options.json, () => transferResearchQuestWriter(options));
+  });
 
   addMutationOptions(
     quest

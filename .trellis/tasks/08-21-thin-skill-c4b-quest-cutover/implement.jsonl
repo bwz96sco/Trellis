@@ -1,1 +1,7 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Canonical Quest field mapping, typed mutation/event boundaries, scientific-universe requirement, replay, projection, and writer-authority contracts."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Exact import/export/transfer command signatures, preview/write behavior, stable errors, zero-write rules, and source-admin authority boundary."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Core/CLI package boundary and public Research-subpath export discipline."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Regression ownership, complete-gate expectations, isolation, and cross-repository fixture rules."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Built CLI command tests, filesystem zero-write snapshots, temp-target validation, and minimal mocking."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json","reason":"Authenticated immutable source inventory and exact helper/template/validator identities consumed by C4b."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/README.md","reason":"Frozen-source consumption rule and baseline verification command; mutable ambient source paths are forbidden."}

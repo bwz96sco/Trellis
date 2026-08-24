@@ -16,6 +16,12 @@ export type {
   ApprovalId,
   WorkflowInstanceId,
   ScientificGateRecordId,
+  QuestImportRecordId,
+  QuestImportMilestoneId,
+  QuestRouteSnapshotId,
+  QuestScientificUniverseId,
+  QuestWriterTransferId,
+  QuestExportRecordId,
   QuestStatus,
   QuestStage,
   CampaignStatus,
@@ -54,6 +60,19 @@ export type {
   ScientificGateId,
   ScientificGateDecision,
   ScientificGateRecord,
+  QuestSourceIdentity,
+  QuestSourceSnapshot,
+  QuestImportRecord,
+  QuestOwnerBinding,
+  QuestRouteBranch,
+  QuestRouteDecision,
+  QuestRouteNextAction,
+  QuestRouteSnapshot,
+  QuestScientificUniverse,
+  QuestImportMilestone,
+  QuestWriterAuthority,
+  QuestWriterTransfer,
+  QuestExportRecord,
   WorkflowBindPayload,
   WorkflowNodeCompletePayload,
   WorkflowTransitionRecordPayload,
@@ -107,6 +126,12 @@ export {
   createApprovalId,
   createWorkflowInstanceId,
   createScientificGateRecordId,
+  createQuestImportRecordId,
+  createQuestImportMilestoneId,
+  createQuestRouteSnapshotId,
+  createQuestScientificUniverseId,
+  createQuestWriterTransferId,
+  createQuestExportRecordId,
 } from "./ids.js";
 export type { ResearchIdKind } from "./ids.js";
 
@@ -534,6 +559,51 @@ export {
   scientificGateScopeKey,
   getEffectiveScientificGateRecord,
 } from "./scientific-gate.js";
+
+export {
+  ResearchQuestCutoverError,
+  parseQuestSourceIdentity,
+  parseQuestSourceSnapshot,
+  parseQuestImportRecord,
+  parseQuestRouteSnapshot,
+  normalizeQuestScientificUniverseInput,
+  computeQuestScientificUniverseDigest,
+  parseQuestScientificUniverse,
+  parseQuestImportMilestone,
+  parseQuestExportRecord,
+  parseQuestWriterTransfer,
+  questScientificUniverseScopeKey,
+  getCurrentQuestScientificUniverse,
+  assertScientificGateCoversUniverse,
+  isScientificGateCurrentForUniverse,
+  validateQuestImportMutationBatch,
+} from "./quest-cutover.js";
+
+export {
+  FROZEN_C1_GATE_VALIDATOR_DIGEST,
+  computeQuestExportDigest,
+  computeQuestMappedStateDigest,
+  createValidatedQuestExportReceipt,
+} from "./quest-export-receipt.js";
+export type {
+  CreateValidatedQuestExportReceiptInput,
+  ValidatedQuestExportReceipt,
+} from "./quest-export-receipt.js";
+
+export {
+  QUEST_IMPORT_PLAN_SCHEMA_VERSION,
+  QUEST_IMPORT_CONTRACT_VERSION,
+  FROZEN_C1_SOURCE_MANIFEST_DIGEST,
+  buildQuestImportPlanV1,
+} from "./quest-import-plan.js";
+export type {
+  QuestImportSourceArtifactV1,
+  QuestImportConflictV1,
+  QuestImportExtensionInventoryEntryV1,
+  QuestImportLossReportV1,
+  BuildQuestImportPlanV1Input,
+  QuestImportPlanV1,
+} from "./quest-import-plan.js";
 
 export {
   ResearchWorkflowError,
