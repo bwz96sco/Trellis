@@ -184,3 +184,60 @@ Migrated four authenticated thin Research Skills into schema-v3 packages, enforc
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: C7 Pilot Evaluation Stop
+
+**Date**: 2026-08-25
+**Task**: C7 Pilot Evaluation Stop
+**Package**: cli
+**Branch**: `claude-t6-mal1-reviewer-01-m0-correction-2`
+
+### Summary
+
+Built the deterministic C7 A/B/C harness, confirmed a frozen-source single-writer zero-tolerance failure, stopped before provider execution, and retained the four-package pilot without expanding migration.
+
+### Main Changes
+
+## C7 deterministic pilot evaluation
+
+- Added task-scoped A/B/C evaluation contracts, nine frozen cases, immutable inputs, isolated Quest fixtures, append-only run schema, output isolation, provider authorization checks, and deterministic validation tooling.
+- Authenticated the exact C1 source baseline and archived C6 package identities without reading mutable external source bytes.
+- Confirmed a zero-tolerance `single-quest-writer` failure: after supported Trellis import recorded canonical `writer: "trellis"`, the exact frozen C1 Quest-admin helper still returned success for `status --write` and created `notes/_quest/QUEST_STATUS.md`.
+- Stopped before provider authorization as required. Real/model/provider invocations: 0. Managed workers: 0. Canonical evaluation telemetry mutations: 0.
+- Recorded honest acceptance shortfalls: no ten-invocation minimum, matched-arm quality comparison, or live managed recovery evaluation was claimed.
+- Final disposition: retain the four-package pilot only; block full migration; do not start a successor migration.
+- Stabilized the existing source-admin aggregate test with a scoped `120_000ms` timeout after it exceeded `10s` only under full-suite contention; isolated runtime remained `2.6s` and product behavior was unchanged.
+
+## Verification
+
+- C7 harness validation: 9 cases, 3 boundaries, 0 run records.
+- C7 harness tests: 12/12 passed.
+- Frozen C1 verification: 19 files passed.
+- Focused source-admin aggregate: passed in `2.6s` after timeout configuration change.
+- Final normal hooks: Core 46 files / 714 passed / 1 skipped; CLI 95 files / 1,086 passed; Core and CLI builds passed.
+- Task context validation and `git diff --check` passed.
+- One focused implementation agent and one focused checker only; no review panel.
+- No push, release, publication, provider execution, product-state migration, or further Skill migration.
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4a32dd72` | `test(research): record C7 stop and stabilize hook` |
+
+### Testing
+
+- [OK] C7 harness validation and 12 deterministic tests passed.
+- [OK] Frozen C1 baseline authenticated all 19 files.
+- [OK] Final normal hooks passed Core 714/715 and CLI 1,086/1,086 tests.
+- [OK] Zero-tolerance failure and unmet live-run acceptance criteria remain explicitly recorded.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
