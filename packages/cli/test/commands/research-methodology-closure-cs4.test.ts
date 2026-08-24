@@ -537,6 +537,7 @@ describe(
         return {
           state: input.state,
           dispatch: input.dispatch,
+          packageKind: "procedure",
           authority: {
             capabilityId: input.activation.capabilityId,
             enabled: true,

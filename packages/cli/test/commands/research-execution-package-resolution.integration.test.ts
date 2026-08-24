@@ -396,12 +396,28 @@ describe("Research execution-package filesystem resolution", () => {
     ]);
   });
 
-  it("keeps lightweight and managed identity and instructions identical", async () => {
+  it("keeps lightweight and managed identity and instructions identical while selecting exact managed members", async () => {
     writeSkill({ source: "project", root });
     const lightweight = await resolveSkill(root, { profile: "lightweight" });
-    const managed = await resolveSkill(root, { profile: "managed" });
+    const managed = await resolveSkill(root, {
+      profile: "managed",
+      invocationSource: "operator-explicit",
+      requestedMemberPaths: ["templates/note.md"],
+    });
     expect(managed.identity).toEqual(lightweight.identity);
     expect(managed.instructions).toBe(lightweight.instructions);
+    expect(managed.members.map((member) => member.path)).toEqual([
+      "templates/note.md",
+    ]);
+    expect(
+      (
+        await resolveSkill(root, {
+          profile: "managed",
+          invocationSource: "operator-explicit",
+          requestedMemberPaths: [],
+        })
+      ).members,
+    ).toEqual([]);
   });
 
   it("keeps the Procedure compatibility wrapper on the shared boundary", async () => {

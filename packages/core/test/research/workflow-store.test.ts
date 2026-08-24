@@ -38,7 +38,10 @@ const identity = {
   memberInventoryDigest: `sha256:${"3".repeat(64)}`,
 } as const;
 
-function workflow(requiredGateIds: readonly ("H1" | "H2")[] = []) {
+function workflow(
+  requiredGateIds: readonly ("H1" | "H2")[] = [],
+  allowedProfiles: readonly ("lightweight" | "managed")[] = ["lightweight"],
+) {
   return parseResearchWorkflowDefinitionV1(
     encoder.encode(
       JSON.stringify({
@@ -50,13 +53,13 @@ function workflow(requiredGateIds: readonly ("H1" | "H2")[] = []) {
           {
             id: "one",
             executionPackage: identity,
-            allowedProfiles: ["lightweight"],
+            allowedProfiles,
             stop: true,
           },
           {
             id: "two",
             executionPackage: { ...identity, id: "research-two" },
-            allowedProfiles: ["lightweight"],
+            allowedProfiles,
             stop: true,
           },
         ],
@@ -200,6 +203,7 @@ describe("Research Workflow store and replay", () => {
     await commit("complete-one", "2026-08-21T00:02:00.000Z", {
       kind: "workflow.node.complete",
       workflowInstanceId,
+      executionProfile: "lightweight",
       nodeId: "one",
       acceptedRefs: [{ kind: "artifact", id: artifactId }],
       workflow: definition,
@@ -222,6 +226,7 @@ describe("Research Workflow store and replay", () => {
     await commit("complete-two", "2026-08-21T00:04:00.000Z", {
       kind: "workflow.node.complete",
       workflowInstanceId,
+      executionProfile: "lightweight",
       nodeId: "two",
       acceptedRefs: [{ kind: "artifact", id: artifactId }],
       workflow: definition,
@@ -284,6 +289,405 @@ describe("Research Workflow store and replay", () => {
     ).toEqual([3, 3, 3, 3, 3]);
   });
 
+  it("requires managed Result evidence and rejects profiles not allowed by the node", async () => {
+    const lightweightOnly = workflow();
+    const workflowInstanceId = createWorkflowInstanceId();
+    await commit("bind", "2026-08-21T00:01:00.000Z", {
+      kind: "workflow.bind",
+      workflowInstanceId,
+      questId,
+      startNodeId: "one",
+      workflow: lightweightOnly,
+    });
+    await expect(
+      commit("managed-not-allowed", "2026-08-21T00:02:00.000Z", {
+        kind: "workflow.node.complete",
+        workflowInstanceId,
+        nodeId: "one",
+        executionProfile: "managed",
+        acceptedRefs: [{ kind: "artifact", id: artifactId }],
+        workflow: lightweightOnly,
+      }),
+    ).rejects.toThrow(/does not allow managed completion/);
+
+    const managedRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "trellis-workflow-managed-store-"),
+    );
+    const originalRoot = root;
+    root = managedRoot;
+    try {
+      const workspaceId = createWorkspaceId();
+      const repositoryId = createRepositoryId();
+      questId = createQuestId();
+      artifactId = createArtifactId();
+      await commitResearchBatch({
+        root,
+        actor: ACTOR,
+        provenance: PROVENANCE,
+        idempotencyKey: "managed-setup",
+        timestamp: "2026-08-21T00:00:00.000Z",
+        mutations: [
+          {
+            kind: "workspace.create",
+            workspace: { id: workspaceId, name: "Research", description: "" },
+          },
+          {
+            kind: "repository.register",
+            repository: {
+              id: repositoryId,
+              name: "Repository",
+              kind: "code",
+              locator: "repository",
+              capabilities: { hasTrellis: false },
+            },
+          },
+          {
+            kind: "artifact.register",
+            artifact: {
+              id: artifactId,
+              repositoryId,
+              path: "results/review.json",
+            },
+          },
+          {
+            kind: "quest.create",
+            quest: {
+              id: questId,
+              title: "Quest",
+              description: "",
+              repositoryIds: [repositoryId],
+              artifactRefs: [
+                {
+                  id: artifactId,
+                  repositoryId,
+                  path: "results/review.json",
+                },
+              ],
+            },
+          },
+        ],
+      });
+      const managedDefinition = workflow([], ["managed"]);
+      const managedInstanceId = createWorkflowInstanceId();
+      await commit("managed-bind", "2026-08-21T00:01:00.000Z", {
+        kind: "workflow.bind",
+        workflowInstanceId: managedInstanceId,
+        questId,
+        startNodeId: "one",
+        workflow: managedDefinition,
+      });
+      const before = snapshot(root);
+      await expect(
+        commit("managed-no-result", "2026-08-21T00:02:00.000Z", {
+          kind: "workflow.node.complete",
+          workflowInstanceId: managedInstanceId,
+          nodeId: "one",
+          executionProfile: "managed",
+          acceptedRefs: [{ kind: "artifact", id: artifactId }],
+          workflow: managedDefinition,
+        }),
+      ).rejects.toThrow(/requires accepted Result evidence/);
+      expect(snapshot(root)).toEqual(before);
+    } finally {
+      fs.rmSync(managedRoot, { recursive: true, force: true });
+      root = originalRoot;
+    }
+  });
+
+  it("accepts only Artifacts produced by accepted managed Results", async () => {
+    const definition = workflow([], ["managed"]);
+    const workflowInstanceId = createWorkflowInstanceId();
+    const relatedArtifactId = createArtifactId();
+    const campaignId = "cmp_11111111-1111-4111-8111-111111111111" as const;
+    const runId = "run_22222222-2222-4222-8222-222222222222" as const;
+    const dispatchId = "dsp_33333333-3333-4333-8333-333333333333" as const;
+    const activationId = "act_44444444-4444-4444-8444-444444444444" as const;
+    const approvalId = "apr_55555555-5555-4555-8555-555555555555" as const;
+    const resultId = "res_55555555-5555-4555-8555-555555555555" as const;
+    const proposalId = "prp_55555555-5555-4555-8555-555555555555" as const;
+    const repositoryId = Object.keys((await readResearchState(root)).repositories)[0] as `rep_${string}`;
+    const digest = `sha256:${"4".repeat(64)}` as const;
+
+    await commit("bind-managed", "2026-08-21T00:01:00.000Z", {
+      kind: "workflow.bind",
+      workflowInstanceId,
+      questId,
+      startNodeId: "one",
+      workflow: definition,
+    });
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "managed-prerequisites",
+      timestamp: "2026-08-21T00:02:00.000Z",
+      mutations: [
+        {
+          kind: "artifact.register",
+          artifact: {
+            id: relatedArtifactId,
+            repositoryId,
+            path: "results/unrelated.json",
+          },
+        },
+        {
+          kind: "evidence.create",
+          evidence: {
+            id: "evd_66666666-6666-4666-8666-666666666666",
+            questId,
+            summary: "Other work in the same Quest",
+            artifactRefs: [
+              {
+                id: relatedArtifactId,
+                repositoryId,
+                path: "results/unrelated.json",
+              },
+            ],
+          },
+        },
+        {
+          kind: "campaign.create",
+          campaign: {
+            id: campaignId,
+            questId,
+            title: "Managed campaign",
+            protocolDigest: "protocol-v1",
+          },
+        },
+        {
+          kind: "run.create",
+          run: { id: runId, campaignId, title: "Managed run" },
+        },
+        {
+          kind: "dispatch.record",
+          dispatch: {
+            id: dispatchId,
+            questId,
+            campaignId,
+            runId,
+            repositoryId,
+            ownerSkill: "managed-skill",
+            objective: "Managed work",
+            acceptanceCriteria: [],
+            context: [],
+            allowedWritePaths: [],
+            expectedOutputs: [],
+            checks: [],
+            createdAt: "2026-08-21T00:02:00.000Z",
+          },
+        },
+        {
+          kind: "activation.plan",
+          activation: {
+            id: activationId,
+            dispatchId,
+            questId,
+            capabilityId: "research.literature.scan",
+            mode: "explicit",
+            executionPackage: identity,
+            managedExecution: {
+              executionProfile: "managed",
+              requestedMemberPaths: [],
+              workflow: {
+                workflowInstanceId,
+                workflowId: definition.definition.id,
+                workflowVersion: definition.definition.version,
+                workflowDigest: definition.workflowDigest,
+                nodeId: "one",
+              },
+            },
+            policyDigest: digest,
+            requestDigest: digest,
+            scopeHash: digest,
+            maxDurationMinutes: 15,
+            maxDispatches: 1,
+            createdAt: "2026-08-21T00:02:00.000Z",
+          },
+        },
+        {
+          kind: "approval.grant",
+          approval: {
+            id: approvalId,
+            activationId,
+            dispatchId,
+            host: "claude",
+            mode: "interactive",
+            approverLabel: "operator",
+            rationale: "Approved",
+            requestDigest: digest,
+            executionPackageDigest: identity.packageDigest,
+            policyDigest: digest,
+            scopeHash: digest,
+            grantedAt: "2026-08-21T00:02:00.000Z",
+            expiresAt: "2026-08-21T00:17:00.000Z",
+          },
+        },
+      ],
+    });
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "managed-result",
+      timestamp: "2026-08-21T00:03:00.000Z",
+      mutations: [
+        {
+          kind: "result.record",
+          result: {
+            id: resultId,
+            dispatchId,
+            runId,
+            status: "completed",
+            summary: "Complete",
+            commands: [],
+            checks: [],
+            artifactRefs: [
+              {
+                id: artifactId,
+                repositoryId,
+                path: "results/review.json",
+              },
+            ],
+            blockers: [],
+            createdAt: "2026-08-21T00:03:00.000Z",
+          },
+        },
+        {
+          kind: "proposal.record",
+          proposal: {
+            id: proposalId,
+            dispatchId,
+            questId,
+            title: "No canonical changes",
+            operations: [],
+            status: "pending",
+            createdAt: "2026-08-21T00:03:00.000Z",
+            updatedAt: "2026-08-21T00:03:00.000Z",
+          },
+        },
+        {
+          kind: "approval.consume",
+          approvalId,
+          resultId,
+          proposalId,
+        },
+      ],
+    });
+
+    const before = snapshot(root);
+    await expect(
+      commit("reject-unrelated-artifact", "2026-08-21T00:04:00.000Z", {
+        kind: "workflow.node.complete",
+        workflowInstanceId,
+        nodeId: "one",
+        executionProfile: "managed",
+        acceptedRefs: [
+          { kind: "result", id: resultId },
+          { kind: "artifact", id: relatedArtifactId },
+        ],
+        workflow: definition,
+      }),
+    ).rejects.toThrow(/was not produced by an accepted managed Result/);
+    expect(snapshot(root)).toEqual(before);
+
+    await expect(
+      commit("accept-result-artifact", "2026-08-21T00:04:00.000Z", {
+        kind: "workflow.node.complete",
+        workflowInstanceId,
+        nodeId: "one",
+        executionProfile: "managed",
+        acceptedRefs: [
+          { kind: "result", id: resultId },
+          { kind: "artifact", id: artifactId },
+        ],
+        workflow: definition,
+      }),
+    ).resolves.toBeDefined();
+  });
+
+  it("rejects a managed Activation bound to a missing Workflow instance", async () => {
+    const campaignId = "cmp_77777777-7777-4777-8777-777777777777" as const;
+    const runId = "run_88888888-8888-4888-8888-888888888888" as const;
+    const dispatchId = "dsp_99999999-9999-4999-8999-999999999999" as const;
+    const repositoryId = Object.keys((await readResearchState(root)).repositories)[0] as `rep_${string}`;
+    const missingWorkflowInstanceId = createWorkflowInstanceId();
+    const definition = workflow([], ["managed"]);
+    const digest = `sha256:${"5".repeat(64)}` as const;
+    await commitResearchBatch({
+      root,
+      actor: ACTOR,
+      provenance: PROVENANCE,
+      idempotencyKey: "missing-workflow-prerequisites",
+      timestamp: "2026-08-21T00:01:00.000Z",
+      mutations: [
+        {
+          kind: "campaign.create",
+          campaign: {
+            id: campaignId,
+            questId,
+            title: "Managed campaign",
+            protocolDigest: "protocol-v1",
+          },
+        },
+        {
+          kind: "run.create",
+          run: { id: runId, campaignId, title: "Managed run" },
+        },
+        {
+          kind: "dispatch.record",
+          dispatch: {
+            id: dispatchId,
+            questId,
+            campaignId,
+            runId,
+            repositoryId,
+            ownerSkill: "managed-skill",
+            objective: "Managed work",
+            acceptanceCriteria: [],
+            context: [],
+            allowedWritePaths: [],
+            expectedOutputs: [],
+            checks: [],
+            createdAt: "2026-08-21T00:01:00.000Z",
+          },
+        },
+      ],
+    });
+    const before = snapshot(root);
+
+    await expect(
+      commit("reject-missing-workflow", "2026-08-21T00:02:00.000Z", {
+        kind: "activation.plan",
+        activation: {
+          id: "act_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          dispatchId,
+          questId,
+          capabilityId: "research.literature.scan",
+          mode: "explicit",
+          executionPackage: identity,
+          managedExecution: {
+            executionProfile: "managed",
+            requestedMemberPaths: [],
+            workflow: {
+              workflowInstanceId: missingWorkflowInstanceId,
+              workflowId: definition.definition.id,
+              workflowVersion: definition.definition.version,
+              workflowDigest: definition.workflowDigest,
+              nodeId: "one",
+            },
+          },
+          policyDigest: digest,
+          requestDigest: digest,
+          scopeHash: digest,
+          maxDurationMinutes: 15,
+          maxDispatches: 1,
+          createdAt: "2026-08-21T00:02:00.000Z",
+        },
+      }),
+    ).rejects.toThrow(/Unknown research workflow instance/);
+    expect(snapshot(root)).toEqual(before);
+  });
+
   it("keeps read-only validation byte-identical and rejects a second active binding", async () => {
     const definition = workflow();
     const workflowInstanceId = createWorkflowInstanceId();
@@ -329,6 +733,7 @@ describe("Research Workflow store and replay", () => {
     await commit("complete", "2026-08-21T00:02:00.000Z", {
       kind: "workflow.node.complete",
       workflowInstanceId,
+      executionProfile: "lightweight",
       nodeId: "one",
       acceptedRefs: [{ kind: "artifact", id: artifactId }],
       workflow: definition,

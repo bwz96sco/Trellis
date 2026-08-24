@@ -279,8 +279,23 @@ export interface LegacyProcedureActivation extends ResearchActivationBase {
   };
 }
 
+export interface ManagedExecutionWorkflowBinding {
+  workflowInstanceId: WorkflowInstanceId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  nodeId: string;
+}
+
+export interface ManagedExecutionBinding {
+  executionProfile: "managed";
+  requestedMemberPaths: readonly string[];
+  workflow?: ManagedExecutionWorkflowBinding;
+}
+
 export interface ExecutionPackageActivation extends ResearchActivationBase {
   executionPackage: ResolvedExecutionPackageIdentity;
+  managedExecution: ManagedExecutionBinding;
 }
 
 export type ResearchActivation =

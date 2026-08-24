@@ -16,8 +16,6 @@ import {
   type DispatchId,
   isExecutionPackageActivation,
   isExecutionPackageApprovalGrant,
-  type LegacyProcedureActivation,
-  type LegacyProcedureApprovalGrant,
   type ResearchActivation,
   type ResearchApprovalGrant,
   type ResearchApprovalState,
@@ -92,28 +90,25 @@ function activationError(
   throw new ResearchActivationError(code, message);
 }
 
-function requireLegacyProcedureActivation(
+function requireMatchingApprovalBinding(
   activation: ResearchActivation,
-): LegacyProcedureActivation {
-  if (isExecutionPackageActivation(activation)) {
-    activationError(
-      "APPROVAL_RELATION_MISMATCH",
-      "Procedure dispatch commands cannot use an execution-package activation",
-    );
-  }
-  return activation;
-}
-
-function requireLegacyProcedureGrant(
   grant: ResearchApprovalGrant,
-): LegacyProcedureApprovalGrant {
-  if (isExecutionPackageApprovalGrant(grant)) {
+): void {
+  if (
+    isExecutionPackageActivation(activation) !==
+      isExecutionPackageApprovalGrant(grant) ||
+    (isExecutionPackageActivation(activation)
+      ? !isExecutionPackageApprovalGrant(grant) ||
+        grant.executionPackageDigest !==
+          activation.executionPackage.packageDigest
+      : isExecutionPackageApprovalGrant(grant) ||
+        grant.procedureDigest !== activation.procedure.digest)
+  ) {
     activationError(
       "APPROVAL_RELATION_MISMATCH",
-      "Procedure dispatch commands cannot use an execution-package approval",
+      "Approval package binding does not match its Activation",
     );
   }
-  return grant;
 }
 
 function canonicalTimestamp(): string {
@@ -324,7 +319,7 @@ export function classifyRevokeEvents(
 function dispatchActivation(
   state: Awaited<ReturnType<typeof readResearchState>>,
   dispatchId: DispatchId,
-): LegacyProcedureActivation {
+): ResearchActivation {
   const dispatch = state.dispatches[dispatchId];
   if (!dispatch)
     activationError(
@@ -339,7 +334,7 @@ function dispatchActivation(
       `Dispatch '${dispatchId}' has no activation`,
     );
   }
-  return requireLegacyProcedureActivation(activation);
+  return activation;
 }
 
 function existingResultOrProposal(
@@ -394,8 +389,8 @@ function grantFromCandidate(input: {
   readonly rationale: string;
   readonly timestamp: string;
 }): ResearchApprovalGrant {
-  const activation = requireLegacyProcedureActivation(input.activation);
-  return {
+  const activation = input.activation;
+  const common = {
     id: createApprovalId(),
     activationId: activation.id,
     dispatchId: activation.dispatchId,
@@ -404,7 +399,6 @@ function grantFromCandidate(input: {
     approverLabel: input.approverLabel,
     rationale: input.rationale,
     requestDigest: activation.requestDigest,
-    procedureDigest: activation.procedure.digest,
     policyDigest: activation.policyDigest,
     scopeHash: activation.scopeHash,
     grantedAt: input.timestamp,
@@ -412,6 +406,12 @@ function grantFromCandidate(input: {
       Date.parse(input.timestamp) + activation.maxDurationMinutes * 60_000,
     ).toISOString(),
   };
+  return isExecutionPackageActivation(activation)
+    ? {
+        ...common,
+        executionPackageDigest: activation.executionPackage.packageDigest,
+      }
+    : { ...common, procedureDigest: activation.procedure.digest };
 }
 
 function approvalStateFromGrant(
@@ -600,8 +600,8 @@ export async function authorizeResearchDispatch(
           `Approval '${approval.grant.id}' has no activation`,
         );
       }
-      const activation = requireLegacyProcedureActivation(storedActivation);
-      requireLegacyProcedureGrant(approval.grant);
+      const activation = storedActivation;
+      requireMatchingApprovalBinding(activation, approval.grant);
       const headSeq = (await getResearchStatus(root)).headSeq;
       return {
         command: "research dispatch authorize",
@@ -706,7 +706,9 @@ function authoritySummary(
   activation: ResearchActivation,
   host: ResearchExecutionHost,
 ): string {
-  const legacyActivation = requireLegacyProcedureActivation(activation);
+  const packageSummary = isExecutionPackageActivation(activation)
+    ? `Skill: ${activation.executionPackage.id}@${activation.executionPackage.version} ${activation.executionPackage.packageDigest}`
+    : `Procedure: ${activation.procedure.id}@${activation.procedure.version} ${activation.procedure.digest}`;
   const repositoryCount = new Set([
     candidate.scope.repository.id,
     ...candidate.scope.artifacts.map((artifact) => artifact.repositoryId),
@@ -716,7 +718,7 @@ function authoritySummary(
     `Quest: ${activation.questId}`,
     `Stage: ${candidate.stage}`,
     `Capability: ${activation.capabilityId} (${candidate.authority.kind}, ${activation.mode})`,
-    `Procedure: ${legacyActivation.procedure.id}@${legacyActivation.procedure.version} ${legacyActivation.procedure.digest}`,
+    packageSummary,
     `Policy: ${activation.policyDigest}`,
     `Request: ${activation.requestDigest}`,
     `Scope: ${activation.scopeHash}`,
@@ -777,8 +779,10 @@ export async function approveResearchDispatch(
         `Approval '${replayGrant?.id ?? "unknown"}' has no activation`,
       );
     }
-    const activation = requireLegacyProcedureActivation(storedActivation);
-    if (replayGrant !== null) requireLegacyProcedureGrant(replayGrant);
+    const activation = storedActivation;
+    if (replayGrant !== null) {
+      requireMatchingApprovalBinding(activation, replayGrant);
+    }
     if (
       replayGrant === null &&
       existingResultOrProposal(state, options.dispatchId)

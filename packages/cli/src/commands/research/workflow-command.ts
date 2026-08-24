@@ -1,15 +1,21 @@
 import { randomUUID } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 
 import {
   commitResearchBatch,
   createWorkflowInstanceId,
   getEffectiveScientificGateRecord,
+  getResearchActivationPackageDigest,
+  getResearchApprovalPackageDigest,
+  isExecutionPackageActivation,
+  isExecutionPackageApprovalGrant,
   listResearchWorkflowOutgoingTransitions,
   missingResearchWorkflowRequiredRefs,
   parseWorkflowAcceptedRef,
   readResearchLedger,
   readResearchState,
   ResearchWorkflowError,
+  sameResearchExecutionPackageIdentity,
   validateResearchBatchReadOnly,
   type ParsedResearchWorkflowDefinitionV1,
   type QuestId,
@@ -19,6 +25,7 @@ import {
   type ResearchState,
   type ResearchWorkflowInstance,
   type ResolvedExecutionPackageIdentity,
+  type WorkflowAcceptedRef,
   type WorkflowCloseOutcome,
   type WorkflowInstanceId,
   type WorkflowNodeCompletePayload,
@@ -31,6 +38,7 @@ import {
   resolveResearchRoot,
   type ResearchOutputOptions,
 } from "./common.js";
+import { deriveResearchOutputIds } from "./dispatch-output-ids.js";
 import { ResearchActivationError, ResearchCliError } from "./errors.js";
 import { resolveResearchWorkflowDefinition } from "./workflow-definition-resolution.js";
 
@@ -231,6 +239,139 @@ async function resolveBoundInstance(
   return { state, instance, workflow };
 }
 
+function invalidWorkflowCompletion(message: string): never {
+  throw new ResearchWorkflowError(
+    "RESEARCH_WORKFLOW_COMPLETION_INVALID",
+    message,
+  );
+}
+
+function resolveWorkflowCompletionProfile(input: {
+  readonly state: ResearchState;
+  readonly instance: ResearchWorkflowInstance;
+  readonly nodeId: string;
+  readonly nodeExecutionPackage: ResolvedExecutionPackageIdentity;
+  readonly acceptedRefs: readonly WorkflowAcceptedRef[];
+}): "lightweight" | "managed" {
+  const resultRefs = input.acceptedRefs.filter(
+    (ref): ref is Extract<WorkflowAcceptedRef, { kind: "result" }> =>
+      ref.kind === "result",
+  );
+  if (resultRefs.length === 0) return "lightweight";
+  if (
+    input.instance.status !== "active" ||
+    input.instance.currentNodeId !== input.nodeId ||
+    input.instance.nodeCompletions[input.nodeId] !== undefined
+  ) {
+    invalidWorkflowCompletion(
+      "Managed completion requires the active incomplete current Workflow node",
+    );
+  }
+
+  let coherentWorkflowBinding: unknown = undefined;
+  let hasCoherentWorkflowBinding = false;
+  for (const ref of resultRefs) {
+    const result = input.state.results[ref.id];
+    if (result === undefined) {
+      invalidWorkflowCompletion(`Accepted Result '${ref.id}' does not exist`);
+    }
+    const dispatch = input.state.dispatches[result.dispatchId];
+    const activationId = input.state.activationByDispatchId[result.dispatchId];
+    const activation =
+      activationId === undefined
+        ? undefined
+        : input.state.activations[activationId];
+    if (
+      dispatch?.questId !== input.instance.questId ||
+      activation === undefined ||
+      !isExecutionPackageActivation(activation)
+    ) {
+      invalidWorkflowCompletion(
+        `Accepted Result '${ref.id}' has no coherent managed Activation`,
+      );
+    }
+    if (
+      activation.id !== activationId ||
+      activation.dispatchId !== dispatch.id ||
+      activation.questId !== dispatch.questId
+    ) {
+      invalidWorkflowCompletion(
+        `Accepted Result '${ref.id}' has an incoherent managed Activation`,
+      );
+    }
+    if (
+      !sameResearchExecutionPackageIdentity(
+        activation.executionPackage,
+        input.nodeExecutionPackage,
+      )
+    ) {
+      invalidWorkflowCompletion(
+        `Accepted Result '${ref.id}' uses another execution package`,
+      );
+    }
+
+    const consumedApprovals = Object.values(input.state.approvals).filter(
+      (approval) =>
+        approval.status === "consumed" && approval.resultId === result.id,
+    );
+    const approval = consumedApprovals[0];
+    if (
+      consumedApprovals.length !== 1 ||
+      approval?.status !== "consumed" ||
+      !isExecutionPackageApprovalGrant(approval.grant) ||
+      approval.grant.activationId !== activation.id ||
+      approval.grant.dispatchId !== dispatch.id ||
+      approval.grant.requestDigest !== activation.requestDigest ||
+      approval.grant.policyDigest !== activation.policyDigest ||
+      approval.grant.scopeHash !== activation.scopeHash ||
+      getResearchApprovalPackageDigest(approval.grant) !==
+        getResearchActivationPackageDigest(activation)
+    ) {
+      invalidWorkflowCompletion(
+        `Accepted Result '${ref.id}' has no coherent consumed Approval`,
+      );
+    }
+    const outputIds = deriveResearchOutputIds(approval.grant.id);
+    const proposal = input.state.proposals[outputIds.proposalId];
+    if (
+      result.id !== outputIds.resultId ||
+      approval.resultId !== result.id ||
+      approval.proposalId !== outputIds.proposalId ||
+      proposal?.id !== outputIds.proposalId ||
+      proposal.dispatchId !== dispatch.id ||
+      proposal.questId !== dispatch.questId
+    ) {
+      invalidWorkflowCompletion(
+        `Accepted Result '${ref.id}' has invalid Approval-derived outputs`,
+      );
+    }
+
+    const workflowBinding = activation.managedExecution.workflow;
+    if (
+      workflowBinding !== undefined &&
+      (workflowBinding.workflowInstanceId !==
+        input.instance.workflowInstanceId ||
+        workflowBinding.workflowId !== input.instance.workflowId ||
+        workflowBinding.workflowVersion !== input.instance.workflowVersion ||
+        workflowBinding.workflowDigest !== input.instance.workflowDigest ||
+        workflowBinding.nodeId !== input.nodeId)
+    ) {
+      invalidWorkflowCompletion(
+        `Accepted Result '${ref.id}' has another managed Workflow binding`,
+      );
+    }
+    if (!hasCoherentWorkflowBinding) {
+      coherentWorkflowBinding = workflowBinding;
+      hasCoherentWorkflowBinding = true;
+    } else if (!isDeepStrictEqual(coherentWorkflowBinding, workflowBinding)) {
+      invalidWorkflowCompletion(
+        "Accepted Results do not share one managed Workflow binding",
+      );
+    }
+  }
+  return "managed";
+}
+
 export async function bindResearchWorkflow(
   options: ResearchWorkflowMutationOptions & {
     quest: QuestId;
@@ -271,6 +412,11 @@ export async function completeResearchWorkflowNode(
   },
 ): Promise<ResearchWorkflowMutationResult> {
   const expectedAcceptedRefs = [...options.acceptedRef].sort();
+  const expectedExecutionProfile = expectedAcceptedRefs.some((ref) =>
+    ref.startsWith("result:"),
+  )
+    ? "managed"
+    : "lightweight";
   return executeWorkflowMutation(
     "workflow complete",
     options,
@@ -285,7 +431,7 @@ export async function completeResearchWorkflowNode(
       const payload = event.payload as unknown as WorkflowNodeCompletePayload;
       return (
         payload.nodeId === options.node &&
-        payload.executionProfile === "lightweight" &&
+        payload.executionProfile === expectedExecutionProfile &&
         payload.acceptedRefs.length === expectedAcceptedRefs.length &&
         payload.acceptedRefs
           .map((ref) => `${ref.kind}:${ref.id}`)
@@ -293,12 +439,12 @@ export async function completeResearchWorkflowNode(
       );
     },
     async (root) => {
-      const { workflow } = await resolveBoundInstance(
+      const { state, instance, workflow } = await resolveBoundInstance(
         root,
         options.instance,
         "RESEARCH_WORKFLOW_COMPLETION_INVALID",
       );
-      let acceptedRefs;
+      let acceptedRefs: WorkflowAcceptedRef[];
       try {
         acceptedRefs = options.acceptedRef.map((ref, index) =>
           parseWorkflowAcceptedRef(ref, `accepted ref ${index + 1}`),
@@ -310,10 +456,26 @@ export async function completeResearchWorkflowNode(
           { cause: error },
         );
       }
+      const node = workflow.definition.nodes.find(
+        (candidate) => candidate.id === options.node,
+      );
+      if (node === undefined) {
+        invalidWorkflowCompletion(
+          `Workflow node '${options.node}' is not declared`,
+        );
+      }
+      const executionProfile = resolveWorkflowCompletionProfile({
+        state,
+        instance,
+        nodeId: options.node,
+        nodeExecutionPackage: node.executionPackage,
+        acceptedRefs,
+      });
       return {
         kind: "workflow.node.complete",
         workflowInstanceId: options.instance,
         nodeId: options.node,
+        executionProfile,
         acceptedRefs,
         workflow,
       };

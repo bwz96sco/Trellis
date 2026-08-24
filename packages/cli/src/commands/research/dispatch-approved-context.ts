@@ -1,20 +1,24 @@
 import {
   buildWorkerMethodologyProjectionV2,
+  getResearchActivationPackageDigest,
+  getResearchApprovalPackageDigest,
   parseResearchExecutionHost,
   readResearchState,
   resolveResearchCapability,
+  sameResearchExecutionPackageIdentity,
   type ActivationId,
   type ApprovalId,
   type ArtifactRef,
   type Dispatch,
   type DispatchContextEntry,
   type DispatchId,
+  type ManagedExecutionWorkflowBinding,
   type ProposalId,
   type QuestStage,
   type RepositoryId,
+  type ResolvedExecutionPackageIdentity,
   isExecutionPackageActivation,
   isExecutionPackageApprovalGrant,
-  type LegacyProcedureActivation,
   type ResearchActivation,
   type ResearchApprovalState,
   type ResearchCapabilityDefinition,
@@ -125,9 +129,50 @@ export interface NormalizedResearchWorkerInputV2 extends Omit<
   readonly methodology: WorkerMethodologyProjectionV2;
 }
 
+export interface NormalizedResearchWorkerInputV3 {
+  readonly schemaVersion: 3;
+  readonly host: ResearchExecutionHost;
+  readonly dispatch: Dispatch;
+  readonly activation: Readonly<{
+    id: ActivationId;
+    capabilityId: string;
+    mode: "automatic" | "explicit";
+    requestDigest: string;
+    executionPackageDigest: `sha256:${string}`;
+    policyDigest: string;
+    scopeHash: string;
+  }>;
+  readonly approval: NormalizedResearchWorkerInputV1["approval"];
+  readonly capability: ResearchCapabilityDefinition;
+  readonly executionPackage: Readonly<{
+    identity: ResolvedExecutionPackageIdentity;
+    executionProfile: "managed";
+    invocationSource: "model" | "operator-explicit";
+    entrypointType: "model-context";
+    instructions: string;
+    source: "project" | "bundled";
+    approvedMembers: readonly Readonly<{
+      path: string;
+      role: "reference" | "template" | "validator" | "helper";
+      digest: `sha256:${string}`;
+      content: string;
+    }>[];
+  }>;
+  readonly workflow?: ManagedExecutionWorkflowBinding;
+  readonly repository: NormalizedResearchWorkerInputV1["repository"];
+  readonly context: NormalizedResearchWorkerInputV1["context"];
+  readonly artifacts: NormalizedResearchWorkerInputV1["artifacts"];
+  readonly allowedWritePaths: NormalizedResearchWorkerInputV1["allowedWritePaths"];
+  readonly expectedOutputs: NormalizedResearchWorkerInputV1["expectedOutputs"];
+  readonly checks: NormalizedResearchWorkerInputV1["checks"];
+  readonly authority: typeof WORKER_AUTHORITY_CEILING;
+  readonly outputContract: NormalizedResearchWorkerInputV1["outputContract"];
+}
+
 export type NormalizedResearchWorkerInput =
   | NormalizedResearchWorkerInputV1
-  | NormalizedResearchWorkerInputV2;
+  | NormalizedResearchWorkerInputV2
+  | NormalizedResearchWorkerInputV3;
 
 export interface ApprovedResearchDispatchContextResult {
   readonly command: "research dispatch context";
@@ -143,18 +188,6 @@ function fail(
   cause?: unknown,
 ): never {
   throw new ResearchActivationError(code, message, { cause });
-}
-
-function requireLegacyProcedureActivation(
-  activation: ResearchActivation,
-): LegacyProcedureActivation {
-  if (isExecutionPackageActivation(activation)) {
-    fail(
-      "APPROVAL_RELATION_MISMATCH",
-      "Procedure dispatch context cannot use an execution-package activation",
-    );
-  }
-  return activation;
 }
 
 function deepFreeze<T>(value: T): T {
@@ -270,7 +303,7 @@ function compatibilityWarnings(
 function requireActivation(input: {
   readonly state: Awaited<ReturnType<typeof readResearchState>>;
   readonly dispatch: Dispatch;
-}): LegacyProcedureActivation {
+}): ResearchActivation {
   const activationId = input.state.activationByDispatchId[input.dispatch.id];
   const matchingActivations = Object.values(input.state.activations).filter(
     (activation) => activation.dispatchId === input.dispatch.id,
@@ -297,20 +330,26 @@ function requireActivation(input: {
       "Dispatch activation index does not match canonical activation state",
     );
   }
-  return requireLegacyProcedureActivation(activation);
+  return activation;
 }
 
 function validateActivationBindings(
   activation: ResearchActivation,
   candidate: StagedDispatchRevalidation,
 ): void {
-  const legacyActivation = requireLegacyProcedureActivation(activation);
+  const packageMatches = isExecutionPackageActivation(activation)
+    ? candidate.packageKind === "skill" &&
+      sameResearchExecutionPackageIdentity(
+        candidate.skill.identity,
+        activation.executionPackage,
+      )
+    : candidate.packageKind === "procedure" &&
+      candidate.procedure.manifest.id === activation.procedure.id &&
+      candidate.procedure.manifest.version === activation.procedure.version;
   if (
-    candidate.authority.capabilityId !== legacyActivation.capabilityId ||
-    candidate.authority.activation !== legacyActivation.mode ||
-    candidate.authority.procedure.id !== legacyActivation.procedure.id ||
-    candidate.authority.procedure.version !==
-      legacyActivation.procedure.version ||
+    !packageMatches ||
+    candidate.authority.capabilityId !== activation.capabilityId ||
+    candidate.authority.activation !== activation.mode ||
     candidate.authority.maxDurationMinutes !== activation.maxDurationMinutes ||
     candidate.authority.maxDispatches !== activation.maxDispatches
   ) {
@@ -326,7 +365,7 @@ function sameApprovalBindings(
   activation: ResearchActivation,
 ): boolean {
   if (
-    isExecutionPackageActivation(activation) ||
+    isExecutionPackageActivation(activation) !==
     isExecutionPackageApprovalGrant(approval.grant)
   ) {
     return false;
@@ -335,7 +374,8 @@ function sameApprovalBindings(
     approval.grant.activationId === activation.id &&
     approval.grant.dispatchId === activation.dispatchId &&
     approval.grant.requestDigest === activation.requestDigest &&
-    approval.grant.procedureDigest === activation.procedure.digest &&
+    getResearchApprovalPackageDigest(approval.grant) ===
+      getResearchActivationPackageDigest(activation) &&
     approval.grant.policyDigest === activation.policyDigest &&
     approval.grant.scopeHash === activation.scopeHash
   );
@@ -464,9 +504,10 @@ function readMaterializations(input: {
 function normalizedContext(input: {
   readonly host: ResearchExecutionHost;
   readonly dispatch: Dispatch;
-  readonly activation: LegacyProcedureActivation;
+  readonly activation: ResearchActivation;
   readonly approval: ResearchApprovalState;
   readonly candidate: StagedDispatchRevalidation;
+  readonly capability: ResearchCapabilityDefinition;
   readonly resultId: ResultId;
   readonly proposalId: ProposalId;
 }): NormalizedResearchWorkerInput {
@@ -482,6 +523,99 @@ function normalizedContext(input: {
     }
     return { ref, path: resolved.resolvedPath };
   });
+  const approval = {
+    id: input.approval.grant.id,
+    mode: input.approval.grant.mode,
+    expiresAt: input.approval.grant.expiresAt,
+  };
+  const repository = {
+    id: input.dispatch.repositoryId,
+    path: input.candidate.scope.repository.resolvedRoot,
+  };
+  const allowedWritePaths = input.candidate.scope.allowedWritePaths.map(
+    (entry) => entry.resolvedPath,
+  );
+  const outputContract = {
+    type: "result-plus-pending-proposal" as const,
+    dispatchId: input.dispatch.id,
+    runId: input.dispatch.runId,
+    questId: input.dispatch.questId,
+    resultId: input.resultId,
+    proposalId: input.proposalId,
+  };
+
+  if (isExecutionPackageActivation(input.activation)) {
+    if (input.candidate.packageKind !== "skill") {
+      fail(
+        "APPROVAL_RELATION_MISMATCH",
+        "Execution-package activation resolved as a Procedure",
+      );
+    }
+    const membersByPath = new Map(
+      input.candidate.skill.members.map((member) => [member.path, member]),
+    );
+    const approvedMembers =
+      input.activation.managedExecution.requestedMemberPaths.map(
+        (memberPath) => {
+          const member = membersByPath.get(memberPath);
+          if (member === undefined) {
+            fail(
+              "APPROVAL_RELATION_MISMATCH",
+              `Approved Research Skill member '${memberPath}' was not resolved`,
+            );
+          }
+          return {
+            path: member.path,
+            role: member.role,
+            digest: `sha256:${member.sha256}` as const,
+            content: member.content,
+          };
+        },
+      );
+    return deepFreeze({
+      schemaVersion: 3 as const,
+      host: input.host,
+      dispatch: input.dispatch,
+      activation: {
+        id: input.activation.id,
+        capabilityId: input.activation.capabilityId,
+        mode: input.activation.mode,
+        requestDigest: input.activation.requestDigest,
+        executionPackageDigest: input.activation.executionPackage.packageDigest,
+        policyDigest: input.activation.policyDigest,
+        scopeHash: input.activation.scopeHash,
+      },
+      approval,
+      capability: input.capability,
+      executionPackage: {
+        identity: { ...input.candidate.skill.identity },
+        executionProfile: "managed" as const,
+        invocationSource: input.candidate.skill.manifest.invocationSource,
+        entrypointType: "model-context" as const,
+        instructions: input.candidate.skill.instructions,
+        source: input.candidate.skill.source,
+        approvedMembers,
+      },
+      ...(input.activation.managedExecution.workflow === undefined
+        ? {}
+        : { workflow: { ...input.activation.managedExecution.workflow } }),
+      repository,
+      context: input.dispatch.context,
+      artifacts,
+      allowedWritePaths,
+      expectedOutputs: input.dispatch.expectedOutputs,
+      checks: input.dispatch.checks,
+      authority: { ...WORKER_AUTHORITY_CEILING },
+      outputContract,
+    });
+  }
+
+  if (input.candidate.packageKind !== "procedure") {
+    fail(
+      "APPROVAL_RELATION_MISMATCH",
+      "Procedure activation resolved as a Research Skill",
+    );
+  }
   const base = {
     host: input.host,
     dispatch: input.dispatch,
@@ -494,11 +628,7 @@ function normalizedContext(input: {
       policyDigest: input.activation.policyDigest,
       scopeHash: input.activation.scopeHash,
     },
-    approval: {
-      id: input.approval.grant.id,
-      mode: input.approval.grant.mode,
-      expiresAt: input.approval.grant.expiresAt,
-    },
+    approval,
     capability: input.candidate.procedure.capability,
     procedure: {
       manifest: input.candidate.procedure.manifest,
@@ -506,26 +636,14 @@ function normalizedContext(input: {
       instructions: input.candidate.procedure.instructions,
       source: input.candidate.procedure.source,
     },
-    repository: {
-      id: input.dispatch.repositoryId,
-      path: input.candidate.scope.repository.resolvedRoot,
-    },
+    repository,
     context: input.dispatch.context,
     artifacts,
-    allowedWritePaths: input.candidate.scope.allowedWritePaths.map(
-      (entry) => entry.resolvedPath,
-    ),
+    allowedWritePaths,
     expectedOutputs: input.dispatch.expectedOutputs,
     checks: input.dispatch.checks,
     authority: { ...WORKER_AUTHORITY_CEILING },
-    outputContract: {
-      type: "result-plus-pending-proposal" as const,
-      dispatchId: input.dispatch.id,
-      runId: input.dispatch.runId,
-      questId: input.dispatch.questId,
-      resultId: input.resultId,
-      proposalId: input.proposalId,
-    },
+    outputContract,
   };
 
   // Schema-v2 Procedures get Context v2 with worker-visible methodology only.
@@ -588,11 +706,12 @@ export async function resolveApprovedResearchDispatchContext(
     );
   }
   const activation = requireActivation({ state, dispatch });
+  let capability: ResearchCapabilityDefinition;
   try {
-    resolveResearchCapability({
+    capability = resolveResearchCapability({
       stage,
       capabilityId: activation.capabilityId,
-    });
+    }).capability;
   } catch (error) {
     const code =
       typeof error === "object" &&
@@ -638,6 +757,7 @@ export async function resolveApprovedResearchDispatchContext(
       activation,
       approval,
       candidate,
+      capability,
       ...ids,
     }),
   });

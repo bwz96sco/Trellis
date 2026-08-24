@@ -5,6 +5,8 @@ import path from "node:path";
 import {
   approvalIdSchema,
   createActivationId,
+  getResearchActivationPackageDigest,
+  getResearchApprovalPackageDigest,
   createDecisionId,
   createDispatchId,
   isAuthoritativeMethodologyProcedureVersion,
@@ -21,6 +23,7 @@ import {
   resolveProcedureClosureDisposition,
   resolveResearchCapability,
   resultSchema,
+  sameResearchExecutionPackageIdentity,
   stableResearchJson,
   validateProposalOperationsForCapability,
   type ApprovalId,
@@ -38,7 +41,6 @@ import {
   type RepositoryId,
   isExecutionPackageActivation,
   isExecutionPackageApprovalGrant,
-  type LegacyProcedureActivation,
   type ResearchActivation,
   type ResearchApprovalState,
   type ResearchEvent,
@@ -48,6 +50,7 @@ import {
   type ResultId,
   type RunId,
   type V13ProcedureClosureDisposition,
+  type WorkflowInstanceId,
 } from "@mindfoldhq/trellis-core/research";
 
 import { writeFileAtomic } from "../../utils/atomic-write.js";
@@ -116,6 +119,11 @@ export interface PrepareResearchDispatchOptions extends ResearchMutationOptions 
   checks: string[];
   taskRef?: string;
   capabilityId: string;
+  skillId?: string;
+  skillVersion?: string;
+  memberPaths?: string[];
+  workflowInstanceId?: WorkflowInstanceId;
+  workflowNodeId?: string;
 }
 
 export interface PrepareResearchDispatchResult extends ResearchMutationResult {
@@ -490,6 +498,45 @@ export async function prepareResearchDispatch(
     });
     if (replay !== null) {
       const classified = classifyPrepareEvents(replay, options.id);
+      const activation = classified.activation;
+      if (activation !== null && isExecutionPackageActivation(activation)) {
+        const requestedMemberPaths = [
+          ...new Set(options.memberPaths ?? []),
+        ].sort();
+        const recordedWorkflow = activation.managedExecution.workflow;
+        const sameMembers =
+          requestedMemberPaths.length ===
+            activation.managedExecution.requestedMemberPaths.length &&
+          requestedMemberPaths.every(
+            (memberPath, index) =>
+              memberPath ===
+              activation.managedExecution.requestedMemberPaths[index],
+          );
+        if (
+          options.capabilityId !== activation.capabilityId ||
+          options.skillId !== activation.executionPackage.id ||
+          options.skillVersion !== activation.executionPackage.version ||
+          !sameMembers ||
+          options.workflowInstanceId !== recordedWorkflow?.workflowInstanceId ||
+          options.workflowNodeId !== recordedWorkflow?.nodeId
+        ) {
+          throw new ResearchActivationError(
+            "IDEMPOTENCY_KEY_CONFLICT",
+            "Idempotency key belongs to another Research Skill, capability, member, or Workflow selection",
+          );
+        }
+      } else if (
+        options.skillId !== undefined ||
+        options.skillVersion !== undefined ||
+        (options.memberPaths?.length ?? 0) > 0 ||
+        options.workflowInstanceId !== undefined ||
+        options.workflowNodeId !== undefined
+      ) {
+        throw new ResearchActivationError(
+          "IDEMPOTENCY_KEY_CONFLICT",
+          "Idempotency key belongs to a Procedure Dispatch selection",
+        );
+      }
       const repositoryResolution = await resolveRepositoryForUse(
         root,
         classified.dispatch.repositoryId,
@@ -588,6 +635,11 @@ export async function prepareResearchDispatch(
     root,
     dispatch,
     capabilityId: options.capabilityId,
+    skillId: options.skillId,
+    skillVersion: options.skillVersion,
+    requestedMemberPaths: options.memberPaths,
+    workflowInstanceId: options.workflowInstanceId,
+    workflowNodeId: options.workflowNodeId,
     candidate: true,
   });
   const activation = activationFromCandidate(
@@ -687,18 +739,6 @@ function approvedResultError(
   cause?: unknown,
 ): never {
   throw new ResearchActivationError(code, message, { cause });
-}
-
-function requireLegacyProcedureActivation(
-  activation: ResearchActivation,
-): LegacyProcedureActivation {
-  if (isExecutionPackageActivation(activation)) {
-    approvedResultError(
-      "APPROVAL_RELATION_MISMATCH",
-      "Procedure result commands cannot use an execution-package activation",
-    );
-  }
-  return activation;
 }
 
 function resolveApprovedResultPreflight(
@@ -831,7 +871,7 @@ function validateApprovedResultHierarchy(
 function requireApprovedResultActivation(
   state: ResearchState,
   dispatch: Dispatch,
-): LegacyProcedureActivation {
+): ResearchActivation {
   const activationId = state.activationByDispatchId[dispatch.id];
   if (activationId === undefined) {
     approvedResultError(
@@ -850,7 +890,7 @@ function requireApprovedResultActivation(
       "Dispatch activation index does not match canonical state",
     );
   }
-  return requireLegacyProcedureActivation(activation);
+  return activation;
 }
 
 function requireApprovedResultApproval(
@@ -866,13 +906,14 @@ function requireApprovedResultApproval(
     );
   }
   if (
-    isExecutionPackageActivation(activation) ||
-    isExecutionPackageApprovalGrant(approval.grant) ||
+    isExecutionPackageActivation(activation) !==
+      isExecutionPackageApprovalGrant(approval.grant) ||
     approval.grant.id !== approvalId ||
     approval.grant.activationId !== activation.id ||
     approval.grant.dispatchId !== activation.dispatchId ||
     approval.grant.requestDigest !== activation.requestDigest ||
-    approval.grant.procedureDigest !== activation.procedure.digest ||
+    getResearchApprovalPackageDigest(approval.grant) !==
+      getResearchActivationPackageDigest(activation) ||
     approval.grant.policyDigest !== activation.policyDigest ||
     approval.grant.scopeHash !== activation.scopeHash ||
     !(state.approvalIdsByActivationId[activation.id] ?? []).includes(approvalId)
@@ -886,14 +927,22 @@ function requireApprovedResultApproval(
 }
 
 function validateApprovedResultBindings(
-  activation: LegacyProcedureActivation,
+  activation: ResearchActivation,
   candidate: StagedDispatchRevalidation,
 ): void {
+  const packageMatches = isExecutionPackageActivation(activation)
+    ? candidate.packageKind === "skill" &&
+      sameResearchExecutionPackageIdentity(
+        candidate.skill.identity,
+        activation.executionPackage,
+      )
+    : candidate.packageKind === "procedure" &&
+      candidate.procedure.manifest.id === activation.procedure.id &&
+      candidate.procedure.manifest.version === activation.procedure.version;
   if (
+    !packageMatches ||
     candidate.authority.capabilityId !== activation.capabilityId ||
     candidate.authority.activation !== activation.mode ||
-    candidate.authority.procedure.id !== activation.procedure.id ||
-    candidate.authority.procedure.version !== activation.procedure.version ||
     candidate.authority.maxDurationMinutes !== activation.maxDurationMinutes ||
     candidate.authority.maxDispatches !== activation.maxDispatches
   ) {
@@ -1251,12 +1300,15 @@ export async function recordApprovedResearchDispatchResult(
     // Live 1.0.0 / historical replays keep their prior behavior untouched.
     const replayActivationIdForVersion =
       state.activationByDispatchId[preflight.dispatchId];
-    const replayActivationForVersion =
+    const replayActivationCandidate =
       replayActivationIdForVersion === undefined
         ? undefined
-        : requireLegacyProcedureActivation(
-            state.activations[replayActivationIdForVersion],
-          );
+        : state.activations[replayActivationIdForVersion];
+    const replayActivationForVersion =
+      replayActivationCandidate === undefined ||
+      isExecutionPackageActivation(replayActivationCandidate)
+        ? undefined
+        : replayActivationCandidate;
     const replayNeedsReportReconstruction =
       replayActivationForVersion !== undefined &&
       (replayActivationForVersion.procedure.version === "2.0.4" ||
@@ -1305,15 +1357,25 @@ export async function recordApprovedResearchDispatchResult(
         );
         throw new Error("unreachable: approvedResultError must throw");
       }
-      const replayActivation = requireLegacyProcedureActivation(
-        storedReplayActivation,
-      );
+      if (isExecutionPackageActivation(storedReplayActivation)) {
+        approvedResultError(
+          "APPROVAL_RELATION_MISMATCH",
+          "Methodology report recovery requires a Procedure activation",
+        );
+      }
+      const replayActivation = storedReplayActivation;
       const replayCandidate = await revalidateDispatchActivationStaged({
         root: preflight.root,
         state,
         dispatch: replayDispatch,
         activation: replayActivation,
       });
+      if (replayCandidate.packageKind !== "procedure") {
+        approvedResultError(
+          "APPROVAL_RELATION_MISMATCH",
+          "Methodology report recovery resolved the wrong package kind",
+        );
+      }
       const replayRoots = await verifyArtifacts(
         preflight.root,
         canonical.result.artifactRefs,
@@ -1526,88 +1588,111 @@ export async function recordApprovedResearchDispatchResult(
     false,
   );
   const resultStatus = parsed.result.status;
-  const procedureVersion = activation.procedure.version;
-  const procedureId = activation.procedure.id;
-  const closureFacts = deriveCanonicalClosureFacts({
-    procedureId,
-    procedureVersion,
-    artifactRefs: parsed.result.artifactRefs,
-    artifactRepositoryRoots,
-  });
-  const closureSelected = closureFacts.selected;
-  const closureBlocked = closureFacts.blocked;
-  const closureDisposition = closureFacts.disposition;
-  const closureArtifactRef = closureFacts.closureArtifactRef;
-  // Live 1.0.0 / historical non-authoritative: do not invent v1.3 closure from status.
-  // Only pass selected/blocked when canonical closure was parsed.
-  const methodologyGate = validateMethodologyBeforeRecord({
-    procedureId,
-    procedureVersion,
-    procedureDigest: activation.procedure.digest,
-    procedure: candidate.procedure,
-    capabilityId: activation.capabilityId,
-    dispatchId: dispatch.id,
-    activationId: activation.id,
-    requestDigest: activation.requestDigest,
-    policyDigest: activation.policyDigest,
-    scopeHash: activation.scopeHash,
-    terminalState: resultStatus,
-    resultStatus,
-    proposalStatus: parsed.proposal.status,
-    proposalOperationCount: parsed.proposal.operations.length,
-    selected: closureSelected,
-    blocked: closureBlocked,
-    closureDisposition,
-    closureArtifactRef,
-    closureObservation: closureFacts.closureObservation,
-    batchCommitted: false,
-    acceptedMemberAggregateSha256:
-      procedureVersion === "2.0.7"
-        ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
-        : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
-    resultId: parsed.result.id,
-    proposalId: parsed.proposal.id,
-    approvalId: preflight.approvalId,
-    idempotencyKey: preflight.idempotencyKey,
-    batchHeadSeq: state.projectedThroughSeq,
-    artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
-      artifactId: ref.id,
-      repositoryId: ref.repositoryId,
-      resolvedRepositoryIdentity: artifactRepositoryRoots[ref.repositoryId],
-      exactPath: ref.path,
-      submittedMediaType: ref.mediaType,
-      submittedSha256: ref.sha256,
-      present: true,
-    })),
-    dispatchContext: {
-      questId: dispatch.questId,
+  let methodology:
+    | {
+        readonly procedureId: string;
+        readonly procedureVersion: string;
+        readonly procedureDigest: string;
+        readonly procedure: Extract<
+          StagedDispatchRevalidation,
+          { readonly packageKind: "procedure" }
+        >["procedure"];
+        readonly closureFacts: ReturnType<typeof deriveCanonicalClosureFacts>;
+      }
+    | undefined;
+  if (!isExecutionPackageActivation(activation)) {
+    if (candidate.packageKind !== "procedure") {
+      approvedResultError(
+        "APPROVAL_RELATION_MISMATCH",
+        "Procedure activation resolved as a Research Skill",
+      );
+    }
+    const procedureVersion = activation.procedure.version;
+    const procedureId = activation.procedure.id;
+    const closureFacts = deriveCanonicalClosureFacts({
+      procedureId,
+      procedureVersion,
+      artifactRefs: parsed.result.artifactRefs,
+      artifactRepositoryRoots,
+    });
+    // Live 1.0.0 / historical non-authoritative: do not invent v1.3 closure from status.
+    // Only pass selected/blocked when canonical closure was parsed.
+    const methodologyGate = validateMethodologyBeforeRecord({
+      procedureId,
+      procedureVersion,
+      procedureDigest: activation.procedure.digest,
+      procedure: candidate.procedure,
+      capabilityId: activation.capabilityId,
       dispatchId: dispatch.id,
       activationId: activation.id,
+      requestDigest: activation.requestDigest,
+      policyDigest: activation.policyDigest,
+      scopeHash: activation.scopeHash,
+      terminalState: resultStatus,
+      resultStatus,
+      proposalStatus: parsed.proposal.status,
+      proposalOperationCount: parsed.proposal.operations.length,
+      selected: closureFacts.selected,
+      blocked: closureFacts.blocked,
+      closureDisposition: closureFacts.disposition,
+      closureArtifactRef: closureFacts.closureArtifactRef,
+      closureObservation: closureFacts.closureObservation,
+      batchCommitted: false,
+      acceptedMemberAggregateSha256:
+        procedureVersion === "2.0.7"
+          ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
+          : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+      resultId: parsed.result.id,
+      proposalId: parsed.proposal.id,
       approvalId: preflight.approvalId,
-      capabilityId: activation.capabilityId,
-    },
-  });
-  if (methodologyGate.criticalFailure || !methodologyGate.ok) {
-    const codes =
-      methodologyGate.reportKind === "v1.3.1"
-        ? [
-            ...new Set(
-              methodologyGate.reportV131.orderedFindings.map(
-                (finding) => finding.stableError,
+      idempotencyKey: preflight.idempotencyKey,
+      batchHeadSeq: state.projectedThroughSeq,
+      artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
+        artifactId: ref.id,
+        repositoryId: ref.repositoryId,
+        resolvedRepositoryIdentity: artifactRepositoryRoots[ref.repositoryId],
+        exactPath: ref.path,
+        submittedMediaType: ref.mediaType,
+        submittedSha256: ref.sha256,
+        present: true,
+      })),
+      dispatchContext: {
+        questId: dispatch.questId,
+        dispatchId: dispatch.id,
+        activationId: activation.id,
+        approvalId: preflight.approvalId,
+        capabilityId: activation.capabilityId,
+      },
+    });
+    if (methodologyGate.criticalFailure || !methodologyGate.ok) {
+      const codes =
+        methodologyGate.reportKind === "v1.3.1"
+          ? [
+              ...new Set(
+                methodologyGate.reportV131.orderedFindings.map(
+                  (finding) => finding.stableError,
+                ),
               ),
-            ),
-          ].join(",")
-        : [
-            ...new Set(
-              methodologyGate.report.validation.findings.map(
-                (finding) => finding.code,
+            ].join(",")
+          : [
+              ...new Set(
+                methodologyGate.report.validation.findings.map(
+                  (finding) => finding.code,
+                ),
               ),
-            ),
-          ].join(",");
-    approvedResultError(
-      "METHODOLOGY_VALIDATION_FAILED",
-      `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced; codes=${codes}`,
-    );
+            ].join(",");
+      approvedResultError(
+        "METHODOLOGY_VALIDATION_FAILED",
+        `Methodology validation failed for activation '${activation.id}' (critical=${String(methodologyGate.criticalFailure)}); zero-write enforced; codes=${codes}`,
+      );
+    }
+    methodology = {
+      procedureId,
+      procedureVersion,
+      procedureDigest: activation.procedure.digest,
+      procedure: candidate.procedure,
+      closureFacts,
+    };
   }
   // Capability-contained Proposal operations at recording time.
   const operationGate = validateProposalOperationsForCapability({
@@ -1725,68 +1810,70 @@ export async function recordApprovedResearchDispatchResult(
     approval: result.approval,
   });
   // R2B: report-v2 sidecar only after successful atomic batch commit.
-  const postBatchGate = validateMethodologyBeforeRecord({
-    procedureId,
-    procedureVersion,
-    procedureDigest: activation.procedure.digest,
-    procedure: candidate.procedure,
-    capabilityId: activation.capabilityId,
-    dispatchId: dispatch.id,
-    activationId: activation.id,
-    requestDigest: activation.requestDigest,
-    policyDigest: activation.policyDigest,
-    scopeHash: activation.scopeHash,
-    terminalState: resultStatus,
-    resultStatus,
-    proposalStatus: parsed.proposal.status,
-    proposalOperationCount: parsed.proposal.operations.length,
-    selected: closureSelected,
-    blocked: closureBlocked,
-    closureDisposition,
-    closureArtifactRef,
-    closureObservation: closureFacts.closureObservation,
-    batchCommitted: true,
-    acceptedMemberAggregateSha256:
-      procedureVersion === "2.0.7"
-        ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
-        : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
-    resultId: parsed.result.id,
-    proposalId: parsed.proposal.id,
-    approvalId: preflight.approvalId,
-    idempotencyKey: preflight.idempotencyKey,
-    batchHeadSeq: result.headSeq,
-    artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
-      artifactId: ref.id,
-      repositoryId: ref.repositoryId,
-      resolvedRepositoryIdentity: artifactRepositoryRoots[ref.repositoryId],
-      exactPath: ref.path,
-      submittedMediaType: ref.mediaType,
-      submittedSha256: ref.sha256,
-      present: true,
-    })),
-    dispatchContext: {
-      questId: dispatch.questId,
+  if (methodology !== undefined) {
+    const postBatchGate = validateMethodologyBeforeRecord({
+      procedureId: methodology.procedureId,
+      procedureVersion: methodology.procedureVersion,
+      procedureDigest: methodology.procedureDigest,
+      procedure: methodology.procedure,
+      capabilityId: activation.capabilityId,
       dispatchId: dispatch.id,
       activationId: activation.id,
+      requestDigest: activation.requestDigest,
+      policyDigest: activation.policyDigest,
+      scopeHash: activation.scopeHash,
+      terminalState: resultStatus,
+      resultStatus,
+      proposalStatus: parsed.proposal.status,
+      proposalOperationCount: parsed.proposal.operations.length,
+      selected: methodology.closureFacts.selected,
+      blocked: methodology.closureFacts.blocked,
+      closureDisposition: methodology.closureFacts.disposition,
+      closureArtifactRef: methodology.closureFacts.closureArtifactRef,
+      closureObservation: methodology.closureFacts.closureObservation,
+      batchCommitted: true,
+      acceptedMemberAggregateSha256:
+        methodology.procedureVersion === "2.0.7"
+          ? V131_ACCEPTED_MEMBER_AGGREGATE_SHA256
+          : V13_ACCEPTED_MEMBER_AGGREGATE_SHA256,
+      resultId: parsed.result.id,
+      proposalId: parsed.proposal.id,
       approvalId: preflight.approvalId,
-      capabilityId: activation.capabilityId,
-    },
-  });
-  if (postBatchGate.materializeSidecar) {
-    materializeMethodologyReportV2Sidecar({
-      root: preflight.root,
-      headSeq: result.headSeq,
-      dispatchId: dispatch.id,
-      ...(postBatchGate.reportKind === "v1.3.1"
-        ? {
-            reportV131: {
-              report: postBatchGate.reportV131,
-              reportDigest: postBatchGate.reportDigest,
-            },
-          }
-        : { reportV2: postBatchGate.reportV2 }),
-      recovery: `trellis research dispatch record-result ${dispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
+      idempotencyKey: preflight.idempotencyKey,
+      batchHeadSeq: result.headSeq,
+      artifactRefFacts: parsed.result.artifactRefs.map((ref) => ({
+        artifactId: ref.id,
+        repositoryId: ref.repositoryId,
+        resolvedRepositoryIdentity: artifactRepositoryRoots[ref.repositoryId],
+        exactPath: ref.path,
+        submittedMediaType: ref.mediaType,
+        submittedSha256: ref.sha256,
+        present: true,
+      })),
+      dispatchContext: {
+        questId: dispatch.questId,
+        dispatchId: dispatch.id,
+        activationId: activation.id,
+        approvalId: preflight.approvalId,
+        capabilityId: activation.capabilityId,
+      },
     });
+    if (postBatchGate.materializeSidecar) {
+      materializeMethodologyReportV2Sidecar({
+        root: preflight.root,
+        headSeq: result.headSeq,
+        dispatchId: dispatch.id,
+        ...(postBatchGate.reportKind === "v1.3.1"
+          ? {
+              reportV131: {
+                report: postBatchGate.reportV131,
+                reportDigest: postBatchGate.reportDigest,
+              },
+            }
+          : { reportV2: postBatchGate.reportV2 }),
+        recovery: `trellis research dispatch record-result ${dispatch.id} --approval ${preflight.approvalId} --input - --root ${JSON.stringify(preflight.root)} --idempotency-key ${JSON.stringify(preflight.idempotencyKey)}`,
+      });
+    }
   }
   return {
     ...result,

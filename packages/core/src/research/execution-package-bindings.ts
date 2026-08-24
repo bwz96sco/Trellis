@@ -39,9 +39,23 @@ export function cloneResearchActivation(
   activation: ResearchActivation,
 ): ResearchActivation {
   if (isExecutionPackageActivation(activation)) {
+    const managedExecution = Object.freeze({
+      ...activation.managedExecution,
+      requestedMemberPaths: Object.freeze([
+        ...activation.managedExecution.requestedMemberPaths,
+      ]),
+      ...(activation.managedExecution.workflow === undefined
+        ? {}
+        : {
+            workflow: Object.freeze({
+              ...activation.managedExecution.workflow,
+            }),
+          }),
+    });
     return {
       ...activation,
       executionPackage: Object.freeze({ ...activation.executionPackage }),
+      managedExecution,
     } satisfies ExecutionPackageActivation;
   }
   return {

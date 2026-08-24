@@ -1,1 +1,4 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/core/backend/research-state.md","reason":"Authoritative normalized execution-package identity, additive Activation/Approval variants, Workflow node identity/profile, package-neutral authority, replay, reducer, and compatibility contracts."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Authoritative Dispatch prepare/context/result and Workflow complete/transition command surfaces, preview/write behavior, stable errors, and no automatic execution."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Managed schema-v3 Context, exact member projection, Claude/Codex parity, proposal-only worker ceiling, and no nested execution authority."}
+{"file":".trellis/spec/cli/backend/trellis-core-sdk.md","reason":"Core/CLI responsibility boundary and Research-subpath-only public export discipline for new managed binding and Context contracts."}

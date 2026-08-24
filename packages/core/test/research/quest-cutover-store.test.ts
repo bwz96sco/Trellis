@@ -876,6 +876,7 @@ describe("Quest cutover store, projections, and scientific universes", () => {
       {
         kind: "workflow.node.complete",
         workflowInstanceId,
+        executionProfile: "lightweight",
         nodeId: "one",
         acceptedRefs: [{ kind: "artifact", id: artifactId }],
         workflow: definition,

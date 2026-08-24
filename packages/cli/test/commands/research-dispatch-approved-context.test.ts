@@ -136,7 +136,7 @@ describe("approved Research Dispatch Context", { timeout: 30_000 }, () => {
     expect(snapshotTree(sandbox)).toEqual(before);
   });
 
-  it("rejects execution-package bindings before the C5 dispatch cutover", async () => {
+  it("rejects an execution-package activation missing its managed binding", async () => {
     const fixture = await createResearchDispatchFixture(sandbox, {
       automaticEnabled: true,
     });
@@ -156,7 +156,7 @@ describe("approved Research Dispatch Context", { timeout: 30_000 }, () => {
         host: "claude",
         now: new Date(Date.parse(granted.approval.grant.grantedAt) + 1),
       }),
-    ).rejects.toMatchObject({ code: "APPROVAL_RELATION_MISMATCH" });
+    ).rejects.toThrow(/activation\.managedExecution is required/);
     expect(snapshotTree(sandbox)).toEqual(before);
   });
 

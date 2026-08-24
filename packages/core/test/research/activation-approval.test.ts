@@ -259,6 +259,10 @@ function executionPackageActivationEvent(seq = 7): ResearchEvent {
     capabilityId: "research.literature.search",
     mode: "automatic",
     executionPackage: EXECUTION_PACKAGE,
+    managedExecution: {
+      executionProfile: "managed",
+      requestedMemberPaths: ["templates/note.md"],
+    },
     policyDigest: DIGEST_B,
     requestDigest: DIGEST_C,
     scopeHash: DIGEST_D,
@@ -563,6 +567,73 @@ describe("activation and approval schemas", () => {
       /exactly one of procedure or executionPackage/,
     );
 
+    const managedExecution = packageActivation.managedExecution as Record<
+      string,
+      unknown
+    >;
+    expect(() =>
+      researchActivationSchema.parse({
+        ...packageActivation,
+        managedExecution: {
+          ...managedExecution,
+          requestedMemberPaths: ["templates/note.md", "references/default.md"],
+        },
+      }),
+    ).toThrow(/sorted/);
+    expect(() =>
+      researchActivationSchema.parse({
+        ...packageActivation,
+        managedExecution: {
+          ...managedExecution,
+          requestedMemberPaths: ["templates/note.md", "templates/note.md"],
+        },
+      }),
+    ).toThrow(/unique/);
+    expect(() =>
+      researchActivationSchema.parse({
+        ...packageActivation,
+        managedExecution: {
+          ...managedExecution,
+          requestedMemberPaths: ["../escape.md"],
+        },
+      }),
+    ).toThrow(/portable/);
+    expect(() =>
+      researchActivationSchema.parse({
+        ...packageActivation,
+        managedExecution: {
+          executionProfile: "managed",
+          requestedMemberPaths: [],
+          workflow: {
+            workflowInstanceId:
+              "wfi_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            workflowId: "research-default",
+            workflowVersion: "1.0.0",
+            workflowDigest: DIGEST_D,
+            nodeId: "literature",
+          },
+        },
+      }),
+    ).not.toThrow();
+    expect(() =>
+      researchActivationSchema.parse({
+        ...packageActivation,
+        managedExecution: {
+          ...managedExecution,
+          workflow: {
+            workflowInstanceId:
+              "wfi_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            nodeId: "literature",
+          },
+        },
+      }),
+    ).toThrow();
+    expect(() => {
+      const withoutManaged = { ...packageActivation };
+      delete withoutManaged.managedExecution;
+      return researchActivationSchema.parse(withoutManaged);
+    }).toThrow(/managedExecution/);
+
     const legacyGrant = approvalEvent().payload.approval as Record<string, unknown>;
     const packageGrant = executionPackageApprovalEvent().payload
       .approval as Record<string, unknown>;
@@ -724,7 +795,15 @@ describe("activation and approval replay", () => {
       throw new Error("Expected execution-package activation");
     }
     expect(storedActivation.executionPackage).toEqual(EXECUTION_PACKAGE);
+    expect(storedActivation.managedExecution).toEqual({
+      executionProfile: "managed",
+      requestedMemberPaths: ["templates/note.md"],
+    });
     expect(Object.isFrozen(storedActivation.executionPackage)).toBe(true);
+    expect(Object.isFrozen(storedActivation.managedExecution)).toBe(true);
+    expect(
+      Object.isFrozen(storedActivation.managedExecution.requestedMemberPaths),
+    ).toBe(true);
     expect(state.approvals[APPROVAL_ID]).toEqual({
       grant: executionPackageApprovalEvent().payload.approval,
       status: "granted",
@@ -736,7 +815,16 @@ describe("activation and approval replay", () => {
       }
     ).executionPackage;
     parsedIdentity.packageDigest = DIGEST_D;
+    const parsedBinding = (
+      activation.payload.activation as {
+        managedExecution: { requestedMemberPaths: string[] };
+      }
+    ).managedExecution;
+    parsedBinding.requestedMemberPaths.push("references/default.md");
     expect(storedActivation.executionPackage.packageDigest).toBe(DIGEST_A);
+    expect(storedActivation.managedExecution.requestedMemberPaths).toEqual([
+      "templates/note.md",
+    ]);
   });
 
   it("rejects mixed legacy/execution-package grant bindings and digest drift", () => {

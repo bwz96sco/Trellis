@@ -262,6 +262,7 @@ export type ResearchMutation =
       kind: "workflow.node.complete";
       workflowInstanceId: WorkflowInstanceId;
       nodeId: string;
+      executionProfile: "lightweight" | "managed";
       acceptedRefs: readonly WorkflowAcceptedRef[];
       workflow: ParsedResearchWorkflowDefinitionV1;
     }
@@ -1339,10 +1340,10 @@ function buildMutationEventDraft(
         mutation.workflow.definition,
         mutation.nodeId,
       );
-      if (!node?.allowedProfiles.includes("lightweight")) {
+      if (!node?.allowedProfiles.includes(mutation.executionProfile)) {
         throw new ResearchWorkflowError(
           "RESEARCH_WORKFLOW_COMPLETION_INVALID",
-          `Workflow node '${mutation.nodeId}' does not allow lightweight completion`,
+          `Workflow node '${mutation.nodeId}' does not allow ${mutation.executionProfile} completion`,
         );
       }
       let acceptedRefs: readonly WorkflowAcceptedRef[];
@@ -1369,7 +1370,7 @@ function buildMutationEventDraft(
         workflowDigest: instance.workflowDigest,
         nodeId: mutation.nodeId,
         executionPackage: node.executionPackage,
-        executionProfile: "lightweight" as const,
+        executionProfile: mutation.executionProfile,
         acceptedRefs: [...acceptedRefs],
         completedAt: timestamp,
       };

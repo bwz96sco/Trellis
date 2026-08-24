@@ -954,6 +954,22 @@ export function selectResearchSkillMembers(input: {
   return Object.freeze(selected);
 }
 
+export function selectExactResearchSkillMembers(input: {
+  readonly skill: ParsedResearchSkillExecutionPackage;
+  readonly audience: ResearchSkillMemberAudience;
+  readonly requestedPaths: readonly string[];
+}): readonly ResearchSkillInventoryItemV3[] {
+  selectResearchSkillMembers(input);
+  const requested = new Set(input.requestedPaths);
+  return Object.freeze(
+    input.skill.members.filter(
+      (member) =>
+        requested.has(member.path) &&
+        (input.audience === "root" || member.visibility === "worker-visible"),
+    ),
+  );
+}
+
 export function assertResearchExecutionPackageIdentity(
   actual: ResolvedExecutionPackageIdentity,
   expected: Readonly<

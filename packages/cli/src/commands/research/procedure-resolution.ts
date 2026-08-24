@@ -15,6 +15,7 @@ import {
   parseSupportPackManifest,
   resolveProcedurePackageSchemaVersion,
   resolveResearchEffectiveAuthority,
+  selectExactResearchSkillMembers,
   selectResearchSkillMembers,
   serializeSupportPackManifest,
   validateResearchSkillInvocation,
@@ -978,13 +979,20 @@ async function resolveSelectedResearchSkill(input: {
     invocationSource: input.invocationSource,
     ...(input.profile === undefined ? {} : { profile: input.profile }),
   });
-  const members = selectResearchSkillMembers({
-    skill: parsed,
-    audience: input.audience,
-    ...(input.requestedMemberPaths === undefined
-      ? {}
-      : { requestedPaths: input.requestedMemberPaths }),
-  });
+  const members =
+    input.profile === "managed"
+      ? selectExactResearchSkillMembers({
+          skill: parsed,
+          audience: input.audience,
+          requestedPaths: input.requestedMemberPaths ?? [],
+        })
+      : selectResearchSkillMembers({
+          skill: parsed,
+          audience: input.audience,
+          ...(input.requestedMemberPaths === undefined
+            ? {}
+            : { requestedPaths: input.requestedMemberPaths }),
+        });
   return Object.freeze({
     source: parsed.source,
     manifest: parsed.manifest,

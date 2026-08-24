@@ -25,6 +25,7 @@ import type {
   EvidenceId,
   EvidenceStatus,
   EventId,
+  ManagedExecutionBinding,
   Proposal,
   ProposalId,
   ProposalOperation,
@@ -53,6 +54,7 @@ import type {
   RunStatus,
   Workspace,
   WorkspaceId,
+  WorkflowInstanceId,
 } from "./types.js";
 
 export interface RuntimeSchema<T> {
@@ -1060,6 +1062,101 @@ export const resolvedExecutionPackageIdentitySchema =
     };
   });
 
+function managedMemberPath(value: unknown, name: string): string {
+  const memberPath = stringValue(value, name, { nonEmpty: true });
+  if (
+    memberPath.includes("\0") ||
+    memberPath.includes("\\") ||
+    memberPath.startsWith("/") ||
+    /^[A-Za-z]:/.test(memberPath) ||
+    memberPath
+      .split("/")
+      .some((segment) => segment === "" || segment === "." || segment === "..") ||
+    memberPath === "skill.json" ||
+    memberPath === "SKILL.md"
+  ) {
+    throw new Error(`${name} must be a portable Research Skill member path`);
+  }
+  return memberPath;
+}
+
+function managedExecutionBinding(value: unknown): ManagedExecutionBinding {
+  const binding = object(
+    value,
+    "activation.managedExecution",
+    ["executionProfile", "requestedMemberPaths", "workflow"],
+    ["executionProfile", "requestedMemberPaths"],
+  );
+  const requestedMemberPaths = Array.isArray(binding.requestedMemberPaths)
+    ? binding.requestedMemberPaths.map((entry, index) =>
+        managedMemberPath(
+          entry,
+          `activation.managedExecution.requestedMemberPaths[${index}]`,
+        ),
+      )
+    : (() => {
+        throw new Error(
+          "activation.managedExecution.requestedMemberPaths must be an array",
+        );
+      })();
+  if (new Set(requestedMemberPaths).size !== requestedMemberPaths.length) {
+    throw new Error(
+      "activation.managedExecution.requestedMemberPaths must be unique",
+    );
+  }
+  const sorted = [...requestedMemberPaths].sort();
+  if (sorted.some((entry, index) => entry !== requestedMemberPaths[index])) {
+    throw new Error(
+      "activation.managedExecution.requestedMemberPaths must be sorted",
+    );
+  }
+  const common = {
+    executionProfile: enumValue(
+      binding.executionProfile,
+      "activation.managedExecution.executionProfile",
+      ["managed"] as const,
+    ),
+    requestedMemberPaths,
+  };
+  if (binding.workflow === undefined) return common;
+  const workflow = object(binding.workflow, "activation.managedExecution.workflow", [
+    "workflowInstanceId",
+    "workflowId",
+    "workflowVersion",
+    "workflowDigest",
+    "nodeId",
+  ]);
+  return {
+    ...common,
+    workflow: {
+      workflowInstanceId: idValue<WorkflowInstanceId>(
+        workflow.workflowInstanceId,
+        "activation.managedExecution.workflow.workflowInstanceId",
+        "workflowInstance",
+      ),
+      workflowId: stringValue(
+        workflow.workflowId,
+        "activation.managedExecution.workflow.workflowId",
+        { nonEmpty: true },
+      ),
+      workflowVersion: stringValue(
+        workflow.workflowVersion,
+        "activation.managedExecution.workflow.workflowVersion",
+        { nonEmpty: true },
+      ),
+      workflowDigest: sha256Binding(
+        workflow.workflowDigest,
+        "activation.managedExecution.workflow.workflowDigest",
+      ) as `sha256:${string}`,
+      nodeId: stringValue(
+        workflow.nodeId,
+        "activation.managedExecution.workflow.nodeId",
+        { nonEmpty: true },
+      ),
+    },
+  };
+}
+
 const ACTIVATION_COMMON_KEYS = [
   "id",
   "dispatchId",
@@ -1078,7 +1175,12 @@ export const researchActivationSchema = schema<ResearchActivation>((input) => {
   const value = object(
     input,
     "activation",
-    [...ACTIVATION_COMMON_KEYS, "procedure", "executionPackage"],
+    [
+      ...ACTIVATION_COMMON_KEYS,
+      "procedure",
+      "executionPackage",
+      "managedExecution",
+    ],
     ACTIVATION_COMMON_KEYS,
   );
   const hasProcedure = value.procedure !== undefined;
@@ -1145,12 +1247,22 @@ export const researchActivationSchema = schema<ResearchActivation>((input) => {
       },
     };
   }
-  object(input, "activation", [...ACTIVATION_COMMON_KEYS, "executionPackage"]);
+  object(input, "activation", [
+    ...ACTIVATION_COMMON_KEYS,
+    "executionPackage",
+    "managedExecution",
+  ]);
+  if (value.managedExecution === undefined) {
+    throw new Error(
+      "activation.managedExecution is required for an execution-package activation",
+    );
+  }
   return {
     ...common,
     executionPackage: resolvedExecutionPackageIdentitySchema.parse(
       value.executionPackage,
     ),
+    managedExecution: managedExecutionBinding(value.managedExecution),
   };
 });
 

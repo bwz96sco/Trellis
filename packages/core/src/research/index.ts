@@ -50,6 +50,8 @@ export type {
   Decision,
   ApprovalStatus,
   LegacyProcedureActivation,
+  ManagedExecutionWorkflowBinding,
+  ManagedExecutionBinding,
   ExecutionPackageActivation,
   ResearchActivation,
   LegacyProcedureApprovalGrant,
@@ -365,6 +367,7 @@ export {
   computeResearchSkillPackageDigest,
   normalizeResearchProcedureExecutionPackageIdentity,
   parseResearchSkillExecutionPackage,
+  selectExactResearchSkillMembers,
   selectResearchSkillMembers,
   serializeResearchSkillManifestV3,
   validateResearchSkillInvocation,
@@ -397,6 +400,7 @@ export {
   parseResearchProcedure,
   parseResearchProjectPolicy,
   resolveResearchEffectiveAuthority,
+  resolveResearchExecutionPackageEffectiveAuthority,
 } from "./procedure-policy.js";
 export type {
   ParsedResearchProcedure,
@@ -406,6 +410,8 @@ export type {
   ResearchAutomaticIneligibilityReason,
   ResearchCapabilityPolicyV1,
   ResearchEffectiveAuthority,
+  ResearchExecutionPackageEffectiveAuthority,
+  ResearchPackageEffectiveAuthority,
   ResearchProcedureIdentityMode,
   ResearchProcedureManifest,
   ResearchProcedurePolicyErrorCode,

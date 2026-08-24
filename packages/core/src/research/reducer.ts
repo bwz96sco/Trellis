@@ -8,6 +8,7 @@ import {
   isExecutionPackageApprovalGrant,
 } from "./execution-package-bindings.js";
 import { validateArtifactRepositories } from "./repositories.js";
+import { sameResearchExecutionPackageIdentity } from "./workflow.js";
 import {
   assertScientificGateCoversUniverse,
   getCurrentQuestScientificUniverse,
@@ -347,6 +348,120 @@ function artifactBelongsToQuest(
       result.artifactRefs.some((artifact) => artifact.id === artifactId)
     );
   });
+}
+
+function assertManagedWorkflowCompletion(
+  state: ResearchState,
+  instance: ResearchWorkflowInstance,
+  payload: WorkflowNodeCompletePayload,
+): void {
+  const resultRefs = payload.acceptedRefs.filter((ref) => ref.kind === "result");
+  if (payload.executionProfile === "lightweight") {
+    if (resultRefs.length > 0) {
+      throw new Error(
+        "Workflow completion with accepted Result evidence requires the managed profile",
+      );
+    }
+    return;
+  }
+  if (resultRefs.length === 0) {
+    throw new Error(
+      "Managed Workflow completion requires accepted Result evidence",
+    );
+  }
+  const producedArtifactIds = new Set<string>();
+  for (const ref of resultRefs) {
+    const result = requireEntity(state.results, ref.id, "result");
+    for (const artifact of result.artifactRefs) {
+      producedArtifactIds.add(artifact.id);
+    }
+    const dispatch = requireEntity(
+      state.dispatches,
+      result.dispatchId,
+      "dispatch",
+    );
+    const activationId = state.activationByDispatchId[dispatch.id];
+    const activation =
+      activationId === undefined
+        ? undefined
+        : state.activations[activationId];
+    if (
+      activation?.dispatchId !== dispatch.id ||
+      !isExecutionPackageActivation(activation) ||
+      activation.managedExecution.executionProfile !== "managed" ||
+      !sameResearchExecutionPackageIdentity(
+        activation.executionPackage,
+        payload.executionPackage,
+      )
+    ) {
+      throw new Error(
+        `Result '${result.id}' does not resolve to the managed Workflow execution package`,
+      );
+    }
+    const workflow = activation.managedExecution.workflow;
+    if (
+      workflow !== undefined &&
+      (workflow.workflowInstanceId !== instance.workflowInstanceId ||
+        workflow.workflowId !== instance.workflowId ||
+        workflow.workflowVersion !== instance.workflowVersion ||
+        workflow.workflowDigest !== instance.workflowDigest ||
+        workflow.nodeId !== payload.nodeId)
+    ) {
+      throw new Error(
+        `Result '${result.id}' Activation Workflow binding does not match the current node`,
+      );
+    }
+    const approvals = (state.approvalIdsByActivationId[activation.id] ?? [])
+      .map((id) => state.approvals[id])
+      .filter(
+        (approval) =>
+          approval?.status === "consumed" && approval.resultId === result.id,
+      );
+    if (approvals.length !== 1) {
+      throw new Error(
+        `Result '${result.id}' must resolve to exactly one consumed Approval`,
+      );
+    }
+    const approval = approvals[0];
+    if (
+      approval?.status !== "consumed" ||
+      !isExecutionPackageApprovalGrant(approval.grant) ||
+      approval.grant.activationId !== activation.id ||
+      approval.grant.dispatchId !== dispatch.id ||
+      approval.grant.executionPackageDigest !==
+        activation.executionPackage.packageDigest ||
+      approval.grant.requestDigest !== activation.requestDigest ||
+      approval.grant.policyDigest !== activation.policyDigest ||
+      approval.grant.scopeHash !== activation.scopeHash ||
+      approval.resultId !== (`res_${approval.grant.id.slice(4)}` as Result["id"]) ||
+      approval.proposalId !==
+        (`prp_${approval.grant.id.slice(4)}` as Proposal["id"])
+    ) {
+      throw new Error(
+        `Result '${result.id}' consumed Approval bindings do not match its Activation`,
+      );
+    }
+    const proposal = requireEntity(
+      state.proposals,
+      approval.proposalId,
+      "proposal",
+    );
+    if (
+      proposal.dispatchId !== dispatch.id ||
+      proposal.questId !== instance.questId
+    ) {
+      throw new Error(
+        `Result '${result.id}' Proposal does not match the managed Workflow Quest`,
+      );
+    }
+  }
+  for (const ref of payload.acceptedRefs) {
+    if (ref.kind === "artifact" && !producedArtifactIds.has(ref.id)) {
+      throw new Error(
+        `Artifact '${ref.id}' was not produced by an accepted managed Result`,
+      );
+    }
+  }
 }
 
 function applyEvent(state: ResearchState, event: ResearchEvent): void {
@@ -763,6 +878,31 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
       }
       if (activation.createdAt !== event.timestamp) {
         throw new Error("Activation createdAt must equal its event timestamp");
+      }
+      if (isExecutionPackageActivation(activation)) {
+        const workflow = activation.managedExecution.workflow;
+        if (workflow !== undefined) {
+          const instance = requireEntity(
+            state.workflowInstances,
+            workflow.workflowInstanceId,
+            "workflow instance",
+          );
+          if (
+            instance.status !== "active" ||
+            instance.questId !== activation.questId ||
+            state.activeWorkflowByQuestId[activation.questId] !==
+              instance.workflowInstanceId ||
+            instance.workflowId !== workflow.workflowId ||
+            instance.workflowVersion !== workflow.workflowVersion ||
+            instance.workflowDigest !== workflow.workflowDigest ||
+            instance.currentNodeId !== workflow.nodeId ||
+            instance.nodeCompletions[workflow.nodeId] !== undefined
+          ) {
+            throw new Error(
+              `Activation '${activation.id}' Workflow binding does not match the active current node`,
+            );
+          }
+        }
       }
       state.activations[activation.id] = cloneResearchActivation(activation);
       state.activationByDispatchId[dispatch.id] = activation.id;
@@ -1343,11 +1483,7 @@ function applyEvent(state: ResearchState, event: ResearchEvent): void {
           `Workflow node '${payload.nodeId}' is already completed`,
         );
       }
-      if (payload.executionProfile !== "lightweight") {
-        throw new Error(
-          "C3 Workflow completion requires the lightweight profile",
-        );
-      }
+      assertManagedWorkflowCompletion(state, instance, payload);
       if (payload.completedAt !== event.timestamp) {
         throw new Error("Workflow completedAt must equal its event timestamp");
       }

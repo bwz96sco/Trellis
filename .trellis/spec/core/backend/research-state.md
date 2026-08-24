@@ -1072,8 +1072,23 @@ interface LegacyProcedureActivation extends ResearchActivationBase {
   procedure: { id: string; version: string; digest: string };
 }
 
+interface ManagedExecutionWorkflowBinding {
+  workflowInstanceId: WorkflowInstanceId;
+  workflowId: string;
+  workflowVersion: string;
+  workflowDigest: `sha256:${string}`;
+  nodeId: string;
+}
+
+interface ManagedExecutionBinding {
+  executionProfile: "managed";
+  requestedMemberPaths: string[];
+  workflow?: ManagedExecutionWorkflowBinding;
+}
+
 interface ExecutionPackageActivation extends ResearchActivationBase {
   executionPackage: ResolvedExecutionPackageIdentity;
+  managedExecution: ManagedExecutionBinding;
 }
 
 type ResearchActivation =
@@ -1307,9 +1322,18 @@ Canonical schema-v3 event kinds are closed around `quest.import.recorded`, `ques
 - New normalized digests use `uint64-big-endian(byteLength) || bytes` framing. Instruction, inventory, and schema-v3 package domains are respectively `trellis-research-execution-package-instruction-v1\0`, `trellis-research-execution-package-member-inventory-v1\0`, and `trellis-research-execution-package-digest-v3\0`.
 - Procedure-v1 inventory is canonical `[]\n`; Procedure-v2 inventory reuses the existing support-pack inventory serializer. Existing Procedure package digest functions and fixed historical vectors remain unchanged.
 - Exact project package wins. A present invalid project package blocks bundled fallback. Missing project package may fall back to the exact bundled ID/version. There is no `latest`, alias, case folding, host discovery, or source-repository lookup.
-- Legacy schema-v2 Activation/Approval events remain closed around `procedure` and `procedureDigest`. New schema-v3 records are closed around `executionPackage` and `executionPackageDigest`; opposite binding fields are rejected.
-- The reducer accepts mixed old/new ledgers through package-neutral binding helpers. Before C5, live Dispatch, revalidation, authority, and approved Context explicitly reject execution-package records without append or worker launch.
+- Legacy schema-v2 Activation/Approval events remain closed around `procedure` and `procedureDigest`. New schema-v3 records are closed around `executionPackage`, required `managedExecution`, and `executionPackageDigest`; opposite binding fields are rejected.
+- The reducer accepts mixed old/new ledgers through package-neutral binding helpers. Historical Procedure events retain their exact meaning; schema-v3 Activations additionally freeze normalized unique sorted requested member paths and an optional all-or-none Workflow instance/node binding.
 - Packed CLI verification reads manifests from the actual tarball and requires every declared Procedure or future Skill member. Source-tree or dirty `dist` inventory is not package evidence.
+
+#### C5 managed execution authority
+
+- Effective authority uses one discriminated package binding: historical Procedure identity or exact normalized Skill identity. Capability/project-policy limits remain the ceiling; Skill metadata cannot widen network, cost, canonical mutation, repository, chaining, host, or worker authority.
+- A managed Skill Activation is valid only when the exact package allows `managed`, uses `model-context`, binds the selected capability, and records `managedExecution.executionProfile = "managed"`. Requested member paths are normalized, unique, sorted, replayable, and may be empty.
+- Optional Workflow binding freezes instance ID, Workflow ID/version/digest, and node ID. Direct mutation, Approval, Context, Result recording, and managed completion each revalidate the same active Quest/current-node relation; missing, stale, completed, or mismatched bindings fail before append.
+- Execution-package Approval grants bind `executionPackageDigest`; Procedure grants bind `procedureDigest`. Cross-variant or digest mismatch is `APPROVAL_RELATION_MISMATCH`. Revocation, expiry, host uniqueness, consumption, and recovery rules remain unchanged.
+- Result recording remains the atomic `result.record + proposal.record + approval.consume` root action and performs no Workflow mutation. Managed Workflow completion derives package/profile from accepted canonical Result evidence, admits only Artifacts derived from accepted Results, records one `workflow.node.complete`, and never selects a transition.
+- No accepted Result means lightweight completion. Accepted Result evidence means managed completion only when every Result resolves through one coherent Dispatch/Activation/consumed-Approval chain matching the current node package and optional frozen Workflow binding.
 
 #### Workflow-instance state
 
@@ -1417,13 +1441,17 @@ Writer transfer is explicit and append-only. `source -> trellis` requires the cu
 | Member is duplicate, absolute, escaping, symlinked, undeclared, digest-mismatched, or exceeds `maxBytes` | Reject the whole package; return no partial member projection. |
 | Worker requests a root-only member or an unrequested on-demand member appears automatically | `research_skill_member_forbidden` or omit the on-demand member; never leak bytes. |
 | Project package exists but is invalid | Fail closed; never inspect bundled alternate for the same ID/version. |
-| Legacy event contains `executionPackage` or schema-v3 event contains `procedure` | Reject the closed event variant without ledger append. |
-| Pre-C5 live Dispatch receives an execution-package Activation/Approval | Reject zero-write before Context or worker launch. |
-| Model selects an `operator-explicit` package without a prior explicit operator binding | Reject before Context creation. |
+| Legacy event contains `executionPackage`/`managedExecution`, or schema-v3 event contains `procedure` or lacks a valid managed binding | Reject the closed event variant without ledger append. |
+| Activation and Approval use different package variants or package digests | `APPROVAL_RELATION_MISMATCH`; no Context, Result, or consumption append. |
+| Requested managed member paths are non-normalized, duplicate, unsorted, undeclared, root-only, or drifted | Reject the Activation/package projection atomically; return no partial Context. |
+| Model selects an `operator-explicit` package without exact root package selection | Reject before Activation/Context creation. |
 | Any model Context targets a `root-command` package | Reject before Context creation; route only through the root command. |
-| Managed profile is undeclared or lacks capability binding | Reject before Activation. |
+| Managed profile is undeclared or lacks/mismatches capability binding | Reject before Activation. |
+| Frozen Workflow binding is missing, stale, another Quest/digest/node, completed, or no longer current | Reject direct mutation or lifecycle revalidation without append. |
+| Managed completion accepts an Artifact unrelated to every accepted Result | `RESEARCH_WORKFLOW_COMPLETION_INVALID`; append nothing. |
+| Same-key Skill prepare changes package, member subset, Workflow binding, or capability | `IDEMPOTENCY_KEY_CONFLICT`; append nothing. |
 | Second active workflow instance targets one Quest | Reject without append. |
-| Node completion targets non-current/already-completed node | Reject without append. |
+| Node completion targets non-current/already-completed node or a profile not allowed by the node | Reject without append. |
 | Transition source is incomplete, illegal, unselected, or missing gate refs | Reject without append. |
 | Gate record has inferred actor/decision, blank actor/rationale, padded/duplicate/overlapping refs, or invalid evidence ownership/containment | Reject without append. |
 | Quest source has unsupported schema/value/type, missing owner, escaping path, malformed/unreviewed event, incomplete Artifact/Claim binding, or another mapping conflict | Preview reports deterministic field/path/line diagnostics; no mutation plan or write. |
@@ -1440,9 +1468,9 @@ Writer transfer is explicit and append-only. `source -> trellis` requires the cu
 
 ### 5. Good / Base / Bad Cases
 
-- **Good**: exact source bytes produce one deterministic import/cutover batch; current universes require total H1/H2 coverage; complete export bytes receive one authenticated export record; explicit transfer returns source authority.
-- **Base**: historical/non-imported Quest has no C4b projections or universe restrictions and retains existing C4 behavior.
-- **Bad**: import derives candidate IDs from arbitrary headings, export records caller-provided `validated: true`, stale gate/export evidence satisfies authority, source and Trellis both write, or Workflow/gate commands invoke the next execution step.
+- **Good**: exact managed Skill selection freezes package/member/current-node identity, Context exposes only approved bytes, Result/Proposal/Approval consumption commits atomically, explicit completion accepts Result-derived evidence, and a separate transition advances state. Exact source bytes separately preserve deterministic C4b cutover/export authority.
+- **Base**: historical Procedure Context/replay and lightweight Workflow completion remain byte-compatible; historical/non-imported Quest retains existing C4 behavior.
+- **Bad**: same-key replay changes capability/member/node, direct Activation binds stale Workflow state, managed completion accepts unrelated Quest evidence, import derives candidate IDs from arbitrary headings, or any command invokes the next execution step.
 
 ### 6. Tests Required
 
@@ -1450,9 +1478,12 @@ Writer transfer is explicit and append-only. `source -> trellis` requires the cu
 - Independent fixed vectors assert exact schema-v3 package, instruction, and inventory digests plus Procedure-v1/v2 normalized identities.
 - Schema-v3 parser rejects noncanonical manifest bytes, invalid package-kind/schema pairs, unsafe members, and oversized files before content reads; a zero-byte digest-bound declared member remains valid.
 - Project-first resolver tests cover project-only success, bundled fallback only on absence, present-invalid no-fallback, symlink/containment/replacement checks, full-inventory authentication, audience projection, and on-demand omission.
-- Mixed-ledger tests cover legacy/new Activation and Approval parsing, binding mismatch, reduction, and schema-version-aware store emission. Pre-C5 Dispatch and approved Context reject new execution-package records zero-write.
-- Real packed-tarball tests derive every Procedure and future Skill member from extracted manifests; retained Procedure versions through `2.0.7` are required and no production Skill ships in C2.
-- Schema-v3 package parser, exact digest, project-first fail-closed resolution, exact five-package pilot bindings, invocation/entrypoint/profile separation, explicit-only managed evaluation, root-command Quest admin with no model profile, and identical lightweight/managed instruction digest.
+- Mixed-ledger tests cover legacy/new Activation and Approval parsing, required managed bindings, normalized member paths, optional all-or-none Workflow binding, binding mismatch, reduction, and schema-version-aware store emission.
+- Package-neutral authority tests freeze historical Procedure output and prove managed Skill capability/policy cannot widen proposal-only authority.
+- Managed lifecycle tests cover exact prepare selection/replay, capability/member/Workflow drift, automatic and interactive Approval variants, schema-v3 Context, atomic Result/Proposal/consumption, same-key recovery, and unchanged Workflow state after Result recording.
+- Managed completion tests require coherent Result/Dispatch/Activation/consumed-Approval identity, reject unrelated Quest Artifacts, validate direct Activation Workflow binding, emit exact node package/profile, and keep transition separate.
+- Real packed-tarball tests derive every Procedure and future Skill member from extracted manifests; retained Procedure versions through `2.0.7` are required and no production Skill ships in C5.
+- Schema-v3 package parser, exact digest, project-first fail-closed resolution, invocation/entrypoint/profile separation, explicit-only managed selection, root-command refusal, and identical lightweight/managed instruction digest.
 - Workflow DAG validation; bind/complete/transition/close reducers; one-active-instance invariant; no stage inference; no automatic continuation.
 - Scientific gate tests cover structural validation, H1/H2 versus Approval separation, append-only latest-scope semantics, direct-reducer aggregate/relation rejection, H1-before-H2 transition relation order, deterministic `gates.json`, and no same-mutation transition.
 - Quest schema-0.2 and supported legacy mapping: deterministic IDs/token/mutation order, complete extension inventory, exact owner/path/Claim/route/milestone bindings, complete conflict inventory, same-token replay, partial/cross-family idempotency rejection, re-import snapshot scoping, mixed historical/new ledger replay, and deterministic C4b projections.
@@ -1466,6 +1497,12 @@ Writer transfer is explicit and append-only. `source -> trellis` requires the cu
 ```text
 Wrong: add a ResearchSkillPackage registry beside Procedure resolution and translate managed Skills into fabricated Procedure files.
 Correct: normalize historical Procedures and new thin Skills through one execution-package identity and replay path.
+
+Wrong: persist only a Skill inventory digest, infer members/current node later, or let Result recording complete the Workflow.
+Correct: freeze exact member and optional Workflow binding on Activation, revalidate each lifecycle boundary, record Result separately, then explicitly complete and transition.
+
+Wrong: accept any Quest Artifact beside a managed Result during node completion.
+Correct: accept only Artifacts derived from the accepted coherent Result set.
 
 Wrong: use Quest.stage or an H2 record to automatically run evaluation.
 Correct: complete one node, stop, then require a separate operator-selected canonical transition.

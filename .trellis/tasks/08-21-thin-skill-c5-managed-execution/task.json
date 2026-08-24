@@ -3,7 +3,7 @@
   "name": "thin-skill-c5-managed-execution",
   "title": "Integrate managed Research skill execution",
   "description": "Reuse Dispatch and Approval lifecycle with exact normalized skill package and workflow-node identity.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

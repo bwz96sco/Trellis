@@ -165,9 +165,8 @@ export interface ParsedResearchProjectPolicy {
   readonly digest: string;
 }
 
-export interface ResearchEffectiveAuthority {
+interface ResearchEffectiveAuthorityBase {
   readonly capabilityId: ResearchCapabilityId;
-  readonly procedure: Readonly<{ id: string; version: string; digest: string }>;
   readonly enabled: boolean;
   readonly kind: ResearchCapabilityKind;
   readonly activation: ResearchActivationMode;
@@ -181,6 +180,22 @@ export interface ResearchEffectiveAuthority {
   readonly maxDurationMinutes: number;
   readonly maxDispatches: number;
 }
+
+export interface ResearchEffectiveAuthority
+  extends ResearchEffectiveAuthorityBase {
+  readonly packageKind?: "procedure";
+  readonly procedure: Readonly<{ id: string; version: string; digest: string }>;
+}
+
+export interface ResearchExecutionPackageEffectiveAuthority
+  extends ResearchEffectiveAuthorityBase {
+  readonly packageKind: "skill";
+  readonly executionPackage: ResolvedExecutionPackageIdentity;
+}
+
+export type ResearchPackageEffectiveAuthority =
+  | ResearchEffectiveAuthority
+  | ResearchExecutionPackageEffectiveAuthority;
 
 export type ResearchAutomaticIneligibilityReason =
   | "CAPABILITY_DISABLED"
@@ -1084,8 +1099,64 @@ export function resolveResearchEffectiveAuthority(input: {
   });
 }
 
+export function resolveResearchExecutionPackageEffectiveAuthority(input: {
+  readonly capabilityId: string;
+  readonly managedCapabilityId: string;
+  readonly executionPackage: ResolvedExecutionPackageIdentity;
+  readonly policy: ParsedResearchProjectPolicy;
+}): ResearchExecutionPackageEffectiveAuthority {
+  const capability = registeredCapability(input.capabilityId);
+  if (input.managedCapabilityId !== capability.id) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Resolved Research Skill belongs to another capability",
+    );
+  }
+  if (
+    input.executionPackage.packageKind !== "skill" ||
+    input.executionPackage.schemaVersion !== 3
+  ) {
+    fail(
+      "INVALID_RESEARCH_PROCEDURE",
+      "Managed execution requires a schema-v3 Research Skill identity",
+    );
+  }
+  const override = input.policy.policy.capabilities[capability.id];
+  const activation =
+    capability.activation === "explicit" ||
+    capability.kind === "workflow" ||
+    override?.activation === "explicit"
+      ? "explicit"
+      : "automatic";
+  return Object.freeze({
+    packageKind: "skill",
+    capabilityId: capability.id,
+    executionPackage: Object.freeze({ ...input.executionPackage }),
+    enabled: override?.enabled !== false,
+    kind: capability.kind,
+    activation,
+    automaticPolicyEnabled: input.policy.policy.defaults.automaticEnabled,
+    workerAuthority: "proposal-only",
+    networkPolicy: "forbidden",
+    repositoryScope: "single",
+    allowExternalCost: false,
+    allowCanonicalMutation: false,
+    allowCapabilityChaining: false,
+    maxDurationMinutes: Math.min(
+      capability.maxDurationMinutes,
+      input.policy.policy.defaults.maxDurationMinutes,
+      override?.maxDurationMinutes ?? Number.POSITIVE_INFINITY,
+    ),
+    maxDispatches: Math.min(
+      capability.maxDispatches,
+      input.policy.policy.defaults.maxDispatches,
+      override?.maxDispatches ?? Number.POSITIVE_INFINITY,
+    ),
+  });
+}
+
 export function evaluateResearchAutomaticEligibility(
-  authority: ResearchEffectiveAuthority,
+  authority: ResearchPackageEffectiveAuthority,
 ): ResearchAutomaticEligibility {
   const reasons: ResearchAutomaticIneligibilityReason[] = [];
   if (!authority.enabled) reasons.push("CAPABILITY_DISABLED");

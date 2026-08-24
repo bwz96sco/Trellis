@@ -205,6 +205,11 @@ interface DispatchPrepareCliOptions extends ResearchMutationOptions {
   check: string[];
   taskRef?: string;
   capability?: string;
+  skill?: string;
+  skillVersion?: string;
+  member: string[];
+  workflowInstance?: WorkflowInstanceId;
+  workflowNode?: string;
   id?: DispatchId;
 }
 
@@ -1360,6 +1365,23 @@ export function registerResearchCommand(program: Command): void {
       )
       .requiredOption("--owner-skill <skill>", "owning skill")
       .option("--capability <id>", "explicit Research capability ID")
+      .option("--skill <id>", "exact managed Research Skill ID")
+      .option(
+        "--skill-version <version>",
+        "exact managed Research Skill version",
+      )
+      .option(
+        "--member <path>",
+        "approved Research Skill member path (repeatable)",
+        collectString,
+        [] as string[],
+      )
+      .option(
+        "--workflow-instance <workflow-instance-id>",
+        "exact managed Workflow instance ID",
+        parseWorkflowInstanceIdArgument,
+      )
+      .option("--workflow-node <node>", "exact managed Workflow node ID")
       .requiredOption("--objective <text>", "bounded objective")
       .option(
         "--acceptance <text>",
@@ -1400,6 +1422,11 @@ export function registerResearchCommand(program: Command): void {
         repositoryId: options.repository,
         ownerSkill: options.ownerSkill,
         capabilityId: options.capability ?? "",
+        skillId: options.skill,
+        skillVersion: options.skillVersion,
+        memberPaths: options.member,
+        workflowInstanceId: options.workflowInstance,
+        workflowNodeId: options.workflowNode,
         acceptanceCriteria: options.acceptance,
         allowedWritePaths: options.allowWrite,
         expectedOutputs: options.expectedOutput,

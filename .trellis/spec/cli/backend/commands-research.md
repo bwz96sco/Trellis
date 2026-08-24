@@ -760,7 +760,7 @@ Correct: keep the digest external and reconstruct the recoverable projection fro
 
 ### 1. Scope / Trigger
 
-This CLI contract applies to schema-v3 thin-skill inspection, deterministic Workflow/gate routing, and C4b Quest cutover. C3 owns Skill/Workflow commands, C4 owns scientific gates, and C4b owns exact Quest import/export plus writer transfer. Commands never contain scientific methodology, infer scientific decisions, or execute a model implicitly.
+This CLI contract applies to schema-v3 thin-skill inspection, C5 managed Dispatch execution, deterministic Workflow/gate routing, and C4b Quest cutover. C3 owns Skill/Workflow state, C4 owns scientific gates, C4b owns exact Quest import/export plus writer transfer, and C5 reuses existing Dispatch/Activation/Approval/Result/Proposal commands for exact managed Skills. Commands never contain scientific methodology, infer scientific decisions, invoke a provider, or continue a Workflow implicitly.
 
 ### 2. Signatures
 
@@ -769,6 +769,13 @@ trellis research skill list [--json]
 trellis research skill show --skill <id> [--version <version>] [--json]
 trellis research skill context --skill <id> --profile <lightweight|managed> \
   [--member <path>...] [--quest <id>] [--json]
+
+trellis research dispatch prepare --run <run-id> --quest <quest-id> \
+  --repository <repository-id> --owner-skill <label> --objective <text> \
+  [--capability <id>] [--skill <id> --skill-version <version>] \
+  [--member <path>...] \
+  [--workflow-instance <workflow-instance-id> --workflow-node <node>] \
+  [existing portable request/output/check options] [--dry-run] [--write] [--json]
 
 trellis research workflow bind --quest <id> --workflow <id> --version <version> \
   --start-node <node> [--dry-run] [--write] [--json]
@@ -806,7 +813,14 @@ TRELLIS_RESEARCH_ROOT=<trellis-control-root> research-quest-admin <mutating-comm
 
 - Skill commands resolve one normalized execution package project-first and fail closed. Discovery authenticates every discovered ID/version candidate; a symlinked, non-directory, malformed, or otherwise invalid project candidate fails the entire read instead of being skipped or replaced by a partial/bundled result. `context` is read-only, loads one `SKILL.md` plus explicitly requested allowed members, and never executes a model.
 - `context --profile lightweight` requires `entrypointType: "model-context"` and a declared `lightweight` profile. A package with `invocationSource: "operator-explicit"` additionally requires the package to have been selected by this explicit operator command; it is never eligible for implicit model selection.
-- Managed Context selection uses the same normalized identity but still requires existing Dispatch/Activation/Approval commands. `operator-explicit` managed packages require an explicit operator-selected workflow/Activation binding before Context; `skill context` itself does not grant authority. A `root-command` package has no model profile and never enters either model Context.
+- Managed Context selection uses the same normalized identity through existing Dispatch/Activation/Approval commands. `skill context` remains read-only and grants no managed authority. A `root-command` package has no model profile and never enters either model Context.
+- `dispatch prepare` preserves historical Procedure-current behavior when all Skill options are absent. `--skill` and `--skill-version` are an exact pair; `--member` requires that pair; Workflow instance/node are another exact pair and require Skill selection. `owner-skill`, provider, and task-ref remain provenance only.
+- Exact Skill prepare resolves project-first with `operator-explicit + managed + worker` selection, authenticates the full package before projecting requested members, requires `model-context`, exact capability binding, and optional active current Workflow node identity. It writes the existing Dispatch plus one execution-package Activation in the existing atomic prepare batch; no second command tree or registry exists.
+- Activation freezes normalized unique sorted member paths plus optional Workflow instance/definition digest/node. Approval, Context, and Result preflight re-resolve exact recorded identity and revalidate package, capability/policy, request/scope, member bytes, and current Workflow binding before authority is used.
+- Same-key Skill prepare replay compares exact capability, package identity, approved members, and optional Workflow binding. Any changed selection is `IDEMPOTENCY_KEY_CONFLICT`; historical Procedure replay behavior is unchanged.
+- Approved schema-v3 Context embeds exact `SKILL.md`, only requested manifest-declared worker-visible members, package/Approval digests, existing Repository/Artifact/write/output/check contracts, and optional Workflow binding. Claude/Codex differ only by host; Context creation invokes no worker.
+- Approved Result recording accepts execution-package Activation/Approval pairs, preserves derived output IDs and atomic Result plus pending Proposal plus Approval consumption, applies Procedure methodology closure only to applicable historical Procedures, and leaves Workflow state unchanged.
+- `workflow complete` derives `lightweight` when no Result is accepted. Accepted Result evidence derives `managed` only through one coherent Result -> Dispatch -> Activation -> consumed Approval chain matching current node package and optional frozen Workflow binding. Accompanying Artifacts must derive from accepted Results. Completion returns after one node event; transition remains a separate command.
 - Workflow mutations preview by default and require explicit `--write`. Bind/complete/transition/close each append only their typed event. Same-key replay succeeds only when exactly one canonical Workflow event matches the command family, explicit target, and command-specific payload shape; any unrelated, multi-event, or differently shaped ownership returns `IDEMPOTENCY_KEY_CONFLICT` before preview/write success. No command chains to another mutation or model call.
 - `status` and `next` read canonical workflow-instance/gate projections. They return exact instance/workflow/node/package identity, legal transitions, missing requirements, satisfying gate-record IDs, allowed profiles, and stop reason; they never infer current node from Quest stage.
 - `gate record` derives Quest/workflow/node identity from the exact active instance, accepts explicit inline decision fields, and records H1/H2 only. Actor and rationale must be trim-nonempty while preserving decoded values verbatim. Approved/rejected scientific refs remain separate from canonical evidence Artifact refs. It returns after preview/write and never invokes `workflow transition`.
@@ -830,10 +844,15 @@ TRELLIS_RESEARCH_ROOT=<trellis-control-root> research-quest-admin <mutating-comm
 | Package manifest/instructions/members invalid | Fail selected project package; no bundled fallback. |
 | Skill discovery encounters a symlinked, non-directory, malformed, or invalid project ID/version candidate | Fail the entire read with the source-specific Skill resolution error; return no partial list and do not substitute a bundle. |
 | Model implicitly selects an `operator-explicit` package, or any model Context targets a `root-command` | `research_skill_invocation_forbidden`; zero-write. |
-| Requested member undeclared, root-only, or escaping | `research_skill_member_forbidden`; zero-write. |
+| Requested member undeclared, root-only, unrequested, escaping, or drifted | `research_skill_member_forbidden` or package identity failure; no partial Context and zero write. |
+| Skill/version or Workflow instance/node options are partial, or member/Workflow options lack Skill selection | CLI input/Skill validation failure before planning; zero-write. |
+| Managed Skill disallows profile, uses `root-command`, lacks/mismatches capability, or exact explicit selection is absent | `research_skill_invocation_forbidden`; zero-write. |
+| Same prepare key changes capability, package identity, member paths, or Workflow binding | `IDEMPOTENCY_KEY_CONFLICT`; no replay success or append. |
+| Execution-package Activation/Approval variants or digests differ | `APPROVAL_RELATION_MISMATCH`; no Context, Result, Proposal, or consumption append. |
+| Frozen Workflow binding is missing/stale, belongs to another Quest/digest/node, or no longer current | Lifecycle preflight fails before Approval Context/Result write. |
 | Workflow is cyclic or embeds methodology/command text | `research_workflow_invalid`; zero-write. |
 | Quest already has active workflow instance | `research_workflow_active_conflict`; zero-write. |
-| Complete targets wrong node or missing accepted refs | `research_workflow_completion_invalid`; zero-write. |
+| Complete targets wrong node/profile, lacks accepted refs, has incoherent Results, or includes an Artifact unrelated to accepted Results | `research_workflow_completion_invalid`; zero-write. |
 | Transition is illegal, unselected, or gate-incomplete | `research_workflow_transition_blocked`; zero-write. |
 | Workflow idempotency key owns another command family, target, payload shape, or multi-event batch | `IDEMPOTENCY_KEY_CONFLICT`; report no replay success and append nothing. |
 | Gate decision is inferred/malformed, actor or rationale is blank, scientific refs are empty/padded/duplicate/overlapping, or evidence ownership/containment is invalid | `research_gate_invalid`; zero-write. |
@@ -855,16 +874,19 @@ TRELLIS_RESEARCH_ROOT=<trellis-control-root> research-quest-admin <mutating-comm
 
 ### 5. Good / Base / Bad Cases
 
-- **Good**: preview exact import, write unchanged token under fence, record total-coverage gates, export complete validator-compatible tree, then explicitly transfer writer to source.
-- **Base**: preview import/export or run source `status`/`validate` under Trellis ownership; every observed filesystem and ledger byte stays unchanged.
-- **Bad**: infer H2 refs from headings alone, filter missing export Artifacts, accept caller-provided validation digests, discover the wrong sibling control root, or resume source writes before committed transfer.
+- **Good**: prepare exact managed Skill/member/current-node selection, grant Approval, build schema-v3 Context, record Result/Proposal/consumption, explicitly complete node with Result-derived evidence, then separately transition. C4b import/export/writer transfer remains independent.
+- **Base**: omit Skill options and preserve historical Procedure behavior; lightweight completion without a Result remains unchanged; all preview/read-only commands remain zero-write.
+- **Bad**: infer Skill from `owner-skill`, replay another capability/member/node under the same key, accept unrelated Quest Artifact at managed completion, auto-transition after Result, or invoke a provider from Context creation.
 
 ### 6. Tests Required
 
 - Exact command tree/options and `--json` payload ordering.
 - Built CLI read-only snapshots proving list/show/context/status/next produce no writes.
-- One-package Context, omitted on-demand members, rejection of implicit selection for explicit-only packages, explicit-only managed evaluation acceptance after operator binding, root-command rejection from model Context, and identical normalized digest across profiles.
-- Workflow preview/write/replay tests for bind, complete, transition, close, active conflict, missing gate, no automatic continuation, differently shaped same-command keys, and keys owned by another command family.
+- One-package lightweight Context, omitted on-demand members, rejection of implicit selection for explicit-only packages, root-command rejection from model Context, and identical normalized digest across profiles.
+- Managed prepare tests cover exact option pairing, project-first fail-closed resolution, capability/profile/entrypoint checks, normalized persisted members, current-node binding, historical Procedure fallback when absent, and same-key package/member/Workflow/capability conflicts.
+- Approved Context tests cover exact schema-v3 instruction/member bytes, empty member set, root-only/undeclared/unrequested/drift rejection without partial output, Activation/Approval relation, Workflow drift, Claude/Codex parity, and no provider/worker launch.
+- Managed Result tests cover atomic Result/Proposal/Approval consumption, same-key recovery, historical methodology separation, and byte-identical Workflow state after recording.
+- Workflow preview/write/replay tests cover bind, lightweight and managed complete, transition, close, active conflict, coherent Result authority, Result-derived Artifact restriction, missing gate, no automatic continuation, differently shaped same-command keys, and keys owned by another command family.
 - Skill discovery tests prove every candidate is authenticated and a symlinked/non-directory/invalid project candidate fails the complete read without a partial result or bundled substitution.
 - Gate preview/write/status/replay tests: actor/rationale validation, scientific-ref integrity/disjointness, evidence ownership/accepted-ref containment, exact same-key matching, full-ledger replay corruption rejection, concurrent exact-key preview classification, latest same-scope decision, H1/H2 transition-record ordering, deterministic gate projection, and explicit assertion that no Approval, Workflow mutation, Dispatch, Skill, model, worker, or provider command is called.
 - Quest import tests cover default preview, `--dry-run + --write` rejection, deterministic token/IDs/order, exact Artifact collection including mandatory decision files, complete conflict diagnostics, pre/post-fence drift, exact replay, partial/cross-family idempotency conflicts, retained-fence recovery, and byte-identical zero-write paths.
@@ -876,6 +898,12 @@ TRELLIS_RESEARCH_ROOT=<trellis-control-root> research-quest-admin <mutating-comm
 ### 7. Wrong vs Correct
 
 ```text
+Wrong: infer managed package/member/current-node authority from `owner-skill`, capability defaults, or worker output.
+Correct: require exact `dispatch prepare --skill --skill-version`, persist members and optional Workflow binding, then revalidate canonical Activation/Approval state.
+
+Wrong: record a managed Result and automatically complete or transition the Workflow.
+Correct: record Result/Proposal/Approval consumption, explicitly complete with coherent Result-derived evidence, then separately select a legal transition.
+
 Wrong: `research workflow next` selects or runs the next skill.
 Correct: it reports legal operator choices and missing requirements only.
 

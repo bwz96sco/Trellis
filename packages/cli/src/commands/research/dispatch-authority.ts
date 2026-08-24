@@ -7,33 +7,45 @@ import {
   digestDispatchRequest,
   dispatchSchema,
   hashDispatchScope,
+  evaluateResearchAutomaticEligibility,
+  findResearchWorkflowNode,
+  isExecutionPackageActivation,
   normalizeArtifactPath,
   readResearchState,
   resolveResearchCapability,
+  resolveResearchExecutionPackageEffectiveAuthority,
+  sameResearchExecutionPackageIdentity,
   type ArtifactRef,
   type Dispatch,
+  type ManagedExecutionBinding,
   type NormalizedDispatchScopeV1,
   type ParsedResearchProcedure,
-  type LegacyProcedureActivation as ResearchActivation,
+  type ResearchActivation,
   type ResearchAutomaticEligibility,
-  type ResearchEffectiveAuthority,
+  type ResearchPackageEffectiveAuthority,
   type ResearchState,
   type QuestStage,
+  type WorkflowInstanceId,
 } from "@mindfoldhq/trellis-core/research";
 
 import { ResearchActivationError } from "./errors.js";
-import { resolveResearchProcedureAuthority } from "./procedure-resolution.js";
+import { readResearchProjectPolicy } from "./project-policy.js";
+import {
+  resolveResearchProcedureAuthority,
+  resolveResearchSkillExecutionPackage,
+  type ResolvedResearchSkillExecutionPackage,
+} from "./procedure-resolution.js";
+import { resolveResearchWorkflowDefinition } from "./workflow-definition-resolution.js";
 import {
   resolveRepositoryForUse,
   type RepositoryObservation,
 } from "./repository.js";
 
-export interface DispatchActivationCandidate {
+interface DispatchActivationCandidateBase {
   readonly state: ResearchState;
   readonly dispatch: Dispatch;
   readonly stage: string;
-  readonly authority: ResearchEffectiveAuthority;
-  readonly procedure: ParsedResearchProcedure;
+  readonly authority: ResearchPackageEffectiveAuthority;
   readonly automaticEligibility: ResearchAutomaticEligibility;
   readonly policyDigest: string;
   readonly requestDigest: string;
@@ -41,6 +53,17 @@ export interface DispatchActivationCandidate {
   readonly scope: NormalizedDispatchScopeV1;
   readonly repositoryObservation: RepositoryObservation;
 }
+
+export type DispatchActivationCandidate =
+  | (DispatchActivationCandidateBase & {
+      readonly packageKind: "procedure";
+      readonly procedure: ParsedResearchProcedure;
+    })
+  | (DispatchActivationCandidateBase & {
+      readonly packageKind: "skill";
+      readonly skill: ResolvedResearchSkillExecutionPackage;
+      readonly managedExecution: ManagedExecutionBinding;
+    });
 
 function fail(
   code: ConstructorParameters<typeof ResearchActivationError>[0],
@@ -334,6 +357,11 @@ export async function resolveDispatchActivationCandidate(input: {
   readonly root: string;
   readonly dispatch: Dispatch;
   readonly capabilityId: string;
+  readonly skillId?: string;
+  readonly skillVersion?: string;
+  readonly requestedMemberPaths?: readonly string[];
+  readonly workflowInstanceId?: WorkflowInstanceId;
+  readonly workflowNodeId?: string;
   readonly state?: ResearchState;
   readonly candidate?: boolean;
   readonly allowExistingActivation?: boolean;
@@ -367,31 +395,202 @@ export async function resolveDispatchActivationCandidate(input: {
     );
   }
 
-  try {
-    resolveResearchCapability({ stage, capabilityId: input.capabilityId });
-  } catch (error) {
-    const code =
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error.code === "UNKNOWN_CAPABILITY" ||
-        error.code === "CAPABILITY_STAGE_MISMATCH")
-        ? error.code
-        : "DISPATCH_HIERARCHY_INVALID";
-    throw new ResearchActivationError(
-      code,
-      error instanceof Error ? error.message : String(error),
-      { cause: error },
+  const hasSkill =
+    input.skillId !== undefined || input.skillVersion !== undefined;
+  if ((input.skillId === undefined) !== (input.skillVersion === undefined)) {
+    fail(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Research Skill ID and version must be selected together",
     );
   }
-  const resolvedAuthority = await resolveResearchProcedureAuthority({
-    root: input.root,
-    capabilityId: input.capabilityId,
-  });
-  if (!resolvedAuthority.authority.enabled) {
+  if (!hasSkill && (input.requestedMemberPaths?.length ?? 0) > 0) {
+    fail(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Research Skill members require an exact Skill selection",
+    );
+  }
+  if (
+    (input.workflowInstanceId === undefined) !==
+    (input.workflowNodeId === undefined)
+  ) {
+    fail(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Workflow instance and node must be selected together",
+    );
+  }
+  if (!hasSkill && input.workflowInstanceId !== undefined) {
+    fail(
+      "DISPATCH_HIERARCHY_INVALID",
+      "Managed Workflow binding requires an exact Skill selection",
+    );
+  }
+
+  let packageSelection:
+    | {
+        readonly packageKind: "procedure";
+        readonly authority: Extract<
+          ResearchPackageEffectiveAuthority,
+          { readonly procedure: unknown }
+        >;
+        readonly procedure: ParsedResearchProcedure;
+        readonly automaticEligibility: ResearchAutomaticEligibility;
+        readonly policyDigest: string;
+      }
+    | {
+        readonly packageKind: "skill";
+        readonly authority: Extract<
+          ResearchPackageEffectiveAuthority,
+          { readonly packageKind: "skill" }
+        >;
+        readonly skill: ResolvedResearchSkillExecutionPackage;
+        readonly managedExecution: ManagedExecutionBinding;
+        readonly automaticEligibility: ResearchAutomaticEligibility;
+        readonly policyDigest: string;
+      };
+
+  if (input.skillId !== undefined && input.skillVersion !== undefined) {
+    const requestedMemberPaths = [
+      ...new Set(input.requestedMemberPaths ?? []),
+    ].sort();
+    const skill = await resolveResearchSkillExecutionPackage({
+      root: input.root,
+      id: input.skillId,
+      version: input.skillVersion,
+      invocationSource: "operator-explicit",
+      profile: "managed",
+      audience: "worker",
+      requestedMemberPaths,
+    });
+    const capabilityId = skill.manifest.managedBinding?.capabilityId;
+    if (capabilityId === undefined) {
+      fail(
+        "DISPATCH_HIERARCHY_INVALID",
+        `Research Skill '${skill.manifest.id}' has no managed capability binding`,
+      );
+    }
+    if (input.capabilityId !== "" && input.capabilityId !== capabilityId) {
+      fail(
+        "CAPABILITY_STAGE_MISMATCH",
+        "Selected capability does not match the Research Skill managed binding",
+      );
+    }
+    try {
+      resolveResearchCapability({ stage, capabilityId });
+    } catch (error) {
+      const code =
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error.code === "UNKNOWN_CAPABILITY" ||
+          error.code === "CAPABILITY_STAGE_MISMATCH")
+          ? error.code
+          : "DISPATCH_HIERARCHY_INVALID";
+      throw new ResearchActivationError(
+        code,
+        error instanceof Error ? error.message : String(error),
+        { cause: error },
+      );
+    }
+    let workflow: ManagedExecutionBinding["workflow"];
+    if (
+      input.workflowInstanceId !== undefined &&
+      input.workflowNodeId !== undefined
+    ) {
+      const instance = state.workflowInstances[input.workflowInstanceId];
+      if (
+        instance?.status !== "active" ||
+        instance.questId !== input.dispatch.questId ||
+        instance.currentNodeId !== input.workflowNodeId
+      ) {
+        fail(
+          "DISPATCH_HIERARCHY_INVALID",
+          "Selected Workflow binding is not the active current node for the Dispatch Quest",
+        );
+      }
+      const definition = resolveResearchWorkflowDefinition({
+        root: input.root,
+        id: instance.workflowId,
+        version: instance.workflowVersion,
+        expectedDigest: instance.workflowDigest,
+      });
+      const node = findResearchWorkflowNode(
+        definition.definition,
+        input.workflowNodeId,
+      );
+      if (
+        node === undefined ||
+        !node.allowedProfiles.includes("managed") ||
+        !sameResearchExecutionPackageIdentity(
+          node.executionPackage,
+          skill.identity,
+        )
+      ) {
+        fail(
+          "DISPATCH_HIERARCHY_INVALID",
+          "Selected Workflow node does not allow this managed Research Skill package",
+        );
+      }
+      workflow = Object.freeze({
+        workflowInstanceId: instance.workflowInstanceId,
+        workflowId: instance.workflowId,
+        workflowVersion: instance.workflowVersion,
+        workflowDigest: instance.workflowDigest,
+        nodeId: instance.currentNodeId,
+      });
+    }
+    const policy = await readResearchProjectPolicy({ root: input.root });
+    const authority = resolveResearchExecutionPackageEffectiveAuthority({
+      capabilityId,
+      managedCapabilityId: capabilityId,
+      executionPackage: skill.identity,
+      policy,
+    });
+    packageSelection = {
+      packageKind: "skill",
+      authority,
+      skill,
+      managedExecution: Object.freeze({
+        executionProfile: "managed",
+        requestedMemberPaths: Object.freeze([...requestedMemberPaths]),
+        ...(workflow === undefined ? {} : { workflow }),
+      }),
+      automaticEligibility: evaluateResearchAutomaticEligibility(authority),
+      policyDigest: policy.digest,
+    };
+  } else {
+    try {
+      resolveResearchCapability({ stage, capabilityId: input.capabilityId });
+    } catch (error) {
+      const code =
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error.code === "UNKNOWN_CAPABILITY" ||
+          error.code === "CAPABILITY_STAGE_MISMATCH")
+          ? error.code
+          : "DISPATCH_HIERARCHY_INVALID";
+      throw new ResearchActivationError(
+        code,
+        error instanceof Error ? error.message : String(error),
+        { cause: error },
+      );
+    }
+    const resolvedAuthority = await resolveResearchProcedureAuthority({
+      root: input.root,
+      capabilityId: input.capabilityId,
+    });
+    packageSelection = {
+      packageKind: "procedure",
+      authority: resolvedAuthority.authority,
+      procedure: resolvedAuthority.procedure,
+      automaticEligibility: resolvedAuthority.automaticEligibility,
+      policyDigest: resolvedAuthority.policy.digest,
+    };
+  }
+  if (!packageSelection.authority.enabled) {
     fail(
       "CAPABILITY_DISABLED",
-      `Capability '${input.capabilityId}' is disabled`,
+      `Capability '${packageSelection.authority.capabilityId}' is disabled`,
     );
   }
 
@@ -413,7 +612,7 @@ export async function resolveDispatchActivationCandidate(input: {
   for (const entry of input.dispatch.context) {
     if (entry.artifact !== undefined) {
       if (
-        resolvedAuthority.authority.repositoryScope === "single" &&
+        packageSelection.authority.repositoryScope === "single" &&
         entry.artifact.repositoryId !== input.dispatch.repositoryId
       ) {
         fail(
@@ -461,14 +660,23 @@ export async function resolveDispatchActivationCandidate(input: {
     state,
     dispatch: input.dispatch,
     stage,
-    authority: resolvedAuthority.authority,
-    procedure: resolvedAuthority.procedure,
-    automaticEligibility: resolvedAuthority.automaticEligibility,
-    policyDigest: resolvedAuthority.policy.digest,
+    authority: packageSelection.authority,
+    automaticEligibility: packageSelection.automaticEligibility,
+    policyDigest: packageSelection.policyDigest,
     requestDigest: digestDispatchRequest(input.dispatch),
     scopeHash: hashDispatchScope(scope),
     scope,
     repositoryObservation: observation,
+    ...(packageSelection.packageKind === "procedure"
+      ? {
+          packageKind: "procedure" as const,
+          procedure: packageSelection.procedure,
+        }
+      : {
+          packageKind: "skill" as const,
+          skill: packageSelection.skill,
+          managedExecution: packageSelection.managedExecution,
+        }),
   });
 }
 
@@ -477,13 +685,12 @@ export function activationFromCandidate(
   id: ResearchActivation["id"],
   timestamp: string,
 ): ResearchActivation {
-  return {
+  const common = {
     id,
     dispatchId: candidate.dispatch.id,
     questId: candidate.dispatch.questId,
     capabilityId: candidate.authority.capabilityId,
     mode: candidate.authority.activation,
-    procedure: { ...candidate.authority.procedure },
     policyDigest: candidate.policyDigest,
     requestDigest: candidate.requestDigest,
     scopeHash: candidate.scopeHash,
@@ -491,6 +698,28 @@ export function activationFromCandidate(
     maxDispatches: candidate.authority.maxDispatches,
     createdAt: timestamp,
   };
+  return candidate.packageKind === "skill"
+    ? {
+        ...common,
+        executionPackage: { ...candidate.skill.identity },
+        managedExecution: {
+          ...candidate.managedExecution,
+          requestedMemberPaths: [
+            ...candidate.managedExecution.requestedMemberPaths,
+          ],
+          ...(candidate.managedExecution.workflow === undefined
+            ? {}
+            : { workflow: { ...candidate.managedExecution.workflow } }),
+        },
+      }
+    : {
+        ...common,
+        procedure: {
+          id: candidate.procedure.manifest.id,
+          version: candidate.procedure.manifest.version,
+          digest: candidate.procedure.digest,
+        },
+      };
 }
 
 export async function revalidateDispatchActivationBindings(input: {
@@ -509,6 +738,22 @@ export async function revalidateDispatchActivationBindings(input: {
     root: input.root,
     dispatch,
     capabilityId: input.activation.capabilityId,
+    ...(isExecutionPackageActivation(input.activation)
+      ? {
+          skillId: input.activation.executionPackage.id,
+          skillVersion: input.activation.executionPackage.version,
+          requestedMemberPaths:
+            input.activation.managedExecution.requestedMemberPaths,
+          ...(input.activation.managedExecution.workflow === undefined
+            ? {}
+            : {
+                workflowInstanceId:
+                  input.activation.managedExecution.workflow.workflowInstanceId,
+                workflowNodeId:
+                  input.activation.managedExecution.workflow.nodeId,
+              }),
+        }
+      : {}),
     allowExistingActivation: true,
   });
   readCanonicalDispatchRequest(input.root, dispatch);
@@ -516,12 +761,23 @@ export async function revalidateDispatchActivationBindings(input: {
     candidate.dispatch.questId !== input.activation.questId ||
     candidate.authority.capabilityId !== input.activation.capabilityId ||
     candidate.authority.activation !== input.activation.mode ||
-    candidate.authority.procedure.id !== input.activation.procedure.id ||
-    candidate.authority.procedure.version !==
-      input.activation.procedure.version ||
     candidate.authority.maxDurationMinutes !==
       input.activation.maxDurationMinutes ||
-    candidate.authority.maxDispatches !== input.activation.maxDispatches
+    candidate.authority.maxDispatches !== input.activation.maxDispatches ||
+    (isExecutionPackageActivation(input.activation)
+      ? candidate.packageKind !== "skill" ||
+        !isDeepStrictEqual(
+          candidate.skill.identity,
+          input.activation.executionPackage,
+        ) ||
+        !isDeepStrictEqual(
+          candidate.managedExecution,
+          input.activation.managedExecution,
+        )
+      : candidate.packageKind !== "procedure" ||
+        candidate.procedure.manifest.id !== input.activation.procedure.id ||
+        candidate.procedure.manifest.version !==
+          input.activation.procedure.version)
   ) {
     fail(
       "DISPATCH_HIERARCHY_INVALID",
@@ -535,7 +791,9 @@ export async function revalidateDispatchActivationBindings(input: {
     );
   }
   if (
-    candidate.authority.procedure.digest !== input.activation.procedure.digest
+    !isExecutionPackageActivation(input.activation) &&
+    (candidate.packageKind !== "procedure" ||
+      candidate.procedure.digest !== input.activation.procedure.digest)
   ) {
     fail(
       "PROCEDURE_DIGEST_MISMATCH",

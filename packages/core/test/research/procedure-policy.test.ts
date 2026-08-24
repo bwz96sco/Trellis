@@ -11,6 +11,7 @@ import {
   parseResearchProcedure,
   parseResearchProjectPolicy,
   resolveResearchEffectiveAuthority,
+  resolveResearchExecutionPackageEffectiveAuthority,
   stableResearchJson,
   type ResearchCapabilityDefinition,
   type ResearchEffectiveAuthority,
@@ -554,6 +555,62 @@ describe("Research project policy and effective authority", () => {
       maxDurationMinutes: capability.maxDurationMinutes,
       maxDispatches: capability.maxDispatches,
     });
+  });
+
+  it("applies the same conservative capability and policy ceiling to managed Skills", () => {
+    const capability = byId("research.experiment.round");
+    const policy = parseResearchProjectPolicy(
+      policyJson({
+        ...(conservativePolicy() as Record<string, unknown>),
+        defaults: {
+          ...(conservativePolicy() as { defaults: Record<string, unknown> })
+            .defaults,
+          automaticEnabled: true,
+          maxDurationMinutes: 10,
+        },
+      }),
+    );
+    const executionPackage = {
+      id: "research-experiment",
+      version: "1.0.0",
+      schemaVersion: 3,
+      packageKind: "skill",
+      packageDigest: `sha256:${"a".repeat(64)}`,
+      instructionDigest: `sha256:${"b".repeat(64)}`,
+      memberInventoryDigest: `sha256:${"c".repeat(64)}`,
+    } as const;
+    const authority = resolveResearchExecutionPackageEffectiveAuthority({
+      capabilityId: capability.id,
+      managedCapabilityId: capability.id,
+      executionPackage,
+      policy,
+    });
+
+    expect(authority).toMatchObject({
+      packageKind: "skill",
+      capabilityId: capability.id,
+      executionPackage,
+      workerAuthority: "proposal-only",
+      networkPolicy: "forbidden",
+      repositoryScope: "single",
+      allowExternalCost: false,
+      allowCanonicalMutation: false,
+      allowCapabilityChaining: false,
+      maxDurationMinutes: 10,
+      maxDispatches: 1,
+    });
+    expect(evaluateResearchAutomaticEligibility(authority)).toEqual({
+      eligible: true,
+      reasons: [],
+    });
+    expect(() =>
+      resolveResearchExecutionPackageEffectiveAuthority({
+        capabilityId: capability.id,
+        managedCapabilityId: "research.literature.scan",
+        executionPackage,
+        policy,
+      }),
+    ).toThrow(/another capability/);
   });
 
   it("returns every automatic ineligibility reason in stable order", () => {

@@ -9,6 +9,7 @@ import {
   computeResearchExecutionPackageMemberInventoryDigest,
   computeResearchSkillPackageDigest,
   parseResearchSkillExecutionPackage,
+  selectExactResearchSkillMembers,
   selectResearchSkillMembers,
   serializeResearchSkillManifestV3,
   validateResearchSkillInvocation,
@@ -425,6 +426,31 @@ describe("Research Skill execution-package schema v3", () => {
         skill: parsed,
         audience: "root",
         requestedPaths: ["undeclared.txt"],
+      }),
+    ).toThrow(/forbidden/);
+  });
+
+  it("selects only exact normalized requested members for managed execution", () => {
+    const parsed = parse();
+    expect(
+      selectExactResearchSkillMembers({
+        skill: parsed,
+        audience: "worker",
+        requestedPaths: ["templates/note.md"],
+      }).map((member) => member.path),
+    ).toEqual(["templates/note.md"]);
+    expect(
+      selectExactResearchSkillMembers({
+        skill: parsed,
+        audience: "worker",
+        requestedPaths: [],
+      }),
+    ).toEqual([]);
+    expect(() =>
+      selectExactResearchSkillMembers({
+        skill: parsed,
+        audience: "worker",
+        requestedPaths: ["validators/root.txt"],
       }),
     ).toThrow(/forbidden/);
   });
