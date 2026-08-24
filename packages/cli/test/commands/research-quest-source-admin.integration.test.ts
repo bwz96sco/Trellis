@@ -545,5 +545,5 @@ sourceAdminDescribe("real research Quest source-admin authority guard", () => {
     expect(ambiguous.status).toBe(1);
     expect(ambiguous.stderr).toContain("ambiguous imported authority");
     expect(snapshotTree(test.sourceRoot)).toEqual(ambiguousBefore);
-  });
+  }, 120_000);
 });

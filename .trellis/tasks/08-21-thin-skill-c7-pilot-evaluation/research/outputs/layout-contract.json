@@ -1,0 +1,28 @@
+{
+  "pathRules": [
+    "A run may read only its copied workspace plus explicitly declared external public inputs.",
+    "A run may write only below outputs/<run-id>/.",
+    "Sibling run output paths are forbidden until all arms for the case are complete.",
+    "No output path grants canonical Research or Quest writer authority."
+  ],
+  "preparedBy": "uv run python research/tools/evaluation_harness.py prepare-run",
+  "requiredEntries": [
+    "run-context.json",
+    "workspace/input/",
+    "workspace/fixtures/",
+    "artifacts/",
+    "evidence/"
+  ],
+  "root": "outputs/<run-id>/",
+  "runContextFields": [
+    "schemaVersion",
+    "runId",
+    "caseId",
+    "arm",
+    "input",
+    "fixtures",
+    "createdAt",
+    "providerAuthorizationRef"
+  ],
+  "schemaVersion": 1
+}

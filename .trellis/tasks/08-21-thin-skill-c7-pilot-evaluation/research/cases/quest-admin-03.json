@@ -1,0 +1,84 @@
+{
+  "applicableArms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "armBSourceSet": "quest-admin",
+  "armCExecutionPackage": {
+    "id": "research-quest-admin",
+    "instructionDigest": "sha256:cf0ea546c6d2d2b9dfde7f00c7578705c993fb30d76df194cfe19569596593e5",
+    "memberInventoryDigest": "sha256:0ed9fa66664d261a53da5dc81101e083b4299c14da128895858ade8590340727",
+    "packageDigest": "sha256:97e2a3dd3e1731b8899c502131c6d1017482f6c24737f39c8b7c45257fb9c37d",
+    "packageKind": "skill",
+    "schemaVersion": 3,
+    "version": "1.0.0"
+  },
+  "assertions": [
+    {
+      "description": "Export alone leaves Trellis as writer.",
+      "id": "export-does-not-transfer",
+      "zeroTolerance": false
+    },
+    {
+      "description": "Writer transfer uses authenticated export evidence and is a separate action.",
+      "id": "authority-recovery-explicit",
+      "zeroTolerance": false
+    },
+    {
+      "description": "Source and Trellis are never writable concurrently.",
+      "id": "single-quest-writer",
+      "zeroTolerance": true
+    },
+    {
+      "description": "Export recovery preserves target bytes, ledger length, and mapped state.",
+      "id": "recovery-preserves-identity",
+      "zeroTolerance": false
+    }
+  ],
+  "boundary": "quest-admin",
+  "caseId": "quest-admin-03",
+  "fixtureRefs": [
+    {
+      "bytes": 197,
+      "path": "cases/fixtures/quest-admin-03/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "path": "cases/fixtures/quest-admin-03/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "path": "cases/fixtures/quest-admin-03/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "path": "cases/fixtures/quest-admin-03/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 0,
+      "path": "cases/fixtures/quest-admin-03/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 833,
+      "path": "cases/fixtures/quest-admin-03/research-quest.yaml",
+      "sha256": "1ade117aa4f76f337ca8e5834fe4f71353ca90ae0d22c97f007783e4ecb07f4e"
+    }
+  ],
+  "inputRef": "cases/inputs/quest-admin-03.md",
+  "inputSha256": "0b3a6edf0a758a0cbf98c072d7aca2aa3e5095d1a8e0f4e504dae34dedcff14c",
+  "plannedInvocationUnits": {
+    "A": 1,
+    "B": 1,
+    "C": 1
+  },
+  "requestedMembersC": [],
+  "requiredProfileC": "root-command",
+  "schemaVersion": 1,
+  "title": "Quest administration case 03: export and authority recovery"
+}

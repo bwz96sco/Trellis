@@ -1,0 +1,43 @@
+{
+  "acceptanceShortfalls": [
+    "No live A/B/C quality arms ran because the deterministic single-quest-writer failure required an immediate stop before provider authorization.",
+    "The required minimum of ten real invocations was not met; completed real invocations remain zero.",
+    "Matched-arm quality, managed interruption recovery, Quest export/authority recovery, and repeated overhead comparisons were not evaluated as live runs."
+  ],
+  "coverage": {
+    "applicableArmCount": 27,
+    "boundaries": 3,
+    "completedArms": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+    },
+    "completedRealInvocations": 0,
+    "completedRunRecords": 0,
+    "frozenCases": 9,
+    "plannedInvocationUnits": 29
+  },
+  "deterministicProofRef": "deterministic-proof.json",
+  "disposition": {
+    "id": "retain-four-package-pilot-only",
+    "supportingProofIds": [
+      "source-admin-refusal"
+    ],
+    "supportingRunIds": []
+  },
+  "fullMigrationBlocked": true,
+  "nextMigrationStarted": false,
+  "providerExecution": {
+    "authorizationStatus": "not-authorized",
+    "managedWorkersInvoked": 0,
+    "modelInvocations": 0,
+    "providerProcessesInvoked": 0
+  },
+  "schemaVersion": 1,
+  "status": "failed-zero-tolerance",
+  "zeroToleranceFailure": {
+    "checkId": "single-quest-writer",
+    "proofId": "source-admin-refusal",
+    "status": "fail"
+  }
+}

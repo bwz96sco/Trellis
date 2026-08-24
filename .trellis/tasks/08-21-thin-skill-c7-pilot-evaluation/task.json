@@ -3,7 +3,7 @@
   "name": "thin-skill-c7-pilot-evaluation",
   "title": "Run Research orchestration pilot evaluation",
   "description": "Run required bare/source/Trellis cases and decide whether migration should expand, narrow, or stop.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": "cli",

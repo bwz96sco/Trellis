@@ -1,0 +1,392 @@
+{
+  "arms": {
+    "A": {
+      "identityKind": "none",
+      "label": "bare"
+    },
+    "B": {
+      "identityKind": "c1-source",
+      "label": "frozen-source",
+      "sourceSets": {
+        "evaluation": [
+          {
+            "path": "skills/research-idea-evaluation/SKILL.md",
+            "role": "instruction",
+            "sha256": "ab2025452924fc581f257f33dc9d41851c98f6ec86079ada21d5ad1d9c1b7617",
+            "size": 3286
+          },
+          {
+            "path": "skills/research-idea-evaluation/agents/openai.yaml",
+            "role": "host-projection",
+            "sha256": "43c1a641b19756f4aa2cf5ff0ed610c05f4e6d0977ce241bba1cb6ed200b8176",
+            "size": 307
+          },
+          {
+            "path": "skills/research-idea-evaluation/attack-template.md",
+            "role": "template",
+            "sha256": "ee43247517a2652cf9240261e6142e3b163db596fd29c80a75f08479916a4b15",
+            "size": 1293
+          },
+          {
+            "path": "scripts/validate-research-gates.py",
+            "role": "validator",
+            "sha256": "958d6114f6d582601436c664ccad198b0ba7659476083d7ea807547fb313db74",
+            "size": 21419
+          }
+        ],
+        "ideation": [
+          {
+            "path": "skills/research-ideation/SKILL.md",
+            "role": "instruction",
+            "sha256": "b116c397ca1e3392ca3325ed849be5fd26f969bb75f3e4bc3dae8f1c3e5283db",
+            "size": 5608
+          },
+          {
+            "path": "skills/research-ideation/agents/openai.yaml",
+            "role": "host-projection",
+            "sha256": "357a183814d9a110cf1df02db13e38dc7de251c1787c065cdcc80fdb0a556a29",
+            "size": 315
+          },
+          {
+            "path": "skills/research-ideation/opportunity-board-template.md",
+            "role": "template",
+            "sha256": "4bdb5a549fe58b02cad078f76cc9f04f1e32dc9533211d7a85e36f28c883582b",
+            "size": 1661
+          },
+          {
+            "path": "scripts/validate-research-gates.py",
+            "role": "validator",
+            "sha256": "958d6114f6d582601436c664ccad198b0ba7659476083d7ea807547fb313db74",
+            "size": 21419
+          }
+        ],
+        "literature": [
+          {
+            "path": "skills/research-literature/SKILL.md",
+            "role": "instruction",
+            "sha256": "68ad19d654f519ac7c66d1b0d995251821f45ed2e6848ae7d1f7924ff2dd49ab",
+            "size": 3816
+          },
+          {
+            "path": "skills/research-literature/agents/openai.yaml",
+            "role": "host-projection",
+            "sha256": "4e8ce93b42780616a322bd4a484a107339d13839921f3af9a1b6fb4c7f4ad785",
+            "size": 314
+          },
+          {
+            "path": "skills/research-literature/note-template.md",
+            "role": "template",
+            "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71",
+            "size": 2499
+          }
+        ],
+        "quest-admin": [
+          {
+            "path": "skills/research-quest-admin/SKILL.md",
+            "role": "instruction",
+            "sha256": "a473ffab5b0fabc4591a86e8268e868a9ebe2dfa424d384cf0cb8524a235dbd3",
+            "size": 2506
+          },
+          {
+            "path": "skills/research-quest-admin/agents/openai.yaml",
+            "role": "host-projection",
+            "sha256": "91608eb0e7046ed020937d9d336d50cbd223cde6b81fd5a9c6a2b22c7cae9c8e",
+            "size": 292
+          },
+          {
+            "path": "skills/research-quest-admin/references/campaign-index.md",
+            "role": "reference",
+            "sha256": "dc6d7cbd18d2e4822edbbe70c336ca3060229dfd4d5493f1f50f131f0a2b7bca",
+            "size": 936
+          },
+          {
+            "path": "skills/research-quest-admin/references/quest-pack.md",
+            "role": "reference",
+            "sha256": "8386f0f7a003eb054246fb1b91efaf5af3fe35e71c8e31b802f8cdec0d296a23",
+            "size": 2746
+          },
+          {
+            "path": "skills/research-quest-admin/references/task-forest-bridge.md",
+            "role": "reference",
+            "sha256": "6e9e8381135bb0bcae3f3e80f51d067a8a5ed931bd4aa05a15c073e2236bf226",
+            "size": 1154
+          },
+          {
+            "path": "skills/research-quest-admin/scripts/research_quest_admin.py",
+            "role": "helper",
+            "sha256": "7159bd9a8635110b671bdba8301eeca53f69f2d46c6110c80e7b28075c7d29f8",
+            "size": 14944
+          },
+          {
+            "path": "skills/research-quest/SKILL.md",
+            "role": "instruction",
+            "sha256": "7606afc5e92f486a5b8911ad741cd2f5f75f87213b2352e542fd23198772f135",
+            "size": 2440
+          },
+          {
+            "path": "skills/research-quest/agents/openai.yaml",
+            "role": "host-projection",
+            "sha256": "d39a46b827142b1f5190e12f3e2b74da47f75e344643f7f5c0719b8e6a21aa4d",
+            "size": 315
+          },
+          {
+            "path": "skills/research-quest/scripts/research_quest.py",
+            "role": "helper",
+            "sha256": "dbf9df55283b6481efd1381d298008efa98cebf0c7f7658b3814c61962ac3511",
+            "size": 35730
+          }
+        ]
+      }
+    },
+    "C": {
+      "identityKind": "c6-execution-package",
+      "label": "trellis-package"
+    }
+  },
+  "boundaries": {
+    "ideation-evaluation": [
+      "ideation-01",
+      "ideation-02",
+      "evaluation-01"
+    ],
+    "literature": [
+      "literature-01",
+      "literature-02",
+      "literature-03"
+    ],
+    "quest-admin": [
+      "quest-admin-01",
+      "quest-admin-02",
+      "quest-admin-03"
+    ]
+  },
+  "cases": [
+    "literature-01",
+    "literature-02",
+    "literature-03",
+    "ideation-01",
+    "ideation-02",
+    "evaluation-01",
+    "quest-admin-01",
+    "quest-admin-02",
+    "quest-admin-03"
+  ],
+  "evaluationId": "thin-skill-c7-pilot-evaluation",
+  "evidenceRules": {
+    "appendOnly": true,
+    "armOutputsIsolatedUntilCaseComplete": true,
+    "automaticContinuationForbidden": true,
+    "canonicalResearchTelemetryForbidden": true,
+    "correctionsSupersedeInsteadOfRewrite": true,
+    "runsFile": "runs.jsonl",
+    "weightedAggregateScoresForbidden": true
+  },
+  "frozenInputs": {
+    "c1": {
+      "baseCommit": "e2b0d70e3a797f19461eb106601de12250000b69",
+      "fileCount": 19,
+      "manifest": ".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json",
+      "manifestSha256": "45fc8483b372088838cdf7b2759cb3087de18434daa5c994eaaa23c0f9c5be42",
+      "mutableExternalSourceReadAllowed": false
+    },
+    "c6": {
+      "archiveCommit": "9a153dbedd58bed8455913e747cb195824611bc2",
+      "evidence": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c6-migrate-pilot-packages/research/c6-migration-evidence.json",
+      "evidenceSha256": "69ee108e6ff494d5a79301b24f6c5ee87030a7a85722d42a291f02e373560a76",
+      "packageFileInventory": {
+        "research-idea-evaluation": [
+          {
+            "bytes": 1779,
+            "path": "SKILL.md",
+            "sha256": "aa8f8bb511edf3f69d5fc9ed8b0a344ac9fb6153e2333c2e0a13c5d28905eae5"
+          },
+          {
+            "bytes": 595,
+            "path": "skill.json",
+            "sha256": "626d4206091d47a067ff0702aaeaa58f3d9bf091c8d4e45d8b08b64bd79fee07"
+          },
+          {
+            "bytes": 1293,
+            "path": "templates/attack-template.md",
+            "sha256": "ee43247517a2652cf9240261e6142e3b163db596fd29c80a75f08479916a4b15"
+          }
+        ],
+        "research-ideation": [
+          {
+            "bytes": 1901,
+            "path": "SKILL.md",
+            "sha256": "7664eb0058cf97ff5eeed32b3aac0fd5318f66a5a1504741d3c12180bd9924c4"
+          },
+          {
+            "bytes": 605,
+            "path": "skill.json",
+            "sha256": "d7aac0d68ec65543b78d47d21c49a8217c6640d05560798c358b85dcad83f1d0"
+          },
+          {
+            "bytes": 1661,
+            "path": "templates/opportunity-board-template.md",
+            "sha256": "4bdb5a549fe58b02cad078f76cc9f04f1e32dc9533211d7a85e36f28c883582b"
+          }
+        ],
+        "research-literature": [
+          {
+            "bytes": 1924,
+            "path": "SKILL.md",
+            "sha256": "c09c50d047951220fe74c271263a65e10e6e26ca2d75b9c62ee7bff53a5ff308"
+          },
+          {
+            "bytes": 587,
+            "path": "skill.json",
+            "sha256": "b668c1f2bd31aa3f0dd58d555f8ca404f0a0f4bfb13ec8d502a60253465d3946"
+          },
+          {
+            "bytes": 2499,
+            "path": "templates/note-template.md",
+            "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71"
+          }
+        ],
+        "research-quest-admin": [
+          {
+            "bytes": 1725,
+            "path": "SKILL.md",
+            "sha256": "62403ecf108ca57ecb1ae7197e82323f85a4faffc6f919c2d2b34fc1c48a0daa"
+          },
+          {
+            "bytes": 242,
+            "path": "skill.json",
+            "sha256": "7b2b5fab8def3059510e8d78ddbd4d9fa28af18bb6f3c0a7fffd7f704e14ad4b"
+          }
+        ]
+      },
+      "packages": {
+        "research-idea-evaluation": {
+          "id": "research-idea-evaluation",
+          "instructionDigest": "sha256:4294c16a649778a1e763c143ee82893a1b7d370b3513fdd3ce5a9b97aaf8a03a",
+          "memberInventoryDigest": "sha256:880ef7179d8245730322dcc78c178425fbe56f8d6dc06597487b43f0069ef436",
+          "packageDigest": "sha256:dc58cc3abc0993956a4fc5b0fb873ff09b560af6468b9bb2bb4bc3db8891454a",
+          "packageKind": "skill",
+          "schemaVersion": 3,
+          "version": "1.0.0"
+        },
+        "research-ideation": {
+          "id": "research-ideation",
+          "instructionDigest": "sha256:166e1ca4bd472d1813d3678259e47a235df0de263b8694b9424753226c228d34",
+          "memberInventoryDigest": "sha256:d9dfaec07f25eacdb91364c78fca2947786ce4d281631cff9f8695969ce7544c",
+          "packageDigest": "sha256:f4f309dc92ef8c9ef8b91dab2183272ea805e019914731d8c4e38aaa41c62da0",
+          "packageKind": "skill",
+          "schemaVersion": 3,
+          "version": "1.0.0"
+        },
+        "research-literature": {
+          "id": "research-literature",
+          "instructionDigest": "sha256:ead2668d93ce0c8ae40435435356af6dad3482b0dccbae91a45bbf95192a19c4",
+          "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+          "packageDigest": "sha256:66d1ecd38b80ba983e7a783098cd0781c66952027ac7b1e679d23081c1cb5670",
+          "packageKind": "skill",
+          "schemaVersion": 3,
+          "version": "1.0.0"
+        },
+        "research-quest-admin": {
+          "id": "research-quest-admin",
+          "instructionDigest": "sha256:cf0ea546c6d2d2b9dfde7f00c7578705c993fb30d76df194cfe19569596593e5",
+          "memberInventoryDigest": "sha256:0ed9fa66664d261a53da5dc81101e083b4299c14da128895858ade8590340727",
+          "packageDigest": "sha256:97e2a3dd3e1731b8899c502131c6d1017482f6c24737f39c8b7c45257fb9c37d",
+          "packageKind": "skill",
+          "schemaVersion": 3,
+          "version": "1.0.0"
+        }
+      }
+    }
+  },
+  "minimumCoverage": {
+    "allApplicableArmsRequired": true,
+    "minimumCasesPerBoundary": 3,
+    "minimumRealInvocations": 10,
+    "unavailableArmRequiresReason": true
+  },
+  "providerAuthorization": {
+    "authorizationRef": null,
+    "authorizedRunIds": [],
+    "rule": "Any external/provider/model invocation requires a later explicit user authorization naming the run boundary.",
+    "status": "not-authorized"
+  },
+  "schemaVersion": 1,
+  "status": "blocked-zero-tolerance-before-provider",
+  "stopReason": {
+    "checkId": "single-quest-writer",
+    "effect": "Do not authorize provider runs or expand migration until the evaluation contract chooses an authenticated guarded source dependency or marks the frozen source arm unavailable with an explicit accepted rationale.",
+    "proofId": "source-admin-refusal",
+    "summary": "The exact frozen C1 source-admin helper has no Trellis writer/fence guard and accepts a mutating status --write despite a Trellis writer marker."
+  },
+  "zeroToleranceChecks": [
+    {
+      "applicableCases": [
+        "literature-03"
+      ],
+      "description": "Recovery restores the exact Workflow instance, node, package, members, Activation, and Approval state.",
+      "id": "managed-state-exact-recovery"
+    },
+    {
+      "applicableCases": [
+        "literature-03",
+        "ideation-01",
+        "ideation-02",
+        "evaluation-01"
+      ],
+      "description": "Recovery and Result acceptance do not transition or invoke another stage automatically.",
+      "id": "no-auto-next-stage"
+    },
+    {
+      "applicableCases": [
+        "ideation-02"
+      ],
+      "description": "H2 is neither inferred nor recorded from portfolio content.",
+      "id": "no-inferred-h1-h2"
+    },
+    {
+      "applicableCases": [
+        "evaluation-01"
+      ],
+      "description": "Workers do not record gates, Results, Proposals, Workflow state, or Quest authority.",
+      "id": "no-worker-canonical-mutation"
+    },
+    {
+      "applicableCases": [
+        "evaluation-01"
+      ],
+      "description": "Workers launch no child Skill, Workflow, capability, Procedure, Dispatch, or provider.",
+      "id": "no-worker-nested-execution"
+    },
+    {
+      "applicableCases": [
+        "literature-03"
+      ],
+      "description": "Package and instruction identity do not drift across interruption and replay.",
+      "id": "package-replay-identity-stable"
+    },
+    {
+      "applicableCases": [
+        "ideation-02",
+        "evaluation-01"
+      ],
+      "description": "Human gate authority remains distinct from model output and operational Approval.",
+      "id": "scientific-ownership-preserved"
+    },
+    {
+      "applicableCases": [
+        "evaluation-01"
+      ],
+      "description": "Root closure records exactly selected or blocked with evidence.",
+      "id": "selected-or-blocked"
+    },
+    {
+      "applicableCases": [
+        "quest-admin-01",
+        "quest-admin-02",
+        "quest-admin-03"
+      ],
+      "description": "Successful cutover records Trellis as sole writer.",
+      "id": "single-quest-writer"
+    }
+  ]
+}

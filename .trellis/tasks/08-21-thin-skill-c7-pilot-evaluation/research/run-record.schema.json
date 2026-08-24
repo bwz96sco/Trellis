@@ -1,0 +1,548 @@
+{
+  "$id": "https://trellis.local/c7/run-record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "nonNegativeInteger": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "outputRef": {
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$)).+$",
+      "type": "string"
+    },
+    "usage": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "unavailable"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "reported"
+            },
+            "value": {
+              "$ref": "#/$defs/nonNegativeInteger"
+            }
+          },
+          "required": [
+            "status",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "arm": {
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "artifactRefs": {
+      "items": {
+        "$ref": "#/$defs/outputRef"
+      },
+      "type": "array"
+    },
+    "assertionEvidence": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "assertionId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "evidenceRefs": {
+            "items": {
+              "$ref": "#/$defs/outputRef"
+            },
+            "type": "array"
+          },
+          "note": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "partial",
+              "fail",
+              "not-evaluated"
+            ]
+          }
+        },
+        "required": [
+          "assertionId",
+          "status",
+          "evidenceRefs",
+          "note"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "authorityViolations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "boundary": {
+      "enum": [
+        "literature",
+        "ideation-evaluation",
+        "quest-admin"
+      ]
+    },
+    "caseId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "changedPaths": {
+      "items": {
+        "$ref": "#/$defs/outputRef"
+      },
+      "type": "array"
+    },
+    "completion": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "enum": [
+            "pass",
+            "partial",
+            "fail",
+            "unavailable"
+          ]
+        },
+        "summary": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "outcome",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "corrections": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "declaredAssertions": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "evaluatorNotes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "execution": {
+      "additionalProperties": false,
+      "properties": {
+        "contextUsage": {
+          "$ref": "#/$defs/usage"
+        },
+        "endedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "host": {
+          "enum": [
+            "none",
+            "manual",
+            "claude",
+            "codex"
+          ]
+        },
+        "lifecycleRefs": {
+          "additionalProperties": false,
+          "properties": {
+            "activationId": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "approvalId": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "capabilityId": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "workflowInstanceId": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "workflowNodeId": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile": {
+          "enum": [
+            "bare",
+            "source",
+            "lightweight",
+            "managed",
+            "root-command"
+          ]
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "providerAuthorizationRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "tokenUsage": {
+          "$ref": "#/$defs/usage"
+        },
+        "wallClockMs": {
+          "$ref": "#/$defs/nonNegativeInteger"
+        }
+      },
+      "required": [
+        "profile",
+        "host",
+        "provider",
+        "model",
+        "startedAt",
+        "endedAt",
+        "wallClockMs",
+        "tokenUsage",
+        "contextUsage",
+        "lifecycleRefs",
+        "providerAuthorizationRef"
+      ],
+      "type": "object"
+    },
+    "identity": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "none"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "baselineManifestSha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "files": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "role": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "size": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                  }
+                },
+                "required": [
+                  "path",
+                  "role",
+                  "sha256",
+                  "size"
+                ],
+                "type": "object"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "kind": {
+              "const": "c1-source"
+            },
+            "sourceSet": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "baselineManifestSha256",
+            "sourceSet",
+            "files"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "executionPackage": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "instructionDigest": {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "memberInventoryDigest": {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "packageDigest": {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "packageKind": {
+                  "const": "skill"
+                },
+                "schemaVersion": {
+                  "const": 3
+                },
+                "version": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "version",
+                "schemaVersion",
+                "packageKind",
+                "packageDigest",
+                "instructionDigest",
+                "memberInventoryDigest"
+              ],
+              "type": "object"
+            },
+            "kind": {
+              "const": "c6-execution-package"
+            },
+            "requestedMembers": {
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "kind",
+            "executionPackage",
+            "requestedMembers"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "input": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "isolation": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluatorAccessAfterAllArmsComplete": {
+          "type": "boolean"
+        },
+        "siblingOutputsRead": {
+          "const": false
+        },
+        "workspaceRef": {
+          "$ref": "#/$defs/outputRef"
+        }
+      },
+      "required": [
+        "workspaceRef",
+        "siblingOutputsRead",
+        "evaluatorAccessAfterAllArmsComplete"
+      ],
+      "type": "object"
+    },
+    "missedGates": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "outputRefs": {
+      "items": {
+        "$ref": "#/$defs/outputRef"
+      },
+      "type": "array"
+    },
+    "overhead": {
+      "additionalProperties": false,
+      "properties": {
+        "approvalRounds": {
+          "$ref": "#/$defs/nonNegativeInteger"
+        },
+        "durableArtifacts": {
+          "$ref": "#/$defs/nonNegativeInteger"
+        },
+        "modelCalls": {
+          "$ref": "#/$defs/nonNegativeInteger"
+        },
+        "subagents": {
+          "$ref": "#/$defs/nonNegativeInteger"
+        },
+        "workers": {
+          "$ref": "#/$defs/nonNegativeInteger"
+        }
+      },
+      "required": [
+        "modelCalls",
+        "approvalRounds",
+        "subagents",
+        "workers",
+        "durableArtifacts"
+      ],
+      "type": "object"
+    },
+    "recordKind": {
+      "const": "run"
+    },
+    "recovery": {
+      "additionalProperties": false,
+      "properties": {
+        "attempted": {
+          "type": "boolean"
+        },
+        "evidenceRefs": {
+          "items": {
+            "$ref": "#/$defs/outputRef"
+          },
+          "type": "array"
+        },
+        "exactStateRestored": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "attempted",
+        "exactStateRestored",
+        "evidenceRefs"
+      ],
+      "type": "object"
+    },
+    "reworkSteps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "runId": {
+      "pattern": "^[a-z0-9][a-z0-9-]{2,79}$",
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "supersedesRunId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "recordKind",
+    "runId",
+    "caseId",
+    "boundary",
+    "arm",
+    "supersedesRunId",
+    "input",
+    "declaredAssertions",
+    "identity",
+    "execution",
+    "overhead",
+    "completion",
+    "assertionEvidence",
+    "corrections",
+    "reworkSteps",
+    "missedGates",
+    "authorityViolations",
+    "recovery",
+    "changedPaths",
+    "artifactRefs",
+    "outputRefs",
+    "isolation",
+    "evaluatorNotes"
+  ],
+  "title": "C7 append-only run record",
+  "type": "object"
+}

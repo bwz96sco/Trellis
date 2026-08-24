@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/design.md","reason":"Authoritative A/B/C arm, pilot-boundary, pass/fail, artifact-overhead, and migration-decision contract."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json","reason":"Exact arm-B source identity and authenticated frozen source bytes."}
+{"file":".trellis/tasks/archive/2026-08/08-21-thin-skill-c6-migrate-pilot-packages/design.md","reason":"Exact arm-C package/profile/member matrix and semantic migration boundary."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Deterministic Skill, Workflow, gate, Quest, Dispatch, Context, Result, and recovery command contracts used by C7."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Managed worker identity, Context, proposal-only authority, and no-nested-execution assertions."}
