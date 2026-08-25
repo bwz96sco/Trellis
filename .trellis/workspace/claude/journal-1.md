@@ -241,3 +241,37 @@ Built the deterministic C7 A/B/C harness, confirmed a frozen-source single-write
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: Authenticate guarded Quest writer authority
+
+**Date**: 2026-08-25
+**Task**: Authenticate guarded Quest writer authority
+**Package**: cli
+**Branch**: `claude-t6-mal1-reviewer-01-m0-correction-2`
+
+### Summary
+
+Authenticated source commit 86df5a6 from Git objects, proved Quest source mutations fail closed under Trellis writer authority, preserved archived C7 failure, and kept provider and migration activity at zero.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1b7ad390421f7ded1122f817d5cadf35bfc368bc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
