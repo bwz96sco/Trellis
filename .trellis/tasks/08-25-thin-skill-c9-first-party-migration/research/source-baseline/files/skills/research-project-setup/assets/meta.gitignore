@@ -1,0 +1,54 @@
+# OS/editor noise
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+*.swp
+*.swo
+*~
+
+# Local secrets and environments
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Agent/session state
+.claude/
+.codex/
+.vibeskills/tmp/
+
+# Nested repositories are managed independently.
+code/*
+!code/.gitkeep
+!code/worktrees/
+code/worktrees/*
+!code/worktrees/.gitkeep
+
+paper/*
+!paper/.gitkeep
+
+note/*
+!note/.gitkeep
+
+# Data and generated outputs are tracked only through manifests/releases.
+data/*
+!data/README.md
+runs/
+outputs/
+tmp/
+temp/
+cache/
+
+# Optional release area: keep text metadata, ignore bulky artifacts by default.
+releases/*
+!releases/README.md
+!releases/*.md
+!releases/*.yaml
+!releases/*.yml
+!releases/*.json

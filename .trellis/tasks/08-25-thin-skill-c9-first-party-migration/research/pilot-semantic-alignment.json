@@ -1,0 +1,387 @@
+{
+  "schemaVersion": 1,
+  "task": "08-25-thin-skill-c8-full-migration",
+  "date": "2026-08-25",
+  "scope": "internal",
+  "query": "Compare exact Git-object source bytes for research-literature and research-ideation at commit 86df5a676c52950592ff9fe5966b9c1753160cb5 with bundled Trellis package 1.0.0 bytes; ignore host syntax and duties already represented by Trellis manifests or commands; decide retain-1.0.0 or require-1.1.0.",
+  "sourceAuthority": {
+    "repository": "/Users/zhangbowen/Projects/agent-skills-private",
+    "commit": "86df5a676c52950592ff9fe5966b9c1753160cb5",
+    "tree": "aa0282da9c63f8f17dd94b672b3fd6843647a0bd",
+    "parent": "e2b0d70e3a797f19461eb106601de12250000b69",
+    "readMethod": [
+      "git rev-parse",
+      "git ls-tree",
+      "git cat-file",
+      "git diff-tree"
+    ],
+    "sourceWorkingTreeRead": false,
+    "sourceSkillBlobsChangedFromParent": false,
+    "parentDiffNote": "Commit 86df5a6 changes only skills/research-quest-admin/scripts/research_quest_admin.py. Both compared SKILL.md paths use identical blobs in the parent and source commit. Decisions below compare exact commit blobs with package 1.0.0 semantics; they do not claim these two blobs were introduced by 86df5a6."
+  },
+  "packages": [
+    {
+      "id": "research-literature",
+      "comparedVersion": "1.0.0",
+      "source": {
+        "path": "skills/research-literature/SKILL.md",
+        "mode": "100644",
+        "blobOid": "706cc7397f71e85a16ae94a413120fd0b0fe1f0e",
+        "bytes": 3431,
+        "lines": 33,
+        "sha256": "07d1aa5fb2d437cb21cbe8eae708f15163453a257dec22210b0c37661756c98b"
+      },
+      "packageRoot": "packages/cli/src/templates/research/skills/research-literature/1.0.0",
+      "packageFiles": [
+        {
+          "path": "packages/cli/src/templates/research/skills/research-literature/1.0.0/skill.json",
+          "role": "manifest",
+          "mode": "100644",
+          "gitBlobOid": "abb4b148313a063bd29a50d8f801b11d3c3e9001",
+          "bytes": 587,
+          "sha256": "b668c1f2bd31aa3f0dd58d555f8ca404f0a0f4bfb13ec8d502a60253465d3946",
+          "trackedBlobMatchesWorktree": true
+        },
+        {
+          "path": "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md",
+          "role": "instruction",
+          "mode": "100644",
+          "gitBlobOid": "b96b4a2ab513c9197a1d582da54d6b6c1a84d427",
+          "bytes": 1924,
+          "sha256": "c09c50d047951220fe74c271263a65e10e6e26ca2d75b9c62ee7bff53a5ff308",
+          "trackedBlobMatchesWorktree": true
+        },
+        {
+          "path": "packages/cli/src/templates/research/skills/research-literature/1.0.0/templates/note-template.md",
+          "role": "template",
+          "mode": "100644",
+          "gitBlobOid": "362e80e21fdbf23d604f899adb29f4055500d40b",
+          "bytes": 2499,
+          "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71",
+          "trackedBlobMatchesWorktree": true
+        }
+      ],
+      "obligationMapping": [
+        {
+          "id": "LIT-01",
+          "sourceObligation": "Lock one explicit target question and stop when it is missing.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L8-L16",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L3",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L7"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false
+        },
+        {
+          "id": "LIT-02",
+          "sourceObligation": "Verify paper identity and metadata before registration or citation; reuse an existing completed note.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L17",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L8"
+          ],
+          "classification": "preserved-direct-host-tools-abstracted",
+          "materialDrift": false,
+          "note": "paper-search-cli and Zotero names are host/tool syntax. Verification and reuse duties remain explicit."
+        },
+        {
+          "id": "LIT-03",
+          "sourceObligation": "Register rows must contain id, title, year, status, and question-specific relevance; status vocabulary is candidate, skimmed, read, or dropped.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L18",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L3",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L12"
+          ],
+          "classification": "material-source-obligation-omitted",
+          "materialDrift": true,
+          "reason": "Package names a register but neither SKILL.md, skill.json, nor note template defines row fields, status vocabulary, or question-specific relevance. Trellis commands do not supply this scientific output contract."
+        },
+        {
+          "id": "LIT-04",
+          "sourceObligation": "Read skeleton-first and anchor evidence; preserve empty-section, evidence-category, defect, abstract-only, and target-relation rules.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L19-L30",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L9-L11",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/templates/note-template.md#L3-L65"
+          ],
+          "classification": "preserved-direct-and-template",
+          "materialDrift": false
+        },
+        {
+          "id": "LIT-05",
+          "sourceObligation": "Use one clean context per paper.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L19",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L16-L17",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/skill.json#L1"
+          ],
+          "classification": "preserved-by-profile-and-invocation-boundary",
+          "materialDrift": false,
+          "note": "Trellis replaces source subagent syntax with optional lightweight root execution or one separately approved managed paper invocation. Nested execution remains forbidden."
+        },
+        {
+          "id": "LIT-06",
+          "sourceObligation": "After reading, save the note and update register status and relevance.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L20-L22",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L12",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L21-L23"
+          ],
+          "classification": "material-source-obligation-partially-omitted",
+          "materialDrift": true,
+          "reason": "Package permits declared note/register output but never requires read-note completion to update status and question-specific relevance. This is same missing register contract identified by LIT-03."
+        },
+        {
+          "id": "LIT-07",
+          "sourceObligation": "Paper-local defect diagnosis must not become replacement-method ideation; derivative opportunity analysis belongs to research-opportunity-mining.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L28",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L21",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/skill.json#L1"
+          ],
+          "classification": "material-owner-handoff-changed",
+          "materialDrift": true,
+          "reason": "Stop boundary is preserved, but package text assigns replacement-method work to ideation and manifest suggests research-ideation. Exact source assigns derivative analysis to research-opportunity-mining. This changes scientific stage ownership, not only host invocation syntax."
+        },
+        {
+          "id": "LIT-08",
+          "sourceObligation": "Accept legacy defect-heading notes without treating either heading as proof of global openness.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L29",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/templates/note-template.md#L45-L58"
+          ],
+          "classification": "legacy-compatibility-detail-omitted",
+          "materialDrift": false,
+          "note": "Omission affects legacy input labeling, not bounded review method or new-note evidence categories."
+        },
+        {
+          "id": "LIT-09",
+          "sourceObligation": "Report blocked access or uncertain metadata.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L32",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L12",
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L21"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false
+        },
+        {
+          "id": "LIT-10",
+          "sourceObligation": "Quest-governed changes prepare an event, require explicit admin action, and never mutate Quest state from this skill.",
+          "sourceEvidence": "86df5a6:skills/research-literature/SKILL.md#L33",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-literature/1.0.0/SKILL.md#L23",
+            ".trellis/spec/cli/backend/commands-research.md#L791-L807",
+            ".trellis/spec/cli/backend/commands-research.md#L953"
+          ],
+          "classification": "represented-by-trellis-command-and-authority-boundary",
+          "materialDrift": false
+        }
+      ],
+      "materialDriftSummary": [
+        "Register row/status/relevance output contract is absent.",
+        "Read completion does not require status/relevance merge.",
+        "Derivative-analysis owner is changed from research-opportunity-mining to research-ideation."
+      ],
+      "decision": "require-1.1.0",
+      "rationale": "Exact source contains scientific output and ownership duties not represented by package 1.0.0, its manifest/template, or Trellis commands. Existing 1.0.0 bytes remain immutable; aligned instructions require a new version."
+    },
+    {
+      "id": "research-ideation",
+      "comparedVersion": "1.0.0",
+      "source": {
+        "path": "skills/research-ideation/SKILL.md",
+        "mode": "100644",
+        "blobOid": "7ce5ad4174f696b7e0e401f63b84b235dad1a2d5",
+        "bytes": 4217,
+        "lines": 39,
+        "sha256": "979d75ebd39b08fefe81c326b24a36b2d815bbde3ac9610ef41b99932c1a97a2"
+      },
+      "packageRoot": "packages/cli/src/templates/research/skills/research-ideation/1.0.0",
+      "packageFiles": [
+        {
+          "path": "packages/cli/src/templates/research/skills/research-ideation/1.0.0/skill.json",
+          "role": "manifest",
+          "mode": "100644",
+          "gitBlobOid": "56d5ad2ae695f730430ab39b734525b700eb42fd",
+          "bytes": 605,
+          "sha256": "d7aac0d68ec65543b78d47d21c49a8217c6640d05560798c358b85dcad83f1d0",
+          "trackedBlobMatchesWorktree": true
+        },
+        {
+          "path": "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md",
+          "role": "instruction",
+          "mode": "100644",
+          "gitBlobOid": "3781da84f853dc1e884eefb5c252bfe1a6dd0930",
+          "bytes": 1901,
+          "sha256": "7664eb0058cf97ff5eeed32b3aac0fd5318f66a5a1504741d3c12180bd9924c4",
+          "trackedBlobMatchesWorktree": true
+        },
+        {
+          "path": "packages/cli/src/templates/research/skills/research-ideation/1.0.0/templates/opportunity-board-template.md",
+          "role": "template",
+          "mode": "100644",
+          "gitBlobOid": "e81e2dd951bb98e01ec5ba552f51dad8a886897b",
+          "bytes": 1661,
+          "sha256": "4bdb5a549fe58b02cad078f76cc9f04f1e32dc9533211d7a85e36f28c883582b",
+          "trackedBlobMatchesWorktree": true
+        }
+      ],
+      "obligationMapping": [
+        {
+          "id": "IDEA-01",
+          "sourceObligation": "Freeze parent question, constraints, non-goals, and problem scope; park unconfirmed pivots.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L16",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L7"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false
+        },
+        {
+          "id": "IDEA-02",
+          "sourceObligation": "Mine existing evidence first; prefer explicit opportunity-mining outputs and consume O seeds without rerunning six lenses; otherwise use register/notes/synthesis evidence.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L17",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L8"
+          ],
+          "classification": "material-source-obligation-partially-omitted",
+          "materialDrift": true,
+          "reason": "Package says consume supplied literature/opportunity context but omits source precedence and the prohibition on rerunning opportunity-mining lenses. No manifest or Trellis command supplies that scientific-method ordering."
+        },
+        {
+          "id": "IDEA-03",
+          "sourceObligation": "Map each gap by symptom, underlying mechanism, unresolved cause, and actionability evidence; separate mechanisms from evaluation artifacts.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L18",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L9"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false
+        },
+        {
+          "id": "IDEA-04",
+          "sourceObligation": "Generate one portfolio of 3-7 stable Cn candidates with distinct mechanisms, closest prior/provisional delta, resources, cheapest falsification test, and kill condition.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L8-L19",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L3",
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L10"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false
+        },
+        {
+          "id": "IDEA-05",
+          "sourceObligation": "Preserve mechanism diversity; include conservative, higher-upside, and simplicity-first routes when supported; reopen divergence when candidates collapse.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L19",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L11"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false,
+          "note": "Package adds compatible guidance to split independently testable components; this strengthens mechanism distinction without changing source ownership or stop rules."
+        },
+        {
+          "id": "IDEA-06",
+          "sourceObligation": "Stop after generation; do not evaluate, select, refine, design experiments, or continue automatically; evaluation is a separate explicit owner.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L20-L22",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L14-L18",
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/skill.json#L1"
+          ],
+          "classification": "preserved-direct-and-manifest",
+          "materialDrift": false
+        },
+        {
+          "id": "IDEA-07",
+          "sourceObligation": "Quest-governed H1/H2 decisions require explicit human evidence, validated opportunity/candidate coverage, and separate admin/gate actions.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L24-L32",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L8",
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L12",
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/templates/opportunity-board-template.md#L1-L57",
+            ".trellis/spec/cli/backend/commands-research.md#L791-L831",
+            ".trellis/spec/core/backend/research-state.md#L1406-L1412"
+          ],
+          "classification": "represented-by-template-and-trellis-gate-commands",
+          "materialDrift": false,
+          "note": "Source-local decision Markdown and validator invocation become compatibility material; canonical H1/H2 authority remains root-owned Trellis gate state."
+        },
+        {
+          "id": "IDEA-08",
+          "sourceObligation": "Unknown novelty stays provisional; opportunity seeds are evidence, not candidates or approved H1 items.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L36-L37",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L8",
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L16"
+          ],
+          "classification": "preserved-direct",
+          "materialDrift": false
+        },
+        {
+          "id": "IDEA-09",
+          "sourceObligation": "Reject routes with hidden compute, information leakage, unfair baselines, cosmetic renaming, or unevaluable mechanisms.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L38",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L5-L18"
+          ],
+          "classification": "material-source-obligation-omitted",
+          "materialDrift": true,
+          "reason": "No package instruction, member, manifest field, or Trellis command imposes this candidate-admissibility filter. Candidate resources/test/kill-condition fields do not reject leakage, unfair-baseline, cosmetic, or hidden-compute routes."
+        },
+        {
+          "id": "IDEA-10",
+          "sourceObligation": "Lexical similarity, weighted scores, and candidate order are not research evidence.",
+          "sourceEvidence": "86df5a6:skills/research-ideation/SKILL.md#L39",
+          "packageEvidence": [
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L3",
+            "packages/cli/src/templates/research/skills/research-ideation/1.0.0/SKILL.md#L16-L18"
+          ],
+          "classification": "preserved-by-generation-only-boundary",
+          "materialDrift": false,
+          "note": "Package forbids evaluation, novelty verdicts, and selection. Scoring/order cannot become an ideation verdict within its bounded output."
+        }
+      ],
+      "materialDriftSummary": [
+        "Evidence-source precedence and no-rerun rule for opportunity-mining lenses are absent.",
+        "Candidate-admissibility rejection for hidden compute, leakage, unfair baselines, cosmetic renaming, and unevaluable mechanisms is absent."
+      ],
+      "decision": "require-1.1.0",
+      "rationale": "Exact source contains scientific generation constraints not represented by package 1.0.0, its manifest/template, or Trellis commands. Existing 1.0.0 bytes remain immutable; aligned instructions require a new version."
+    }
+  ],
+  "overallDecision": {
+    "research-literature": "require-1.1.0",
+    "research-ideation": "require-1.1.0"
+  },
+  "relatedSpecs": [
+    {
+      "path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/prd.md",
+      "lines": "33-36",
+      "relevance": "Immutable version policy and exact source/package comparison requirement."
+    },
+    {
+      "path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/design.md",
+      "lines": "73-80",
+      "relevance": "Material-method drift decision rule."
+    },
+    {
+      "path": ".trellis/spec/cli/backend/commands-research.md",
+      "lines": "791-831, 945-953, 983-990",
+      "relevance": "Canonical gate, Workflow, package handoff, and no-nested-execution replacements."
+    },
+    {
+      "path": ".trellis/spec/core/backend/research-state.md",
+      "lines": "1406-1412",
+      "relevance": "Canonical H1/H2 universe and gate authority."
+    }
+  ],
+  "verification": {
+    "sourceCommitResolved": true,
+    "sourceTreeAndParentMatchedTaskAuthority": true,
+    "sourceReadOnlyThroughGitObjects": true,
+    "packageFilesTrackedAndClean": true,
+    "packageTrackedBlobsMatchedWorktreeBytes": true,
+    "jsonParse": "passed with uv run python -m json.tool"
+  }
+}

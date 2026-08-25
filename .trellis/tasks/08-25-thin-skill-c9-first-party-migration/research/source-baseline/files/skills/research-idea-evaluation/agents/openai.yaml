@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Idea Evaluation"
+  short_description: "Novelty and method attack to select or block ideas"
+  default_prompt: "Use $research-idea-evaluation to attack candidate ideas via clean subagents and select one route or close blocked."
+
+policy:
+  allow_implicit_invocation: false

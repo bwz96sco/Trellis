@@ -1,0 +1,34 @@
+schema_version: "0.2"
+quest_id: "rq-example"
+project_slug: "example-project"
+title: "Example Research Project"
+objective: "One-sentence research objective."
+status: "seed"
+active_stage: "research-project-setup"
+first_read:
+  - "note/<vault>/_quest/QUEST_STATUS.md"
+authoritative_artifacts:
+  quest_state:
+    path: "research-quest.yaml"
+    owner_skill: "research-quest-admin"
+branches:
+  - id: "main"
+    status: "active"
+    owner_skill: "research-project-setup"
+    objective: "Clarify the project and select the next research stage."
+    expected_artifact: "note/<vault>/_quest/QUEST_STATUS.md"
+claims: []
+open_questions: []
+current_decision:
+  id: "D0"
+  verdict: "quest_created"
+  rationale: "Quest initialized; route still needs project intake or refresh."
+  evidence_paths:
+    - "note/<vault>/_quest/QUEST_STATUS.md"
+next_action:
+  owner_skill: "research-project-setup"
+  action: "route"
+  acceptance_gate: "Quest status generated and referenced artifacts exist."
+  expected_artifact: "note/<vault>/_quest/QUEST_STATUS.md"
+board: {}
+blockers: []

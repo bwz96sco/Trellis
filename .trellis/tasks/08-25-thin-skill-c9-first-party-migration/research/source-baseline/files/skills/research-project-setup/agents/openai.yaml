@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Project Setup"
+  short_description: "Research workspace boundaries and vault scaffold"
+  default_prompt: "Use $research-project-setup to inspect, design, and change research workspace boundaries with explicit authority."
+
+policy:
+  allow_implicit_invocation: true

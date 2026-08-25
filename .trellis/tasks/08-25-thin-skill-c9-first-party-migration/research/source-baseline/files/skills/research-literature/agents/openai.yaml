@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Literature"
+  short_description: "Question-scoped paper notes with defect analysis"
+  default_prompt: "Use $research-literature to register and critically inspect papers against a target question with evidence-grounded defect notes."
+
+policy:
+  allow_implicit_invocation: true

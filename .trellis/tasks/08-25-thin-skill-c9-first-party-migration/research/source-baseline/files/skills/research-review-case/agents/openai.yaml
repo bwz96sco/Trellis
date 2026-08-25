@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Review Case"
+  short_description: "Referee-side manuscript audits without verdicts"
+  default_prompt: "Use $research-review-case to audit manuscript claims with anchored findings and no paper verdicts."
+
+policy:
+  allow_implicit_invocation: true

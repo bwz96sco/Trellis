@@ -28,7 +28,8 @@
     "08-21-thin-skill-c6-migrate-pilot-packages",
     "08-21-thin-skill-c7-pilot-evaluation",
     "08-25-thin-skill-c7-single-writer-remediation",
-    "08-25-thin-skill-c8-full-migration"
+    "08-25-thin-skill-c8-full-migration",
+    "08-25-thin-skill-c9-first-party-migration"
   ],
   "parent": null,
   "relatedFiles": [],

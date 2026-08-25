@@ -1,0 +1,6 @@
+interface:
+  display_name: "Research Quest"
+  short_description: "Inspect named quest state or decision read-only"
+  default_prompt: "Use $research-quest to inspect this named quest's recorded state or current decision read-only and route its exact next owner and action."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-08-25T12:43:12.316805Z",
+  "command": [
+    "claude",
+    "auth",
+    "status",
+    "--json"
+  ],
+  "rawStatusBytes": 250,
+  "rawStatusSha256": "e0a1cb1ee54f77bd211748ef132816a49c837d148ad41be8c2c7d8755d705391",
+  "schemaVersion": 1,
+  "status": {
+    "apiProvider": "firstParty",
+    "authMethod": "claude.ai",
+    "loggedIn": true
+  }
+}

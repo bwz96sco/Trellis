@@ -1,0 +1,631 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trellis.local/schemas/c9-run-record.schema.json",
+  "title": "C9 append-only evaluation ledger record",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/attemptReservation"
+    },
+    {
+      "$ref": "#/$defs/attemptResult"
+    },
+    {
+      "$ref": "#/$defs/caseEvaluation"
+    },
+    {
+      "$ref": "#/$defs/correction"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "arm": {
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^/"
+          },
+          {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          }
+        ]
+      }
+    },
+    "identitySnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseSha256",
+        "inputInventorySha256",
+        "methodIdentity"
+      ],
+      "properties": {
+        "caseSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "inputInventorySha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "methodIdentity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "identity"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "bare",
+                "c8-source-baseline",
+                "schema-v3-execution-package"
+              ]
+            },
+            "identity": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "attemptReservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "recordKind",
+        "recordId",
+        "createdAt",
+        "logicalRunId",
+        "attemptId",
+        "caseId",
+        "arm",
+        "attemptNumber",
+        "retryNumber",
+        "authorizationRef",
+        "provider",
+        "model",
+        "sessionId",
+        "outputDirectory",
+        "identitySnapshot"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "recordKind": {
+          "const": "attempt-reservation"
+        },
+        "recordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "logicalRunId": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$"
+        },
+        "attemptId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "caseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arm": {
+          "$ref": "#/$defs/arm"
+        },
+        "attemptNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retryNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "authorizationRef": {
+          "const": "c9-first-party-claude-sonnet-5-18-plus-6-infrastructure-retries"
+        },
+        "provider": {
+          "const": "Claude"
+        },
+        "model": {
+          "const": "claude-sonnet-5"
+        },
+        "sessionId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "outputDirectory": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "identitySnapshot": {
+          "$ref": "#/$defs/identitySnapshot"
+        }
+      }
+    },
+    "fileCapture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "providerResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "isError",
+        "result",
+        "resultUuid",
+        "sessionId",
+        "stopReason",
+        "numTurns",
+        "durationMs",
+        "durationApiMs",
+        "totalCostUsd",
+        "usage",
+        "modelUsage",
+        "resolvedModel",
+        "permissionDenials",
+        "rawResult"
+      ],
+      "properties": {
+        "type": {
+          "const": "result"
+        },
+        "isError": {
+          "type": "boolean"
+        },
+        "result": {
+          "type": "string"
+        },
+        "resultUuid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "stopReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "numTurns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "durationMs": {
+          "type": [
+            "integer",
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "durationApiMs": {
+          "type": [
+            "integer",
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "totalCostUsd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "usage": {
+          "type": "object"
+        },
+        "modelUsage": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1
+        },
+        "resolvedModel": {
+          "const": "claude-sonnet-5"
+        },
+        "permissionDenials": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "rawResult": {
+          "type": "object"
+        }
+      }
+    },
+    "attemptResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "recordKind",
+        "recordId",
+        "createdAt",
+        "supersedesRecordId",
+        "logicalRunId",
+        "attemptId",
+        "caseId",
+        "arm",
+        "attemptNumber",
+        "retryNumber",
+        "identitySnapshot",
+        "startedAt",
+        "finishedAt",
+        "process",
+        "stdout",
+        "stderr",
+        "outcome",
+        "providerResult"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "recordKind": {
+          "const": "attempt-result"
+        },
+        "recordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "supersedesRecordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "logicalRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attemptId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "caseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arm": {
+          "$ref": "#/$defs/arm"
+        },
+        "attemptNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retryNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "identitySnapshot": {
+          "$ref": "#/$defs/identitySnapshot"
+        },
+        "startedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "finishedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "process": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "launched",
+            "command",
+            "cwd",
+            "pid",
+            "exitCode",
+            "signal",
+            "timedOut",
+            "spawnError"
+          ],
+          "properties": {
+            "launched": {
+              "type": "boolean"
+            },
+            "command": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "cwd": {
+              "$ref": "#/$defs/relativePath"
+            },
+            "pid": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            },
+            "exitCode": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "signal": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "timedOut": {
+              "type": "boolean"
+            },
+            "spawnError": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "stdout": {
+          "$ref": "#/$defs/fileCapture"
+        },
+        "stderr": {
+          "$ref": "#/$defs/fileCapture"
+        },
+        "outcome": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "usableModelResult",
+            "retryEligible",
+            "reason"
+          ],
+          "properties": {
+            "classification": {
+              "enum": [
+                "usable-completion",
+                "infrastructure-failure",
+                "nonretryable-failure"
+              ]
+            },
+            "usableModelResult": {
+              "type": "boolean"
+            },
+            "retryEligible": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "providerResult": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/providerResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "assertionAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assertionId",
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "assertionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "not-assessed"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      }
+    },
+    "armAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resultRecordId",
+        "outputSha256",
+        "assertions"
+      ],
+      "properties": {
+        "resultRecordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "outputSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "assertions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assertionAssessment"
+          }
+        }
+      }
+    },
+    "caseEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "recordKind",
+        "recordId",
+        "createdAt",
+        "caseId",
+        "evaluator",
+        "arms",
+        "zeroTolerancePass",
+        "notes"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "recordKind": {
+          "const": "case-evaluation"
+        },
+        "recordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "caseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "root"
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "arms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "A",
+            "B",
+            "C"
+          ],
+          "properties": {
+            "A": {
+              "$ref": "#/$defs/armAssessment"
+            },
+            "B": {
+              "$ref": "#/$defs/armAssessment"
+            },
+            "C": {
+              "$ref": "#/$defs/armAssessment"
+            }
+          }
+        },
+        "zeroTolerancePass": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "correction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "recordKind",
+        "recordId",
+        "createdAt",
+        "supersedesRecordId",
+        "reason",
+        "replacement"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "recordKind": {
+          "const": "correction"
+        },
+        "recordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "supersedesRecordId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replacement": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/attemptResult"
+            },
+            {
+              "$ref": "#/$defs/caseEvaluation"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

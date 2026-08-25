@@ -1,0 +1,1071 @@
+{
+  "copiedInputs": [
+    {
+      "bytes": 46214,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/build_source_baseline.py",
+      "c9Path": "build_source_baseline.py",
+      "sha256": "05844c15852c10486148765a0d5de0a19bdc5ecaa59e177b8b75bb196736e463"
+    },
+    {
+      "bytes": 10996,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-01-attention-positional-encoding.md",
+      "c9Path": "case-sources/literature-01-attention-positional-encoding.md",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 68050,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-02-swe-agent-agentless.md",
+      "c9Path": "case-sources/literature-02-swe-agent-agentless.md",
+      "sha256": "de2fef451b6d26fa92e45310366fd3ebda90b5591cd3c35da722dfafcc201caf"
+    },
+    {
+      "bytes": 44913,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-03-lost-in-the-middle.md",
+      "c9Path": "case-sources/literature-03-lost-in-the-middle.md",
+      "sha256": "7908bec5e121783c1c322c424ff70d886d50291fb48b9ade62869a92e4ceabaa"
+    },
+    {
+      "bytes": 32436,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/manifest.json",
+      "c9Path": "case-sources/manifest.json",
+      "sha256": "c4045e40dd29a1e4f3ce46819dc70f08eb53bd60c3f256f66d741f85c0cc88f2"
+    },
+    {
+      "bytes": 40406,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/shared-interface-context-staging-records.md",
+      "c9Path": "case-sources/shared-interface-context-staging-records.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 2528,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/evaluation-01.json",
+      "c9Path": "cases/evaluation-01.json",
+      "sha256": "384809bfb78c2bb6155e07045dc41d9e5e0f5d2ee4ccd7afc80cace1f461aa48"
+    },
+    {
+      "bytes": 1856,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/ideation-01.json",
+      "c9Path": "cases/ideation-01.json",
+      "sha256": "fe85bf434419923e2554b3ed863c2629252c02271dbefd34366fe659e13b3af3"
+    },
+    {
+      "bytes": 2101,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/ideation-02.json",
+      "c9Path": "cases/ideation-02.json",
+      "sha256": "1f84dda98e656c313e1b93a1ad8745598b65b3a8623178fd289dfb4466487e36"
+    },
+    {
+      "bytes": 40406,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/evaluation-01/evidence.md",
+      "c9Path": "cases/inputs/evaluation-01/evidence.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 1498,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/evaluation-01/task.md",
+      "c9Path": "cases/inputs/evaluation-01/task.md",
+      "sha256": "c6c413bb3be49677556c242b0eca3ad9501a0479378fcc5e9d3a09e56c8e9012"
+    },
+    {
+      "bytes": 40406,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/ideation-01/evidence.md",
+      "c9Path": "cases/inputs/ideation-01/evidence.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 788,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/ideation-01/task.md",
+      "c9Path": "cases/inputs/ideation-01/task.md",
+      "sha256": "c96925cb7b76b1b1ca7f483722da83fd44529c521fb27d347350de2a8ff7bbd9"
+    },
+    {
+      "bytes": 40406,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/ideation-02/evidence.md",
+      "c9Path": "cases/inputs/ideation-02/evidence.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 1080,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/ideation-02/task.md",
+      "c9Path": "cases/inputs/ideation-02/task.md",
+      "sha256": "87c749cb6b3e4a4f3a8adf54eadc2564a2c80537cf6d81c3a0c348181cdfb051"
+    },
+    {
+      "bytes": 10996,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/literature-01/evidence.md",
+      "c9Path": "cases/inputs/literature-01/evidence.md",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/literature-01/task.md",
+      "c9Path": "cases/inputs/literature-01/task.md",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 68050,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/literature-02/evidence.md",
+      "c9Path": "cases/inputs/literature-02/evidence.md",
+      "sha256": "de2fef451b6d26fa92e45310366fd3ebda90b5591cd3c35da722dfafcc201caf"
+    },
+    {
+      "bytes": 917,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/literature-02/task.md",
+      "c9Path": "cases/inputs/literature-02/task.md",
+      "sha256": "200722c52a251f90bae34c1bc7d1dbe2fe987933ee86189ba25d6ab9b1604dbc"
+    },
+    {
+      "bytes": 44913,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/literature-03/evidence.md",
+      "c9Path": "cases/inputs/literature-03/evidence.md",
+      "sha256": "7908bec5e121783c1c322c424ff70d886d50291fb48b9ade62869a92e4ceabaa"
+    },
+    {
+      "bytes": 906,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/literature-03/task.md",
+      "c9Path": "cases/inputs/literature-03/task.md",
+      "sha256": "c88e44cf53cb5137b02e184994d65ab7c85805fea816cf2231cb300506e532e1"
+    },
+    {
+      "bytes": 0,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/fixture/research-events.jsonl",
+      "c9Path": "cases/inputs/quest-admin-01/fixture/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 860,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/fixture/research-quest.yaml",
+      "c9Path": "cases/inputs/quest-admin-01/fixture/research-quest.yaml",
+      "sha256": "782b2c8708149ca481f5ac81dd3c442074ab44aebc753dc3b202ce2f0e1d32ff"
+    },
+    {
+      "bytes": 197,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/fixture/research/h1_decision.md",
+      "c9Path": "cases/inputs/quest-admin-01/fixture/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/fixture/research/h2_decision.md",
+      "c9Path": "cases/inputs/quest-admin-01/fixture/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/fixture/research/ideas.md",
+      "c9Path": "cases/inputs/quest-admin-01/fixture/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/fixture/research/opportunity_board.md",
+      "c9Path": "cases/inputs/quest-admin-01/fixture/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 667,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-01/task.md",
+      "c9Path": "cases/inputs/quest-admin-01/task.md",
+      "sha256": "77ae28f0159e60870888cad15c8a748fd41a72fa8eae5aff3a35c9f9c529d5ba"
+    },
+    {
+      "bytes": 0,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/fixture/research-events.jsonl",
+      "c9Path": "cases/inputs/quest-admin-02/fixture/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 860,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/fixture/research-quest.yaml",
+      "c9Path": "cases/inputs/quest-admin-02/fixture/research-quest.yaml",
+      "sha256": "782b2c8708149ca481f5ac81dd3c442074ab44aebc753dc3b202ce2f0e1d32ff"
+    },
+    {
+      "bytes": 197,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/fixture/research/h1_decision.md",
+      "c9Path": "cases/inputs/quest-admin-02/fixture/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/fixture/research/h2_decision.md",
+      "c9Path": "cases/inputs/quest-admin-02/fixture/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/fixture/research/ideas.md",
+      "c9Path": "cases/inputs/quest-admin-02/fixture/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/fixture/research/opportunity_board.md",
+      "c9Path": "cases/inputs/quest-admin-02/fixture/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 968,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-02/task.md",
+      "c9Path": "cases/inputs/quest-admin-02/task.md",
+      "sha256": "499bc5253eb85c339c06d8721d449e64e0e75567099692a04bf4e8d55dfc54ac"
+    },
+    {
+      "bytes": 0,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/fixture/research-events.jsonl",
+      "c9Path": "cases/inputs/quest-admin-03/fixture/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 860,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/fixture/research-quest.yaml",
+      "c9Path": "cases/inputs/quest-admin-03/fixture/research-quest.yaml",
+      "sha256": "782b2c8708149ca481f5ac81dd3c442074ab44aebc753dc3b202ce2f0e1d32ff"
+    },
+    {
+      "bytes": 197,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/fixture/research/h1_decision.md",
+      "c9Path": "cases/inputs/quest-admin-03/fixture/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/fixture/research/h2_decision.md",
+      "c9Path": "cases/inputs/quest-admin-03/fixture/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/fixture/research/ideas.md",
+      "c9Path": "cases/inputs/quest-admin-03/fixture/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/fixture/research/opportunity_board.md",
+      "c9Path": "cases/inputs/quest-admin-03/fixture/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 842,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/inputs/quest-admin-03/task.md",
+      "c9Path": "cases/inputs/quest-admin-03/task.md",
+      "sha256": "0b3a6edf0a758a0cbf98c072d7aca2aa3e5095d1a8e0f4e504dae34dedcff14c"
+    },
+    {
+      "bytes": 1892,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/literature-01.json",
+      "c9Path": "cases/literature-01.json",
+      "sha256": "b91d6ac1f73a540f4521e74839dc93fdf172927089d7f09a60bbe1bb4ee093be"
+    },
+    {
+      "bytes": 1908,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/literature-02.json",
+      "c9Path": "cases/literature-02.json",
+      "sha256": "78c0ce3009f8dd6c46b46ebd03b40a2b6c933faa397d0a8b4d0943cfa1fb1834"
+    },
+    {
+      "bytes": 2159,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/literature-03.json",
+      "c9Path": "cases/literature-03.json",
+      "sha256": "786306205a2591a352e372adf15f4919ba6d5df576e233947dba14e31bfa5b65"
+    },
+    {
+      "bytes": 3352,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/quest-admin-01.json",
+      "c9Path": "cases/quest-admin-01.json",
+      "sha256": "e8e3149e4e59913bf039401a1699074fe629747c77c5acfc3b0c8867d6c7d08c"
+    },
+    {
+      "bytes": 3350,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/quest-admin-02.json",
+      "c9Path": "cases/quest-admin-02.json",
+      "sha256": "b51e1212c341e30c61cd3f0c913103575546196913092af42e07b6d39a335cfe"
+    },
+    {
+      "bytes": 3491,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/cases/quest-admin-03.json",
+      "c9Path": "cases/quest-admin-03.json",
+      "sha256": "076f0f615db5124426a225967d323ab14faae0aea206cc1914aa9acb21470f33"
+    },
+    {
+      "bytes": 14446,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/migration-matrix.json",
+      "c9Path": "migration-matrix.json",
+      "sha256": "376601aeaaf6a0c805a53c4d5a121e916acd616f1530db8e89eedbda0d168432"
+    },
+    {
+      "bytes": 115816,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/package-blueprints.json",
+      "c9Path": "package-blueprints.json",
+      "sha256": "1b772a499724b9e5e986f677c9f77f46063ce9f71c926c48606ff679f7f5d925"
+    },
+    {
+      "bytes": 78274,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/package-blueprints.md",
+      "c9Path": "package-blueprints.md",
+      "sha256": "a9bdc33e155f02477159f2e669e0fc57bde186739d41fdad7c1dfc7011cbb0f4"
+    },
+    {
+      "bytes": 21128,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/pilot-semantic-alignment.json",
+      "c9Path": "pilot-semantic-alignment.json",
+      "sha256": "d2037c11bcf0abb3667e7803c19a3c2d23a929c7cb25ffe0951543ffdbb6cf6f"
+    },
+    {
+      "bytes": 7333,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/pilot-semantic-alignment.md",
+      "c9Path": "pilot-semantic-alignment.md",
+      "sha256": "14ac87b9db204ba69b6dff93c51bcc0b71ec37aa466c3562b748d18b46af2b96"
+    },
+    {
+      "bytes": 1963,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/README.md",
+      "c9Path": "source-baseline/README.md",
+      "sha256": "6e911a8662143d7cf037097669c9210d2e3a680ea40e252047b964afc56a696d"
+    },
+    {
+      "bytes": 25608,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/registry/source-io-contracts.md",
+      "c9Path": "source-baseline/files/registry/source-io-contracts.md",
+      "sha256": "a068d341694bad4bd6c6e0a7f822f6617a7491c9a69b083a944ae1d104261f04"
+    },
+    {
+      "bytes": 10523,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/scripts/validate-research-gates.py",
+      "c9Path": "source-baseline/files/scripts/validate-research-gates.py",
+      "sha256": "92b1f0d1d96db146cbe1fdce0201c6057cbe41d305b0227be8f27923b10b8c01"
+    },
+    {
+      "bytes": 52753,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/scripts/validate-research-skills.py",
+      "c9Path": "source-baseline/files/scripts/validate-research-skills.py",
+      "sha256": "d5645a950ff52db741be698540b3eeb27a78aedaed60b3444aedf186e1aa6809"
+    },
+    {
+      "bytes": 2439,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-computation/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-computation/SKILL.md",
+      "sha256": "f0c23cb6099b806d6acdcdebb1b14b1f36c505f119523d6d55ee3c4cb9b8b4cb"
+    },
+    {
+      "bytes": 299,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-computation/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-computation/agents/openai.yaml",
+      "sha256": "1b441bbe31edc061f09a4cdd5c6566b8a5a1121d3fc0653123da772b792a125a"
+    },
+    {
+      "bytes": 2894,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-experiment/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-experiment/SKILL.md",
+      "sha256": "4799c53aee0840a0c8c94d29c8b07c2a409d2e609caab0a7a1f0c4b758ef81ff"
+    },
+    {
+      "bytes": 281,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-experiment/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-experiment/agents/openai.yaml",
+      "sha256": "1c5e508d4949651f7623710a3fe80057db4f7b1865246cc3ba9acdab92ee0c6f"
+    },
+    {
+      "bytes": 2429,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-figure/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-figure/SKILL.md",
+      "sha256": "0daac187dadd24d0800dfe110a9b102097b7868d7dde7c26ddbede80a7bd035c"
+    },
+    {
+      "bytes": 276,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-figure/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-figure/agents/openai.yaml",
+      "sha256": "00253cfd4d69d17dd16912e94f8acb4fafe0fcd7f9651ec1951aa0ecdd4a62a3"
+    },
+    {
+      "bytes": 3286,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-idea-evaluation/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-idea-evaluation/SKILL.md",
+      "sha256": "ab2025452924fc581f257f33dc9d41851c98f6ec86079ada21d5ad1d9c1b7617"
+    },
+    {
+      "bytes": 307,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-idea-evaluation/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-idea-evaluation/agents/openai.yaml",
+      "sha256": "43c1a641b19756f4aa2cf5ff0ed610c05f4e6d0977ce241bba1cb6ed200b8176"
+    },
+    {
+      "bytes": 1293,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-idea-evaluation/attack-template.md",
+      "c9Path": "source-baseline/files/skills/research-idea-evaluation/attack-template.md",
+      "sha256": "ee43247517a2652cf9240261e6142e3b163db596fd29c80a75f08479916a4b15"
+    },
+    {
+      "bytes": 4217,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-ideation/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-ideation/SKILL.md",
+      "sha256": "979d75ebd39b08fefe81c326b24a36b2d815bbde3ac9610ef41b99932c1a97a2"
+    },
+    {
+      "bytes": 315,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-ideation/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-ideation/agents/openai.yaml",
+      "sha256": "357a183814d9a110cf1df02db13e38dc7de251c1787c065cdcc80fdb0a556a29"
+    },
+    {
+      "bytes": 3431,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-literature/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-literature/SKILL.md",
+      "sha256": "07d1aa5fb2d437cb21cbe8eae708f15163453a257dec22210b0c37661756c98b"
+    },
+    {
+      "bytes": 314,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-literature/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-literature/agents/openai.yaml",
+      "sha256": "4e8ce93b42780616a322bd4a484a107339d13839921f3af9a1b6fb4c7f4ad785"
+    },
+    {
+      "bytes": 2499,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-literature/note-template.md",
+      "c9Path": "source-baseline/files/skills/research-literature/note-template.md",
+      "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71"
+    },
+    {
+      "bytes": 4014,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-opportunity-mining/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-opportunity-mining/SKILL.md",
+      "sha256": "dd22f250eff5df097e57e5be5ba1531d6d8fa945d5cc82ea70f87b46755c2f58"
+    },
+    {
+      "bytes": 351,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-opportunity-mining/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-opportunity-mining/agents/openai.yaml",
+      "sha256": "bfe1be2e5ec3cdb8098e9f91a21103b260b8ed3c37fe237323f9170e228e5603"
+    },
+    {
+      "bytes": 2366,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-opportunity-mining/opportunity-template.md",
+      "c9Path": "source-baseline/files/skills/research-opportunity-mining/opportunity-template.md",
+      "sha256": "92a945bd3506dd77462c43d36aa6ccd06010dfdccf10284dd4b3a380a0c40e0c"
+    },
+    {
+      "bytes": 2422,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/SKILL.md",
+      "sha256": "cda2c2a95d815ccf8b8ca5eebf0c7d9382f6b039ffda2632e60c4b847663c4d1"
+    },
+    {
+      "bytes": 301,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-project-setup/agents/openai.yaml",
+      "sha256": "dd6f215a1ff2d5b525b871a399cf1c447ac941d2adce65abece213900cfbc9ed"
+    },
+    {
+      "bytes": 1395,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/manifest.yaml",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/manifest.yaml",
+      "sha256": "8415cbaf9f767246c16fbb266993b3bfdbe52ac30404f35b961f97953a8e4070"
+    },
+    {
+      "bytes": 743,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/meta.gitignore",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/meta.gitignore",
+      "sha256": "4c1a99e7925803469607c80d832377fbcd493cca0566b524cbba4d0bc0a91dda"
+    },
+    {
+      "bytes": 778,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/.graphifyignore",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/.graphifyignore",
+      "sha256": "85bbc7ca9a9cca0b6dd7f0b52ed1658c2915e644e7a585e798bd89da4ce92e43"
+    },
+    {
+      "bytes": 6529,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/AGENTS.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/AGENTS.md",
+      "sha256": "8282247af22f3c451fb3e18172c341ea7dcca17d1919cc5d985e28fe8fc9ae50"
+    },
+    {
+      "bytes": 28,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_quest/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_quest/.gitkeep",
+      "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299"
+    },
+    {
+      "bytes": 419,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_references/citation-policy.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_references/citation-policy.md",
+      "sha256": "eb288d91f7c1a1dc389cc8a243b778d370fd7274735b953dab9875729f3ee391"
+    },
+    {
+      "bytes": 2634,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_references/workflows.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_references/workflows.md",
+      "sha256": "b0f9c713bab89fc986a3e293c84acef13eaad2b43ef3a33481e81769ca13ef68"
+    },
+    {
+      "bytes": 230,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_templates/experiment-note.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_templates/experiment-note.md",
+      "sha256": "91967a20650055424804b0e1a85e6b0e671adbfe8f5cac7ea187ee7dbf69fef8"
+    },
+    {
+      "bytes": 765,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_templates/intake-audit.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_templates/intake-audit.md",
+      "sha256": "da7870bda943f5beeaf492b70c7cfef575676b0994e4dcad2779855f424c25fa"
+    },
+    {
+      "bytes": 357,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_templates/paper-note.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/_templates/paper-note.md",
+      "sha256": "ef42fc84ba4368e09fc1ae5bc2ab2002a23f8af6b3123a5a672ed04335d98d0c"
+    },
+    {
+      "bytes": 28,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/computation/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/computation/.gitkeep",
+      "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/experiments/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/experiments/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 28,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/figures/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/figures/.gitkeep",
+      "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299"
+    },
+    {
+      "bytes": 514,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/ideas/inbox.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/ideas/inbox.md",
+      "sha256": "4e1699f33713ae697ee06a788251d4c167f18822c22f95a34293fbe8746a8de3"
+    },
+    {
+      "bytes": 54,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/ideas/questions.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/ideas/questions.md",
+      "sha256": "22111f51058bd343ebe014e6847bbf0f48df8399b778bbacb4a20ee833b0c4e0"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/intake/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/intake/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 418,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature-index.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature-index.md",
+      "sha256": "f02647040cda794a38327579edb5d54fb01ce7b7877108cecb78160406817110"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature/notes/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature/notes/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature/pdfs/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature/pdfs/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature/surveys/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/literature/surveys/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 60,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/references.bib",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/references.bib",
+      "sha256": "6e4c1678704dbb99fc3f5a3239b1b21a18df73b3d759244edd612956c7843132"
+    },
+    {
+      "bytes": 28,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/slides/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/slides/.gitkeep",
+      "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/theory/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/theory/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 1,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian-vault/writing/.gitkeep",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian-vault/writing/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "bytes": 612,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/obsidian.gitignore",
+      "c9Path": "source-baseline/files/skills/research-project-setup/assets/obsidian.gitignore",
+      "sha256": "d4b5c963c18fe4bece6bb5457b7461599cc4009325ab853898e85901832f12d4"
+    },
+    {
+      "bytes": 885,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/references/graphify.md",
+      "c9Path": "source-baseline/files/skills/research-project-setup/references/graphify.md",
+      "sha256": "72474fdfcbfaef615369fd864e498e4a64729da0ce2726a07fd1c5aedfbc2f67"
+    },
+    {
+      "bytes": 2506,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/SKILL.md",
+      "sha256": "a473ffab5b0fabc4591a86e8268e868a9ebe2dfa424d384cf0cb8524a235dbd3"
+    },
+    {
+      "bytes": 292,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/agents/openai.yaml",
+      "sha256": "91608eb0e7046ed020937d9d336d50cbd223cde6b81fd5a9c6a2b22c7cae9c8e"
+    },
+    {
+      "bytes": 936,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/references/campaign-index.md",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/references/campaign-index.md",
+      "sha256": "dc6d7cbd18d2e4822edbbe70c336ca3060229dfd4d5493f1f50f131f0a2b7bca"
+    },
+    {
+      "bytes": 2746,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/references/quest-pack.md",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/references/quest-pack.md",
+      "sha256": "8386f0f7a003eb054246fb1b91efaf5af3fe35e71c8e31b802f8cdec0d296a23"
+    },
+    {
+      "bytes": 1154,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/references/task-forest-bridge.md",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/references/task-forest-bridge.md",
+      "sha256": "6e9e8381135bb0bcae3f3e80f51d067a8a5ed931bd4aa05a15c073e2236bf226"
+    },
+    {
+      "bytes": 29342,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/scripts/research_quest_admin.py",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/scripts/research_quest_admin.py",
+      "sha256": "fe15beda6257cba9c5fcb0995f7fae5447d1caa942943ce7dc68205e6f491c3c"
+    },
+    {
+      "bytes": 1145,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/templates/research-event.json",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/templates/research-event.json",
+      "sha256": "de6d2dcd6252e55dd26428808289b4834f467482abb58c6730e4befd9396e0ac"
+    },
+    {
+      "bytes": 1055,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest-admin/templates/research-quest.yaml",
+      "c9Path": "source-baseline/files/skills/research-quest-admin/templates/research-quest.yaml",
+      "sha256": "b48e2b344b615949084497b7c0af4707242b28143569977810800f94c6c1c061"
+    },
+    {
+      "bytes": 2440,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-quest/SKILL.md",
+      "sha256": "7606afc5e92f486a5b8911ad741cd2f5f75f87213b2352e542fd23198772f135"
+    },
+    {
+      "bytes": 315,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-quest/agents/openai.yaml",
+      "sha256": "d39a46b827142b1f5190e12f3e2b74da47f75e344643f7f5c0719b8e6a21aa4d"
+    },
+    {
+      "bytes": 35730,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-quest/scripts/research_quest.py",
+      "c9Path": "source-baseline/files/skills/research-quest/scripts/research_quest.py",
+      "sha256": "dbf9df55283b6481efd1381d298008efa98cebf0c7f7658b3814c61962ac3511"
+    },
+    {
+      "bytes": 2548,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-review-case/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-review-case/SKILL.md",
+      "sha256": "a0d32da0809d94ecfb15099cff239e113e0ab50525338d433fb354ca568c3632"
+    },
+    {
+      "bytes": 283,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-review-case/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-review-case/agents/openai.yaml",
+      "sha256": "49fde40002e55a566c1bb7cc0cd48210c2d8a628d94100d7b37429602a5196dd"
+    },
+    {
+      "bytes": 522,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-slides/NOTICE.md",
+      "c9Path": "source-baseline/files/skills/research-slides/NOTICE.md",
+      "sha256": "9f47bf488b6f43616be5b48a05616ea67a9970a4194b57c8e48d3dc4fe1723d1"
+    },
+    {
+      "bytes": 2494,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-slides/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-slides/SKILL.md",
+      "sha256": "4e40d4310a176a23b1e6bc2b4c898c4f91ee19d99c7d490c4eab1bf2c4dbddb4"
+    },
+    {
+      "bytes": 281,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-slides/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-slides/agents/openai.yaml",
+      "sha256": "151e8f5f1b9250e733d3787b4bc400fb908fbd50b86ccf63b1cca3ed74bd9e83"
+    },
+    {
+      "bytes": 3286,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-synthesis/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-synthesis/SKILL.md",
+      "sha256": "8050a73957b36d89f2ccfa50b1438fc8537137621380e5415b324b7bdbcb6d30"
+    },
+    {
+      "bytes": 312,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-synthesis/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-synthesis/agents/openai.yaml",
+      "sha256": "6843ca4fa49b4f12fc8f55daf59d6df275a54e392536dc1213d2ebc582448b56"
+    },
+    {
+      "bytes": 2610,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-theory/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-theory/SKILL.md",
+      "sha256": "0dffe7fffe3d34656dce0fa6abdf2c71bde9242a9a0ba93c7172510702de7ea5"
+    },
+    {
+      "bytes": 293,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-theory/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-theory/agents/openai.yaml",
+      "sha256": "c13aa1378af9dc66982ada92a2eb145ee538c87c98d9bc7ee1a6ab142fbaf896"
+    },
+    {
+      "bytes": 2785,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-writing/SKILL.md",
+      "c9Path": "source-baseline/files/skills/research-writing/SKILL.md",
+      "sha256": "7d0bb8f7ddac0e5a7034f698190d979c3bb91e1ec85004d3aff6c6b4e1ed2a10"
+    },
+    {
+      "bytes": 288,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-writing/agents/openai.yaml",
+      "c9Path": "source-baseline/files/skills/research-writing/agents/openai.yaml",
+      "sha256": "d1f2477083c08a01a9f7af0ea1048725b4feb761cd89f38d1527146ad94c94fd"
+    },
+    {
+      "bytes": 5076,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-writing/references/academic-phrasebank.md",
+      "c9Path": "source-baseline/files/skills/research-writing/references/academic-phrasebank.md",
+      "sha256": "6e9e68ceb3ce732c54825de58e934dd2407e9e37410a0f92a5e8a63a78930370"
+    },
+    {
+      "bytes": 23993,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/manifest.json",
+      "c9Path": "source-baseline/manifest.json",
+      "sha256": "862b34305d1b6a778ad4f15453846428efb6b2222154702276b9aff87c8952f0"
+    }
+  ],
+  "derivedFiles": [
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/evaluation-plan.json",
+      "c9Path": "evaluation-plan.json",
+      "reason": "C9 evaluation, authorization, and first-party routing identity"
+    },
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/run-record.schema.json",
+      "c9Path": "run-record.schema.json",
+      "reason": "C9 schema identity and authorization reference"
+    },
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/runs.jsonl",
+      "c9Path": "runs.jsonl",
+      "reason": "fresh empty C9 append-only ledger"
+    },
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/tools/claude_runner.py",
+      "c9Path": "tools/claude_runner.py",
+      "reason": "C9 first-party child environment contract"
+    },
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/tools/evaluation_harness.py",
+      "c9Path": "tools/evaluation_harness.py",
+      "reason": "C9 identities, predecessor proof, and auth gate"
+    },
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/tests/test_claude_runner.py",
+      "c9Path": "tests/test_claude_runner.py",
+      "reason": "C9 sanitized-environment regression coverage"
+    },
+    {
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/tests/test_evaluation_harness.py",
+      "c9Path": "tests/test_evaluation_harness.py",
+      "reason": "C9 identity, predecessor, and auth integration coverage"
+    },
+    {
+      "c8Path": null,
+      "c9Path": "predecessor.json",
+      "reason": "new C9 predecessor provenance manifest"
+    },
+    {
+      "c8Path": null,
+      "c9Path": "tools/auth_preflight.py",
+      "reason": "new non-model first-party authentication preflight"
+    },
+    {
+      "c8Path": null,
+      "c9Path": "tools/verify_predecessor.py",
+      "reason": "new Git-object predecessor verifier"
+    },
+    {
+      "c8Path": null,
+      "c9Path": "tests/test_auth_preflight.py",
+      "reason": "new deterministic authentication preflight coverage"
+    },
+    {
+      "c8Path": null,
+      "c9Path": "tests/test_verify_predecessor.py",
+      "reason": "new predecessor provenance coverage"
+    }
+  ],
+  "evaluationId": "thin-skill-c9-first-party-migration",
+  "excludedPredecessorArtifacts": [
+    {
+      "bytes": 3862,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/claude-cli-runner-evidence.md",
+      "category": "provider-failure-evidence",
+      "sha256": "bebac25b8907d487a5154eeab85cbf967ff62d8fbf39a4f63d44787a259ba70b"
+    },
+    {
+      "bytes": 464,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/decision.md",
+      "category": "terminal-evaluation",
+      "sha256": "85cff2e68c0ba7dfb7de1a1996c7e2aa0099aedb4e71943966980a51dc0f2318"
+    },
+    {
+      "bytes": 16436,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/deterministic-proof.json",
+      "category": "predecessor-deterministic-proof",
+      "sha256": "e752278db0bc8ddf6a28cfe511fb3611ee1a8b0a0e28eaf7e287d75110898a40"
+    },
+    {
+      "bytes": 866,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-a/attempts/95f39765-931c-4611-a785-5f39522ceada/stdout.json",
+      "category": "provider-output",
+      "sha256": "6da5f2085efff31363f54fb4ae877bbccbb273eba0f9388fd80852f01829b340"
+    },
+    {
+      "bytes": 1010,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-a/workspace-manifest.json",
+      "category": "provider-output",
+      "sha256": "8be2e0d5a462f30fb55954697a061ab19158be95d64c0e270fff94d71ad5ad85"
+    },
+    {
+      "bytes": 10996,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-a/workspace/input/evidence.md",
+      "category": "provider-output",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-a/workspace/input/task.md",
+      "category": "provider-output",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 455,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-a/workspace/prompts/system.md",
+      "category": "provider-output",
+      "sha256": "e7805660d38e56e3f775861c2e600690b36e507b7cf9cd7fbd14e6e80d30d3bf"
+    },
+    {
+      "bytes": 11939,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-a/workspace/prompts/task.md",
+      "category": "provider-output",
+      "sha256": "bb264bcfad3912b73f87efa1cf83c0af0380ffb115c4cf54d5a731bbd780e3b4"
+    },
+    {
+      "bytes": 865,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/attempts/d6a6699b-40b9-4304-b1dc-d155bb0451f6/stdout.json",
+      "category": "provider-output",
+      "sha256": "c06396e85d2bc1b5d7ecad6ea013904b448fceb42e8bfe60d1092815032ab888"
+    },
+    {
+      "bytes": 2046,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace-manifest.json",
+      "category": "provider-output",
+      "sha256": "138b44a0e37f50cfa81167df7052ff2abeb4513f868b8cf1c6a2cb9965e548cf"
+    },
+    {
+      "bytes": 10996,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/input/evidence.md",
+      "category": "provider-output",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/input/task.md",
+      "category": "provider-output",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 3431,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/method/source/skills/research-literature/SKILL.md",
+      "category": "provider-output",
+      "sha256": "07d1aa5fb2d437cb21cbe8eae708f15163453a257dec22210b0c37661756c98b"
+    },
+    {
+      "bytes": 314,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/method/source/skills/research-literature/agents/openai.yaml",
+      "category": "provider-output",
+      "sha256": "4e8ce93b42780616a322bd4a484a107339d13839921f3af9a1b6fb4c7f4ad785"
+    },
+    {
+      "bytes": 2499,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/method/source/skills/research-literature/note-template.md",
+      "category": "provider-output",
+      "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71"
+    },
+    {
+      "bytes": 6908,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/prompts/system.md",
+      "category": "provider-output",
+      "sha256": "834fdf8edd6f764652400ced1c3689b329bb508390e5645eff301d67566e6263"
+    },
+    {
+      "bytes": 11939,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-b/workspace/prompts/task.md",
+      "category": "provider-output",
+      "sha256": "bb264bcfad3912b73f87efa1cf83c0af0380ffb115c4cf54d5a731bbd780e3b4"
+    },
+    {
+      "bytes": 866,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/attempts/44f49e6c-7777-49c3-92f1-c3846b17d800/stdout.json",
+      "category": "provider-output",
+      "sha256": "5983b554991d0dedf8a3a983693098f0729a07284aff6b0548d75580988d2b48"
+    },
+    {
+      "bytes": 1912,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace-manifest.json",
+      "category": "provider-output",
+      "sha256": "58c1a6f209b5c6db8cdc23bb86092c08a8cecb3aa3a446783c2a62a0339d6336"
+    },
+    {
+      "bytes": 10996,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace/input/evidence.md",
+      "category": "provider-output",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace/input/task.md",
+      "category": "provider-output",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 2296,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace/method/package/SKILL.md",
+      "category": "provider-output",
+      "sha256": "b795e0f21db68a61331e0187c1e9f12f432575e14de889f86bd6b7829a502851"
+    },
+    {
+      "bytes": 597,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace/method/package/skill.json",
+      "category": "provider-output",
+      "sha256": "c4729a647722d6ec7a3935ac4a4423580a077e5bceae0d2f40f1b21df00b183e"
+    },
+    {
+      "bytes": 3442,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace/prompts/system.md",
+      "category": "provider-output",
+      "sha256": "0b0d81246fd4d34ade940e3b9d53f5703e5b3e89c788bfee4b7053df32d71246"
+    },
+    {
+      "bytes": 11939,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/outputs/literature-01-c/workspace/prompts/task.md",
+      "category": "provider-output",
+      "sha256": "bb264bcfad3912b73f87efa1cf83c0af0380ffb115c4cf54d5a731bbd780e3b4"
+    },
+    {
+      "bytes": 3533,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/provider-unavailable.json",
+      "category": "provider-failure-evidence",
+      "sha256": "25db818dd5136c29f3f55a2075530b25fd7c19f1191347fe7e9e72752902f4c9"
+    },
+    {
+      "bytes": 1295,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/provider-unavailable.md",
+      "category": "provider-failure-evidence",
+      "sha256": "f4ba7bfd3bc716640ec5cc177a0d143628d3a6475b568c57bc50f4e153ad45f0"
+    },
+    {
+      "bytes": 56681,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/runs.jsonl",
+      "category": "terminal-evaluation",
+      "sha256": "54838a5df96b5d1557facb668c0548cc8295770960b7e1efe2d9f9b47ec0c2ca"
+    },
+    {
+      "bytes": 1093,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/summary.json",
+      "category": "terminal-evaluation",
+      "sha256": "532bed12657f8020314a5cdbfa5ac1fc07c842c717f7a941a353ffb116ee2219"
+    }
+  ],
+  "immutableEvaluationArtifacts": [
+    {
+      "bytes": 56681,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/runs.jsonl",
+      "role": "ledger",
+      "sha256": "54838a5df96b5d1557facb668c0548cc8295770960b7e1efe2d9f9b47ec0c2ca"
+    },
+    {
+      "bytes": 1093,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/summary.json",
+      "role": "summary",
+      "sha256": "532bed12657f8020314a5cdbfa5ac1fc07c842c717f7a941a353ffb116ee2219"
+    },
+    {
+      "bytes": 464,
+      "c8Path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/decision.md",
+      "role": "decision",
+      "sha256": "85cff2e68c0ba7dfb7de1a1996c7e2aa0099aedb4e71943966980a51dc0f2318"
+    }
+  ],
+  "predecessor": {
+    "acceptedPackageIdentities": {
+      "research-idea-evaluation": {
+        "id": "research-idea-evaluation",
+        "instructionDigest": "sha256:4294c16a649778a1e763c143ee82893a1b7d370b3513fdd3ce5a9b97aaf8a03a",
+        "memberInventoryDigest": "sha256:880ef7179d8245730322dcc78c178425fbe56f8d6dc06597487b43f0069ef436",
+        "packageDigest": "sha256:dc58cc3abc0993956a4fc5b0fb873ff09b560af6468b9bb2bb4bc3db8891454a",
+        "packageKind": "skill",
+        "schemaVersion": 3,
+        "version": "1.0.0"
+      },
+      "research-ideation": {
+        "id": "research-ideation",
+        "instructionDigest": "sha256:7f569076fced3487d81957a73b597893e878bf79eb49b51d20e5e9b2bce9346a",
+        "memberInventoryDigest": "sha256:d9dfaec07f25eacdb91364c78fca2947786ce4d281631cff9f8695969ce7544c",
+        "packageDigest": "sha256:ece95cbc55dcd51fb28c6e4d729b873a067a938967b8c25a79fded7fbe3ed3d9",
+        "packageKind": "skill",
+        "schemaVersion": 3,
+        "version": "1.1.0"
+      },
+      "research-literature": {
+        "id": "research-literature",
+        "instructionDigest": "sha256:2bd56e1e71f9710aad654b3658a630da9ace9c9c97b1f4d5e3c128e59da6c92a",
+        "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+        "packageDigest": "sha256:620aa58ae0f9f7d837e92dbcf5d30892e4a9fb67bd49365ad56a9ef7d98093ce",
+        "packageKind": "skill",
+        "schemaVersion": 3,
+        "version": "1.1.0"
+      },
+      "research-quest-admin": {
+        "id": "research-quest-admin",
+        "instructionDigest": "sha256:cf0ea546c6d2d2b9dfde7f00c7578705c993fb30d76df194cfe19569596593e5",
+        "memberInventoryDigest": "sha256:0ed9fa66664d261a53da5dc81101e083b4299c14da128895858ade8590340727",
+        "packageDigest": "sha256:97e2a3dd3e1731b8899c502131c6d1017482f6c24737f39c8b7c45257fb9c37d",
+        "packageKind": "skill",
+        "schemaVersion": 3,
+        "version": "1.0.0"
+      }
+    },
+    "commit": "715512230fee792377567c9cbba46319f2569c07",
+    "evaluationId": "thin-skill-c8-full-migration",
+    "sourceAggregateDigest": "sha256:7ad7bf1547605ce8c243bcb51dd03715e1ebfb7ef4c7ea528053ee41386fcd89",
+    "status": "blocked-nonretryable-provider-failure",
+    "taskPath": ".trellis/tasks/08-25-thin-skill-c8-full-migration"
+  },
+  "schemaVersion": 1
+}

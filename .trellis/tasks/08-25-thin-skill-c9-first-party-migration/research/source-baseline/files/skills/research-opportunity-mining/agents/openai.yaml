@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Opportunity Mining"
+  short_description: "Evidence-bound opportunity seeds from paper notes"
+  default_prompt: "Use $research-opportunity-mining to derive anchored research opportunity seeds from existing full-paper notes without judging novelty or selecting a winner."
+
+policy:
+  allow_implicit_invocation: false

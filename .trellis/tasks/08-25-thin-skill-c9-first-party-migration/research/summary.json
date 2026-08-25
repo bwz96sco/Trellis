@@ -1,0 +1,40 @@
+{
+  "deterministicCases": {
+    "count": 3,
+    "providerInvocationUnits": 0,
+    "status": "machinery-validated-not-run-as-live-evaluation"
+  },
+  "deterministicProof": {
+    "sha256": "f0bc6ea9f4c052c8d90023e62c08e03e79978b90d3be1ca23fe0f12b2d00619d",
+    "status": "passed"
+  },
+  "evaluationId": "thin-skill-c9-first-party-migration",
+  "generatedAt": "2026-08-25T13:02:21.643182Z",
+  "ledger": {
+    "caseEvaluations": 0,
+    "infrastructureRetriesReserved": 0,
+    "launchedProcesses": 1,
+    "nonretryableFailures": 1,
+    "records": 2,
+    "reservedAttempts": 1,
+    "usableLogicalCalls": 0
+  },
+  "liveGate": {
+    "completedCaseEvaluations": 0,
+    "fullMigrationClaimAllowed": false,
+    "qualityAndOverheadPassed": false,
+    "requiredCaseEvaluations": 6,
+    "requiredUsableCalls": 18,
+    "status": "blocked-nonretryable-provider-failure",
+    "usableCalls": 0,
+    "zeroTolerancePassed": false
+  },
+  "providerAuthorization": {
+    "hardCapAttempts": 24,
+    "model": "claude-sonnet-5",
+    "plannedCalls": 18,
+    "provider": "Claude",
+    "retryLimit": 6
+  },
+  "schemaVersion": 1
+}

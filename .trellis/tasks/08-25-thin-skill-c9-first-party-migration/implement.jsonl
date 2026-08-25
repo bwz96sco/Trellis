@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/08-25-thin-skill-c9-first-party-migration/prd.md","reason":"Fixed C9 first-party provider boundary, finite A/B/C accounting, gate-before-expansion rule, ten-package scope, and closure criteria."}
+{"file":".trellis/tasks/08-25-thin-skill-c9-first-party-migration/design.md","reason":"Forward-only evaluation identity, committed C8 input materialization, sanitized child environment, exact-model acceptance, package migration, and archive design."}
+{"file":".trellis/tasks/08-25-thin-skill-c9-first-party-migration/implement.md","reason":"Ordered activation, evaluation, package, distribution, verification, commit, and archive sequence."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Production schema-v3 manifest, profile, managed capability, handoff, native Quest, and package-resolution contracts."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Managed worker approved-package projection, proposal-only authority, exact recovery, and no nested execution."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Independent digest vectors, deterministic fixtures, immutable failure evidence, and normal-hook verification."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Real bundled roots, fail-closed override, replay/recovery, isolated workspaces, and packed tar audit patterns."}
