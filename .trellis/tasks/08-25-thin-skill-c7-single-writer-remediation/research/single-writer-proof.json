@@ -1,0 +1,97 @@
+{
+  "guardedSourceIdentity": {
+    "baselineDigest": "sha256:8bacc5d832af03c66939d14ef29de4d6cdbe64077e79aa00e0c50b9ed882097d",
+    "commit": "86df5a676c52950592ff9fe5966b9c1753160cb5",
+    "files": [
+      {
+        "path": "skills/research-quest-admin/scripts/research_quest_admin.py",
+        "role": "guarded-authority-helper",
+        "sha256": "fe15beda6257cba9c5fcb0995f7fae5447d1caa942943ce7dc68205e6f491c3c",
+        "size": 29342
+      },
+      {
+        "path": "skills/research-quest/scripts/research_quest.py",
+        "role": "runtime-dependency",
+        "sha256": "dbf9df55283b6481efd1381d298008efa98cebf0c7f7658b3814c61962ac3511",
+        "size": 35730
+      }
+    ],
+    "manifestSha256": "27bb78a0d3d4c2e676a57cd3d03e1717ba27b252d19ce62dbe69eff647e514b2",
+    "parent": "e2b0d70e3a797f19461eb106601de12250000b69",
+    "sourceBranch": "chore/retire-find-skills",
+    "sourceRepository": "/Users/zhangbowen/Projects/agent-skills-private"
+  },
+  "historicalEvidence": {
+    "archivedC7DecisionSha256": "6f4e131e5c4b11fd3f5da8f1f25ad382e0e31d5ef8ee22b067efbf461f8db787",
+    "archivedC7DeterministicProofSha256": "61944825e2cfbcca488c827f105f08cb47a06e8766a88e5c4aa332874ae498cd",
+    "archivedC7Status": "failed-zero-tolerance",
+    "c1AdminHelperSha256": "7159bd9a8635110b671bdba8301eeca53f69f2d46c6110c80e7b28075c7d29f8",
+    "c1AdminHelperSize": 14944,
+    "c1BaseCommit": "e2b0d70e3a797f19461eb106601de12250000b69",
+    "c1ManifestSha256": "45fc8483b372088838cdf7b2759cb3087de18434daa5c994eaaa23c0f9c5be42",
+    "disposition": "preserved-unchanged"
+  },
+  "noProvider": {
+    "authorizationStatus": "not-authorized",
+    "evaluationModelInvocations": 0,
+    "liveEvaluationRunRecords": 0,
+    "managedWorkersInvoked": 0,
+    "providerProcessesInvoked": 0
+  },
+  "proofId": "c7-single-writer-remediation-v1",
+  "schemaVersion": 1,
+  "singleQuestWriter": {
+    "assertions": [
+      {
+        "id": "read-only-byte-stability",
+        "status": "pass",
+        "summary": "Read-only status and validate returned success without changing the source tree."
+      },
+      {
+        "commands": [
+          "init --force --write",
+          "migrate --force --write",
+          "status --write",
+          "append-event --write"
+        ],
+        "id": "trellis-owner-source-mutation-refusal",
+        "status": "pass",
+        "summary": "Every source mutation returned nonzero with source write denied and preserved the source tree byte-identically after supported import recorded Trellis ownership."
+      },
+      {
+        "id": "authority-recovery",
+        "status": "pass",
+        "summary": "Explicit writer transfer back to source restored authorized source writes."
+      },
+      {
+        "id": "fail-closed-authority-errors",
+        "status": "pass",
+        "summary": "Active fence, malformed writer projection, missing import projection, source identity drift, and ambiguous repository/import authority remained fail-closed and byte-identical."
+      }
+    ],
+    "checkId": "single-quest-writer",
+    "sourceIdentity": "guarded-86df5a6",
+    "status": "pass",
+    "test": {
+      "file": "packages/cli/test/commands/research-quest-source-admin.integration.test.ts",
+      "result": "1 test passed",
+      "suiteDurationSeconds": 11.22,
+      "testDurationSeconds": 4.05,
+      "title": "allows source ownership and refuses fences, Trellis ownership, malformed authority, and ambiguity byte-identically"
+    }
+  },
+  "status": "deterministic-blocker-cleared-for-guarded-identity",
+  "verificationCommands": [
+    "PYTHONDONTWRITEBYTECODE=1 uv run python .trellis/tasks/08-25-thin-skill-c7-single-writer-remediation/research/build_source_authority_baseline.py --capture",
+    "PYTHONDONTWRITEBYTECODE=1 uv run python .trellis/tasks/08-25-thin-skill-c7-single-writer-remediation/research/build_source_authority_baseline.py --verify",
+    "NODE_OPTIONS= pnpm --filter @mindfoldhq/trellis-core build",
+    "NODE_OPTIONS= PYTHONDONTWRITEBYTECODE=1 TRELLIS_RESEARCH_QUEST_ADMIN=<absolute-guarded-baseline-helper> pnpm --filter @mindfoldhq/trellis exec vitest run test/commands/research-quest-source-admin.integration.test.ts"
+  ],
+  "verificationResults": {
+    "baselineCapture": "passed: 2 exact Git blobs",
+    "baselineVerification": "passed: 2 files, sha256:8bacc5d832af03c66939d14ef29de4d6cdbe64077e79aa00e0c50b9ed882097d",
+    "coreBuild": "passed",
+    "sourceAdminIntegration": "passed: 1 test file, 1 test"
+  },
+  "verifiedAt": "2026-08-25T02:35:53Z"
+}

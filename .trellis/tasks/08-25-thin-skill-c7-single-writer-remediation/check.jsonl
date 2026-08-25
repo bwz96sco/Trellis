@@ -1,0 +1,5 @@
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json","reason":"Check predecessor manifest/helper identity remains exact and unchanged."}
+{"file":".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/deterministic-proof.json","reason":"Check remediation does not rewrite historical failed proof or claim provider execution."}
+{"file":".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/decision.md","reason":"Check archived C7 disposition remains unchanged and migration remains stopped."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check full-tree byte snapshots and deterministic integration fixture behavior."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check focused test ownership, deterministic fixtures, and honest failure evidence."}

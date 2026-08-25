@@ -26,7 +26,8 @@
     "08-21-thin-skill-c4b-quest-cutover",
     "08-21-thin-skill-c5-managed-execution",
     "08-21-thin-skill-c6-migrate-pilot-packages",
-    "08-21-thin-skill-c7-pilot-evaluation"
+    "08-21-thin-skill-c7-pilot-evaluation",
+    "08-25-thin-skill-c7-single-writer-remediation"
   ],
   "parent": null,
   "relatedFiles": [],
