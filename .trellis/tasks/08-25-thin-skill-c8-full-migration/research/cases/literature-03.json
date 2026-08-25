@@ -1,0 +1,71 @@
+{
+  "applicableArms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "armBSourceSet": "literature",
+  "armC": {
+    "executionPackage": {
+      "id": "research-literature",
+      "instructionDigest": "sha256:2bd56e1e71f9710aad654b3658a630da9ace9c9c97b1f4d5e3c128e59da6c92a",
+      "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+      "packageDigest": "sha256:620aa58ae0f9f7d837e92dbcf5d30892e4a9fb67bd49365ad56a9ef7d98093ce",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.1.0"
+    },
+    "profile": "managed",
+    "requestedMembers": [
+      "templates/note-template.md"
+    ]
+  },
+  "assertions": [
+    {
+      "description": "Recovery restores the exact Workflow instance, node, package, members, Activation, and Approval state.",
+      "id": "managed-state-exact-recovery",
+      "zeroTolerance": true
+    },
+    {
+      "description": "Package and instruction identity do not drift across interruption and replay.",
+      "id": "package-replay-identity-stable",
+      "zeroTolerance": true
+    },
+    {
+      "description": "Recovery and Result acceptance do not transition or invoke another stage automatically.",
+      "id": "no-auto-next-stage",
+      "zeroTolerance": true
+    },
+    {
+      "description": "The note limits claims to tested tasks and models.",
+      "id": "bounded-generalization",
+      "zeroTolerance": false
+    }
+  ],
+  "boundary": "literature",
+  "caseId": "literature-03",
+  "inputFiles": [
+    {
+      "bytes": 44913,
+      "path": "cases/inputs/literature-03/evidence.md",
+      "role": "evidence",
+      "sha256": "7908bec5e121783c1c322c424ff70d886d50291fb48b9ade62869a92e4ceabaa",
+      "workspacePath": "input/evidence.md"
+    },
+    {
+      "bytes": 906,
+      "path": "cases/inputs/literature-03/task.md",
+      "role": "task",
+      "sha256": "c88e44cf53cb5137b02e184994d65ab7c85805fea816cf2231cb300506e532e1",
+      "workspacePath": "input/task.md"
+    }
+  ],
+  "mode": "live-provider",
+  "plannedInvocationUnits": {
+    "A": 1,
+    "B": 1,
+    "C": 1
+  },
+  "schemaVersion": 1,
+  "title": "Literature case 03: managed interruption and recovery"
+}

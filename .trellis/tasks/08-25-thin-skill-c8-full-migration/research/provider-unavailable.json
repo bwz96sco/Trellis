@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "thin-skill-c8-provider-unavailable-v1",
+  "evaluationId": "thin-skill-c8-full-migration",
+  "status": "blocked-exact-model-unavailable",
+  "authorizationRef": "c8-claude-sonnet-5-18-plus-6-infrastructure-retries",
+  "approvedBoundary": {
+    "host": "Claude",
+    "provider": "Claude",
+    "model": "claude-sonnet-5",
+    "plannedCalls": 18,
+    "infrastructureOnlyRetryLimit": 6,
+    "hardCapAttempts": 24,
+    "modelSubstitutionAllowed": false
+  },
+  "attemptAccounting": {
+    "attempted": 3,
+    "usable": 0,
+    "nonretryableFailures": 3,
+    "retries": 0,
+    "plannedCallsNotStarted": 15
+  },
+  "stopBoundary": {
+    "caseId": "literature-01",
+    "completedArms": [
+      "A",
+      "B",
+      "C"
+    ],
+    "remainingLiveCasesNotStarted": [
+      "literature-02",
+      "literature-03",
+      "ideation-01",
+      "ideation-02",
+      "evaluation-01"
+    ],
+    "packageExpansionStarted": false,
+    "fullMigrationClaimAllowed": false
+  },
+  "retryDecision": {
+    "eligible": false,
+    "reason": "All three provider results reported is_error=true with an exact-model routing error; the authorization forbids retries for nonretryable failures and forbids model substitution."
+  },
+  "providerError": "API Error: 400 unknown provider for model claude-sonnet-5",
+  "attempts": [
+    {
+      "arm": "A",
+      "attemptId": "95f39765-931c-4611-a785-5f39522ceada",
+      "caseId": "literature-01",
+      "classification": "nonretryable-failure",
+      "logicalRunId": "literature-01-a",
+      "modelUsageKeys": [],
+      "processExitCode": 1,
+      "reservationRecordId": "8de61944-57de-4959-84aa-a6b8febefe60",
+      "resultRecordId": "81be42b5-0626-4b02-9f53-9e47b286adf9",
+      "retryEligible": false,
+      "runnerReason": "provider output is_error must be false",
+      "sessionId": "7dc63225-0548-4d15-8695-bbd88c5be059",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "6da5f2085efff31363f54fb4ae877bbccbb273eba0f9388fd80852f01829b340"
+    },
+    {
+      "arm": "B",
+      "attemptId": "d6a6699b-40b9-4304-b1dc-d155bb0451f6",
+      "caseId": "literature-01",
+      "classification": "nonretryable-failure",
+      "logicalRunId": "literature-01-b",
+      "modelUsageKeys": [],
+      "processExitCode": 1,
+      "reservationRecordId": "04a3677b-0ea0-47ed-8e5b-cf466af28d9a",
+      "resultRecordId": "2aec185a-167b-40b0-840d-e046bb027c77",
+      "retryEligible": false,
+      "runnerReason": "provider output is_error must be false",
+      "sessionId": "be990bb2-1ddc-4845-b873-e1e6c6d1940f",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "c06396e85d2bc1b5d7ecad6ea013904b448fceb42e8bfe60d1092815032ab888"
+    },
+    {
+      "arm": "C",
+      "attemptId": "44f49e6c-7777-49c3-92f1-c3846b17d800",
+      "caseId": "literature-01",
+      "classification": "nonretryable-failure",
+      "logicalRunId": "literature-01-c",
+      "modelUsageKeys": [],
+      "processExitCode": 1,
+      "reservationRecordId": "3ec8896e-aa09-43ce-9408-f03f0744e95e",
+      "resultRecordId": "8ffec06e-4a08-4674-95db-e41c5cbdb350",
+      "retryEligible": false,
+      "runnerReason": "provider output is_error must be false",
+      "sessionId": "8ec1664b-17cc-40fd-a7a3-0f37fde075bd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "5983b554991d0dedf8a3a983693098f0729a07284aff6b0548d75580988d2b48"
+    }
+  ]
+}

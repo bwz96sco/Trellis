@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Experiment"
+  short_description: "One frozen-comparison experiment lifecycle"
+  default_prompt: "Use $research-experiment to freeze a comparison, execute runs, and audit results into a bounded claim."
+
+policy:
+  allow_implicit_invocation: true

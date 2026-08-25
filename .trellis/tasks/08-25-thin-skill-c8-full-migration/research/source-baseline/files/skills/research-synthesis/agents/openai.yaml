@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Synthesis"
+  short_description: "Cross-paper synthesis from register and reading notes"
+  default_prompt: "Use $research-synthesis to combine an existing literature register and notes into one argued answer to the target question."
+
+policy:
+  allow_implicit_invocation: true

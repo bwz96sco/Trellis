@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/08-25-thin-skill-c8-full-migration/prd.md","reason":"Check fixed source/provider scope, complete 15-Skill accounting, gate-before-expansion rule, and acceptance criteria."}
+{"file":".trellis/tasks/08-25-thin-skill-c8-full-migration/design.md","reason":"Check one-registry package design, immutable versions, evaluation isolation, authority preservation, and rollback."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Check production manifests, profile restrictions, exact capabilities, non-automatic handoffs, and native Quest replacement."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Check managed workers receive approved package bytes only, remain proposal-only, and cannot launch nested execution."}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Check independent digest vectors, deterministic fixtures, honest failure preservation, and normal-hook verification."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Check real package roots, fail-closed override, exact byte/member assertions, replay/recovery, and tarball inventory failure cases."}

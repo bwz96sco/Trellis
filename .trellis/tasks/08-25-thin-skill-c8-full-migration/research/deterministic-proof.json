@@ -1,0 +1,455 @@
+{
+  "acceptedPackageIdentities": {
+    "research-idea-evaluation": {
+      "id": "research-idea-evaluation",
+      "instructionDigest": "sha256:4294c16a649778a1e763c143ee82893a1b7d370b3513fdd3ce5a9b97aaf8a03a",
+      "memberInventoryDigest": "sha256:880ef7179d8245730322dcc78c178425fbe56f8d6dc06597487b43f0069ef436",
+      "packageDigest": "sha256:dc58cc3abc0993956a4fc5b0fb873ff09b560af6468b9bb2bb4bc3db8891454a",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.0.0"
+    },
+    "research-ideation": {
+      "id": "research-ideation",
+      "instructionDigest": "sha256:7f569076fced3487d81957a73b597893e878bf79eb49b51d20e5e9b2bce9346a",
+      "memberInventoryDigest": "sha256:d9dfaec07f25eacdb91364c78fca2947786ce4d281631cff9f8695969ce7544c",
+      "packageDigest": "sha256:ece95cbc55dcd51fb28c6e4d729b873a067a938967b8c25a79fded7fbe3ed3d9",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.1.0"
+    },
+    "research-literature": {
+      "id": "research-literature",
+      "instructionDigest": "sha256:2bd56e1e71f9710aad654b3658a630da9ace9c9c97b1f4d5e3c128e59da6c92a",
+      "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+      "packageDigest": "sha256:620aa58ae0f9f7d837e92dbcf5d30892e4a9fb67bd49365ad56a9ef7d98093ce",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.1.0"
+    },
+    "research-quest-admin": {
+      "id": "research-quest-admin",
+      "instructionDigest": "sha256:cf0ea546c6d2d2b9dfde7f00c7578705c993fb30d76df194cfe19569596593e5",
+      "memberInventoryDigest": "sha256:0ed9fa66664d261a53da5dc81101e083b4299c14da128895858ade8590340727",
+      "packageDigest": "sha256:97e2a3dd3e1731b8899c502131c6d1017482f6c24737f39c8b7c45257fb9c37d",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.0.0"
+    }
+  },
+  "checks": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2/.trellis/tasks/08-25-thin-skill-c8-full-migration/research/build_source_baseline.py",
+        "--verify"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:00.755991Z",
+      "id": "source-baseline-offline-verification",
+      "startedAt": "2026-08-25T08:24:00.665205Z",
+      "status": "passed",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 133,
+      "stdoutSha256": "4f45c6e45289b2317aec33a8b7b0a619792e5bcc19bcae7226643bed7b0bac7f"
+    },
+    {
+      "command": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis-core",
+        "build"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:04.021476Z",
+      "id": "core-build-before-package-resolution",
+      "startedAt": "2026-08-25T08:24:00.756369Z",
+      "status": "passed",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 442,
+      "stdoutSha256": "280604d782c81fd39861e6ef70b709298c3647b40bbb1daad151fac768d0ee1e"
+    },
+    {
+      "command": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis",
+        "build"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:09.395418Z",
+      "id": "cli-template-build-before-package-resolution",
+      "startedAt": "2026-08-25T08:24:04.022087Z",
+      "status": "passed",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 790,
+      "stdoutSha256": "386475b7f774bdb95b6bca67f12999f6e28691484743c259fce286ca3a060fd1"
+    },
+    {
+      "command": [
+        "node",
+        "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2/packages/cli/bin/trellis.js",
+        "research",
+        "skill",
+        "list",
+        "--root",
+        "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2",
+        "--json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:09.759709Z",
+      "id": "production-package-identity-resolution",
+      "startedAt": "2026-08-25T08:24:09.396054Z",
+      "status": "passed",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 4522,
+      "stdoutSha256": "b89a9f7162b29aa9240a2b66541cca72f9d3e243bef0484362ed9218396649c1"
+    },
+    {
+      "command": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis",
+        "exec",
+        "vitest",
+        "run",
+        "test/commands/research-execution-package-resolution.integration.test.ts",
+        "test/commands/research-managed-skill-lifecycle.integration.test.ts",
+        "test/commands/research-workflow-state.integration.test.ts",
+        "test/commands/research-gate.integration.test.ts",
+        "test/commands/research-quest-source-admin.integration.test.ts",
+        "test/commands/research-methodology-closure-cs4.test.ts"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:26.370589Z",
+      "id": "focused-cli-contract-tests",
+      "startedAt": "2026-08-25T08:24:09.760176Z",
+      "status": "passed",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 2185,
+      "stdoutSha256": "e60607882f6a24ff4231bba58906f5f61707b1920c46cc7506ec09df13b873e2"
+    },
+    {
+      "command": [
+        "pnpm",
+        "--filter",
+        "@mindfoldhq/trellis-core",
+        "exec",
+        "vitest",
+        "run",
+        "test/research/methodology-runtime.test.ts"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:27.796044Z",
+      "id": "focused-core-contract-tests",
+      "startedAt": "2026-08-25T08:24:26.371176Z",
+      "status": "passed",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 574,
+      "stdoutSha256": "609cf4640e02888a26c591e7602a6b5729926f484c5ba18b58142abae9b81452"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/Users/zhangbowen/Projects/NewTools-Research/Trellis/.claude/worktrees/claude-t6-mal1-reviewer-01-m0-correction-2/.trellis/tasks/08-25-thin-skill-c8-full-migration/research/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "finishedAt": "2026-08-25T08:24:31.515146Z",
+      "id": "task-local-harness-tests",
+      "startedAt": "2026-08-25T08:24:27.796431Z",
+      "status": "passed",
+      "stderrBytes": 126,
+      "stderrSha256": "ed976f45729d3be3f9c921b4a6c8e52b9d6e04c7f07f8a094bda514001ab2278",
+      "stdoutBytes": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "evaluationId": "thin-skill-c8-full-migration",
+  "generatedAt": "2026-08-25T08:24:31.523439Z",
+  "harnessArtifacts": [
+    {
+      "bytes": 18862,
+      "path": "evaluation-plan.json",
+      "sha256": "86693de643983a0b6cd8e63092fe1089b66dbbea431c3fec8305b0750c31b370"
+    },
+    {
+      "bytes": 13693,
+      "path": "run-record.schema.json",
+      "sha256": "4e13c2898684a3f871f44f0c84f2518f9c9342215a9eb1d1afc8e0150cee2605"
+    },
+    {
+      "bytes": 2528,
+      "path": "cases/evaluation-01.json",
+      "sha256": "384809bfb78c2bb6155e07045dc41d9e5e0f5d2ee4ccd7afc80cace1f461aa48"
+    },
+    {
+      "bytes": 1856,
+      "path": "cases/ideation-01.json",
+      "sha256": "fe85bf434419923e2554b3ed863c2629252c02271dbefd34366fe659e13b3af3"
+    },
+    {
+      "bytes": 2101,
+      "path": "cases/ideation-02.json",
+      "sha256": "1f84dda98e656c313e1b93a1ad8745598b65b3a8623178fd289dfb4466487e36"
+    },
+    {
+      "bytes": 40406,
+      "path": "cases/inputs/evaluation-01/evidence.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 1498,
+      "path": "cases/inputs/evaluation-01/task.md",
+      "sha256": "c6c413bb3be49677556c242b0eca3ad9501a0479378fcc5e9d3a09e56c8e9012"
+    },
+    {
+      "bytes": 40406,
+      "path": "cases/inputs/ideation-01/evidence.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 788,
+      "path": "cases/inputs/ideation-01/task.md",
+      "sha256": "c96925cb7b76b1b1ca7f483722da83fd44529c521fb27d347350de2a8ff7bbd9"
+    },
+    {
+      "bytes": 40406,
+      "path": "cases/inputs/ideation-02/evidence.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716"
+    },
+    {
+      "bytes": 1080,
+      "path": "cases/inputs/ideation-02/task.md",
+      "sha256": "87c749cb6b3e4a4f3a8adf54eadc2564a2c80537cf6d81c3a0c348181cdfb051"
+    },
+    {
+      "bytes": 10996,
+      "path": "cases/inputs/literature-01/evidence.md",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "path": "cases/inputs/literature-01/task.md",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 68050,
+      "path": "cases/inputs/literature-02/evidence.md",
+      "sha256": "de2fef451b6d26fa92e45310366fd3ebda90b5591cd3c35da722dfafcc201caf"
+    },
+    {
+      "bytes": 917,
+      "path": "cases/inputs/literature-02/task.md",
+      "sha256": "200722c52a251f90bae34c1bc7d1dbe2fe987933ee86189ba25d6ab9b1604dbc"
+    },
+    {
+      "bytes": 44913,
+      "path": "cases/inputs/literature-03/evidence.md",
+      "sha256": "7908bec5e121783c1c322c424ff70d886d50291fb48b9ade62869a92e4ceabaa"
+    },
+    {
+      "bytes": 906,
+      "path": "cases/inputs/literature-03/task.md",
+      "sha256": "c88e44cf53cb5137b02e184994d65ab7c85805fea816cf2231cb300506e532e1"
+    },
+    {
+      "bytes": 197,
+      "path": "cases/inputs/quest-admin-01/fixture/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "path": "cases/inputs/quest-admin-01/fixture/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "path": "cases/inputs/quest-admin-01/fixture/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "path": "cases/inputs/quest-admin-01/fixture/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 0,
+      "path": "cases/inputs/quest-admin-01/fixture/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 860,
+      "path": "cases/inputs/quest-admin-01/fixture/research-quest.yaml",
+      "sha256": "782b2c8708149ca481f5ac81dd3c442074ab44aebc753dc3b202ce2f0e1d32ff"
+    },
+    {
+      "bytes": 667,
+      "path": "cases/inputs/quest-admin-01/task.md",
+      "sha256": "77ae28f0159e60870888cad15c8a748fd41a72fa8eae5aff3a35c9f9c529d5ba"
+    },
+    {
+      "bytes": 197,
+      "path": "cases/inputs/quest-admin-02/fixture/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "path": "cases/inputs/quest-admin-02/fixture/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "path": "cases/inputs/quest-admin-02/fixture/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "path": "cases/inputs/quest-admin-02/fixture/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 0,
+      "path": "cases/inputs/quest-admin-02/fixture/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 860,
+      "path": "cases/inputs/quest-admin-02/fixture/research-quest.yaml",
+      "sha256": "782b2c8708149ca481f5ac81dd3c442074ab44aebc753dc3b202ce2f0e1d32ff"
+    },
+    {
+      "bytes": 968,
+      "path": "cases/inputs/quest-admin-02/task.md",
+      "sha256": "499bc5253eb85c339c06d8721d449e64e0e75567099692a04bf4e8d55dfc54ac"
+    },
+    {
+      "bytes": 197,
+      "path": "cases/inputs/quest-admin-03/fixture/research/h1_decision.md",
+      "sha256": "7cc1fcbe5e13d3c9102f3325d2697218408967ed56e3dfdc6093f4aa36b7f212"
+    },
+    {
+      "bytes": 171,
+      "path": "cases/inputs/quest-admin-03/fixture/research/h2_decision.md",
+      "sha256": "ea9769be28ab0bce56ee8f5e1c18249b869cdb4f7842519ead0b3039217c1552"
+    },
+    {
+      "bytes": 256,
+      "path": "cases/inputs/quest-admin-03/fixture/research/ideas.md",
+      "sha256": "521cf5629ec23fda3bfa90be974198113db910ae4c4659091f19c45e4408a240"
+    },
+    {
+      "bytes": 162,
+      "path": "cases/inputs/quest-admin-03/fixture/research/opportunity_board.md",
+      "sha256": "8019079310d3e1c7ce083d86ebaeea7f0e92c85a85d5a4eee961f234d3818097"
+    },
+    {
+      "bytes": 0,
+      "path": "cases/inputs/quest-admin-03/fixture/research-events.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 860,
+      "path": "cases/inputs/quest-admin-03/fixture/research-quest.yaml",
+      "sha256": "782b2c8708149ca481f5ac81dd3c442074ab44aebc753dc3b202ce2f0e1d32ff"
+    },
+    {
+      "bytes": 842,
+      "path": "cases/inputs/quest-admin-03/task.md",
+      "sha256": "0b3a6edf0a758a0cbf98c072d7aca2aa3e5095d1a8e0f4e504dae34dedcff14c"
+    },
+    {
+      "bytes": 1892,
+      "path": "cases/literature-01.json",
+      "sha256": "b91d6ac1f73a540f4521e74839dc93fdf172927089d7f09a60bbe1bb4ee093be"
+    },
+    {
+      "bytes": 1908,
+      "path": "cases/literature-02.json",
+      "sha256": "78c0ce3009f8dd6c46b46ebd03b40a2b6c933faa397d0a8b4d0943cfa1fb1834"
+    },
+    {
+      "bytes": 2159,
+      "path": "cases/literature-03.json",
+      "sha256": "786306205a2591a352e372adf15f4919ba6d5df576e233947dba14e31bfa5b65"
+    },
+    {
+      "bytes": 3352,
+      "path": "cases/quest-admin-01.json",
+      "sha256": "e8e3149e4e59913bf039401a1699074fe629747c77c5acfc3b0c8867d6c7d08c"
+    },
+    {
+      "bytes": 3350,
+      "path": "cases/quest-admin-02.json",
+      "sha256": "b51e1212c341e30c61cd3f0c913103575546196913092af42e07b6d39a335cfe"
+    },
+    {
+      "bytes": 3491,
+      "path": "cases/quest-admin-03.json",
+      "sha256": "076f0f615db5124426a225967d323ab14faae0aea206cc1914aa9acb21470f33"
+    },
+    {
+      "bytes": 13067,
+      "path": "tools/claude_runner.py",
+      "sha256": "4549c47ecb9ee287a34ec8b96f80b5c4a02568a66a4f2ecbe57be5e50c77b45e"
+    },
+    {
+      "bytes": 83382,
+      "path": "tools/evaluation_harness.py",
+      "sha256": "98454fdf02c99cbf0c809fcea4c57ab9e4c42e19f12e36a061ff3db2c4e66b45"
+    },
+    {
+      "bytes": 6224,
+      "path": "tests/test_claude_runner.py",
+      "sha256": "95798a1728c80271898b8506b0e6b839ee6651a2ecd2e77a6f7ec13f0644a6dc"
+    },
+    {
+      "bytes": 23847,
+      "path": "tests/test_evaluation_harness.py",
+      "sha256": "3106bb69ae6063c7d078fe433ce9971ee67a99319f05052180cf898d65311a9f"
+    }
+  ],
+  "liveGate": {
+    "fullMigrationClaimAllowed": false,
+    "requiredUsableCalls": 18,
+    "status": "live-not-started",
+    "usableCalls": 0
+  },
+  "proofId": "thin-skill-c8-deterministic-proof-v1",
+  "providerBoundary": {
+    "liveEvaluationStarted": false,
+    "modelProcessLaunched": false,
+    "providerProcessLaunched": false,
+    "runsJsonlBytes": 0
+  },
+  "schemaVersion": 1,
+  "sourceBaseline": {
+    "aggregateDigest": "sha256:7ad7bf1547605ce8c243bcb51dd03715e1ebfb7ef4c7ea528053ee41386fcd89",
+    "commit": "86df5a676c52950592ff9fe5966b9c1753160cb5",
+    "manifestSha256": "862b34305d1b6a778ad4f15453846428efb6b2222154702276b9aff87c8952f0",
+    "tree": "aa0282da9c63f8f17dd94b672b3fd6843647a0bd"
+  },
+  "status": "passed"
+}

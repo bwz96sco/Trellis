@@ -404,7 +404,7 @@ describe("packed CLI inventory audit", () => {
     );
   });
 
-  it("authenticates all four pilot Skill packages from a real tarball", () => {
+  it("authenticates all six bundled Skill package versions from a real tarball", () => {
     const fixture = createPackedCliFixture();
     try {
       const result = spawnSync(
@@ -424,7 +424,7 @@ describe("packed CLI inventory audit", () => {
 
       expect(result.status, result.stderr).toBe(0);
       expect(result.stdout).toContain(
-        "4 Skill manifests with 3 authenticated members",
+        "6 Skill manifests with 5 authenticated members",
       );
     } finally {
       fs.rmSync(fixture.root, { recursive: true, force: true });

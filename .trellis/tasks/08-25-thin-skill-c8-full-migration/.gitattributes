@@ -1,0 +1,4 @@
+# Preserve authenticated external fixture bytes exactly.
+research/case-sources/** -whitespace
+research/cases/inputs/** -whitespace
+research/source-baseline/files/** -whitespace

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Ideation"
+  short_description: "Falsifiable research idea portfolios from gaps"
+  default_prompt: "Use $research-ideation to generate 3-7 mechanism-distinct falsifiable candidates from a research question and its literature evidence."
+
+policy:
+  allow_implicit_invocation: true

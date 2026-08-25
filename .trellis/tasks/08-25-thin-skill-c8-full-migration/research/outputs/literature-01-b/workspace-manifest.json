@@ -1,0 +1,58 @@
+{
+  "arm": "B",
+  "caseId": "literature-01",
+  "files": [
+    {
+      "bytes": 10996,
+      "path": "input/evidence.md",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "path": "input/task.md",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 3431,
+      "path": "method/source/skills/research-literature/SKILL.md",
+      "sha256": "07d1aa5fb2d437cb21cbe8eae708f15163453a257dec22210b0c37661756c98b"
+    },
+    {
+      "bytes": 314,
+      "path": "method/source/skills/research-literature/agents/openai.yaml",
+      "sha256": "4e8ce93b42780616a322bd4a484a107339d13839921f3af9a1b6fb4c7f4ad785"
+    },
+    {
+      "bytes": 2499,
+      "path": "method/source/skills/research-literature/note-template.md",
+      "sha256": "3e01c5ec149958590ef3d3ab6751fb1db3203b978b5a698c22e7eef33894ed71"
+    },
+    {
+      "bytes": 6908,
+      "path": "prompts/system.md",
+      "sha256": "834fdf8edd6f764652400ced1c3689b329bb508390e5645eff301d67566e6263"
+    },
+    {
+      "bytes": 11939,
+      "path": "prompts/task.md",
+      "sha256": "bb264bcfad3912b73f87efa1cf83c0af0380ffb115c4cf54d5a731bbd780e3b4"
+    }
+  ],
+  "identitySnapshot": {
+    "caseSha256": "b91d6ac1f73a540f4521e74839dc93fdf172927089d7f09a60bbe1bb4ee093be",
+    "inputInventorySha256": "c15740d54f4b5443ad77c05579c4f43dcb2344dbab20bce26645653671991607",
+    "methodIdentity": {
+      "identity": {
+        "aggregateDigest": "sha256:7ad7bf1547605ce8c243bcb51dd03715e1ebfb7ef4c7ea528053ee41386fcd89",
+        "commit": "86df5a676c52950592ff9fe5966b9c1753160cb5",
+        "manifestSha256": "862b34305d1b6a778ad4f15453846428efb6b2222154702276b9aff87c8952f0",
+        "sourceSet": "literature",
+        "sourceSetSha256": "f93f0fdfe38f425a05fd58a55a3963a98b41d29c258378aaee1fd14a18a67d5c",
+        "tree": "aa0282da9c63f8f17dd94b672b3fd6843647a0bd"
+      },
+      "kind": "c8-source-baseline"
+    }
+  },
+  "logicalRunId": "literature-01-b",
+  "schemaVersion": 1
+}

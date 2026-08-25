@@ -1,0 +1,45 @@
+{
+  "event_id": "evt-YYYYMMDD-HHMMSS-slug",
+  "timestamp": "2026-06-27T10:30:00+08:00",
+  "actor": "agent",
+  "event_type": "decision_recorded",
+  "milestone": true,
+  "stage": "research-experiment",
+  "summary": "One meaningful change in one sentence.",
+  "artifacts": [
+    {
+      "path": "relative/path.md",
+      "owner_skill": "research-experiment",
+      "role": "claim_report",
+      "action": "updated"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "relative/MANIFEST.md",
+      "supports_claims": ["C1"],
+      "role": "evidence_manifest"
+    }
+  ],
+  "claim_updates": [
+    {
+      "claim_id": "C1",
+      "owner_skill": "research-experiment",
+      "from_status": "candidate",
+      "to_status": "partial",
+      "rationale": "Why the status changed."
+    }
+  ],
+  "decision": {
+    "decision_id": "D1",
+    "verdict": "continue_experiment",
+    "rationale": "Why this route is active.",
+    "next_route": "research-experiment"
+  },
+  "next_action": {
+    "owner_skill": "research-experiment",
+    "action": "continue",
+    "acceptance_gate": "Expected files plus validator pass.",
+    "expected_artifact": "relative/path.md"
+  }
+}

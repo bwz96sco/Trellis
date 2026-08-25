@@ -1,0 +1,66 @@
+{
+  "applicableArms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "armBSourceSet": "literature",
+  "armC": {
+    "executionPackage": {
+      "id": "research-literature",
+      "instructionDigest": "sha256:2bd56e1e71f9710aad654b3658a630da9ace9c9c97b1f4d5e3c128e59da6c92a",
+      "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+      "packageDigest": "sha256:620aa58ae0f9f7d837e92dbcf5d30892e4a9fb67bd49365ad56a9ef7d98093ce",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.1.0"
+    },
+    "profile": "lightweight",
+    "requestedMembers": [
+      "templates/note-template.md"
+    ]
+  },
+  "assertions": [
+    {
+      "description": "The existing SWE-agent identity is reused without duplicate registration.",
+      "id": "register-identity-reused",
+      "zeroTolerance": false
+    },
+    {
+      "description": "The comparison accounts for setup and benchmark differences.",
+      "id": "cross-paper-setup-differences",
+      "zeroTolerance": false
+    },
+    {
+      "description": "The run stops before architecture ideation.",
+      "id": "bounded-stop",
+      "zeroTolerance": false
+    }
+  ],
+  "boundary": "literature",
+  "caseId": "literature-02",
+  "inputFiles": [
+    {
+      "bytes": 68050,
+      "path": "cases/inputs/literature-02/evidence.md",
+      "role": "evidence",
+      "sha256": "de2fef451b6d26fa92e45310366fd3ebda90b5591cd3c35da722dfafcc201caf",
+      "workspacePath": "input/evidence.md"
+    },
+    {
+      "bytes": 917,
+      "path": "cases/inputs/literature-02/task.md",
+      "role": "task",
+      "sha256": "200722c52a251f90bae34c1bc7d1dbe2fe987933ee86189ba25d6ab9b1604dbc",
+      "workspacePath": "input/task.md"
+    }
+  ],
+  "mode": "live-provider",
+  "plannedInvocationUnits": {
+    "A": 1,
+    "B": 1,
+    "C": 1
+  },
+  "schemaVersion": 1,
+  "title": "Literature case 02: question-scoped register update"
+}

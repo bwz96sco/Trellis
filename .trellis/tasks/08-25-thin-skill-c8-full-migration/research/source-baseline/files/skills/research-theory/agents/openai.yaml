@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Theory"
+  short_description: "Research-level derivations, proofs, and proof audits"
+  default_prompt: "Use $research-theory to freeze claims, attempt breaks, derive, prove or weaken, and audit proof obligations."
+
+policy:
+  allow_implicit_invocation: true

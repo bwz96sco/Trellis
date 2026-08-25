@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Computation"
+  short_description: "Scientific computation with typed validated claims"
+  default_prompt: "Use $research-computation to preflight packages, execute scientific runs, validate separately, and type claims."
+
+policy:
+  allow_implicit_invocation: true

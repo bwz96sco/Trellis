@@ -1,0 +1,8 @@
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/prd.md","reason":"Authoritative full-migration outcome, case coverage, overhead, and zero-tolerance requirements."}
+{"file":".trellis/tasks/08-21-plan-thin-skill-research-orchestration/design.md","reason":"Authoritative thin-Skill architecture, execution profiles, package identity, Workflow, gate, Quest, and A/B/C design."}
+{"file":".trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/manifest.json","reason":"Historical frozen source identity retained for comparison; C8 creates a new pure Git-object baseline without modifying C1."}
+{"file":".trellis/tasks/archive/2026-08/08-21-thin-skill-c6-migrate-pilot-packages/design.md","reason":"Existing immutable pilot package matrix and semantic adaptation boundary."}
+{"file":".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/design.md","reason":"Historical evaluation evidence shape and zero-tolerance stop behavior; archived bytes remain immutable."}
+{"file":".trellis/spec/cli/backend/commands-research.md","reason":"Executable schema-v3 package, profile, Workflow, gate, Quest, Dispatch, Context, and recovery contracts."}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Managed worker package identity, Context projection, proposal-only authority, and no-nested-execution boundary."}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Real bundled filesystem, fail-closed override, replay, isolated workspace, and packed tar audit patterns."}

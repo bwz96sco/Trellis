@@ -1,0 +1,85 @@
+project:
+  name: ""
+  description: ""
+
+repositories:
+  code:
+    - path: code/
+      remote: ""
+      branch: ""
+      commit: ""
+  paper:
+    - path: paper/
+      remote: ""
+      branch: ""
+      commit: ""
+  notes:
+    - path: note/
+      remote: ""
+      branch: ""
+      commit: ""
+
+data:
+  policy: "Do not track large, sensitive, or generated data in the meta repo."
+  raw: []
+  processed: []
+  releases: []
+
+provenance:
+  intake:
+    - path: ""
+      current_mainline: ""
+      trusted_assets: []
+      status: ""
+      updated: ""
+  literature:
+    - path: ""
+      topic: ""
+      status: ""
+      updated: ""
+  ideation:
+    - path: ""
+      selected_idea: ""
+      status: ""
+      updated: ""
+  experiments:
+    - path: ""
+      campaign_or_pack: ""
+      status: ""
+      updated: ""
+  computation:
+    - path: ""
+      scientific_question: ""
+      status: ""
+      updated: ""
+  figures:
+    - path: ""
+      paper_repo: ""
+      status: ""
+      updated: ""
+  slides:
+    - path: ""
+      deck_output: ""
+      status: ""
+      updated: ""
+  writing:
+    - path: ""
+      paper_repo: ""
+      manuscript: ""
+      status: ""
+      updated: ""
+  theory:
+    - path: ""
+      theorem_or_claim: ""
+      status: ""
+      updated: ""
+  quest:
+    - path: ""
+      status: ""
+      updated: ""
+  harness:
+    - path: ""
+      topic: ""
+      status: ""
+      updated: ""
+  tables: []

@@ -1,0 +1,64 @@
+{
+  "applicableArms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "armBSourceSet": "literature",
+  "armC": {
+    "executionPackage": {
+      "id": "research-literature",
+      "instructionDigest": "sha256:2bd56e1e71f9710aad654b3658a630da9ace9c9c97b1f4d5e3c128e59da6c92a",
+      "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+      "packageDigest": "sha256:620aa58ae0f9f7d837e92dbcf5d30892e4a9fb67bd49365ad56a9ef7d98093ce",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.1.0"
+    },
+    "profile": "lightweight",
+    "requestedMembers": []
+  },
+  "assertions": [
+    {
+      "description": "The review stays on the stated positional-encoding comparison.",
+      "id": "question-scope-locked",
+      "zeroTolerance": false
+    },
+    {
+      "description": "Reported results, limitations, omissions, and analyst inference are distinct.",
+      "id": "evidence-categories-separated",
+      "zeroTolerance": false
+    },
+    {
+      "description": "The run stops after one note/register unit and does not start ideation.",
+      "id": "bounded-stop",
+      "zeroTolerance": false
+    }
+  ],
+  "boundary": "literature",
+  "caseId": "literature-01",
+  "inputFiles": [
+    {
+      "bytes": 10996,
+      "path": "cases/inputs/literature-01/evidence.md",
+      "role": "evidence",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39",
+      "workspacePath": "input/evidence.md"
+    },
+    {
+      "bytes": 876,
+      "path": "cases/inputs/literature-01/task.md",
+      "role": "task",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f",
+      "workspacePath": "input/task.md"
+    }
+  ],
+  "mode": "live-provider",
+  "plannedInvocationUnits": {
+    "A": 1,
+    "B": 1,
+    "C": 1
+  },
+  "schemaVersion": 1,
+  "title": "Literature case 01: bounded one-paper review"
+}

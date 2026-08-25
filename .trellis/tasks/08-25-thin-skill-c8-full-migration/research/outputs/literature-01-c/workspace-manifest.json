@@ -1,0 +1,58 @@
+{
+  "arm": "C",
+  "caseId": "literature-01",
+  "files": [
+    {
+      "bytes": 10996,
+      "path": "input/evidence.md",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39"
+    },
+    {
+      "bytes": 876,
+      "path": "input/task.md",
+      "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f"
+    },
+    {
+      "bytes": 2296,
+      "path": "method/package/SKILL.md",
+      "sha256": "b795e0f21db68a61331e0187c1e9f12f432575e14de889f86bd6b7829a502851"
+    },
+    {
+      "bytes": 597,
+      "path": "method/package/skill.json",
+      "sha256": "c4729a647722d6ec7a3935ac4a4423580a077e5bceae0d2f40f1b21df00b183e"
+    },
+    {
+      "bytes": 3442,
+      "path": "prompts/system.md",
+      "sha256": "0b0d81246fd4d34ade940e3b9d53f5703e5b3e89c788bfee4b7053df32d71246"
+    },
+    {
+      "bytes": 11939,
+      "path": "prompts/task.md",
+      "sha256": "bb264bcfad3912b73f87efa1cf83c0af0380ffb115c4cf54d5a731bbd780e3b4"
+    }
+  ],
+  "identitySnapshot": {
+    "caseSha256": "b91d6ac1f73a540f4521e74839dc93fdf172927089d7f09a60bbe1bb4ee093be",
+    "inputInventorySha256": "c15740d54f4b5443ad77c05579c4f43dcb2344dbab20bce26645653671991607",
+    "methodIdentity": {
+      "identity": {
+        "executionPackage": {
+          "id": "research-literature",
+          "instructionDigest": "sha256:2bd56e1e71f9710aad654b3658a630da9ace9c9c97b1f4d5e3c128e59da6c92a",
+          "memberInventoryDigest": "sha256:0528e9227f1c17f75f36ddf5a7fce03c05aa698301e78510e1aff712dfc494ed",
+          "packageDigest": "sha256:620aa58ae0f9f7d837e92dbcf5d30892e4a9fb67bd49365ad56a9ef7d98093ce",
+          "packageKind": "skill",
+          "schemaVersion": 3,
+          "version": "1.1.0"
+        },
+        "profile": "lightweight",
+        "requestedMembers": []
+      },
+      "kind": "schema-v3-execution-package"
+    }
+  },
+  "logicalRunId": "literature-01-c",
+  "schemaVersion": 1
+}

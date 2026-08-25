@@ -65,6 +65,14 @@ const EXPECTED_PACKAGES = [
     members: [],
   },
 ] as const;
+const EXPECTED_LISTED_PACKAGES = [
+  "research-idea-evaluation@1.0.0",
+  "research-ideation@1.0.0",
+  "research-ideation@1.1.0",
+  "research-literature@1.0.0",
+  "research-literature@1.1.0",
+  "research-quest-admin@1.0.0",
+] as const;
 const EXPECTED_TEMPLATE_AUTHENTICATION = {
   "research-idea-evaluation": {
     path: EVALUATION_TEMPLATE,
@@ -154,11 +162,11 @@ describe("bundled Research pilot Skill packages", { timeout: 30_000 }, () => {
     fs.rmSync(sandbox, { recursive: true, force: true });
   });
 
-  it("lists, shows, and authenticates exactly the four canonical production packages", async () => {
+  it("lists all six versions and authenticates the four original production packages", async () => {
     const listed = await listResearchSkills({ root });
 
     expect(listed.skills.map(({ id, version }) => `${id}@${version}`)).toEqual(
-      EXPECTED_PACKAGES.map(({ id }) => `${id}@${VERSION}`),
+      EXPECTED_LISTED_PACKAGES,
     );
 
     for (const expected of EXPECTED_PACKAGES) {
