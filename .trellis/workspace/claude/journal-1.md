@@ -275,3 +275,60 @@ Authenticated source commit 86df5a6 from Git objects, proved Quest source mutati
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: Complete Research Skill migration
+
+**Date**: 2026-08-26
+**Task**: Complete Research Skill migration
+**Package**: cli
+**Branch**: `claude-t6-mal1-reviewer-01-m0-correction-2`
+
+### Summary
+
+Preserved blocked C8-C10 live evidence, deterministically migrated all remaining Research Skills, shipped the complete authenticated package inventory, and closed the thin-skill orchestration.
+
+### Main Changes
+
+## Migration outcome
+
+- Preserved C8, C9, and C10 as immutable `blocked-nonretryable-provider-failure` evidence. No live gate pass is claimed. Operator scope correction makes Claude Code auxiliary-model routing non-blocking for package migration; no C11 or further provider/model call was run.
+- Authenticated source commit `86df5a676c52950592ff9fe5966b9c1753160cb5`: 15 Skills, 71 files, aggregate `sha256:7ad7bf1547605ce8c243bcb51dd03715e1ebfb7ef4c7ea528053ee41386fcd89`.
+- Added ten schema-v3 packages. Final mapping: four existing package IDs, ten new package IDs, and native Trellis ownership for `research-quest`.
+- Final shipped inventory: 16 package versions, 30 declared members, 62 required packed Skill assets. Every handoff remains non-automatic; profile, capability, audience, member-digest, and canonical-authority boundaries are explicit.
+- Generalized production discovery and packed CLI audits. Missing package directories or declared members now fail real-tarball release preflight.
+- Archived C1/C8/C9/C10 and the parent orchestration; updated one Core test fixture constant to follow the immutable C1 validator into its archive location.
+
+## Verification
+
+- Focused package/distribution suites passed; real npm tarball preflight authenticated all 16 manifests and 30 members.
+- Frozen source baseline verified offline.
+- Core build, CLI build, lint, CLI/workspace typecheck, and scoped diff checks passed.
+- Normal product commit hooks passed: Core 714 tests plus 1 skipped; CLI 1,141 tests.
+- Product commit: `8c2805d30ad69361b327a48d4ad7d1d945b21b20`.
+- No push, PR, release, publication, or further provider/model execution.
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `715512230fee792377567c9cbba46319f2569c07` | (see git log) |
+| `8d39c4a8473720467b2e876faac820cdd6875607` | (see git log) |
+| `cacbd39cf8ae30783e2f0383ba9153502ebb12f3` | (see git log) |
+| `9538b3050bfd4cf27009a847262b799ff4d8d504` | (see git log) |
+| `8c2805d30ad69361b327a48d4ad7d1d945b21b20` | (see git log) |
+
+### Testing
+
+- [OK] Frozen source baseline: 15 Skills / 71 files.
+- [OK] Production distribution: 16 package versions / 30 authenticated members / 62 required assets.
+- [OK] Normal product and archive hooks: Core 714 passed / 1 skipped; CLI 1,141 passed; builds passed.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
