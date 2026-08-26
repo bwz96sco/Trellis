@@ -51,7 +51,7 @@ const identity = {
 } as const;
 const VALIDATOR_PATH = path.resolve(
   process.cwd(),
-  "../../.trellis/tasks/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/files/scripts/validate-research-gates.py",
+  "../../.trellis/tasks/archive/2026-08/08-21-thin-skill-c1-freeze-contracts/research/source-baseline/files/scripts/validate-research-gates.py",
 );
 const ARTIFACT_BYTES = new Map<string, Buffer>([
   [
