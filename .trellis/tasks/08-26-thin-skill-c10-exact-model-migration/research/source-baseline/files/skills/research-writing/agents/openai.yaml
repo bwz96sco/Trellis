@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Writing"
+  short_description: "Evidence-bound manuscript drafting and audits"
+  default_prompt: "Use $research-writing to outline, draft, build, audit, and revise manuscripts inside their evidence boundary."
+
+policy:
+  allow_implicit_invocation: true

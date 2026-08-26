@@ -1,0 +1,2564 @@
+{
+  "schemaVersion": 1,
+  "query": "Blueprint ten not-yet-packaged Research Skills from exact source commit into approved Trellis schema-v3 package contracts.",
+  "scope": "mixed internal repository and exact external Git-object inspection",
+  "date": "2026-08-25",
+  "task": ".trellis/tasks/08-25-thin-skill-c8-full-migration",
+  "sourceAuthority": {
+    "repository": "/Users/zhangbowen/Projects/agent-skills-private",
+    "commit": "86df5a676c52950592ff9fe5966b9c1753160cb5",
+    "tree": "aa0282da9c63f8f17dd94b672b3fd6843647a0bd",
+    "parent": "e2b0d70e3a797f19461eb106601de12250000b69",
+    "readPolicy": "git show/cat-file only; no source working-tree bytes"
+  },
+  "evidenceRead": {
+    "parser": [
+      "packages/core/src/research/execution-package.ts:32-85",
+      "packages/core/src/research/execution-package.ts:252-574",
+      "packages/core/src/research/execution-package.ts:721-842",
+      "packages/core/src/research/execution-package.ts:889-970"
+    ],
+    "capabilities": [
+      "packages/core/src/research/stage-capabilities.ts:6-24",
+      "packages/core/src/research/stage-capabilities.ts:127-298"
+    ],
+    "specs": [
+      ".trellis/spec/core/backend/research-state.md:1006-1052",
+      ".trellis/spec/core/backend/research-state.md:1307-1345",
+      ".trellis/spec/cli/backend/commands-research.md:763-838",
+      ".trellis/spec/cli/backend/commands-research.md:926-993",
+      ".trellis/spec/cli/backend/research-worker-hooks.md:481-542",
+      ".trellis/spec/cli/backend/research-worker-hooks.md:584-710"
+    ],
+    "taskDesign": [
+      ".trellis/tasks/08-25-thin-skill-c8-full-migration/prd.md:68-81",
+      ".trellis/tasks/08-25-thin-skill-c8-full-migration/design.md:36-71",
+      ".trellis/tasks/08-21-plan-thin-skill-research-orchestration/design.md:96-214"
+    ],
+    "packageExamples": [
+      "packages/cli/src/templates/research/skills/research-literature/1.0.0",
+      "packages/cli/src/templates/research/skills/research-ideation/1.0.0",
+      "packages/cli/src/templates/research/skills/research-idea-evaluation/1.0.0",
+      "packages/cli/src/templates/research/skills/research-quest-admin/1.0.0"
+    ],
+    "frozenSourceBaseline": [
+      ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/manifest.json",
+      ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/SKILL.md:12-26",
+      ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/assets/manifest.yaml:1-85",
+      ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/source-baseline/files/skills/research-project-setup/references/graphify.md:1-10"
+    ]
+  },
+  "globalConstraints": [
+    "Exactly ten new immutable packages at 1.0.0; no research-quest package.",
+    "No Workflow DAG, second registry, prompt duplication, source helper/validator copy, campaign engine, or automatic continuation.",
+    "Synthesis, opportunity-mining, figure, and slides are lightweight-only.",
+    "Figure and slides receive no optional capability ID or managed binding.",
+    "Every managed package binds exactly one current registry capability.",
+    "Every handoff is declarative with autoInvoke=false.",
+    "Members are exact digest-bound source bytes; on-demand members load only by explicit request; root-only members never enter worker Context.",
+    "All source agents/openai.yaml files are evidence only and excluded from packages."
+  ],
+  "packages": [
+    {
+      "id": "research-synthesis",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-synthesis",
+      "sourceFiles": [
+        {
+          "path": "skills/research-synthesis/SKILL.md",
+          "mode": "100644",
+          "blobOid": "ed3a74e45e5f1b4f5f9903a0c8b2cb5f08205ac4",
+          "byteSize": 3286,
+          "sha256": "8050a73957b36d89f2ccfa50b1438fc8537137621380e5415b324b7bdbcb6d30",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-synthesis/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "87ac4120b47f93df5106d45ad43c2464733ed627",
+          "byteSize": 312,
+          "sha256": "6843ca4fa49b4f12fc8f55daf59d6df275a54e392536dc1213d2ebc582448b56",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Require one verbatim target question, register.md, and all status=read paper notes; candidate or skimmed papers remain named but unsynthesized.",
+        "Read notes rather than reopening papers; hold the bounded note corpus in one context and do not delegate subagents.",
+        "Merge note Field maps into a small taxonomy, place every read paper in every applicable cell, and treat unplaceable papers as taxonomy findings.",
+        "Write by taxonomy cell rather than paper-by-paper summary.",
+        "Resolve contradictions by dataset, scale, assumption, metric, or other deciding condition; otherwise name a deciding experiment.",
+        "Derive corpus gaps only from empty cells and anchored note defects; do not claim global novelty.",
+        "Open synthesis.md with the target question verbatim and close with an explicit answer plus unresolved issues."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "Paper retrieval and full-paper reading remain with research-literature.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Gap transformation into substitutions, transfers, stressors, new inputs, or metrics remains with separately selected research-opportunity-mining.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Quest event recording remains with root commands; no event preparation or source quest write occurs inside package.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-synthesis",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight"
+        ],
+        "members": [],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-opportunity-mining"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Verbatim target question; register.md; one or more read notes with stable paper IDs and anchors."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Load bounded note corpus.",
+            "Build taxonomy from Field maps.",
+            "Compare by cell.",
+            "Resolve contradictions by condition or name deciding experiment.",
+            "Harvest corpus-bounded gaps.",
+            "Answer target question."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight only; one root-session synthesis, no managed capability."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Write only synthesis.md beside register.md when durable output is requested.",
+            "Use paper IDs plus note anchors for claims.",
+            "State thin-corpus limits and unresolved issues plainly."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when explicit answer, paper coverage, contradiction treatment, and gap traceability are complete or when required notes/anchors are missing."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No paper search, nested execution, canonical state mutation, provider invocation, or next-stage invocation."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest research-opportunity-mining only for an explicit later transformation request; never invoke it."
+          ]
+        }
+      ],
+      "stopRule": "Stop after one evidence-bound synthesis answers the target question, covers every read paper, conditions or blocks every contradiction, and traces unresolved corpus issues to cells or note defects.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "synthesis.md"
+        ],
+        "persistence": "durable-required when synthesis is requested as a literature-workspace artifact",
+        "requiredContent": [
+          "verbatim target question",
+          "taxonomy and cell comparisons",
+          "paper-id plus note-anchor citations",
+          "explicit answer",
+          "corpus-bounded unresolved issues"
+        ]
+      }
+    },
+    {
+      "id": "research-opportunity-mining",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-opportunity-mining",
+      "sourceFiles": [
+        {
+          "path": "skills/research-opportunity-mining/SKILL.md",
+          "mode": "100644",
+          "blobOid": "2c51da57c322162c06ebf6d2f251e897ca5c219a",
+          "byteSize": 4014,
+          "sha256": "dd22f250eff5df097e57e5be5ba1531d6d8fa945d5cc82ea70f87b46755c2f58",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-opportunity-mining/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "d6178f5d7248316997b5c623d57e165c9a7aacbc",
+          "byteSize": 351,
+          "sha256": "bfe1be2e5ec3cdb8098e9f91a21103b260b8ed3c37fe237323f9170e228e5603",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        },
+        {
+          "path": "skills/research-opportunity-mining/opportunity-template.md",
+          "mode": "100644",
+          "blobOid": "efe1330128e3c9eac79ec9e646252c0dd3e690e1",
+          "byteSize": 2366,
+          "sha256": "92a945bd3506dd77462c43d36aa6ccd06010dfdccf10284dd4b3a380a0c40e0c",
+          "disposition": "declared-member-source",
+          "packagePath": "templates/opportunity-template.md"
+        }
+      ],
+      "materialMethodObligations": [
+        "Require target question, register.md, and one or more status=read full-paper notes; abstract-only evidence cannot support deep seeds.",
+        "Reconstruct each selected paper from note evidence; inspect only a cited local PDF section when one required detail is missing and never launch a paper search.",
+        "Cover six exact lenses: SUB, MOD, INP, XFR, ENV, and MET; record seeded, no_supported_seed, or not_assessable without forcing seeds.",
+        "Use stable IDs O-<paper-id>-<lens>-NN and record source basis, anchor, provenance, transformation, causal rationale, research question, information/compute delta, assets, cheapest falsification, kill condition, and novelty unknown.",
+        "Build per-paper opportunity files plus one complete index; cluster related seed IDs without scoring, ranking, selection, or deletion.",
+        "Load templates/opportunity-template.md only when explicitly requested."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "New literature search, global novelty judgment, candidate generation, scoring, ranking, winner selection, and H1/H2 gates are excluded.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Source register, source notes, and PDFs are read-only except bounded section inspection of an already recorded local PDF.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No managed capability is added for opportunity mining.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-opportunity-mining",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "operator-explicit",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight"
+        ],
+        "members": [
+          {
+            "path": "templates/opportunity-template.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "92a945bd3506dd77462c43d36aa6ccd06010dfdccf10284dd4b3a380a0c40e0c",
+            "maxBytes": 2366
+          }
+        ],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-ideation",
+            "research-literature"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [
+        {
+          "path": "templates/opportunity-template.md",
+          "sourcePath": "skills/research-opportunity-mining/opportunity-template.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "92a945bd3506dd77462c43d36aa6ccd06010dfdccf10284dd4b3a380a0c40e0c",
+          "maxBytes": 2366
+        }
+      ],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Verbatim target question, register.md, selected full-paper read notes, and optional recorded local PDFs."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Lock inputs.",
+            "Reconstruct paper.",
+            "Apply SUB/MOD/INP/XFR/ENV/MET with abstention.",
+            "Write atomic evidence-anchored seeds.",
+            "Build complete unranked index."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight only; operator-explicit selection required."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Use opportunities/<paper-id>.md and opportunity-index.md.",
+            "Load template member on demand.",
+            "Every seed carries novelty status unknown and a falsification/kill test."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop after six-lens coverage and complete indexing or when evidence is insufficient; do not cross into ideation or selection."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No search, gates, canonical mutation, nested execution, provider invocation, or automatic handoff."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest research-literature only when abstract-only or incomplete source evidence requires full-paper reading; suggest research-ideation after complete six-lens output; never invoke either."
+          ]
+        }
+      ],
+      "stopRule": "Stop when every selected note has six-lens coverage, every supported seed is anchored and falsifiable, every unsupported lens abstains, and index contains all seeds without novelty or winner claims.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "opportunities/<paper-id>.md",
+          "opportunity-index.md"
+        ],
+        "persistence": "durable-required in existing literature workspace",
+        "requiredContent": [
+          "baseline snapshot",
+          "six-lens coverage",
+          "atomic seed cards",
+          "complete seed inventory",
+          "related-seed clusters without ranking",
+          "explicit novelty-unknown status"
+        ]
+      }
+    },
+    {
+      "id": "research-experiment",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-experiment",
+      "sourceFiles": [
+        {
+          "path": "skills/research-experiment/SKILL.md",
+          "mode": "100644",
+          "blobOid": "c615b66881bdd370d83e92cbcccbc37cb8d7213d",
+          "byteSize": 2894,
+          "sha256": "4799c53aee0840a0c8c94d29c8b07c2a409d2e609caab0a7a1f0c4b758ef81ff",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-experiment/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "7509701d05789ae600643e0ebebbd25e280d7fbf",
+          "byteSize": 281,
+          "sha256": "1c5e508d4949651f7623710a3fe80057db4f7b1865246cc3ba9acdab92ee0c6f",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Freeze baseline source, dataset/split, metric, evaluator, seed policy, intervention, total budget, and one bounded claim before claim-carrying execution.",
+        "Preserve supplied total budget and mark unresolved allocations rather than inventing equal shares.",
+        "Use one compact run matrix and at most six stop/kill/relaunch/fallback rules; distinguish smoke checks from claim-carrying runs.",
+        "Use actual project-local runner commands; record command, code state, inputs, outputs, return status, and completion evidence.",
+        "Audit every result against source artifacts, preserve failed/null results, and refuse aggregate claims without a frozen aggregation/claim rule.",
+        "Close with exactly supported, refuted, inconclusive, or blocked; disclose every comparison change.",
+        "For multi-round root work, retain a plain runs.md row per round without creating a registry, queue, campaign engine, or tracker."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "Runner/adapter creation remains with explicitly selected external tooling; package never invents runner commands.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Package/solver/HPC computation may be handed to research-computation, but no child Skill is launched.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Campaign orchestration and research.experiment.campaign are excluded; managed binding is one bounded round only.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-experiment",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight",
+          "managed"
+        ],
+        "managedBinding": {
+          "capabilityId": "research.experiment.round"
+        },
+        "members": [],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-computation"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Scientific question or selected experiment brief, project-local runner route, budget, frozen comparison inputs, and bounded claim contract."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Freeze comparison.",
+            "Plan compact run matrix.",
+            "Execute real commands.",
+            "Audit source artifacts.",
+            "Assign bounded verdict."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight: one bounded root-session round.",
+            "managed: one separately prepared and approved research.experiment.round invocation; no campaign fan-out."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return requested result plus minimum trust-bearing command/input/output/validation evidence.",
+            "Preserve failed and null results.",
+            "Managed execution returns strict Result plus pending Proposal using supplied IDs."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop after one bounded round closes or blocks its claim; do not continue to another round or stage automatically."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No provider calls, runner invention, child execution, canonical mutation, Workflow completion, transition, or Approval/Result recording."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest research-computation only when scientific software/package/solver validity becomes separate work; never invoke it."
+          ]
+        }
+      ],
+      "stopRule": "Stop after one frozen-comparison round has traceable artifacts and a supported/refuted/inconclusive/blocked verdict, or when a missing runner, budget, or evidence contract blocks execution.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "bounded experiment result",
+          "minimum trust-bearing run evidence",
+          "runs.md only when root maintains multiple rounds"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "frozen comparison",
+          "actual command and code state",
+          "inputs/outputs/completion evidence",
+          "audit trace",
+          "bounded verdict",
+          "comparison changes"
+        ]
+      }
+    },
+    {
+      "id": "research-computation",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-computation",
+      "sourceFiles": [
+        {
+          "path": "skills/research-computation/SKILL.md",
+          "mode": "100644",
+          "blobOid": "50c127fd40dcf960ce219ff785d4fcf2e3fe42c0",
+          "byteSize": 2439,
+          "sha256": "f0c23cb6099b806d6acdcdebb1b14b1f36c505f119523d6d55ee3c4cb9b8b4cb",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-computation/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "c98ae3f4205dbe5253adba4c64fe8a3ffbbd0fe3",
+          "byteSize": 299,
+          "sha256": "1b441bbe31edc061f09a4cdd5c6566b8a5a1121d3fc0653123da772b792a125a",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Bound scientific question, packages, data, execution route, compute budget, and success criteria.",
+        "Preflight real imports/executables, versions, accelerator/backend access, data schema, and smoke path in current workspace; keep failed checks visible.",
+        "Execute the actual command/script/notebook/job and retain exact command, inputs, logs, outputs, and return status; submitted jobs remain running until logs/outputs are inspected.",
+        "Validate separately from execution: convergence, tolerances, units, schemas, leakage, seeds, invariants, and output persistence as applicable.",
+        "Type every material claim as computed, parsed, digitized, or hypothesis and link it to evidence, non-claims, blockers, and next owner."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "Comparative baseline/ablation ownership remains with research-experiment.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Library/document search, paper reading, scheduler provisioning, and exact project command authoring remain external/root-owned routes.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No campaign wrapper, package installer helper, or source validator is copied into package.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-computation",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight",
+          "managed"
+        ],
+        "managedBinding": {
+          "capabilityId": "research.computation.case"
+        },
+        "members": [],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-literature"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Scientific question, declared packages/data, execution route, compute budget, and success criteria."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Bound run.",
+            "Preflight actual environment.",
+            "Execute actual route.",
+            "Validate separately.",
+            "Type and evidence-bind claims."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight: one bounded local computation case.",
+            "managed: one separately approved research.computation.case with declared scope and writes."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return exact execution evidence, separate validation evidence, typed claims, blockers, non-claims, and next owner.",
+            "Managed execution returns strict Result plus pending Proposal using supplied IDs."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when package availability and run state are proved or blocked, validation is separate, and every material claim is typed and bounded."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No nested execution, provider invocation, canonical mutation, state recording, Workflow action, or check weakening."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest research-experiment for comparative baseline or ablation ownership and research-literature when paper evidence defines package behavior or validation criteria; never invoke either."
+          ]
+        }
+      ],
+      "stopRule": "Stop after one computation case has distinguishable inputs/logs/outputs, separate validation, and typed bounded claims, or after a visible preflight/execution blocker.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "typed computation result",
+          "execution evidence",
+          "validation evidence"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "actual command",
+          "environment/package checks",
+          "inputs/logs/outputs/status",
+          "separate correctness checks",
+          "computed/parsed/digitized/hypothesis labels",
+          "blockers and non-claims"
+        ]
+      }
+    },
+    {
+      "id": "research-theory",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-theory",
+      "sourceFiles": [
+        {
+          "path": "skills/research-theory/SKILL.md",
+          "mode": "100644",
+          "blobOid": "4d3bd18317f821e03a6863ba76a7f134f0e76346",
+          "byteSize": 2610,
+          "sha256": "0dffe7fffe3d34656dce0fa6abdf2c71bde9242a9a0ba93c7172510702de7ea5",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-theory/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "8929b7371a39d614747b59b6b813e1454b583cb7",
+          "byteSize": 293,
+          "sha256": "c13aa1378af9dc66982ada92a2eb145ee538c87c98d9bc7ee1a6ab142fbaf896",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Freeze exact mathematical object, notation, domains, assumptions, quantifiers, limit order, and non-claims; missing load-bearing information blocks.",
+        "Derive stepwise and label identities, theorem applications, approximations, heuristics, conjectures, boundaries, and constant dependence.",
+        "Attempt boundary/degenerate cases, toy examples, dimensional checks, and feasible symbolic/numerical checks before proof or repair.",
+        "Expose every nontrivial theorem/lemma hypothesis and show where it is discharged.",
+        "Prove as stated, make the minimum explicit weakening, or issue a precise blockage report without silent assumption or quantifier changes.",
+        "Assign exactly provable_as_stated, provable_after_weakening, not_currently_justified, or blocked and propagate scope changes."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "Prior-theorem/citation retrieval remains with research-literature.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Numerical falsification remains with research-experiment; manuscript integration remains with research-writing.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No theorem database, proof campaign, symbolic helper, or validator is bundled.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-theory",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight",
+          "managed"
+        ],
+        "managedBinding": {
+          "capabilityId": "research.theory.case"
+        },
+        "members": [],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-literature",
+            "research-writing"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Exact claim/object, notation, domains, assumptions, quantifiers, limit order, and declared non-claims."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Freeze claim.",
+            "Derive stepwise.",
+            "Try to break.",
+            "Discharge obligations.",
+            "Prove, weaken, or block.",
+            "Classify status."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight: one bounded theory case in root session.",
+            "managed: one separately approved research.theory.case when isolation or durable Result review is needed."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return derivation/proof/counterexample/blockage with explicit assumptions, open obligations, scope changes, and one proof status.",
+            "Managed execution returns strict Result plus pending Proposal using supplied IDs."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when every obligation is discharged or explicitly open and one status is assigned; do not silently repair scope."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No paper search, numerical experiment launch, manuscript mutation, nested execution, provider invocation, or canonical state mutation."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest literature, experiment, or writing only as separate explicit work selected by root/operator."
+          ]
+        }
+      ],
+      "stopRule": "Stop when claim/assumptions/quantifiers are explicit, break attempt is recorded, obligations are discharged or open, and one proof status is assigned.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "derivation, proof, counterexample, or blockage report"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "frozen statement",
+          "assumptions and quantifiers",
+          "break attempt",
+          "stepwise derivation/proof obligations",
+          "scope changes",
+          "one proof status"
+        ]
+      }
+    },
+    {
+      "id": "research-figure",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-figure",
+      "sourceFiles": [
+        {
+          "path": "skills/research-figure/SKILL.md",
+          "mode": "100644",
+          "blobOid": "89fac7e363c9b7ca8494a9fc8ea60c680c614c5c",
+          "byteSize": 2429,
+          "sha256": "0daac187dadd24d0800dfe110a9b102097b7868d7dde7c26ddbede80a7bd035c",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-figure/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "1fcddb2fa6fad014663f8729d41584a1ca2d1f13",
+          "byteSize": 276,
+          "sha256": "00253cfd4d69d17dd16912e94f8acb4fafe0fcd7f9651ec1951aa0ecdd4a62a3",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Lock operation, reader job, bounded claim, source evidence, paper/slide surface, and format.",
+        "Prefer deterministic project plotting/LaTeX routes, then deterministic vector/spec routes where exact data/topology/geometry are expressible.",
+        "Build plots/tables from actual data and keep reproducible generation source; diagrams require editable source or structured spec.",
+        "Preserve paired/block IDs and state n, units, center/spread, and metric definitions when applicable.",
+        "Inspect actual render for target-scale readability, clipping, labels, hierarchy, and source fidelity; no render means no visual-QA claim.",
+        "Bound caption to what is shown, what to notice, supported takeaway, and scope limits."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "No research.writing.figure capability is activated; package remains lightweight-only.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "AI illustration/style transfer, result-data ownership, and manuscript narrative remain separately selected external or Research routes.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No plotting helper, validator, generated imagery provider, or renderer wrapper is bundled.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-figure",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight"
+        ],
+        "members": [],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-writing"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Operation, reader job, bounded claim, traceable evidence/data, target surface, format, and available project route."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Lock contract.",
+            "Choose deterministic route first.",
+            "Build from source.",
+            "Inspect actual render.",
+            "Bound caption."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight only; no managed figure capability or Dispatch binding."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return asset or audit/blocker, source/generation route, inspection result when rendered, and bounded caption.",
+            "Failed renders/checks remain visible."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when asset/audit is delivered or blocked, source/claim boundaries are visible, route is reproducible, and actual render was inspected when present."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No provider invocation, child Skill/tool orchestration, canonical mutation, invented data, or automatic handoff."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest experiment or writing only as a separate explicit selection; never invoke either."
+          ]
+        }
+      ],
+      "stopRule": "Stop after one figure asset or audit is delivered/blocked with source and claim boundaries, reproducible generation route, actual-render inspection when applicable, and bounded caption.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "figure asset or audit",
+          "editable/generation source or script",
+          "bounded caption",
+          "render inspection result when applicable"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "source evidence",
+          "bounded claim",
+          "generation route",
+          "target-scale inspection",
+          "caption limits"
+        ]
+      }
+    },
+    {
+      "id": "research-writing",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-writing",
+      "sourceFiles": [
+        {
+          "path": "skills/research-writing/SKILL.md",
+          "mode": "100644",
+          "blobOid": "361f83c5598b7ae224031e6e815f5582d21dfc90",
+          "byteSize": 2785,
+          "sha256": "7d0bb8f7ddac0e5a7034f698190d979c3bb91e1ec85004d3aff6c6b4e1ed2a10",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-writing/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "a6cb95a749969931e20438ea9055db587461f384",
+          "byteSize": 288,
+          "sha256": "d1f2477083c08a01a9f7af0ea1048725b4feb761cd89f38d1527146ad94c94fd",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        },
+        {
+          "path": "skills/research-writing/references/academic-phrasebank.md",
+          "mode": "100644",
+          "blobOid": "fb0d762318a427e37cde4e48ef524b93ed1ccb16",
+          "byteSize": 5076,
+          "sha256": "6e9e68ceb3ce732c54825de58e934dd2407e9e37410a0f92a5e8a63a78930370",
+          "disposition": "declared-member-source",
+          "packagePath": "references/academic-phrasebank.md"
+        }
+      ],
+      "materialMethodObligations": [
+        "Lock exact requested surface: outline, draft, build, audit, revision, or rebuttal; read supplied files, paper repo, and current evidence first.",
+        "Establish authoritative boundaries for claims, numbers, equations, citations, figures, and reviewer statements.",
+        "Draft/revise within evidence while preserving claims, numbers, equations, notation, citations, and qualifiers unless explicitly authorized; disclose material changes.",
+        "Load academic phrasebank on demand for calibrated hedging/transitions; phrase choice never strengthens evidence.",
+        "When LaTeX is affected, run actual project build and report command, result, and warnings.",
+        "Audit affected claims, numbers, equations, citation support, display references, and logic; map reviewer issues to evidence/manuscript/response deltas."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "Referee-side audit ownership remains with research-review-case.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Citation/library/venue lookup tool execution remains root-selected and is not copied into package.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No workflow state, port, prompt body, provider call, or source writing helper is bundled.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-writing",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight",
+          "managed"
+        ],
+        "managedBinding": {
+          "capabilityId": "research.writing.case"
+        },
+        "members": [
+          {
+            "path": "references/academic-phrasebank.md",
+            "role": "reference",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "6e9e68ceb3ce732c54825de58e934dd2407e9e37410a0f92a5e8a63a78930370",
+            "maxBytes": 5076
+          }
+        ],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-review-case"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [
+        {
+          "path": "references/academic-phrasebank.md",
+          "sourcePath": "skills/research-writing/references/academic-phrasebank.md",
+          "role": "reference",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "6e9e68ceb3ce732c54825de58e934dd2407e9e37410a0f92a5e8a63a78930370",
+          "maxBytes": 5076
+        }
+      ],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Exact requested manuscript surface, supplied files/paper repo, validated evidence, and authoritative claim/citation/reviewer boundaries."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Lock surface.",
+            "Establish evidence boundary.",
+            "Draft/revise inside it.",
+            "Build actual LaTeX when touched.",
+            "Audit affected surface."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight: one bounded author-side writing case.",
+            "managed: one separately approved research.writing.case for isolated/durable review."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return only requested manuscript/revision/audit surface plus build evidence when applicable.",
+            "Preserve or explicitly disclose changes to technical content.",
+            "Managed execution returns strict Result plus pending Proposal using supplied IDs."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when requested surface is delivered or blocked and missing evidence remains visible; do not continue into referee review."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No invented claims/citations/experiments/figures/proofs/reviewer statements/builds, nested execution, provider invocation, or canonical mutation."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest research-review-case only for a separate referee-side audit; never invoke it."
+          ]
+        }
+      ],
+      "stopRule": "Stop after requested author-side output is delivered/blocked, affected claims remain evidence-bound, technical content is preserved or deliberately changed, and missing evidence/build status is visible.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "requested author-side manuscript surface",
+          "build result/warnings when LaTeX is touched",
+          "claim/citation/reviewer audit when requested"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "evidence boundary",
+          "preserved or explicit technical deltas",
+          "actual build evidence when applicable",
+          "visible blockers"
+        ]
+      }
+    },
+    {
+      "id": "research-slides",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-slides",
+      "sourceFiles": [
+        {
+          "path": "skills/research-slides/NOTICE.md",
+          "mode": "100644",
+          "blobOid": "b730b7481c224e05e58a1a7e3b6fef3f37f29769",
+          "byteSize": 522,
+          "sha256": "9f47bf488b6f43616be5b48a05616ea67a9970a4194b57c8e48d3dc4fe1723d1",
+          "disposition": "declared-member-source",
+          "packagePath": "NOTICE.md"
+        },
+        {
+          "path": "skills/research-slides/SKILL.md",
+          "mode": "100644",
+          "blobOid": "ebfb4e002e78529d54b872e4696298761bbf448e",
+          "byteSize": 2494,
+          "sha256": "4e40d4310a176a23b1e6bc2b4c898c4f91ee19d99c7d490c4eab1bf2c4dbddb4",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-slides/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "052bc47a6cbb9031d938c3eed4ab8209f726d21d",
+          "byteSize": 281,
+          "sha256": "151e8f5f1b9250e733d3787b4bc400fb908fbd50b86ccf63b1cca3ed74bd9e83",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Lock audience, goal, talk type, time/slide budget, language, anonymity, and evidence boundaries.",
+        "Inspect papers, validated claims, writing/experiment artifacts, existing decks, and project-local slide tooling before drafting.",
+        "Outline one main message per slide with source basis, time budget, and asset need; catalog exact source figures/tables/equations before visual work.",
+        "Use the root/operator-selected project production route; preserve exact scientific assets unaltered.",
+        "Render actual deck and inspect every slide for support, anonymity, fidelity, projector readability, placeholders, and timing; no render means no visual-QA claim.",
+        "Keep speaker notes and spoken claims within same evidence boundary."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "No research.writing.slides capability is activated; package remains lightweight-only.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Source-relative personal-slides handoff path, ppt-master orchestration, and provider/tool launch mechanics are excluded from SKILL.md.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "NOTICE.md is digest-bound root-only provenance and never enters worker Context.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-slides",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight"
+        ],
+        "members": [
+          {
+            "path": "NOTICE.md",
+            "role": "reference",
+            "load": "on-demand",
+            "visibility": "root-only",
+            "sha256": "9f47bf488b6f43616be5b48a05616ea67a9970a4194b57c8e48d3dc4fe1723d1",
+            "maxBytes": 522
+          }
+        ],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-figure",
+            "research-literature",
+            "research-writing"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [
+        {
+          "path": "NOTICE.md",
+          "sourcePath": "skills/research-slides/NOTICE.md",
+          "role": "reference",
+          "load": "on-demand",
+          "visibility": "root-only",
+          "sourceSha256": "9f47bf488b6f43616be5b48a05616ea67a9970a4194b57c8e48d3dc4fe1723d1",
+          "maxBytes": 522
+        }
+      ],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Talk contract, evidence sources, existing deck/tooling state, exact scientific assets, output route, and anonymity constraints."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Lock talk contract.",
+            "Inspect evidence/tooling.",
+            "Outline one message per slide.",
+            "Produce through root-selected route.",
+            "Render and audit every slide."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight only; no managed slides capability or Dispatch binding."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return talk contract, outline, deck or explicit blocker, and actual-render audit.",
+            "Preserve source figures/tables/equations/logos exactly and keep notes evidence-bound."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when contract, outline, rendered deck or blocker, and whole-deck audit exist; do not launch another production/review stage."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No provider/tool orchestration, child Skill invocation, invented evidence/render claim, canonical mutation, or automatic handoff."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest figure/literature/experiment/writing routes only as separately selected work; never invoke them."
+          ]
+        }
+      ],
+      "stopRule": "Stop after one bounded talk has contract, one-message-per-slide outline, rendered deck or explicit blocker, and actual-render audit with exact assets preserved.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "talk contract",
+          "slide outline",
+          "rendered deck or blocker",
+          "actual-render audit"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "one message per slide",
+          "source basis and timing",
+          "exact asset preservation",
+          "anonymity check",
+          "projector-scale readability",
+          "speaker-note evidence bounds"
+        ]
+      }
+    },
+    {
+      "id": "research-review-case",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-review-case",
+      "sourceFiles": [
+        {
+          "path": "skills/research-review-case/SKILL.md",
+          "mode": "100644",
+          "blobOid": "ebb595d4b20dc2b40425988b17574d0f2a85dfa0",
+          "byteSize": 2548,
+          "sha256": "a0d32da0809d94ecfb15099cff239e113e0ab50525338d433fb354ca568c3632",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-review-case/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "14a20e8c611d3289524d81da411984828c2d7a4f",
+          "byteSize": 283,
+          "sha256": "49fde40002e55a566c1bb7cc0cd48210c2d8a628d94100d7b37429602a5196dd",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        }
+      ],
+      "materialMethodObligations": [
+        "Load one submission once with stable line/exact-span anchors and copy audited claims verbatim.",
+        "Select only evidence-assessable dimensions implied by claims: arithmetic, scope, methods, baselines, seeds, protocol, citations, proofs, or figures.",
+        "For each substantive finding record exact anchor, discrepancy, observed evidence, false-positive risk, and separate unresolved questions; above-info findings require evidence.",
+        "Grade citations as supporting, partial, limiting, contradicting, or unverified; use contradicting only when observed evidence supports opposite result.",
+        "Close each dimension or mark blocked; durable status is incomplete, blocked, findings_present, or ready_for_human_review.",
+        "For multi-paper root work, use one plain cases.md row per manuscript and keep sibling findings unread until case closure; no ranking or automated synthesis."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "Paper repair, accept/reject recommendation, misconduct/authorship verdict, and cross-paper ranking remain outside package authority.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Human referee verdict and cross-paper synthesis remain root/human-owned.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No external-fact search helper, case registry, reviewer fan-out, or source validator is bundled.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-review-case",
+        "version": "1.0.0",
+        "skillKind": "bounded",
+        "invocationSource": "model",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight",
+          "managed"
+        ],
+        "managedBinding": {
+          "capabilityId": "research.audit.case"
+        },
+        "members": [],
+        "handoff": {
+          "suggestedSkillIds": [],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "One manuscript/submission, stable anchors, requested audit scope, and available supporting artifacts."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Load once and anchor claims.",
+            "Select evidence-supported dimensions.",
+            "Compare claims to evidence.",
+            "Grade citation support.",
+            "Close or block each dimension."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight: one bounded root-session audit.",
+            "managed: one separately approved independent research.audit.case; root owns any multi-reviewer synthesis."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "Return anchored findings with discrepancy, observed evidence, false-positive risk, unresolved questions, citation grade, dimension closure, and case status.",
+            "Managed execution returns strict Result plus pending Proposal using supplied IDs."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop when every requested dimension is closed or blocked and case is ready for human review or visibly incomplete/blocked."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "Never edit audited material, issue paper verdicts, launch sibling reviewers, invoke providers, mutate canonical state, or auto-handoff."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "No automatic or default next Skill; human/root selects any follow-up."
+          ]
+        }
+      ],
+      "stopRule": "Stop after every requested dimension is closed or blocked, each substantive finding is exactly anchored and bounded, unresolved questions stay visible, and one case status is assigned.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "anchored referee-side findings",
+          "dimension closure record",
+          "case status"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "verbatim claim/anchor",
+          "discrepancy",
+          "observed evidence",
+          "false-positive risk",
+          "unresolved questions",
+          "citation support grade",
+          "human-verdict boundary"
+        ]
+      }
+    },
+    {
+      "id": "research-project-setup",
+      "version": "1.0.0",
+      "sourceSkill": "skills/research-project-setup",
+      "sourceFiles": [
+        {
+          "path": "skills/research-project-setup/SKILL.md",
+          "mode": "100644",
+          "blobOid": "fa8bc3d4652221b58266557ec8af5a6d38b555e7",
+          "byteSize": 2422,
+          "sha256": "cda2c2a95d815ccf8b8ca5eebf0c7d9382f6b039ffda2632e60c4b847663c4d1",
+          "disposition": "semantic-method-source",
+          "packagePath": "SKILL.md (lean semantic adaptation; source bytes not copied)"
+        },
+        {
+          "path": "skills/research-project-setup/agents/openai.yaml",
+          "mode": "100644",
+          "blobOid": "4743c6ffada4a927a07af129414415ccc86bfec6",
+          "byteSize": 301,
+          "sha256": "dd6f215a1ff2d5b525b871a399cf1c447ac941d2adce65abece213900cfbc9ed",
+          "disposition": "excluded-host-projection",
+          "packagePath": null
+        },
+        {
+          "path": "skills/research-project-setup/assets/manifest.yaml",
+          "mode": "100644",
+          "blobOid": "5120e1049908b7225d0e6cffad58a592e0b8709b",
+          "byteSize": 1395,
+          "sha256": "8415cbaf9f767246c16fbb266993b3bfdbe52ac30404f35b961f97953a8e4070",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/manifest.yaml"
+        },
+        {
+          "path": "skills/research-project-setup/assets/meta.gitignore",
+          "mode": "100644",
+          "blobOid": "1208963f49dc8f9878fb8d29c9b1945b48ded209",
+          "byteSize": 743,
+          "sha256": "4c1a99e7925803469607c80d832377fbcd493cca0566b524cbba4d0bc0a91dda",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/meta.gitignore"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/.graphifyignore",
+          "mode": "100644",
+          "blobOid": "40ef4a68bc230722e798b8d391643de44b750e53",
+          "byteSize": 778,
+          "sha256": "85bbc7ca9a9cca0b6dd7f0b52ed1658c2915e644e7a585e798bd89da4ce92e43",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/.graphifyignore"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/AGENTS.md",
+          "mode": "100644",
+          "blobOid": "5c33cf973938787f185551666e8e892fc8b5d6e9",
+          "byteSize": 6529,
+          "sha256": "8282247af22f3c451fb3e18172c341ea7dcca17d1919cc5d985e28fe8fc9ae50",
+          "disposition": "excluded-source-orchestration-state",
+          "packagePath": null,
+          "reason": "Excluded duplicate agent prompt body; package SKILL.md owns method."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_quest/.gitkeep",
+          "mode": "100644",
+          "blobOid": "4ccc3b162df0dbf1459f1b62f4c77c4b4e99dd65",
+          "byteSize": 28,
+          "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "disposition": "excluded-source-orchestration-state",
+          "packagePath": null,
+          "reason": "Excluded source-local Quest state scaffold; Trellis owns canonical Quest state."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_references/citation-policy.md",
+          "mode": "100644",
+          "blobOid": "f60cd789a9e3c9ab9f8446e46496744db157adda",
+          "byteSize": 419,
+          "sha256": "eb288d91f7c1a1dc389cc8a243b778d370fd7274735b953dab9875729f3ee391",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/_references/citation-policy.md"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_references/workflows.md",
+          "mode": "100644",
+          "blobOid": "236ac83860d6b849804c2a97498e4f37b3d6932d",
+          "byteSize": 2634,
+          "sha256": "b0f9c713bab89fc986a3e293c84acef13eaad2b43ef3a33481e81769ca13ef68",
+          "disposition": "excluded-source-orchestration-state",
+          "packagePath": null,
+          "reason": "Excluded source-local orchestration prompts, campaign/report-pack routing, and duplicate workflow method text."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_templates/experiment-note.md",
+          "mode": "100644",
+          "blobOid": "d9fc36c4d1a1c9c06591d7e13360e3909ee39d0d",
+          "byteSize": 230,
+          "sha256": "91967a20650055424804b0e1a85e6b0e671adbfe8f5cac7ea187ee7dbf69fef8",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/_templates/experiment-note.md"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_templates/intake-audit.md",
+          "mode": "100644",
+          "blobOid": "251e6ab76b15512c33683f11ca685b69a72aed9c",
+          "byteSize": 765,
+          "sha256": "da7870bda943f5beeaf492b70c7cfef575676b0994e4dcad2779855f424c25fa",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/_templates/intake-audit.md"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_templates/paper-note.md",
+          "mode": "100644",
+          "blobOid": "0b5505cbdd655e059abd111abe29c4cec6e5a608",
+          "byteSize": 357,
+          "sha256": "ef42fc84ba4368e09fc1ae5bc2ab2002a23f8af6b3123a5a672ed04335d98d0c",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/_templates/paper-note.md"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/computation/.gitkeep",
+          "mode": "100644",
+          "blobOid": "4ccc3b162df0dbf1459f1b62f4c77c4b4e99dd65",
+          "byteSize": 28,
+          "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/computation/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/experiments/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/experiments/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/figures/.gitkeep",
+          "mode": "100644",
+          "blobOid": "4ccc3b162df0dbf1459f1b62f4c77c4b4e99dd65",
+          "byteSize": 28,
+          "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/figures/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/ideas/inbox.md",
+          "mode": "100644",
+          "blobOid": "bae1aea2aa4be3cf5b674cd272de359ead9f8873",
+          "byteSize": 514,
+          "sha256": "4e1699f33713ae697ee06a788251d4c167f18822c22f95a34293fbe8746a8de3",
+          "disposition": "excluded-source-orchestration-state",
+          "packagePath": null,
+          "reason": "Excluded legacy staged-pack inventory and workflow-shaped output routing."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/ideas/questions.md",
+          "mode": "100644",
+          "blobOid": "e0397767b3d0f343e9fd82449f7f49185ed13dcf",
+          "byteSize": 54,
+          "sha256": "22111f51058bd343ebe014e6847bbf0f48df8399b778bbacb4a20ee833b0c4e0",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/ideas/questions.md"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/intake/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/intake/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/literature-index.md",
+          "mode": "100644",
+          "blobOid": "26fd751f19f4b6d666e9bd1286533435b86db4ee",
+          "byteSize": 418,
+          "sha256": "f02647040cda794a38327579edb5d54fb01ce7b7877108cecb78160406817110",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/literature-index.md"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/literature/notes/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/literature/notes/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/literature/pdfs/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/literature/pdfs/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/literature/surveys/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/literature/surveys/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/references.bib",
+          "mode": "100644",
+          "blobOid": "603b14f7c88d1985599e2709318abeea743ddef6",
+          "byteSize": 60,
+          "sha256": "6e4c1678704dbb99fc3f5a3239b1b21a18df73b3d759244edd612956c7843132",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/references.bib"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/slides/.gitkeep",
+          "mode": "100644",
+          "blobOid": "4ccc3b162df0dbf1459f1b62f4c77c4b4e99dd65",
+          "byteSize": 28,
+          "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/slides/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/theory/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/theory/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/writing/.gitkeep",
+          "mode": "100644",
+          "blobOid": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+          "byteSize": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian-vault/writing/.gitkeep"
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian.gitignore",
+          "mode": "100644",
+          "blobOid": "a9f8ca63f341d0897b760ab49f81ab8c12a7ec3b",
+          "byteSize": 612,
+          "sha256": "d4b5c963c18fe4bece6bb5457b7461599cc4009325ab853898e85901832f12d4",
+          "disposition": "declared-member-source",
+          "packagePath": "assets/obsidian.gitignore"
+        },
+        {
+          "path": "skills/research-project-setup/references/graphify.md",
+          "mode": "100644",
+          "blobOid": "f69ba78efeb59ed90b0c7bbf0ad8fc5d8e26282f",
+          "byteSize": 885,
+          "sha256": "72474fdfcbfaef615369fd864e498e4a64729da0ce2726a07fd1c5aedfbc2f67",
+          "disposition": "declared-member-source",
+          "packagePath": "references/graphify.md"
+        }
+      ],
+      "materialMethodObligations": [
+        "Bound requested operation, mutable paths, and explicit authority for repository init, moves, deletion, and commits.",
+        "Inspect filesystem plus root/nested Git boundaries before advice or mutation; supplied listings remain declarations until verified.",
+        "Design code, paper, notes, data, privacy, and Git/history separation; advice defaults to one compact target tree plus exactly six single-sentence migration steps.",
+        "Execute only explicitly authorized operations and paths; never initialize, move, delete, or commit without authority.",
+        "Project each selected scaffold member only by exact explicit member request; do not ambient-load the full scaffold.",
+        "Load references/graphify.md only for explicit Graphify setup.",
+        "Reinspect affected repositories and report actual path, boundary, ignored/tracked, output, mismatch, and blocker state."
+      ],
+      "excludedResponsibilities": [
+        {
+          "responsibility": "Host projection and implicit-invocation metadata",
+          "excludedSource": "agents/openai.yaml",
+          "owner": "schema-v3 skillKind/invocationSource/entrypointType/profile fields plus host adapter"
+        },
+        {
+          "responsibility": "Canonical Quest, gate, Workflow, Dispatch, Activation, Approval, Result, Proposal, Decision, and writer-state mutation",
+          "owner": "existing Trellis root commands, event store, gates, Workflow lifecycle, and Quest writer authority"
+        },
+        {
+          "responsibility": "Provider/model invocation, nested Skill/Worker/Workflow/capability/Procedure/Dispatch launch, and automatic continuation",
+          "owner": "root/operator and existing host/runtime authority"
+        },
+        {
+          "responsibility": "Managed Result/Proposal recording and Proposal acceptance/rejection",
+          "owner": "root-side lifecycle; worker returns strict Result plus pending Proposal only"
+        },
+        {
+          "responsibility": "No bundled Workflow DAG, campaign orchestration, automatic continuation, or step engine is created.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Quest initialization/events/writer state remain with explicit research-quest-admin root commands; package only prepares project facts and stops.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "Source agents/openai.yaml, vault AGENTS.md, _references/workflows.md, _quest placeholder, and legacy ideas/inbox.md are excluded as host/prompt/orchestration/state surfaces.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        },
+        {
+          "responsibility": "No Git init/move/delete/commit authority is inferred from package selection or managed Approval.",
+          "owner": "named root/operator/external owner in obligation boundary"
+        }
+      ],
+      "proposedManifest": {
+        "schemaVersion": 3,
+        "packageKind": "skill",
+        "id": "research-project-setup",
+        "version": "1.0.0",
+        "skillKind": "workflow",
+        "invocationSource": "operator-explicit",
+        "entrypointType": "model-context",
+        "instructionFile": "SKILL.md",
+        "allowedProfiles": [
+          "lightweight",
+          "managed"
+        ],
+        "managedBinding": {
+          "capabilityId": "research.setup.project"
+        },
+        "members": [
+          {
+            "path": "assets/manifest.yaml",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "8415cbaf9f767246c16fbb266993b3bfdbe52ac30404f35b961f97953a8e4070",
+            "maxBytes": 1395
+          },
+          {
+            "path": "assets/meta.gitignore",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "4c1a99e7925803469607c80d832377fbcd493cca0566b524cbba4d0bc0a91dda",
+            "maxBytes": 743
+          },
+          {
+            "path": "assets/obsidian-vault/.graphifyignore",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "85bbc7ca9a9cca0b6dd7f0b52ed1658c2915e644e7a585e798bd89da4ce92e43",
+            "maxBytes": 778
+          },
+          {
+            "path": "assets/obsidian-vault/_references/citation-policy.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "eb288d91f7c1a1dc389cc8a243b778d370fd7274735b953dab9875729f3ee391",
+            "maxBytes": 419
+          },
+          {
+            "path": "assets/obsidian-vault/_templates/experiment-note.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "91967a20650055424804b0e1a85e6b0e671adbfe8f5cac7ea187ee7dbf69fef8",
+            "maxBytes": 230
+          },
+          {
+            "path": "assets/obsidian-vault/_templates/intake-audit.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "da7870bda943f5beeaf492b70c7cfef575676b0994e4dcad2779855f424c25fa",
+            "maxBytes": 765
+          },
+          {
+            "path": "assets/obsidian-vault/_templates/paper-note.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "ef42fc84ba4368e09fc1ae5bc2ab2002a23f8af6b3123a5a672ed04335d98d0c",
+            "maxBytes": 357
+          },
+          {
+            "path": "assets/obsidian-vault/computation/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+            "maxBytes": 28
+          },
+          {
+            "path": "assets/obsidian-vault/experiments/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian-vault/figures/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+            "maxBytes": 28
+          },
+          {
+            "path": "assets/obsidian-vault/ideas/questions.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "22111f51058bd343ebe014e6847bbf0f48df8399b778bbacb4a20ee833b0c4e0",
+            "maxBytes": 54
+          },
+          {
+            "path": "assets/obsidian-vault/intake/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian-vault/literature-index.md",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "f02647040cda794a38327579edb5d54fb01ce7b7877108cecb78160406817110",
+            "maxBytes": 418
+          },
+          {
+            "path": "assets/obsidian-vault/literature/notes/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian-vault/literature/pdfs/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian-vault/literature/surveys/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian-vault/references.bib",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "6e4c1678704dbb99fc3f5a3239b1b21a18df73b3d759244edd612956c7843132",
+            "maxBytes": 60
+          },
+          {
+            "path": "assets/obsidian-vault/slides/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+            "maxBytes": 28
+          },
+          {
+            "path": "assets/obsidian-vault/theory/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian-vault/writing/.gitkeep",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+            "maxBytes": 1
+          },
+          {
+            "path": "assets/obsidian.gitignore",
+            "role": "template",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "d4b5c963c18fe4bece6bb5457b7461599cc4009325ab853898e85901832f12d4",
+            "maxBytes": 612
+          },
+          {
+            "path": "references/graphify.md",
+            "role": "reference",
+            "load": "on-demand",
+            "visibility": "worker-visible",
+            "sha256": "72474fdfcbfaef615369fd864e498e4a64729da0ce2726a07fd1c5aedfbc2f67",
+            "maxBytes": 885
+          }
+        ],
+        "handoff": {
+          "suggestedSkillIds": [
+            "research-quest-admin"
+          ],
+          "autoInvoke": false
+        }
+      },
+      "declaredMembers": [
+        {
+          "path": "assets/manifest.yaml",
+          "sourcePath": "skills/research-project-setup/assets/manifest.yaml",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "8415cbaf9f767246c16fbb266993b3bfdbe52ac30404f35b961f97953a8e4070",
+          "maxBytes": 1395
+        },
+        {
+          "path": "assets/meta.gitignore",
+          "sourcePath": "skills/research-project-setup/assets/meta.gitignore",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "4c1a99e7925803469607c80d832377fbcd493cca0566b524cbba4d0bc0a91dda",
+          "maxBytes": 743
+        },
+        {
+          "path": "assets/obsidian-vault/.graphifyignore",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/.graphifyignore",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "85bbc7ca9a9cca0b6dd7f0b52ed1658c2915e644e7a585e798bd89da4ce92e43",
+          "maxBytes": 778
+        },
+        {
+          "path": "assets/obsidian-vault/_references/citation-policy.md",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/_references/citation-policy.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "eb288d91f7c1a1dc389cc8a243b778d370fd7274735b953dab9875729f3ee391",
+          "maxBytes": 419
+        },
+        {
+          "path": "assets/obsidian-vault/_templates/experiment-note.md",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/_templates/experiment-note.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "91967a20650055424804b0e1a85e6b0e671adbfe8f5cac7ea187ee7dbf69fef8",
+          "maxBytes": 230
+        },
+        {
+          "path": "assets/obsidian-vault/_templates/intake-audit.md",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/_templates/intake-audit.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "da7870bda943f5beeaf492b70c7cfef575676b0994e4dcad2779855f424c25fa",
+          "maxBytes": 765
+        },
+        {
+          "path": "assets/obsidian-vault/_templates/paper-note.md",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/_templates/paper-note.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "ef42fc84ba4368e09fc1ae5bc2ab2002a23f8af6b3123a5a672ed04335d98d0c",
+          "maxBytes": 357
+        },
+        {
+          "path": "assets/obsidian-vault/computation/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/computation/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "maxBytes": 28
+        },
+        {
+          "path": "assets/obsidian-vault/experiments/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/experiments/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian-vault/figures/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/figures/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "maxBytes": 28
+        },
+        {
+          "path": "assets/obsidian-vault/ideas/questions.md",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/ideas/questions.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "22111f51058bd343ebe014e6847bbf0f48df8399b778bbacb4a20ee833b0c4e0",
+          "maxBytes": 54
+        },
+        {
+          "path": "assets/obsidian-vault/intake/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/intake/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian-vault/literature-index.md",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/literature-index.md",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "f02647040cda794a38327579edb5d54fb01ce7b7877108cecb78160406817110",
+          "maxBytes": 418
+        },
+        {
+          "path": "assets/obsidian-vault/literature/notes/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/literature/notes/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian-vault/literature/pdfs/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/literature/pdfs/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian-vault/literature/surveys/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/literature/surveys/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian-vault/references.bib",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/references.bib",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "6e4c1678704dbb99fc3f5a3239b1b21a18df73b3d759244edd612956c7843132",
+          "maxBytes": 60
+        },
+        {
+          "path": "assets/obsidian-vault/slides/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/slides/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "fb4bf062bd10a7977ad9ba07c6bf7abf00c6bc2c3eef1162f6dcfb496530b299",
+          "maxBytes": 28
+        },
+        {
+          "path": "assets/obsidian-vault/theory/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/theory/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian-vault/writing/.gitkeep",
+          "sourcePath": "skills/research-project-setup/assets/obsidian-vault/writing/.gitkeep",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "maxBytes": 1
+        },
+        {
+          "path": "assets/obsidian.gitignore",
+          "sourcePath": "skills/research-project-setup/assets/obsidian.gitignore",
+          "role": "template",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "d4b5c963c18fe4bece6bb5457b7461599cc4009325ab853898e85901832f12d4",
+          "maxBytes": 612
+        },
+        {
+          "path": "references/graphify.md",
+          "sourcePath": "skills/research-project-setup/references/graphify.md",
+          "role": "reference",
+          "load": "on-demand",
+          "visibility": "worker-visible",
+          "sourceSha256": "72474fdfcbfaef615369fd864e498e4a64729da0ce2726a07fd1c5aedfbc2f67",
+          "maxBytes": 885
+        }
+      ],
+      "skillMdOutline": [
+        {
+          "section": "Prerequisites",
+          "content": [
+            "Explicit operation, allowed paths, mutation authority, target repository set, and any explicitly requested scaffold member paths."
+          ]
+        },
+        {
+          "section": "Method",
+          "content": [
+            "Bound operation.",
+            "Inspect filesystem/Git boundaries.",
+            "Design target boundaries.",
+            "Execute only authorized changes.",
+            "Verify actual state."
+          ]
+        },
+        {
+          "section": "Profiles",
+          "content": [
+            "lightweight: one bounded diagnosis/advice/setup unit.",
+            "managed: one separately prepared and approved research.setup.project invocation with exact declared scope/members; still operator-explicit."
+          ]
+        },
+        {
+          "section": "Output contract",
+          "content": [
+            "For advice: one compact target tree plus exactly six single-sentence migration steps unless user requests another count.",
+            "For changes: exact performed paths/operations plus post-change verification and blockers.",
+            "Managed execution returns strict Result plus pending Proposal using supplied IDs."
+          ]
+        },
+        {
+          "section": "Stop conditions",
+          "content": [
+            "Stop after requested diagnosis/change is done or blocked and verification matches actual state; do not initialize Quest or continue into another workflow."
+          ]
+        },
+        {
+          "section": "Authority boundary",
+          "content": [
+            "No inferred filesystem/Git authority, canonical Research mutation, child execution, provider invocation, Workflow DAG creation, or automatic handoff."
+          ]
+        },
+        {
+          "section": "Handoff",
+          "content": [
+            "Suggest research-quest-admin only for a separate explicit Quest initialization/event action; never invoke it."
+          ]
+        }
+      ],
+      "stopRule": "Stop when one requested workspace diagnosis/change is complete or blocked, boundaries and authority are explicit, actual state is reverified, and proposed operations remain distinct from performed operations.",
+      "authorityBoundary": [
+        "Package performs one bounded unit and stops.",
+        "Package may read declared Context and write only request-authorized output paths.",
+        "Package never mutates canonical Research/Quest/gate/Workflow/lifecycle state.",
+        "Package never launches a provider, model, child Skill, Worker, Workflow, capability, Procedure, or Dispatch.",
+        "Managed worker returns strict Result plus pending Proposal; root records/reviews it.",
+        "Handoff is declarative only and autoInvoke is false."
+      ],
+      "outputContract": {
+        "primary": [
+          "compact target tree plus six migration steps for advice",
+          "exact performed operations and verification for authorized changes"
+        ],
+        "persistence": "request-dependent",
+        "requiredContent": [
+          "allowed path boundary",
+          "Git/repository boundaries",
+          "data/privacy policy",
+          "proposed-versus-performed distinction",
+          "post-operation tracked/ignored/output verification",
+          "blockers"
+        ]
+      }
+    }
+  ],
+  "resolvedEvidence": [
+    {
+      "topic": "research-project-setup scaffold selection",
+      "decision": "Declare exactly 22 on-demand worker-visible members: 21 templates/assets plus one Graphify reference.",
+      "selectionRule": "Include the neutral project-boundary templates, every non-authoritative file needed to instantiate the explicitly requested vault scaffold and preserve its empty directories, and the explicit Graphify path. Exclude host projection, duplicate prompt/method text, source-local Quest state, campaign/report-pack orchestration, and legacy staged-pack routing.",
+      "includedMemberPaths": [
+        "assets/manifest.yaml",
+        "assets/meta.gitignore",
+        "assets/obsidian-vault/.graphifyignore",
+        "assets/obsidian-vault/_references/citation-policy.md",
+        "assets/obsidian-vault/_templates/experiment-note.md",
+        "assets/obsidian-vault/_templates/intake-audit.md",
+        "assets/obsidian-vault/_templates/paper-note.md",
+        "assets/obsidian-vault/computation/.gitkeep",
+        "assets/obsidian-vault/experiments/.gitkeep",
+        "assets/obsidian-vault/figures/.gitkeep",
+        "assets/obsidian-vault/ideas/questions.md",
+        "assets/obsidian-vault/intake/.gitkeep",
+        "assets/obsidian-vault/literature-index.md",
+        "assets/obsidian-vault/literature/notes/.gitkeep",
+        "assets/obsidian-vault/literature/pdfs/.gitkeep",
+        "assets/obsidian-vault/literature/surveys/.gitkeep",
+        "assets/obsidian-vault/references.bib",
+        "assets/obsidian-vault/slides/.gitkeep",
+        "assets/obsidian-vault/theory/.gitkeep",
+        "assets/obsidian-vault/writing/.gitkeep",
+        "assets/obsidian.gitignore",
+        "references/graphify.md"
+      ],
+      "excludedSourcePaths": [
+        {
+          "path": "skills/research-project-setup/agents/openai.yaml",
+          "reason": "Host projection; schema-v3 invocation/profile/entrypoint fields and host adapter own this surface."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/AGENTS.md",
+          "reason": "Duplicate agent prompt/method body with campaign, Quest, and staged-control instructions; package SKILL.md owns method."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_quest/.gitkeep",
+          "reason": "Source-local Quest state scaffold; Trellis owns canonical Quest state and its single writer."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/_references/workflows.md",
+          "reason": "Workflow prompts, campaign/report-pack routing, and duplicate method text forbidden by the C8 package boundary."
+        },
+        {
+          "path": "skills/research-project-setup/assets/obsidian-vault/ideas/inbox.md",
+          "reason": "Legacy staged-pack inventory and workflow-shaped output routing rather than neutral scaffold content."
+        }
+      ],
+      "evidence": [
+        "Frozen project-setup SKILL.md:12-16 requires bounded inspection/design/execution and permits copying assets/obsidian-vault only on an explicit setup request.",
+        "Frozen project-setup SKILL.md:25 and references/graphify.md:1-10 make Graphify an explicit on-demand path.",
+        "Frozen assets/manifest.yaml:1-85 instantiates the code/paper/notes/data/provenance boundaries required by the method; meta.gitignore and obsidian.gitignore enforce the same repository/data/privacy boundaries.",
+        "C8 PRD:79-81 requires exact explicitly selected scaffold assets and lean authority boundaries; C8 design:69-71 allows only method-required members and forbids state, orchestration, report packs, and duplicate prompt bodies.",
+        "Schema-v3 parser execution-package.ts:285-359,421-435 requires contained sorted digest-bound member paths; current package examples use exact on-demand worker-visible templates/references."
+      ]
+    },
+    {
+      "topic": "suggested handoff ID lists",
+      "decision": "Use the ten exact sorted arrays recorded below; every handoff retains autoInvoke=false.",
+      "selectionRule": "Include every explicitly named Research Skill route that transfers work outside the package bounded method; exclude host/tool routes and generic Quest-event notices. Generic Quest-event routing remains authority/stop text, matching the frozen literature source and accepted literature package convention. Project setup retains research-quest-admin because its source defines Quest initialization and post-setup event transfer as this method explicit stop/handoff.",
+      "handoffs": [
+        {
+          "skillId": "research-synthesis",
+          "suggestedSkillIds": [
+            "research-opportunity-mining"
+          ],
+          "sourceEvidence": [
+            "skills/research-synthesis/SKILL.md:29"
+          ]
+        },
+        {
+          "skillId": "research-opportunity-mining",
+          "suggestedSkillIds": [
+            "research-ideation",
+            "research-literature"
+          ],
+          "sourceEvidence": [
+            "skills/research-opportunity-mining/SKILL.md:17",
+            "skills/research-opportunity-mining/SKILL.md:22"
+          ]
+        },
+        {
+          "skillId": "research-experiment",
+          "suggestedSkillIds": [
+            "research-computation"
+          ],
+          "sourceEvidence": [
+            "skills/research-experiment/SKILL.md:14"
+          ]
+        },
+        {
+          "skillId": "research-computation",
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-literature"
+          ],
+          "sourceEvidence": [
+            "skills/research-computation/SKILL.md:3",
+            "skills/research-computation/SKILL.md:23"
+          ]
+        },
+        {
+          "skillId": "research-theory",
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-literature",
+            "research-writing"
+          ],
+          "sourceEvidence": [
+            "skills/research-theory/SKILL.md:24"
+          ]
+        },
+        {
+          "skillId": "research-figure",
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-writing"
+          ],
+          "sourceEvidence": [
+            "skills/research-figure/SKILL.md:13"
+          ]
+        },
+        {
+          "skillId": "research-writing",
+          "suggestedSkillIds": [
+            "research-review-case"
+          ],
+          "sourceEvidence": [
+            "skills/research-writing/SKILL.md:26"
+          ]
+        },
+        {
+          "skillId": "research-slides",
+          "suggestedSkillIds": [
+            "research-experiment",
+            "research-figure",
+            "research-literature",
+            "research-writing"
+          ],
+          "sourceEvidence": [
+            "skills/research-slides/SKILL.md:23"
+          ]
+        },
+        {
+          "skillId": "research-review-case",
+          "suggestedSkillIds": [],
+          "sourceEvidence": [
+            "skills/research-review-case/SKILL.md:18-31 (no named Research Skill transfer)"
+          ]
+        },
+        {
+          "skillId": "research-project-setup",
+          "suggestedSkillIds": [
+            "research-quest-admin"
+          ],
+          "sourceEvidence": [
+            "skills/research-project-setup/SKILL.md:26"
+          ]
+        }
+      ],
+      "parserEvidence": "execution-package.ts:528-552 requires sorted unique IDs and autoInvoke=false.",
+      "packageConventionEvidence": [
+        "research-literature@1.1.0 suggests research-opportunity-mining only, despite the frozen source generic Quest-event notice.",
+        "research-ideation@1.1.0 suggests research-idea-evaluation only and leaves selection/continuation to a separate root action.",
+        "research-idea-evaluation@1.0.0 suggests research-experiment only as a separate explicit action."
+      ]
+    }
+  ]
+}

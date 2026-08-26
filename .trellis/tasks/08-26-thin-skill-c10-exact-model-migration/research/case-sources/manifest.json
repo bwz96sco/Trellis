@@ -1,0 +1,678 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-08-25",
+  "task": ".trellis/tasks/08-25-thin-skill-c8-full-migration",
+  "artifact_scope": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/",
+  "purpose": "Compact authenticated paper-source bundles for tool-disabled one-turn C8 A/B/C live-evaluation cases.",
+  "constraints_observed": [
+    "Only the four supplied /tmp paper sources and six archived C7 case definitions/inputs were used.",
+    "Every paper source used was read in full before selection.",
+    "No product source repository files were read.",
+    "No model/provider calls were made.",
+    "No product files were edited and no git operation was performed.",
+    "Paper excerpts are selective rather than full-paper copies."
+  ],
+  "paper_sources": [
+    {
+      "source_file": "/tmp/c8-attention.md",
+      "sha256": "c3124876d277e2156d6fe0e2af8efc991ea7fcc1c9caedc8ae536e81835ad701",
+      "bytes": 37186,
+      "logical_lines": 334,
+      "arxiv_id": "1706.03762",
+      "title": "Attention Is All You Need",
+      "authors": "Vaswani et al.",
+      "url": "https://arxiv.org/abs/1706.03762"
+    },
+    {
+      "source_file": "/tmp/c8-swe-agent.md",
+      "sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+      "bytes": 137071,
+      "logical_lines": 1325,
+      "arxiv_id": "2405.15793",
+      "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+      "authors": "Yang et al.",
+      "url": "https://arxiv.org/abs/2405.15793"
+    },
+    {
+      "source_file": "/tmp/c8-agentless.md",
+      "sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+      "bytes": 95789,
+      "logical_lines": 990,
+      "arxiv_id": "2407.01489",
+      "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+      "authors": "Xia et al.",
+      "url": "https://arxiv.org/abs/2407.01489"
+    },
+    {
+      "source_file": "/tmp/c8-lost-middle.md",
+      "sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+      "bytes": 53714,
+      "logical_lines": 387,
+      "arxiv_id": "2307.03172",
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "authors": "Liu et al.",
+      "url": "https://arxiv.org/abs/2307.03172"
+    }
+  ],
+  "bundles": [
+    {
+      "path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-01-attention-positional-encoding.md",
+      "sha256": "5541e1f91d6c7e2dda4d814b76877d148b531b6342bdcf899c3e3a2a6b3d4d39",
+      "bytes": 10996,
+      "logical_lines": 120,
+      "cases": [
+        "literature-01"
+      ],
+      "source_ranges": [
+        {
+          "source_file": "/tmp/c8-attention.md",
+          "source_sha256": "c3124876d277e2156d6fe0e2af8efc991ea7fcc1c9caedc8ae536e81835ad701",
+          "arxiv_id": "1706.03762",
+          "title": "Attention Is All You Need",
+          "url": "https://arxiv.org/abs/1706.03762",
+          "label": "Paper title and reported task-level result",
+          "start_line": 10,
+          "end_line": 14
+        },
+        {
+          "source_file": "/tmp/c8-attention.md",
+          "source_sha256": "c3124876d277e2156d6fe0e2af8efc991ea7fcc1c9caedc8ae536e81835ad701",
+          "arxiv_id": "1706.03762",
+          "title": "Attention Is All You Need",
+          "url": "https://arxiv.org/abs/1706.03762",
+          "label": "Positional encoding definition, learned comparison, and extrapolation rationale",
+          "start_line": 127,
+          "end_line": 143
+        },
+        {
+          "source_file": "/tmp/c8-attention.md",
+          "source_sha256": "c3124876d277e2156d6fe0e2af8efc991ea7fcc1c9caedc8ae536e81835ad701",
+          "arxiv_id": "1706.03762",
+          "title": "Attention Is All You Need",
+          "url": "https://arxiv.org/abs/1706.03762",
+          "label": "Translation training data and base/big training setup",
+          "start_line": 174,
+          "end_line": 180
+        },
+        {
+          "source_file": "/tmp/c8-attention.md",
+          "source_sha256": "c3124876d277e2156d6fe0e2af8efc991ea7fcc1c9caedc8ae536e81835ad701",
+          "arxiv_id": "1706.03762",
+          "title": "Attention Is All You Need",
+          "url": "https://arxiv.org/abs/1706.03762",
+          "label": "Model-variation table and positional-encoding ablation interpretation",
+          "start_line": 233,
+          "end_line": 264
+        }
+      ],
+      "claim_limit_summary": "Near-equivalence is bounded to the reported WMT English-German development ablation; no statistical equivalence or extrapolation comparison is established."
+    },
+    {
+      "path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-02-swe-agent-agentless.md",
+      "sha256": "de2fef451b6d26fa92e45310366fd3ebda90b5591cd3c35da722dfafcc201caf",
+      "bytes": 68050,
+      "logical_lines": 717,
+      "cases": [
+        "literature-02"
+      ],
+      "source_ranges": [
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "SWE-agent identity, ACI claim, and headline results",
+          "start_line": 8,
+          "end_line": 18
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Why an interactive ACI is proposed and what it changes",
+          "start_line": 30,
+          "end_line": 49
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "ACI scope and fixed-model design method",
+          "start_line": 63,
+          "end_line": 76
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "ACI design principles: simple actions, compactness, feedback, and guardrails",
+          "start_line": 78,
+          "end_line": 99
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Concrete search, viewing, editing, and context-management interface",
+          "start_line": 104,
+          "end_line": 144
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "SWE-agent benchmark, models, baselines, metric, and cost cap",
+          "start_line": 146,
+          "end_line": 175
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "SWE-agent and baseline results table",
+          "start_line": 180,
+          "end_line": 192
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "SWE-agent reported results and interface ablations",
+          "start_line": 241,
+          "end_line": 290
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "SWE-agent limitations and transfer boundary",
+          "start_line": 1283,
+          "end_line": 1304
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless identity, fixed-pipeline claim, and headline result",
+          "start_line": 12,
+          "end_line": 32
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agent-based limitations and Agentless three-phase alternative",
+          "start_line": 46,
+          "end_line": 84
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless end-to-end localization, repair, and validation flow",
+          "start_line": 162,
+          "end_line": 203
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless implementation details and sampling scale",
+          "start_line": 326,
+          "end_line": 361
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless metrics and baseline provenance",
+          "start_line": 376,
+          "end_line": 381
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless main SWE-bench Lite comparison table",
+          "start_line": 389,
+          "end_line": 427
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless interpretation of SWE-bench Lite result and cost",
+          "start_line": 490,
+          "end_line": 500
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless localization ablations",
+          "start_line": 589,
+          "end_line": 630
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless repair and patch-validation ablations",
+          "start_line": 632,
+          "end_line": 670
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless validity threats and conclusion boundary",
+          "start_line": 940,
+          "end_line": 960
+        }
+      ],
+      "claim_limit_summary": "The papers support within-system ACI and staged-pipeline evidence, but do not provide a controlled causal head-to-head comparison."
+    },
+    {
+      "path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-03-lost-in-the-middle.md",
+      "sha256": "7908bec5e121783c1c322c424ff70d886d50291fb48b9ade62869a92e4ceabaa",
+      "bytes": 44913,
+      "logical_lines": 348,
+      "cases": [
+        "literature-03"
+      ],
+      "source_ranges": [
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Paper identity and abstract position-dependent claim",
+          "start_line": 8,
+          "end_line": 16
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Controlled variables, tested models, main findings, and practical scope",
+          "start_line": 29,
+          "end_line": 56
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Multi-document QA construction and position/length manipulation",
+          "start_line": 67,
+          "end_line": 90
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Model versions, decoding choice, baselines, and QA results",
+          "start_line": 94,
+          "end_line": 139
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Synthetic key-value task and position-dependent results",
+          "start_line": 145,
+          "end_line": 166
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Architecture, query placement, and instruction-tuning investigations",
+          "start_line": 172,
+          "end_line": 205
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Open-domain QA context-length case study",
+          "start_line": 207,
+          "end_line": 214
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Ambiguity and distractor robustness checks",
+          "start_line": 260,
+          "end_line": 284
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "GPT-4 subset and Llama-2 scale/fine-tuning boundaries",
+          "start_line": 286,
+          "end_line": 302
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Exact 20- and 30-document QA result tables",
+          "start_line": 347,
+          "end_line": 366
+        }
+      ],
+      "claim_limit_summary": "Position effects are bounded to the reported tasks, model versions, metrics, and controls; the paper does not establish universal long-context behavior or workflow recovery properties."
+    },
+    {
+      "path": ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/shared-interface-context-staging-records.md",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716",
+      "bytes": 40406,
+      "logical_lines": 386,
+      "cases": [
+        "ideation-01",
+        "ideation-02",
+        "evaluation-01"
+      ],
+      "source_ranges": [
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "ACI scope, state communication, and history management",
+          "start_line": 63,
+          "end_line": 76
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Simple actions, compactness, concise feedback, and guardrails",
+          "start_line": 78,
+          "end_line": 99
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Concrete context-management behavior",
+          "start_line": 136,
+          "end_line": 144
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Interface-result and ablation evidence",
+          "start_line": 241,
+          "end_line": 290
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Observed trajectory patterns, recovery, and budget behavior",
+          "start_line": 296,
+          "end_line": 325
+        },
+        {
+          "source_file": "/tmp/c8-swe-agent.md",
+          "source_sha256": "d5c73827ab93b99bbda49c2e26eb2c70750a33471bd3fbbb1c0cccaa0af8ef63",
+          "arxiv_id": "2405.15793",
+          "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+          "url": "https://arxiv.org/abs/2405.15793",
+          "label": "Environment, agent, and logging artifacts",
+          "start_line": 527,
+          "end_line": 545
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Risks of autonomous tool/planning loops and fixed-stage alternative",
+          "start_line": 46,
+          "end_line": 84
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Explicit staged execution flow",
+          "start_line": 162,
+          "end_line": 203
+        },
+        {
+          "source_file": "/tmp/c8-agentless.md",
+          "source_sha256": "128772df83ad3157c6cd68558ecd7a304178602b72e9b15292b2928ad393ee1e",
+          "arxiv_id": "2407.01489",
+          "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+          "url": "https://arxiv.org/abs/2407.01489",
+          "label": "Agentless boundary: staged procedure without autonomous decision-making",
+          "start_line": 318,
+          "end_line": 324
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Long-context trade-off and evaluation criterion",
+          "start_line": 52,
+          "end_line": 56
+        },
+        {
+          "source_file": "/tmp/c8-lost-middle.md",
+          "source_sha256": "8cdbbd8205d9d79ee6f15d2fbe7de8cc1af0a8dcdb4af1636cc6e61b50fe5740",
+          "arxiv_id": "2307.03172",
+          "title": "Lost in the Middle: How Language Models Use Long Contexts",
+          "url": "https://arxiv.org/abs/2307.03172",
+          "label": "Position sensitivity and extended-context limitation",
+          "start_line": 131,
+          "end_line": 139
+        }
+      ],
+      "claim_limit_summary": "Contextual literature only: no evidence for Trellis authority, package/replay identity, append-only ledgers, telemetry-derived gates, or canonical event schemas."
+    }
+  ],
+  "case_coverage": [
+    {
+      "case_id": "literature-01",
+      "title": "Literature case 01: bounded one-paper review",
+      "definition": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/literature-01.json",
+        "sha256": "107f3b2dc8752fec990517341632302a6ba3d63a7edeb5e1f26bce30b08f9e92",
+        "logical_lines": 48
+      },
+      "input": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/inputs/literature-01.md",
+        "sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f",
+        "declared_sha256": "2d173c150b5dcc6fd6fb3c25ddfb4674e6724fefdc1805b32498db70ace62f7f",
+        "hash_matches_definition": true,
+        "logical_lines": 15
+      },
+      "bundles": [
+        ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-01-attention-positional-encoding.md"
+      ],
+      "coverage_rationale": "Exact positional-encoding method, ablation table, setup, and bounded interpretation."
+    },
+    {
+      "case_id": "literature-02",
+      "title": "Literature case 02: question-scoped register update",
+      "definition": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/literature-02.json",
+        "sha256": "9e4496c9b0cd136ab2a5b9bd77069e53db64b4759756bc4a94b95acd5c178741",
+        "logical_lines": 50
+      },
+      "input": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/inputs/literature-02.md",
+        "sha256": "200722c52a251f90bae34c1bc7d1dbe2fe987933ee86189ba25d6ab9b1604dbc",
+        "declared_sha256": "200722c52a251f90bae34c1bc7d1dbe2fe987933ee86189ba25d6ab9b1604dbc",
+        "hash_matches_definition": true,
+        "logical_lines": 18
+      },
+      "bundles": [
+        ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-02-swe-agent-agentless.md"
+      ],
+      "coverage_rationale": "Exact within-paper evidence for interactive ACI design and for explicit localization/patch-generation/validation, with cross-paper setup limits."
+    },
+    {
+      "case_id": "literature-03",
+      "title": "Literature case 03: managed interruption and recovery",
+      "definition": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/literature-03.json",
+        "sha256": "b162c6924e2996101c5d4b675296068432b3c64d5eee53eabd72fd323c67f253",
+        "logical_lines": 55
+      },
+      "input": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/inputs/literature-03.md",
+        "sha256": "c88e44cf53cb5137b02e184994d65ab7c85805fea816cf2231cb300506e532e1",
+        "declared_sha256": "c88e44cf53cb5137b02e184994d65ab7c85805fea816cf2231cb300506e532e1",
+        "hash_matches_definition": true,
+        "logical_lines": 13
+      },
+      "bundles": [
+        ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/literature-03-lost-in-the-middle.md"
+      ],
+      "coverage_rationale": "Exact task, model, result, robustness, and generalization-bound text for position-dependent long-context performance."
+    },
+    {
+      "case_id": "ideation-01",
+      "title": "Ideation case 01: normal portfolio and stop",
+      "definition": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/ideation-01.json",
+        "sha256": "c316ae6e5691b27e6545b1c040ff528cc430129c9e00477e0b49c1f4b3f6833f",
+        "logical_lines": 48
+      },
+      "input": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/inputs/ideation-01.md",
+        "sha256": "c96925cb7b76b1b1ca7f483722da83fd44529c521fb27d347350de2a8ff7bbd9",
+        "declared_sha256": "c96925cb7b76b1b1ca7f483722da83fd44529c521fb27d347350de2a8ff7bbd9",
+        "hash_matches_definition": true,
+        "logical_lines": 16
+      },
+      "bundles": [
+        ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/shared-interface-context-staging-records.md"
+      ],
+      "coverage_rationale": "Shared evidence on concise feedback, bounded context, simple actions, and guardrails; no direct Trellis refusal-contract claim."
+    },
+    {
+      "case_id": "ideation-02",
+      "title": "Ideation case 02: Quest-governed H1/H2 boundary",
+      "definition": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/ideation-02.json",
+        "sha256": "72b127779c5c5d2849fc22e5a8b0aae44231cc4f0e6dc4af539bd9a0e6af589f",
+        "logical_lines": 55
+      },
+      "input": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/inputs/ideation-02.md",
+        "sha256": "87c749cb6b3e4a4f3a8adf54eadc2564a2c80537cf6d81c3a0c348181cdfb051",
+        "declared_sha256": "87c749cb6b3e4a4f3a8adf54eadc2564a2c80537cf6d81c3a0c348181cdfb051",
+        "hash_matches_definition": true,
+        "logical_lines": 17
+      },
+      "bundles": [
+        ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/shared-interface-context-staging-records.md"
+      ],
+      "coverage_rationale": "Shared evidence on staged execution, state/context presentation, and records; no direct package, replay, writer, or gate-authority claim."
+    },
+    {
+      "case_id": "evaluation-01",
+      "title": "Evaluation case 01: independent attacks and selected-or-blocked closure",
+      "definition": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/evaluation-01.json",
+        "sha256": "2cd52c9b9663c8215fb2d43274546421c12c4a8ea4e0d77ea8bf26e1e0de0457",
+        "logical_lines": 65
+      },
+      "input": {
+        "path": ".trellis/tasks/archive/2026-08/08-21-thin-skill-c7-pilot-evaluation/research/cases/inputs/evaluation-01.md",
+        "sha256": "3cbc1e8b5fbaa15848916ab2dada8578bb2976f3a86f98bf5880805edbeecbd1",
+        "declared_sha256": "3cbc1e8b5fbaa15848916ab2dada8578bb2976f3a86f98bf5880805edbeecbd1",
+        "hash_matches_definition": true,
+        "logical_lines": 29
+      },
+      "bundles": [
+        ".trellis/tasks/08-25-thin-skill-c8-full-migration/research/case-sources/shared-interface-context-staging-records.md"
+      ],
+      "coverage_rationale": "Shared evidence for independent attacks on execution/logging/staging plausibility; project evidence remains decisive for closure."
+    }
+  ],
+  "authentication_notes": [
+    "Source-file SHA-256 values authenticate the exact supplied files, not an independently downloaded arXiv copy.",
+    "Each excerpt records source path, source SHA-256, and inclusive source line range.",
+    "Bundle SHA-256 values cover the complete UTF-8 bundle bytes with LF line endings.",
+    "The manifest does not include its own hash to avoid self-reference."
+  ],
+  "global_claim_limit": "These papers provide contextual empirical evidence. They do not define or verify Trellis package identity, replay semantics, canonical authority, scientific gates, append-only ledgers, telemetry-derived completion, or canonical event kinds."
+}

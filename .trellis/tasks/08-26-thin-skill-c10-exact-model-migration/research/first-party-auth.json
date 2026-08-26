@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-08-26T03:52:07.185741Z",
+  "command": [
+    "/Users/zhangbowen/.local/share/claude/versions/2.1.228",
+    "auth",
+    "status",
+    "--json"
+  ],
+  "executable": {
+    "path": "/Users/zhangbowen/.local/share/claude/versions/2.1.228",
+    "version": "2.1.228 (Claude Code)"
+  },
+  "rawStatusBytes": 250,
+  "rawStatusSha256": "e0a1cb1ee54f77bd211748ef132816a49c837d148ad41be8c2c7d8755d705391",
+  "schemaVersion": 1,
+  "status": {
+    "apiProvider": "firstParty",
+    "authMethod": "claude.ai",
+    "loggedIn": true
+  }
+}

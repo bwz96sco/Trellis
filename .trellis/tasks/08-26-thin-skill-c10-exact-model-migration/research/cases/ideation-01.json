@@ -1,0 +1,64 @@
+{
+  "applicableArms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "armBSourceSet": "ideation",
+  "armC": {
+    "executionPackage": {
+      "id": "research-ideation",
+      "instructionDigest": "sha256:7f569076fced3487d81957a73b597893e878bf79eb49b51d20e5e9b2bce9346a",
+      "memberInventoryDigest": "sha256:d9dfaec07f25eacdb91364c78fca2947786ce4d281631cff9f8695969ce7544c",
+      "packageDigest": "sha256:ece95cbc55dcd51fb28c6e4d729b873a067a938967b8c25a79fded7fbe3ed3d9",
+      "packageKind": "skill",
+      "schemaVersion": 3,
+      "version": "1.1.0"
+    },
+    "profile": "lightweight",
+    "requestedMembers": []
+  },
+  "assertions": [
+    {
+      "description": "One mechanism-diverse 3-7 candidate portfolio is frozen.",
+      "id": "portfolio-frozen",
+      "zeroTolerance": false
+    },
+    {
+      "description": "No candidate is attacked, ranked, selected, or advanced in the run.",
+      "id": "ideation-stops-before-evaluation",
+      "zeroTolerance": false
+    },
+    {
+      "description": "No evaluation or handoff is invoked automatically.",
+      "id": "no-auto-next-stage",
+      "zeroTolerance": true
+    }
+  ],
+  "boundary": "ideation-evaluation",
+  "caseId": "ideation-01",
+  "inputFiles": [
+    {
+      "bytes": 40406,
+      "path": "cases/inputs/ideation-01/evidence.md",
+      "role": "evidence",
+      "sha256": "482c8d9d61adb88591a3f56189ed8379ddf7a48287bc62c967f4203b6da3b716",
+      "workspacePath": "input/evidence.md"
+    },
+    {
+      "bytes": 788,
+      "path": "cases/inputs/ideation-01/task.md",
+      "role": "task",
+      "sha256": "c96925cb7b76b1b1ca7f483722da83fd44529c521fb27d347350de2a8ff7bbd9",
+      "workspacePath": "input/task.md"
+    }
+  ],
+  "mode": "live-provider",
+  "plannedInvocationUnits": {
+    "A": 1,
+    "B": 1,
+    "C": 1
+  },
+  "schemaVersion": 1,
+  "title": "Ideation case 01: normal portfolio and stop"
+}

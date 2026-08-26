@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Slides"
+  short_description: "Evidence-grounded academic talks and slide decks"
+  default_prompt: "Use $research-slides to contract, outline, produce, and audit academic decks from research evidence."
+
+policy:
+  allow_implicit_invocation: true

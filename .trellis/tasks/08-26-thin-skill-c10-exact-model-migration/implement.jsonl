@@ -1,0 +1,5 @@
+{"path":".trellis/spec/cli/backend/commands-research.md","reason":"Research package and managed execution contracts"}
+{"path":".trellis/spec/cli/unit-test/conventions.md","reason":"Task-local runner and deterministic fixture rules"}
+{"path":".trellis/tasks/08-26-thin-skill-c10-exact-model-migration/prd.md","reason":"Approved C10 requirements"}
+{"path":".trellis/tasks/08-26-thin-skill-c10-exact-model-migration/design.md","reason":"Exact-model route and successor design"}
+{"path":".trellis/tasks/08-26-thin-skill-c10-exact-model-migration/implement.md","reason":"Execution order and gates"}

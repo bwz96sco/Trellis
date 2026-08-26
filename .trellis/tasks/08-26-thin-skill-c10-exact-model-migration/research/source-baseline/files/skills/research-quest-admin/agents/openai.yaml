@@ -1,0 +1,6 @@
+interface:
+  display_name: "Research Quest Admin"
+  short_description: "Administer durable research quest state explicitly"
+  default_prompt: "Use $research-quest-admin to perform this explicit research quest state mutation and report every write."
+policy:
+  allow_implicit_invocation: false

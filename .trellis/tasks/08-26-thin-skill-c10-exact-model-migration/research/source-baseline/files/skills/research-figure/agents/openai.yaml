@@ -1,0 +1,7 @@
+interface:
+  display_name: "Research Figure"
+  short_description: "Evidence-bearing figures with bounded captions"
+  default_prompt: "Use $research-figure to build reproducible plots and diagrams from source data and audit renders."
+
+policy:
+  allow_implicit_invocation: true

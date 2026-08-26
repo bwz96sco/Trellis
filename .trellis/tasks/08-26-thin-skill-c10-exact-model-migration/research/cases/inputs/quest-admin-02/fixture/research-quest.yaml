@@ -1,0 +1,31 @@
+{
+  "active_stage": "research-ideation",
+  "authoritative_artifacts": {
+    "candidates": {
+      "owner_skill": "research-ideation",
+      "path": "research/ideas.md"
+    },
+    "opportunities": {
+      "owner_skill": "research-opportunity-mining",
+      "path": "research/opportunity_board.md"
+    }
+  },
+  "blockers": [],
+  "branches": [],
+  "claims": [],
+  "first_read": [
+    "research/opportunity_board.md",
+    "research/h1_decision.md",
+    "research/ideas.md",
+    "research/h2_decision.md"
+  ],
+  "objective": "Evaluate Research orchestration without dual write or automatic continuation.",
+  "open_questions": [
+    "Does managed recovery justify its Approval overhead?"
+  ],
+  "project_slug": "c8-full-migration",
+  "quest_id": "rq-c8-full-migration-fixture",
+  "schema_version": "0.2",
+  "status": "active",
+  "title": "C8 Full-Migration Quest"
+}
