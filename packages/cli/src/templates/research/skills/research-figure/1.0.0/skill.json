@@ -1,0 +1,1 @@
+{"schemaVersion":3,"packageKind":"skill","id":"research-figure","version":"1.0.0","skillKind":"bounded","invocationSource":"model","entrypointType":"model-context","instructionFile":"SKILL.md","allowedProfiles":["lightweight"],"members":[],"handoff":{"suggestedSkillIds":["research-experiment","research-writing"],"autoInvoke":false}}

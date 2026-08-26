@@ -57,8 +57,11 @@ export const RESEARCH_OPTIONAL_PROCEDURE_IDS = new Set([
   "slides-v1",
 ]);
 
-/** Schema-v3 pilot Skills that must ship as package-internal execution packages. */
-export const RESEARCH_PILOT_SKILL_PACKAGES = Object.freeze([
+/** Schema-v3 Skills that must ship as package-internal execution packages. */
+export const BUNDLED_RESEARCH_SKILL_PACKAGES = Object.freeze([
+  { id: "research-computation", version: "1.0.0", members: [] },
+  { id: "research-experiment", version: "1.0.0", members: [] },
+  { id: "research-figure", version: "1.0.0", members: [] },
   {
     id: "research-idea-evaluation",
     version: "1.0.0",
@@ -70,14 +73,62 @@ export const RESEARCH_PILOT_SKILL_PACKAGES = Object.freeze([
     members: ["templates/opportunity-board-template.md"],
   },
   {
+    id: "research-ideation",
+    version: "1.1.0",
+    members: ["templates/opportunity-board-template.md"],
+  },
+  {
     id: "research-literature",
     version: "1.0.0",
     members: ["templates/note-template.md"],
   },
   {
-    id: "research-quest-admin",
+    id: "research-literature",
+    version: "1.1.0",
+    members: ["templates/note-template.md"],
+  },
+  {
+    id: "research-opportunity-mining",
     version: "1.0.0",
-    members: [],
+    members: ["templates/opportunity-template.md"],
+  },
+  {
+    id: "research-project-setup",
+    version: "1.0.0",
+    members: [
+      "assets/manifest.yaml",
+      "assets/meta.gitignore",
+      "assets/obsidian-vault/.graphifyignore",
+      "assets/obsidian-vault/_references/citation-policy.md",
+      "assets/obsidian-vault/_templates/experiment-note.md",
+      "assets/obsidian-vault/_templates/intake-audit.md",
+      "assets/obsidian-vault/_templates/paper-note.md",
+      "assets/obsidian-vault/computation/.gitkeep",
+      "assets/obsidian-vault/experiments/.gitkeep",
+      "assets/obsidian-vault/figures/.gitkeep",
+      "assets/obsidian-vault/ideas/questions.md",
+      "assets/obsidian-vault/intake/.gitkeep",
+      "assets/obsidian-vault/literature-index.md",
+      "assets/obsidian-vault/literature/notes/.gitkeep",
+      "assets/obsidian-vault/literature/pdfs/.gitkeep",
+      "assets/obsidian-vault/literature/surveys/.gitkeep",
+      "assets/obsidian-vault/references.bib",
+      "assets/obsidian-vault/slides/.gitkeep",
+      "assets/obsidian-vault/theory/.gitkeep",
+      "assets/obsidian-vault/writing/.gitkeep",
+      "assets/obsidian.gitignore",
+      "references/graphify.md",
+    ],
+  },
+  { id: "research-quest-admin", version: "1.0.0", members: [] },
+  { id: "research-review-case", version: "1.0.0", members: [] },
+  { id: "research-slides", version: "1.0.0", members: ["NOTICE.md"] },
+  { id: "research-synthesis", version: "1.0.0", members: [] },
+  { id: "research-theory", version: "1.0.0", members: [] },
+  {
+    id: "research-writing",
+    version: "1.0.0",
+    members: ["references/academic-phrasebank.md"],
   },
 ]);
 
@@ -384,7 +435,7 @@ export function buildPackedCliInventory(migrationManifestNames) {
     }),
   );
 
-  const skillEntries = RESEARCH_PILOT_SKILL_PACKAGES.flatMap(
+  const skillEntries = BUNDLED_RESEARCH_SKILL_PACKAGES.flatMap(
     ({ id, version, members }) =>
       ["skill.json", "SKILL.md", ...members].map((member) =>
         withPackedRoot(
