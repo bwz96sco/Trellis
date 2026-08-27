@@ -1440,6 +1440,32 @@ function collectAllFiles(dirPath: string, cwd = process.cwd()): string[] {
 }
 
 /**
+ * Return true only when every file under a directory byte-matches its current
+ * template entry. This is stricter than historical hash ownership: an
+ * untouched stale source must not overwrite an already-canonical target.
+ */
+function dirMatchesCurrentTemplates(
+  cwd: string,
+  dirRelativePath: string,
+  templates: Map<string, string>,
+): boolean {
+  const dirFullPath = path.join(cwd, dirRelativePath);
+  if (!fs.existsSync(dirFullPath)) return false;
+
+  const files = collectAllFiles(dirFullPath, cwd);
+  if (files.length === 0) return false;
+
+  for (const fullPath of files) {
+    const relativePath = toPosix(path.relative(cwd, fullPath));
+    const templateContent = templates.get(relativePath);
+    if (templateContent === undefined) return false;
+    if (fs.readFileSync(fullPath, "utf-8") !== templateContent) return false;
+  }
+
+  return true;
+}
+
+/**
  * Check if a directory only contains unmodified template files
  * Returns true if safe to delete:
  * - All files are tracked and unmodified, OR
@@ -1609,6 +1635,14 @@ export function classifyMigrations(
         result.auto.push(item);
       }
     } else if (item.type === "rename-dir" && item.to) {
+      if (!dirHasManifestEntries(item.from, hashes)) {
+        // A matching directory name is not ownership. This gate applies even
+        // when the target already exists: canonical-target precedence may
+        // retire only a source directory Trellis actually recorded.
+        result.skip.push(item);
+        continue;
+      }
+
       const newPath = path.join(cwd, item.to);
       const newExists = fs.existsSync(newPath);
 
@@ -1621,17 +1655,8 @@ export function classifyMigrations(
           // Target has user modifications - conflict
           result.conflict.push(item);
         }
-      } else if (dirHasManifestEntries(item.from, hashes)) {
-        // Trellis created this directory (the manifest tracks files under it),
-        // so the rename is ours to make.
-        result.auto.push(item);
       } else {
-        // Target absent and the source has no manifest record: this is very
-        // likely a user-owned directory that merely shares a path with a
-        // retired Trellis platform dir (e.g. a real `.windsurf/` editor
-        // config). Skipping avoids silently moving the user's data out from
-        // under their editor — even under --force, since skip never executes.
-        result.skip.push(item);
+        result.auto.push(item);
       }
     } else if (item.type === "delete") {
       if (isTemplateModified(cwd, item.from, hashes)) {
@@ -1871,10 +1896,11 @@ export function sortMigrationsForExecution(
  * @param options.skipAll - Skip all modified files without asking
  * If neither is set, prompts interactively for modified files
  */
-async function executeMigrations(
+export async function executeMigrations(
   classified: ClassifiedMigrations,
   cwd: string,
   options: { force?: boolean; skipAll?: boolean },
+  templates: Map<string, string>,
 ): Promise<MigrationResult> {
   const result: MigrationResult = {
     renamed: 0,
@@ -1918,6 +1944,37 @@ async function executeMigrations(
     } else if (item.type === "rename-dir" && item.to) {
       const oldPath = path.join(cwd, item.from);
       const newPath = path.join(cwd, item.to);
+      const oldPrefix = item.from.endsWith("/") ? item.from : item.from + "/";
+      const newPrefix = item.to.endsWith("/") ? item.to : item.to + "/";
+      const hashes = loadHashes(cwd);
+
+      // Revalidate ownership at execution time. Classification may be stale by
+      // the time a confirmed plan runs, and force never turns a directory name
+      // into Trellis ownership.
+      if (!dirHasManifestEntries(item.from, hashes)) {
+        result.skipped++;
+        continue;
+      }
+
+      // A canonical current-version target wins over stale source bytes. Retire
+      // the redundant source and its ownership entries instead of clobbering
+      // already-correct target content.
+      if (
+        fs.existsSync(newPath) &&
+        dirMatchesCurrentTemplates(cwd, item.to, templates)
+      ) {
+        removeDirectoryRecursive(oldPath);
+
+        const updatedHashes: TemplateHashes = {};
+        for (const [hashPath, hashValue] of Object.entries(hashes)) {
+          if (hashPath.startsWith(oldPrefix)) continue;
+          updatedHashes[hashPath] = hashValue;
+        }
+        saveHashes(cwd, updatedHashes);
+
+        result.deleted++;
+        continue;
+      }
 
       // If target exists (safe to replace, already checked in classification)
       // delete it first before renaming
@@ -1932,10 +1989,6 @@ async function executeMigrations(
       fs.renameSync(oldPath, newPath);
 
       // Batch update hash tracking for all files in the directory
-      const hashes = loadHashes(cwd);
-      const oldPrefix = item.from.endsWith("/") ? item.from : item.from + "/";
-      const newPrefix = item.to.endsWith("/") ? item.to : item.to + "/";
-
       const updatedHashes: TemplateHashes = {};
       for (const [hashPath, hashValue] of Object.entries(hashes)) {
         if (hashPath.startsWith(oldPrefix)) {
@@ -2611,10 +2664,15 @@ export async function update(options: UpdateOptions): Promise<void> {
 
   // Execute migrations if --migrate flag is set
   if (options.migrate && classifiedMigrations) {
-    const migrationResult = await executeMigrations(classifiedMigrations, cwd, {
-      force: options.force,
-      skipAll: options.skipAll,
-    });
+    const migrationResult = await executeMigrations(
+      classifiedMigrations,
+      cwd,
+      {
+        force: options.force,
+        skipAll: options.skipAll,
+      },
+      templates,
+    );
     printMigrationResult(migrationResult);
 
     // Hardcoded: Rename traces-*.md to journal-*.md in workspace directories

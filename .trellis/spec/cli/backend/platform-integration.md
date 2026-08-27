@@ -40,6 +40,17 @@ writeResearchPlatformPayload(
 interface PlatformConfigureOptions {
   withStatusline?: boolean;
 }
+
+interface CodexWorkerModelKeys {
+  model?: string;
+  model_reasoning_effort?: string;
+}
+
+extractCodexWorkerModelKeys(existingContent: string): CodexWorkerModelKeys;
+applyCodexWorkerModelKeys(
+  freshContent: string,
+  preserved: CodexWorkerModelKeys,
+): string;
 ```
 
 Active managed roots:
@@ -91,19 +102,7 @@ Every path written by configure must be collected, and every collected path must
 
 ### Exact current payload
 
-Both hosts receive exactly one bounded worker and these nine stage skills:
-
-```text
-trellis-research-setup
-trellis-research-quest
-trellis-research-literature
-trellis-research-ideation
-trellis-research-experiment
-trellis-research-computation
-trellis-research-theory
-trellis-research-audit
-trellis-research-writing
-```
+Both hosts receive exactly one bounded worker and zero generated Research stage Skill directories. Workers consume only digest-bound Procedures embedded by validated Context; they do not discover or load Skills from disk.
 
 Claude Code required paths:
 
@@ -139,8 +138,13 @@ Codex does not generate SessionStart, `.codex/skills/**`, generic agents, or com
 - Claude settings register only the generated Research hooks and optional statusline while preserving unrelated fields/hooks.
 - Codex hooks register only the generated Research sequence hook while preserving unrelated hooks.
 - Codex config manages the `AGENTS.md` fallback line while preserving unrelated valid TOML.
-- Malformed JSON/TOML remains byte-identical and is not replaced with defaults.
+- Codex worker generation emits no live model selection by default. When an existing `.codex/agents/trellis-research-worker.toml` contains top-level, uncommented string values for `model` or `model_reasoning_effort`, collection copies only those values into the fresh one-worker template immediately after `sandbox_mode`.
+- Model-key extraction ignores comments and key-shaped text inside multiline `developer_instructions`; preserved values are TOML-escaped on insertion. It does not add defaults, route models, emit another agent, or enable multi-agent execution.
+- Malformed JSON/TOML config remains byte-identical and is not replaced with defaults.
 - Every registered Trellis hook has a generated file, and every generated current hook is registered.
+- Canonical shared Research hook templates and retained root `.claude/hooks/**` /
+  `.codex/hooks/**` copies are byte-identical. Windows hooks reconfigure
+  `stdin`, `stdout`, and `stderr` as UTF-8 before reading or emitting JSON.
 
 ### Generated runtime boundary
 
@@ -188,6 +192,11 @@ These inventories may support exact-key manifest recognition, path-specific scru
 | Extra file exists beside approved template | Do not emit it through exact payload APIs. |
 | Existing mixed config is valid | Merge exact Research fields and preserve unrelated content. |
 | Existing mixed config is malformed | Preserve bytes and warn; do not replace. |
+| Existing Codex worker has valid top-level `model` keys | Preserve only those values in the fresh one-worker template. |
+| Model-shaped text is commented or inside multiline instructions | Ignore it; do not activate a model selection. |
+| Fresh Codex worker has no user override | Emit hints only; no live `model` or `model_reasoning_effort`. |
+| Canonical hook and retained root copy differ | Test/build failure; synchronize from canonical source before release. |
+| Windows hook reads non-ASCII JSON stdin | Decode stdin as UTF-8; emit UTF-8 stdout/stderr. |
 | Configure/collect map differs | Test/build failure; do not refresh hashes from divergent bytes. |
 | Retired exact key is manifest-listed | May remain compatibility evidence. |
 | Unknown descendant under retired/current root | Unowned; never infer ownership from the root. |
@@ -196,9 +205,9 @@ Successor matrix additions: a fresh/update payload containing any active Researc
 
 ## 5. Good / Base / Bad Cases
 
-- **Good**: dual-host generation writes exactly two bounded workers, the approved hook/config matrix, optional Claude statusline when requested, zero stage Skill directories, and no generic payload.
-- **Base**: a Claude-only repository adds Codex; only Codex payload paths are added and workflow ownership is unchanged.
-- **Bad**: scanning `templates/common`, treating `.agents/skills` as detection, copying a retired host root, registering an old host flag, or using cleanup inventory as current collection.
+- **Good**: dual-host generation writes exactly two bounded workers, the approved hook/config matrix, optional Claude statusline when requested, zero stage Skill directories, and no generic payload. Existing top-level Codex worker model overrides survive in the fresh bounded worker.
+- **Base**: a Claude-only repository adds Codex; only Codex payload paths are added, the fresh worker contains commented model hints but no live selection, and workflow ownership is unchanged.
+- **Bad**: scanning `templates/common`, treating `.agents/skills` as detection, copying a retired host root, registering an old host flag, using cleanup inventory as current collection, or converting commented/instruction-contained model text into a live worker setting.
 
 ### C08 cases
 
@@ -213,8 +222,10 @@ Successor matrix additions: a fresh/update payload containing any active Researc
 - Retained init flags and removed-option zero-write parser tests.
 - Claude-only, Codex-only, dual-host, host-addition, and optional-statusline path allowlists.
 - Configure/collect path and byte parity for both hosts.
-- Exact nine stage skills and one bounded worker per host.
-- Exact hook generation/registration matrix and malformed mixed-config preservation.
+- Zero generated stage Skill directories and exactly one bounded worker per host.
+- Codex worker extraction/insertion tests for top-level values, comments, multiline instructions, TOML escaping, no-default hints, and exact one-agent collection.
+- Exact hook generation/registration matrix, canonical/root byte parity,
+  all-stream Windows UTF-8 setup, and malformed mixed-config preservation.
 - C07/C09 fail-closed and provider-neutral parity regressions.
 - Frozen 137-path and 1,009-path cleanup integrity.
 - Clean `dist` and packed-tarball negative inventory for retired hosts and generic payload.
@@ -249,6 +260,13 @@ Correct: both paths call collectResearchPlatformPayload() and use identical rend
 ```text
 Wrong: a path is below `.windsurf`, therefore Trellis owns it.
 Correct: only an exact frozen key, exact structured descriptor, or canonical migration evidence can recognize ownership.
+```
+
+### Codex worker model overrides
+
+```text
+Wrong: copy a full existing worker, activate commented model hints, or generate per-model agents.
+Correct: render the fresh one-worker template and preserve only valid top-level uncommented `model` and `model_reasoning_effort` string values.
 ```
 
 ### Frozen successor: Procedures, not Skills

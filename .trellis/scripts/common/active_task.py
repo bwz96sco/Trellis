@@ -82,19 +82,35 @@ def normalize_task_ref(task_ref: str) -> str:
 
 
 def resolve_task_ref(task_ref: str, repo_root: Path) -> Path | None:
-    """Resolve a task ref to an absolute task directory."""
+    """Resolve a task ref to an absolute task directory inside the repo.
+
+    Mirrors ``paths.resolve_task_ref``. This module is also loaded standalone
+    by hooks, so it intentionally keeps no relative import on that module.
+    """
     normalized = normalize_task_ref(task_ref)
     if not normalized:
         return None
 
     path_obj = Path(normalized)
     if path_obj.is_absolute():
-        return path_obj
+        candidate = path_obj
+    elif normalized.startswith(f"{DIR_WORKFLOW}/"):
+        candidate = repo_root / path_obj
+    else:
+        candidate = repo_root / DIR_WORKFLOW / DIR_TASKS / path_obj
 
-    if normalized.startswith(f"{DIR_WORKFLOW}/"):
-        return repo_root / path_obj
+    try:
+        resolved = candidate.resolve()
+        root = repo_root.resolve()
+    except OSError:
+        return None
 
-    return repo_root / DIR_WORKFLOW / DIR_TASKS / path_obj
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        return None
+
+    return resolved
 
 
 def _runtime_sessions_dir(repo_root: Path) -> Path:
@@ -293,9 +309,9 @@ def _canonical_task_ref(task_path: str, repo_root: Path) -> str | None:
     if full_path is None or not full_path.is_dir():
         return None
     try:
-        return full_path.relative_to(repo_root).as_posix()
+        return full_path.relative_to(repo_root.resolve()).as_posix()
     except ValueError:
-        return str(full_path)
+        return None
 
 
 def _active_from_ref(

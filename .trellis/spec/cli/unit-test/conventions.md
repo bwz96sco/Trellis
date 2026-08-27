@@ -85,6 +85,8 @@ During evidence creation with `--write`, candidate-scope checks remain strict. A
 
 A new lane requires retained complete-suite evidence of a distinct resource or shared-output owner. Do not respond to a new failure by raising timeouts, retrying, serializing `normal`, or adding a lane member automatically; stop and govern a separate evidence-backed correction.
 
+Independent expensive fixtures with no shared state or output dependency must not share one callback budget. Decompose them into ordinary sequential tests with fresh fixture cleanup while preserving the existing per-test timeout, project ownership, worker counts, and group order. Do not substitute retries, timeout increases, concurrent tests, serialization of `normal`, or a new lane.
+
 ---
 
 ### When to Write Tests

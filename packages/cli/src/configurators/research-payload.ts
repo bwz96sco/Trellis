@@ -40,6 +40,165 @@ export const RESEARCH_PAYLOAD_PATHS = {
   },
 } as const;
 
+/** User-set top-level model overrides preserved on the generated Codex worker. */
+export interface CodexWorkerModelKeys {
+  model?: string;
+  model_reasoning_effort?: string;
+}
+
+function tomlUnescape(value: string): string | null {
+  let result = "";
+  for (let index = 0; index < value.length; index++) {
+    const char = value[index] ?? "";
+    if (char !== "\\") {
+      const code = char.codePointAt(0) ?? 0;
+      if (code <= 0x1f || code === 0x7f) return null;
+      result += char;
+      continue;
+    }
+
+    const escape = value[++index];
+    if (escape === undefined) return null;
+    const simpleEscapes: Record<string, string> = {
+      b: "\b",
+      t: "\t",
+      n: "\n",
+      f: "\f",
+      r: "\r",
+      '"': '"',
+      "\\": "\\",
+    };
+    if (escape in simpleEscapes) {
+      result += simpleEscapes[escape];
+      continue;
+    }
+
+    if (escape !== "u" && escape !== "U") return null;
+    const length = escape === "u" ? 4 : 8;
+    const hex = value.slice(index + 1, index + 1 + length);
+    if (hex.length !== length || !/^[0-9A-Fa-f]+$/.test(hex)) return null;
+    const codePoint = Number.parseInt(hex, 16);
+    if (codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+      return null;
+    }
+    result += String.fromCodePoint(codePoint);
+    index += length;
+  }
+  return result;
+}
+
+function tomlEscape(value: string): string {
+  let result = "";
+  for (const char of value) {
+    const escapes: Record<string, string> = {
+      "\b": "\\b",
+      "\t": "\\t",
+      "\n": "\\n",
+      "\f": "\\f",
+      "\r": "\\r",
+      '"': '\\"',
+      "\\": "\\\\",
+    };
+    if (char in escapes) {
+      result += escapes[char];
+      continue;
+    }
+    const codePoint = char.codePointAt(0) ?? 0;
+    result +=
+      codePoint <= 0x1f || codePoint === 0x7f
+        ? `\\u${codePoint.toString(16).padStart(4, "0")}`
+        : char;
+  }
+  return result;
+}
+
+/** Extract only top-level model overrides, never table or instruction text. */
+export function extractCodexWorkerModelKeys(
+  existingContent: string,
+): CodexWorkerModelKeys {
+  const result: CodexWorkerModelKeys = {};
+  let multilineDelimiter: '"""' | "'''" | null = null;
+  let insideTable = false;
+
+  for (const rawLine of existingContent.split(/\r?\n/)) {
+    const trimmed = rawLine.trim();
+    if (multilineDelimiter) {
+      if (trimmed.includes(multilineDelimiter)) multilineDelimiter = null;
+      continue;
+    }
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    if (trimmed.startsWith("[")) {
+      insideTable = true;
+      continue;
+    }
+
+    const multilineMatch = trimmed.match(
+      /^[A-Za-z_][A-Za-z0-9_-]*\s*=\s*("""|''')/,
+    );
+    if (multilineMatch) {
+      const delimiter = multilineMatch[1] as '"""' | "'''";
+      const openingIndex = trimmed.indexOf(delimiter);
+      if (trimmed.indexOf(delimiter, openingIndex + delimiter.length) < 0) {
+        multilineDelimiter = delimiter;
+      }
+      continue;
+    }
+    if (insideTable) continue;
+
+    const match = trimmed.match(
+      /^(model|model_reasoning_effort)\s*=\s*(?:"((?:[^"\\]|\\.)*)"|'([^']*)')\s*(?:#.*)?$/,
+    );
+    if (!match) continue;
+
+    const basicValue = match[2];
+    const literalValue = match[3];
+    const value =
+      basicValue !== undefined
+        ? tomlUnescape(basicValue)
+        : (literalValue ?? "");
+    const literalHasControl = [...(literalValue ?? "")].some((char) => {
+      const codePoint = char.codePointAt(0) ?? 0;
+      return codePoint <= 0x1f || codePoint === 0x7f;
+    });
+    if (value === null || literalHasControl) {
+      continue;
+    }
+
+    const key = match[1] as keyof CodexWorkerModelKeys;
+    result[key] = value;
+  }
+  return result;
+}
+
+/** Insert preserved model overrides after the worker sandbox declaration. */
+export function applyCodexWorkerModelKeys(
+  freshContent: string,
+  preserved: CodexWorkerModelKeys,
+): string {
+  const lines: string[] = [];
+  if (preserved.model) {
+    lines.push(`model = "${tomlEscape(preserved.model)}"`);
+  }
+  if (preserved.model_reasoning_effort) {
+    lines.push(
+      `model_reasoning_effort = "${tomlEscape(preserved.model_reasoning_effort)}"`,
+    );
+  }
+  if (lines.length === 0) return freshContent;
+  return freshContent.replace(
+    /^(sandbox_mode\s*=\s*".*"\n)/m,
+    (matched) => `${matched}${lines.join("\n")}\n`,
+  );
+}
+
+function mergeCodexWorker(template: string, existing: string | null): string {
+  if (!existing) return template;
+  return applyCodexWorkerModelKeys(
+    template,
+    extractCodexWorkerModelKeys(existing),
+  );
+}
+
 function readExisting(
   cwd: string | undefined,
   relativePath: string,
@@ -250,7 +409,13 @@ function collectClaudePayload(
 function collectCodexPayload(cwd: string | undefined): Map<string, string> {
   const files = new Map<string, string>();
   const worker = getCodexResearchWorkerTemplate();
-  files.set(RESEARCH_PAYLOAD_PATHS.codex.worker, worker.content);
+  files.set(
+    RESEARCH_PAYLOAD_PATHS.codex.worker,
+    mergeCodexWorker(
+      worker.content,
+      readExisting(cwd, RESEARCH_PAYLOAD_PATHS.codex.worker),
+    ),
+  );
 
   for (const hook of getSharedHookScriptsForPlatform("codex")) {
     files.set(`.codex/hooks/${hook.name}`, hook.content);

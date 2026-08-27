@@ -27,6 +27,15 @@ delete
 safe-file-delete
 ```
 
+```ts
+executeMigrations(
+  classified: ClassifiedMigrations,
+  cwd: string,
+  options: { force?: boolean; skipAll?: boolean },
+  templates: Map<string, string>,
+): Promise<MigrationResult>;
+```
+
 A `safe-file-delete` operation has the shape:
 
 ```json
@@ -80,6 +89,14 @@ Forward migration `0.7.0-beta.1` reserves the Research Skill `safe-file-delete` 
 - Every key is path-validated before `path.join`, read, hash, scrub, move, or delete.
 - A managed root never grants ownership of arbitrary descendants.
 - Canonical `rename-dir` prefixes may preserve an already safe manifest key; they never authorize a filesystem scan to discover keys.
+- When both `rename-dir` sides exist and every target file byte-matches its
+  current template entry, the target is canonical. Execution deletes only the
+  stale source directory and its old-prefix hash entries; it does not overwrite
+  target bytes or target hashes with stale source content.
+- Historical stored hashes alone do not prove target canonicality. Every target
+  file must have a current template entry and exact byte equality; empty,
+  unknown, extra, or mismatched target content follows normal classified rename
+  behavior instead.
 
 ### Frozen cleanup evidence
 
@@ -141,6 +158,8 @@ They may not:
 | Hash differs or file is malformed/non-regular | Preserve bytes. |
 | Migration `from` or `to` reaches `.trellis/research/**` | Skip before path resolution and repeat the guard at execution. |
 | `rename-dir` source has no manifest-owned descendants | Skip even under `--force`. |
+| Existing `rename-dir` target exactly matches all current template bytes | Keep target; delete stale source and only source-prefix hash entries. |
+| Existing target is empty, extra, unknown, or byte-mismatched | Do not claim canonical-target precedence; follow classified migration safety. |
 | Current Research template overlaps historical deletion | Current template wins; suppress deletion. |
 | Manifest key is absolute, traversal, backslash, drive-relative, NUL, or non-normalized | Reject as unsafe; perform no filesystem access. |
 | Frozen inventory cardinality/path changes unintentionally | Test and package audit failure. |
@@ -149,9 +168,9 @@ Successor matrix additions: dedicated evidence plus exact released-byte match ma
 
 ## 5. Good / Base / Bad Cases
 
-- **Good**: an exact historical key with released matching bytes is safely removed while an unknown sibling and all Research data remain byte-identical.
+- **Good**: an exact historical key with released matching bytes is safely removed while an unknown sibling and all Research data remain byte-identical. A current canonical rename target survives stale source retirement unchanged.
 - **Base**: a frozen path is absent or modified; update reports it and preserves the project without inventing ownership.
-- **Bad**: walking `.claude`, `.codex`, `.windsurf`, or `.trellis` and hashing/deleting every discovered descendant; deriving `allowed_hashes` from a fixture; or feeding retired inventory into active payload collection.
+- **Bad**: walking `.claude`, `.codex`, `.windsurf`, or `.trellis` and hashing/deleting every discovered descendant; deriving `allowed_hashes` from a fixture; feeding retired inventory into active payload collection; or replacing canonical target bytes with an untouched stale source.
 
 ### Frozen successor cases
 
@@ -167,6 +186,8 @@ Successor matrix additions: dedicated evidence plus exact released-byte match ma
 - Prove retained Research workers and nine stage skills are excluded from cleanup.
 - Prove unknown descendants are pruned without read/stat access.
 - Prove canonical `rename-dir` descendants require pre-existing safe manifest ownership.
+- Prove an exact current-template target wins over stale source bytes, removes
+  only source-prefix hashes, and leaves target bytes/hashes unchanged.
 - Reproduce every admitted `allowed_hashes` value from cited released bytes.
 - Cover pristine, modified, missing, protected, skipped, malformed, and current-template-precedence cases.
 - Prove dry-run and cancellation do not persist pruning.
@@ -200,6 +221,11 @@ allowed_hashes: [releasedNormalizedSha256];
 ```text
 Wrong: `.windsurf` is a cleanup root, therefore every child is Trellis-owned.
 Correct: only an exact frozen key, exact structured descriptor, or already-safe canonical migration key is recognized.
+```
+
+```text
+Wrong: replace an existing current-template target with stale-but-unmodified rename source bytes.
+Correct: byte-verify the complete target against current templates, keep it, then retire only the redundant source and source-prefix hashes.
 ```
 
 ### Frozen successor: Research Skill retirement

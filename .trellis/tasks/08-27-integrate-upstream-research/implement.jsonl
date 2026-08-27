@@ -1,0 +1,11 @@
+{"file":".trellis/spec/cli/backend/index.md","reason":"Research-only active surface and backend pre-development contract"}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Exact Claude/Codex registry, payload, and historical cleanup boundary"}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Path containment, atomic mutation, safe deletion, and twin synchronization"}
+{"file":".trellis/spec/cli/backend/migrations.md","reason":"Migration discovery, manifests, ownership, and failure behavior"}
+{"file":".trellis/spec/cli/backend/commands-update.md","reason":"Research desired-state reconciliation and update safety"}
+{"file":".trellis/spec/cli/backend/commands-uninstall.md","reason":"Protected Research state and structured cleanup semantics"}
+{"file":".trellis/spec/cli/backend/research-worker-hooks.md","reason":"Bounded hook context and Proposal-only worker authority"}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Core/CLI version, tarball, and submodule release boundaries"}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Test isolation, ordered ownership, and regression conventions"}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Built parser, filesystem snapshot, and packed artifact tests"}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Python, paths, hooks, and config must remain cross-platform"}

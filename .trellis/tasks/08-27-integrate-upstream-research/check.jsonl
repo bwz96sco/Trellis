@@ -1,0 +1,8 @@
+{"file":".trellis/spec/cli/backend/index.md","reason":"Verify exact Research-only active product surface"}
+{"file":".trellis/spec/cli/backend/quality-guidelines.md","reason":"Review code quality and forbidden implementation patterns"}
+{"file":".trellis/spec/cli/backend/platform-integration.md","reason":"Verify two-host payload and cleanup-only historical hosts"}
+{"file":".trellis/spec/cli/backend/filesystem-safety.md","reason":"Verify containment, ownership, atomicity, and protected paths"}
+{"file":".trellis/spec/cli/backend/release-process.md","reason":"Verify packed/version/submodule integration boundaries"}
+{"file":".trellis/spec/cli/unit-test/conventions.md","reason":"Verify test isolation and complete gate ownership"}
+{"file":".trellis/spec/cli/unit-test/integration-patterns.md","reason":"Verify public parser, real filesystem, and packed artifact coverage"}
+{"file":".trellis/spec/guides/cross-platform-thinking-guide.md","reason":"Review path, Python, shell, and config portability"}

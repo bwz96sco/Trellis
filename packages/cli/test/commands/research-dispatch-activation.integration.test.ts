@@ -725,7 +725,7 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
     expect(snapshotTree(approveSandbox)).toEqual(beforeRevalidation);
   }, 30_000);
 
-  it("rejects request, policy, and normalized scope drift before approval", async () => {
+  it("rejects malformed canonical request state before approval", async () => {
     const requestFixture = await createResearchDispatchFixture(
       path.join(sandbox, "request-drift"),
       { automaticEnabled: true },
@@ -738,7 +738,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
         host: "codex",
       }),
     ).rejects.toMatchObject({ code: "REQUEST_STATE_MISMATCH" });
+  }, 30_000);
 
+  it("rejects a symlinked canonical request parent before approval", async () => {
     const symlinkFixture = await createResearchDispatchFixture(
       path.join(sandbox, "request-parent-symlink"),
       { automaticEnabled: true },
@@ -759,7 +761,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
         host: "codex",
       }),
     ).rejects.toMatchObject({ code: "REQUEST_NOT_FOUND" });
+  }, 30_000);
 
+  it("rejects project-policy digest drift before approval", async () => {
     const policyFixture = await createResearchDispatchFixture(
       path.join(sandbox, "policy-drift"),
       { automaticEnabled: true },
@@ -782,7 +786,9 @@ describe("Research activation and approval commands", { timeout: 30_000 }, () =>
         host: "codex",
       }),
     ).rejects.toMatchObject({ code: "POLICY_DIGEST_MISMATCH" });
+  }, 30_000);
 
+  it("rejects normalized repository scope drift before approval", async () => {
     const scopeFixture = await createResearchDispatchFixture(
       path.join(sandbox, "scope-drift"),
       { automaticEnabled: true, git: false },

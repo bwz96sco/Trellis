@@ -1,6 +1,6 @@
 {
   "name": "@mindfoldhq/trellis-core",
-  "version": "0.6.7",
+  "version": "0.6.15",
   "description": "Research-first Trellis core SDK with active Research APIs and version-locked Channel, Mem, and Task compatibility surfaces",
   "type": "module",
   "main": "./dist/index.js",

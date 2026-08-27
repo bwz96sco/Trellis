@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 if sys.platform.startswith("win"):
-    for stream in (sys.stdout, sys.stderr):
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
         if callable(reconfigure):
             reconfigure(encoding="utf-8", errors="replace")

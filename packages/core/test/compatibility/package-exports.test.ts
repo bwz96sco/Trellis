@@ -94,6 +94,8 @@ describe("@mindfoldhq/trellis-core package compatibility", () => {
     }
     expect(root.parseChannelType).toBe(channel.parseChannelType);
     expect(root.emptyTaskRecord).toBe(task.emptyTaskRecord);
+    expect(channel).not.toHaveProperty("appendEvent");
+    expect(root).not.toHaveProperty("appendEvent");
     expect(root).not.toHaveProperty("searchMemSessions");
     expect(root).not.toHaveProperty("readResearchState");
     expect(root).not.toHaveProperty("resolveResearchCapability");

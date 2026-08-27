@@ -46,6 +46,7 @@ Package roles:
 - Root and five domain subpath exports remain available throughout 0.7 in the exact order and with the exact targets above.
 - The root barrel remains Channel plus Task only; it does not leak Research, Mem, or Testing.
 - Testing remains reserved, importable, and empty.
+- `appendEvent` and `AppendablePartial` remain Channel store internals. Neither `./channel` nor the root barrel may re-export them; typed mutation APIs own public writes. With `stripInternal: true`, a public barrel must never emit a declaration re-export whose source declaration is stripped.
 - Do not add wildcard exports, public deep-import paths, wrappers, or altered runtime identities.
 - Removing an active CLI surface must not delete or rename these compatibility exports.
 - Generic API removal belongs to a separately approved semver-major change after a real 0.7 compatibility window.
@@ -103,6 +104,7 @@ Core and CLI publish with the exact same version. Source uses `workspace:*`; the
 | Deep import a core internal path | Fail with package-path-not-exported behavior. |
 | Packed export key/order/condition/target drifts | Packed-core audit fails and names the contract drift. |
 | Packed target or README is missing | Packed-core audit fails before consumer proof. |
+| Public barrel re-exports an `@internal` declaration removed by `stripInternal` | Strict packed NodeNext consumer compilation fails; remove the public re-export rather than publishing the internal primitive. |
 | Tar path is unsafe/noncanonical/duplicate or source/test/config leaks | Reject before extraction. |
 | Production CLI imports anything except exact `/research` | Source/clean-build import-boundary test fails with file and specifier. |
 | Active CLI registers Channel/Mem/Workflow/Research Task | Contract failure even though related core APIs remain. |
@@ -120,7 +122,7 @@ Core and CLI publish with the exact same version. Source uses `workspace:*`; the
 ## 6. Tests Required
 
 - Core-owned exact package export-key/order/condition/target snapshot and built-target existence.
-- Core-owned root composition/identity, explicit subpath imports, empty Testing, representative values/types, and negative deep-import tests.
+- Core-owned root composition/identity, explicit subpath imports, empty Testing, representative values/types, negative deep-import tests, and negative assertions that `appendEvent` is absent from Channel/root runtime barrels.
 - Packed-core unit tests for path normalization, duplicates, contract drift, target derivation, missing inventory, and leakage.
 - Real clean-built packed-core consumer proof for runtime imports and strict NodeNext declarations.
 - CLI-owned source and clean-`dist` static import scan accepting only exact `/research`, with adversarial suffix/query/fragment/deep cases.
@@ -149,6 +151,14 @@ import { reduceResearchLedger } from "@mindfoldhq/trellis-core/research";
 ```text
 Wrong: remove a core subpath because its old command disappeared.
 Correct: freeze the 0.7 SDK exports while independently narrowing the active CLI product.
+```
+
+```ts
+// Wrong: stripInternal removes the declaration but the public barrel still names it.
+export { appendEvent } from "./internal/store/events.js";
+
+// Correct: public callers use typed mutations; internal modules import the store primitive directly.
+export { sendMessage, createChannel } from "./api/index.js";
 ```
 
 ## Evaluation contract v1.3.1 boundary

@@ -1,0 +1,238 @@
+source	disposition	path	reason
+upstream-only	accept-upstream	.github/workflows/ci.yml	no active Research boundary match; verify during semantic review
+overlap	synthesize	.github/workflows/publish.yml	combine upstream contract or safety change with reduced Research surface
+overlap	accept-upstream	.gitignore	no active Research boundary match; verify during semantic review
+upstream-addition	preserve-research	.pi/prompts/trellis-start.md	retired host/template surface must remain absent from source and tarball
+upstream-only	accept-upstream	.trellis/scripts/add_session.py	no active Research boundary match; verify during semantic review
+overlap	synthesize	.trellis/scripts/common/active_task.py	combine upstream fix with Research authority and distribution contract
+overlap	synthesize	.trellis/scripts/common/cli_adapter.py	combine upstream contract or safety change with reduced Research surface
+upstream-only	accept-upstream	.trellis/scripts/common/config.py	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	.trellis/scripts/common/git.py	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	.trellis/scripts/common/paths.py	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	.trellis/scripts/common/session_context.py	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	.trellis/scripts/common/task_context.py	no active Research boundary match; verify during semantic review
+overlap	synthesize	.trellis/scripts/common/task_store.py	combine upstream fix with Research authority and distribution contract
+upstream-only	accept-upstream	.trellis/scripts/common/task_utils.py	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	.trellis/scripts/common/trellis_config.py	no active Research boundary match; verify during semantic review
+overlap	synthesize	.trellis/scripts/common/workflow_phase.py	combine upstream fix with Research authority and distribution contract
+upstream-only	accept-upstream	.trellis/scripts/task.py	no active Research boundary match; verify during semantic review
+overlap	preserve-research	.trellis/spec/cli/backend/commands-channel.md	Research fork must not document retired command as active
+upstream-addition	preserve-research	.trellis/spec/cli/backend/commands-platforms.md	Research fork must not document retired command as active
+overlap	synthesize	.trellis/spec/cli/backend/commands-uninstall.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/commands-update.md	combine upstream contract or safety change with reduced Research surface
+overlap	preserve-research	.trellis/spec/cli/backend/commands-workflow.md	Research fork must not document retired command as active
+overlap	synthesize	.trellis/spec/cli/backend/configurator-shared.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/directory-structure.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/filesystem-safety.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/index.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/platform-integration.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/quality-guidelines.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/release-process.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/script-conventions.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/trellis-core-sdk.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/backend/workflow-state-contract.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/unit-test/conventions.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/spec/cli/unit-test/index.md	combine upstream contract or safety change with reduced Research surface
+upstream-only	synthesize	.trellis/spec/guides/code-reuse-thinking-guide.md	combine upstream contract or safety change with reduced Research surface
+upstream-only	synthesize	.trellis/spec/guides/cross-platform-thinking-guide.md	combine upstream contract or safety change with reduced Research surface
+overlap	synthesize	.trellis/workflow.md	combine upstream contract or safety change with reduced Research surface
+upstream-only	preserve-research	docs-site	I3 authenticated installed-package subject requires frozen protected gitlink be7684f2086abb9b8e24d4d35733a7dda3123a0f
+upstream-only	preserve-research	marketplace	I3 authenticated installed-package subject requires frozen protected gitlink d7a18bb5411c700237d21483d6889ac296ef0301
+overlap	synthesize	packages/cli/package.json	combine upstream fix with Research authority and distribution contract
+upstream-only	synthesize	packages/cli/scripts/copy-templates.js	combine upstream fix with Research authority and distribution contract
+upstream-only	accept-upstream	packages/cli/scripts/release.js	no active Research boundary match; verify during semantic review
+overlap	preserve-research	packages/cli/src/cli/index.ts	exact five-command/two-host/reduced-template boundary
+overlap	preserve-research	packages/cli/src/commands/channel/adapters/claude.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/adapters/codex.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/adapters/index.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/agent-loader.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/context-loader.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/src/commands/channel/context-trust.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/index.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/kill.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/spawn.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/store/events.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/supervisor.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/supervisor/idle.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/src/commands/channel/supervisor/stdout.ts	retired generic CLI/test surface must remain absent
+overlap	synthesize	packages/cli/src/commands/init.ts	combine upstream fix with Research authority and distribution contract
+overlap	preserve-research	packages/cli/src/commands/mem.ts	retired generic CLI/test surface must remain absent
+overlap	synthesize	packages/cli/src/commands/update.ts	combine upstream fix with Research authority and distribution contract
+overlap	preserve-research	packages/cli/src/configurators/antigravity.ts	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/configurators/claude.ts	combine upstream fix with Research authority and distribution contract
+overlap	preserve-research	packages/cli/src/configurators/codebuddy.ts	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/configurators/codex.ts	combine upstream fix with Research authority and distribution contract
+overlap	preserve-research	packages/cli/src/configurators/copilot.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/cursor.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/devin.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/droid.ts	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/configurators/dsh.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/gemini.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/grok.ts	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/configurators/index.ts	combine upstream fix with Research authority and distribution contract
+overlap	preserve-research	packages/cli/src/configurators/kilo.ts	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/configurators/kimi.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/kiro.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/omp.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/opencode.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/pi.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/qoder.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/reasonix.ts	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/configurators/shared.ts	combine upstream fix with Research authority and distribution contract
+upstream-addition	preserve-research	packages/cli/src/configurators/snow.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/trae.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/workflow.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/configurators/zcode.ts	retired host/template surface must remain absent from source and tarball
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.10.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.11.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.12.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.13.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.14.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.8.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.6.9.json	combine upstream fix with Research authority and distribution contract
+overlap	synthesize	packages/cli/src/migrations/manifests/0.7.0-beta.0.json	combine upstream fix with Research authority and distribution contract
+overlap	synthesize	packages/cli/src/migrations/manifests/0.7.0-beta.1.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.7.0-beta.2.json	combine upstream fix with Research authority and distribution contract
+upstream-addition	synthesize	packages/cli/src/migrations/manifests/0.7.0-beta.3.json	combine upstream fix with Research authority and distribution contract
+overlap	synthesize	packages/cli/src/templates/claude/hooks/statusline.py	combine upstream contract or safety change with reduced Research surface
+overlap	preserve-research	packages/cli/src/templates/codebuddy/settings.json	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/agents/trellis-check.toml	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/agents/trellis-implement.toml	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/agents/trellis-research.toml	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/templates/codex/config.toml	combine upstream contract or safety change with reduced Research surface
+upstream-only	synthesize	packages/cli/src/templates/codex/hooks.json	combine upstream contract or safety change with reduced Research surface
+overlap	preserve-research	packages/cli/src/templates/codex/hooks/session-start.py	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/templates/codex/index.ts	combine upstream contract or safety change with reduced Research surface
+overlap	preserve-research	packages/cli/src/templates/codex/skills/before-dev/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/brainstorm/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/break-loop/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/check-cross-layer/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/check/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/create-command/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/finish-work/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/improve-ut/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/integrate-skill/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/onboard/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/record-session/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/codex/skills/update-spec/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/SKILL.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/customize-local/change-skills-or-commands.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/local-architecture/bundled-skills.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/platform-files/agents.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/platform-files/hooks-and-settings.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/platform-files/overview.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/platform-files/platform-map.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/bundled-skills/trellis-meta/references/platform-files/skills-and-commands.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/skills/before-dev.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/common/skills/check.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/copilot/prompts/check-cross-layer.prompt.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/copilot/prompts/check.prompt.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/droid/settings.json	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/dsh/DSH.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/dsh/index.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/gemini/settings.json	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/kimi/agents/trellis-check.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/kimi/agents/trellis-implement.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/kimi/agents/trellis-research.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/kimi/index.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/omp/extensions/trellis/index.ts.txt	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/opencode/lib/context-visibility.js	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/opencode/lib/session-utils.js	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/opencode/lib/trellis-context.js	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/opencode/plugins/inject-subagent-context.js	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/opencode/plugins/inject-workflow-state.js	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/opencode/plugins/session-start.js	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/pi/extensions/trellis/index.ts.txt	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/pi/settings.json	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/qoder/settings.json	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/templates/shared-hooks/index.ts	combine upstream fix with Research authority and distribution contract
+overlap	preserve-research	packages/cli/src/templates/shared-hooks/inject-shell-session-context.py	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/templates/shared-hooks/inject-subagent-context.py	combine upstream fix with Research authority and distribution contract
+overlap	synthesize	packages/cli/src/templates/shared-hooks/inject-workflow-state.py	combine upstream fix with Research authority and distribution contract
+overlap	synthesize	packages/cli/src/templates/shared-hooks/session-start.py	combine upstream fix with Research authority and distribution contract
+upstream-addition	preserve-research	packages/cli/src/templates/snow/SNOW.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/agents/trellis-check.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/agents/trellis-implement.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/agents/trellis-research.md	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/hooks/beforeSubAgentStart.json	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/hooks/onSessionStart.json	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/hooks/onUserMessage.json	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/hooks/write-trellis-context.py	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/src/templates/snow/index.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/template-utils.ts	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trae/hooks.json	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/src/templates/trellis/config.yaml	combine upstream contract or safety change with reduced Research surface
+upstream-addition	preserve-research	packages/cli/src/templates/trellis/gitattributes.txt	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/index.ts	exact five-command/two-host/reduced-template boundary
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/add_session.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/active_task.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/cli_adapter.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/config.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/git.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/paths.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/session_context.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/task_context.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/task_store.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/task_utils.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/trellis_config.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/common/workflow_phase.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/scripts/task.py	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/trellis/workflow.md	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/templates/zcode/config.json	retired host/template surface must remain absent from source and tarball
+overlap	preserve-research	packages/cli/src/types/ai-tools.ts	exact five-command/two-host/reduced-template boundary
+overlap	preserve-research	packages/cli/src/utils/template-fetcher.ts	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/test/commands/channel-claude-adapter.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/commands/channel-codex-adapter.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/commands/channel-context-trust.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/commands/channel-events-seq.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/commands/channel-supervisor-idle.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/commands/channel-wait-warning.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/commands/channel.test.ts	retired generic CLI/test surface must remain absent
+overlap	synthesize	packages/cli/test/commands/init.integration.test.ts	retain Research assertions while adding compatible upstream regression coverage
+overlap	preserve-research	packages/cli/test/commands/mem-integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/commands/platforms.integration.test.ts	retired generic CLI/test surface must remain absent
+overlap	synthesize	packages/cli/test/commands/update.integration.test.ts	retain Research assertions while adding compatible upstream regression coverage
+upstream-addition	synthesize	packages/cli/test/configurators/codex.test.ts	retain Research assertions while adding compatible upstream regression coverage
+overlap	synthesize	packages/cli/test/configurators/index.test.ts	retain Research assertions while adding compatible upstream regression coverage
+overlap	synthesize	packages/cli/test/configurators/platforms.test.ts	retain Research assertions while adding compatible upstream regression coverage
+upstream-addition	synthesize	packages/cli/test/configurators/python-rewrite-parity.test.ts	retain Research assertions while adding compatible upstream regression coverage
+upstream-only	preserve-research	packages/cli/test/fixtures/workflows/native-v0.6.7.md	retired host/template surface must remain absent from source and tarball
+overlap	synthesize	packages/cli/test/registry-invariants.test.ts	retain Research assertions while adding compatible upstream regression coverage
+overlap	preserve-research	packages/cli/test/regression.test.ts	retired host/template surface must remain absent from source and tarball
+upstream-addition	preserve-research	packages/cli/test/scripts/add-session-worktree-warning.integration.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/scripts/add-session.integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/scripts/context-injection-limits.integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/scripts/gitattributes-journal-merge.integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/scripts/prompt-injection-skip-keyword.integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/scripts/task-list-tree.integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/scripts/task-meta.integration.test.ts	retired generic CLI/test surface must remain absent
+upstream-only	accept-upstream	packages/cli/test/setup.ts	no active Research boundary match; verify during semantic review
+overlap	synthesize	packages/cli/test/templates/codex.test.ts	retain Research assertions while adding compatible upstream regression coverage
+upstream-addition	preserve-research	packages/cli/test/templates/dsh.test.ts	retired generic CLI/test surface must remain absent
+upstream-addition	preserve-research	packages/cli/test/templates/kimi.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/templates/omp.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/templates/opencode.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/templates/pi.test.ts	retired generic CLI/test surface must remain absent
+overlap	synthesize	packages/cli/test/templates/shared-hooks.test.ts	retain Research assertions while adding compatible upstream regression coverage
+upstream-addition	preserve-research	packages/cli/test/templates/snow-write-trellis-context.test.ts	retired generic CLI/test surface must remain absent
+overlap	preserve-research	packages/cli/test/templates/trae.test.ts	retired generic CLI/test surface must remain absent
+overlap	synthesize	packages/cli/test/templates/trellis.test.ts	combine upstream contract or safety change with reduced Research surface
+upstream-addition	accept-upstream	packages/cli/test/utils/download-with-strategy.test.ts	no active Research boundary match; verify during semantic review
+overlap	synthesize	packages/core/package.json	combine upstream fix with Research authority and distribution contract
+upstream-only	accept-upstream	packages/core/src/channel/index.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/channel/internal/store/events.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/channel/internal/store/seq.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/adapters/claude.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/adapters/codex.ts	no active Research boundary match; verify during semantic review
+upstream-addition	accept-upstream	packages/core/src/mem/adapters/grok.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/adapters/pi.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/adapters/zcode.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/dialogue.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/internal/paths.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/projects.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/search.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/sessions.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/src/mem/types.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/test/channel/seq.test.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/test/mem/adapters.test.ts	no active Research boundary match; verify during semantic review
+upstream-only	accept-upstream	packages/core/test/mem/phase.test.ts	no active Research boundary match; verify during semantic review

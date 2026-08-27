@@ -12,11 +12,13 @@ import path from "node:path";
 
 import {
   cleanupEmptyDirs,
+  executeMigrations,
   loadUpdateSkipPaths,
   renameTracesToJournal,
   shouldExcludeFromBackup,
   sortMigrationsForExecution,
 } from "../../src/commands/update.js";
+import { loadHashes, saveHashes } from "../../src/utils/template-hash.js";
 
 // =============================================================================
 // cleanupEmptyDirs
@@ -237,6 +239,104 @@ describe("sortMigrationsForExecution", () => {
     const original = [...items];
     sortMigrationsForExecution(items);
     expect(items).toEqual(original);
+  });
+});
+
+// =============================================================================
+// executeMigrations — canonical rename-dir target wins over stale source
+// =============================================================================
+
+describe("executeMigrations rename-dir target precedence", () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "trellis-rename-dir-"));
+    fs.mkdirSync(path.join(tmpDir, ".trellis"), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("retires stale source instead of clobbering current target bytes", async () => {
+    const sourceFile = ".legacy/worker/config.txt";
+    const targetFile = ".current/worker/config.txt";
+    fs.mkdirSync(path.join(tmpDir, ".legacy", "worker"), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.join(tmpDir, ".current", "worker"), {
+      recursive: true,
+    });
+    fs.writeFileSync(path.join(tmpDir, sourceFile), "stale-source\n");
+    fs.writeFileSync(path.join(tmpDir, targetFile), "canonical-target\n");
+    saveHashes(tmpDir, {
+      [sourceFile]: "source-hash",
+      [targetFile]: "target-hash",
+    });
+
+    const result = await executeMigrations(
+      {
+        auto: [
+          {
+            type: "rename-dir",
+            from: ".legacy/worker",
+            to: ".current/worker",
+          },
+        ],
+        confirm: [],
+        conflict: [],
+        skip: [],
+      },
+      tmpDir,
+      { force: true, skipAll: false },
+      new Map([[targetFile, "canonical-target\n"]]),
+    );
+
+    expect(result).toMatchObject({ renamed: 0, deleted: 1, skipped: 0 });
+    expect(fs.existsSync(path.join(tmpDir, ".legacy", "worker"))).toBe(false);
+    expect(fs.readFileSync(path.join(tmpDir, targetFile), "utf-8")).toBe(
+      "canonical-target\n",
+    );
+    expect(loadHashes(tmpDir)).toEqual({ [targetFile]: "target-hash" });
+  });
+
+  it("revalidates source ownership before retiring it", async () => {
+    const sourceFile = ".legacy/worker/user.txt";
+    const targetFile = ".current/worker/config.txt";
+    fs.mkdirSync(path.dirname(path.join(tmpDir, sourceFile)), {
+      recursive: true,
+    });
+    fs.mkdirSync(path.dirname(path.join(tmpDir, targetFile)), {
+      recursive: true,
+    });
+    fs.writeFileSync(path.join(tmpDir, sourceFile), "user-owned\n");
+    fs.writeFileSync(path.join(tmpDir, targetFile), "canonical-target\n");
+
+    const result = await executeMigrations(
+      {
+        auto: [
+          {
+            type: "rename-dir",
+            from: ".legacy/worker",
+            to: ".current/worker",
+          },
+        ],
+        confirm: [],
+        conflict: [],
+        skip: [],
+      },
+      tmpDir,
+      { force: true, skipAll: false },
+      new Map([[targetFile, "canonical-target\n"]]),
+    );
+
+    expect(result).toMatchObject({ renamed: 0, deleted: 0, skipped: 1 });
+    expect(fs.readFileSync(path.join(tmpDir, sourceFile), "utf-8")).toBe(
+      "user-owned\n",
+    );
+    expect(fs.readFileSync(path.join(tmpDir, targetFile), "utf-8")).toBe(
+      "canonical-target\n",
+    );
   });
 });
 
@@ -510,6 +610,24 @@ describe("classifyMigrations rename-dir ownership gate", () => {
     expect(result.auto).toHaveLength(0);
     expect(result.skip).toHaveLength(1);
     expect(result.skip[0].from).toBe(".windsurf/workflows");
+  });
+
+  it("skips an unowned source even when the target is current", () => {
+    const targetFile = ".devin/workflows/user.md";
+    fs.mkdirSync(path.dirname(path.join(tmpDir, targetFile)), {
+      recursive: true,
+    });
+    fs.writeFileSync(path.join(tmpDir, targetFile), "current workflow");
+
+    const result = classifyMigrations(
+      migration,
+      tmpDir,
+      {},
+      new Map([[targetFile, "current workflow"]]),
+    );
+
+    expect(result.auto).toHaveLength(0);
+    expect(result.skip).toHaveLength(1);
   });
 
   it("auto-migrates when Trellis owns the source dir (manifest has entries)", () => {

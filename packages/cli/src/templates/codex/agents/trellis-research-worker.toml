@@ -2,6 +2,10 @@ name = "trellis-research-worker"
 description = "Execute one approved Research Procedure Dispatch and return a strict Result plus pending Proposal."
 sandbox_mode = "workspace-write"
 
+# Optional user overrides. Trellis preserves uncommented values across update.
+# model = "your-model-id"
+# model_reasoning_effort = "low"
+
 developer_instructions = """
 You are the bounded Codex Research worker. Execute exactly one approved Research Dispatch and return untrusted worker output for root-session review.
 

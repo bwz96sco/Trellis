@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as sharedHooks from "../../src/templates/shared-hooks/index.js";
@@ -9,6 +11,12 @@ import {
   type SharedHookName,
   type SharedHookPlatform,
 } from "../../src/templates/shared-hooks/index.js";
+
+const CLI_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../..",
+);
+const REPO_ROOT = path.resolve(CLI_DIR, "../..");
 
 const ALL_HOOK_FILES = [
   "session-start.py",
@@ -58,9 +66,11 @@ describe("shared-hooks capability table", () => {
   });
 
   it("contains exactly the three retained shared hook files", () => {
-    expect(getRetainedSharedHooks().map((hook) => hook.name).sort()).toEqual(
-      [...ALL_HOOK_FILES].sort(),
-    );
+    expect(
+      getRetainedSharedHooks()
+        .map((hook) => hook.name)
+        .sort(),
+    ).toEqual([...ALL_HOOK_FILES].sort());
   });
 
   it("does not export a broad shared-hook directory scanner", () => {
@@ -111,9 +121,10 @@ describe("shared-hooks capability table", () => {
     for (const hook of getRetainedSharedHooks()) {
       const lower = hook.content.toLowerCase();
       for (const host of RETIRED_HOST_TERMS) {
-        expect(lower, `${hook.name} still names retired host ${host}`).not.toMatch(
-          new RegExp(`\\b${host}\\b`),
-        );
+        expect(
+          lower,
+          `${hook.name} still names retired host ${host}`,
+        ).not.toMatch(new RegExp(`\\b${host}\\b`));
       }
     }
   });
@@ -134,6 +145,34 @@ describe("shared-hooks capability table", () => {
     expect(content).toContain("Current Quest");
     expect(content).not.toContain("<trellis-workflow>");
     expect(content).not.toContain("Task context order");
+  });
+
+  it("keeps retained root hook copies byte-identical to canonical templates", () => {
+    const canonicalByName = new Map(
+      getRetainedSharedHooks().map((hook) => [hook.name, hook.content]),
+    );
+    for (const name of ALL_HOOK_FILES) {
+      expect(
+        fs.readFileSync(
+          path.join(REPO_ROOT, ".claude", "hooks", name),
+          "utf-8",
+        ),
+      ).toBe(canonicalByName.get(name));
+    }
+    expect(
+      fs.readFileSync(
+        path.join(REPO_ROOT, ".codex", "hooks", "inject-workflow-state.py"),
+        "utf-8",
+      ),
+    ).toBe(canonicalByName.get("inject-workflow-state.py"));
+  });
+
+  it("decodes every Windows Research hook stream as UTF-8", () => {
+    for (const hook of getRetainedSharedHooks()) {
+      expect(hook.content).toContain(
+        "for stream in (sys.stdin, sys.stdout, sys.stderr):",
+      );
+    }
   });
 
   it("uses bounded exception handling for Research hook degradation", () => {

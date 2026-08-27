@@ -69,6 +69,7 @@ export {
   isThreadEvent,
   isContextEvent,
   isChannelMetadataEvent,
+  readLastSeq,
 } from "./internal/store/events.js";
 
 export type {

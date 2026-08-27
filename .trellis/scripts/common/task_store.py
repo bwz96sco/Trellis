@@ -30,7 +30,7 @@ from .config import (
     resolve_package,
     validate_package,
 )
-from .git import run_git
+from .git import branch_exists_locally, resolve_default_branch, run_git
 from .io import read_json, write_json
 from .log import Colors, colored
 from .paths import (
@@ -275,9 +275,29 @@ def cmd_create(args: argparse.Namespace) -> int:
 
     today = datetime.now().strftime("%Y-%m-%d")
 
-    # Record current branch as base_branch (PR target)
+    # Record the PR target branch. An explicit override wins; otherwise prefer
+    # origin/HEAD so a task created from a feature branch targets the repo's
+    # default branch. Fall back to the checked-out branch when unresolved.
     _, branch_out, _ = run_git(["branch", "--show-current"], cwd=repo_root)
     current_branch = branch_out.strip() or "main"
+    explicit_base_branch: str | None = getattr(args, "base_branch", None)
+    if explicit_base_branch:
+        base_branch = explicit_base_branch
+    else:
+        resolved_base_branch = resolve_default_branch(repo_root)
+        if resolved_base_branch:
+            base_branch = resolved_base_branch
+        else:
+            base_branch = current_branch
+            print(
+                colored(
+                    f"warning: could not resolve the repository's default branch "
+                    f"(no remote configured, offline, etc.); stamping base_branch as "
+                    f"the checked-out branch '{base_branch}'. Pass --base-branch to override.",
+                    Colors.YELLOW,
+                ),
+                file=sys.stderr,
+            )
 
     description = (args.description or "").strip()
     if not description.strip():
@@ -304,7 +324,7 @@ def cmd_create(args: argparse.Namespace) -> int:
         "createdAt": today,
         "completedAt": None,
         "branch": None,
-        "base_branch": current_branch,
+        "base_branch": base_branch,
         "worktree_path": None,
         "commit": None,
         "pr_url": None,
@@ -338,10 +358,10 @@ def cmd_create(args: argparse.Namespace) -> int:
     # Handle --parent: establish bidirectional link
     if args.parent:
         parent_dir = resolve_task_dir(args.parent, repo_root)
-        parent_json_path = parent_dir / FILE_TASK_JSON
-        if not parent_json_path.is_file():
+        if not parent_dir or not (parent_dir / FILE_TASK_JSON).is_file():
             print(colored(f"Warning: Parent task.json not found: {args.parent}", Colors.YELLOW), file=sys.stderr)
         else:
+            parent_json_path = parent_dir / FILE_TASK_JSON
             parent_data = read_json(parent_json_path)
             if parent_data:
                 # Add child to parent's children list
@@ -484,6 +504,17 @@ def cmd_archive(args: argparse.Namespace) -> int:
     if task_json_path.is_file():
         data = read_json(task_json_path)
         if data:
+            stored_branch = data.get("branch")
+            if stored_branch and not branch_exists_locally(stored_branch, repo_root):
+                print(
+                    colored(
+                        f"Warning: recorded branch '{stored_branch}' no longer exists locally "
+                        "(likely merged and deleted).",
+                        Colors.YELLOW,
+                    ),
+                    file=sys.stderr,
+                )
+
             data["status"] = "completed"
             data["completedAt"] = today
             write_json(task_json_path, data)
@@ -638,6 +669,14 @@ def cmd_add_subtask(args: argparse.Namespace) -> int:
     parent_dir = resolve_task_dir(args.parent_dir, repo_root)
     child_dir = resolve_task_dir(args.child_dir, repo_root)
 
+    if not parent_dir:
+        print(colored(f"Error: Parent task.json not found: {args.parent_dir}", Colors.RED), file=sys.stderr)
+        return 1
+
+    if not child_dir:
+        print(colored(f"Error: Child task.json not found: {args.child_dir}", Colors.RED), file=sys.stderr)
+        return 1
+
     parent_json_path = parent_dir / FILE_TASK_JSON
     child_json_path = child_dir / FILE_TASK_JSON
 
@@ -691,6 +730,14 @@ def cmd_remove_subtask(args: argparse.Namespace) -> int:
     parent_dir = resolve_task_dir(args.parent_dir, repo_root)
     child_dir = resolve_task_dir(args.child_dir, repo_root)
 
+    if not parent_dir:
+        print(colored(f"Error: Parent task.json not found: {args.parent_dir}", Colors.RED), file=sys.stderr)
+        return 1
+
+    if not child_dir:
+        print(colored(f"Error: Child task.json not found: {args.child_dir}", Colors.RED), file=sys.stderr)
+        return 1
+
     parent_json_path = parent_dir / FILE_TASK_JSON
     child_json_path = child_dir / FILE_TASK_JSON
 
@@ -742,6 +789,10 @@ def cmd_set_branch(args: argparse.Namespace) -> int:
         print("Usage: python3 task.py set-branch <task-dir> <branch-name>")
         return 1
 
+    if not target_dir:
+        print(colored(f"Error: Task not found: {args.dir}", Colors.RED))
+        return 1
+
     task_json = target_dir / FILE_TASK_JSON
     if not task_json.is_file():
         print(colored(f"Error: task.json not found at {target_dir}", Colors.RED))
@@ -776,6 +827,10 @@ def cmd_set_base_branch(args: argparse.Namespace) -> int:
         print("This sets the target branch for PR (the branch your feature will merge into).")
         return 1
 
+    if not target_dir:
+        print(colored(f"Error: Task not found: {args.dir}", Colors.RED))
+        return 1
+
     task_json = target_dir / FILE_TASK_JSON
     if not task_json.is_file():
         print(colored(f"Error: task.json not found at {target_dir}", Colors.RED))
@@ -806,6 +861,10 @@ def cmd_set_scope(args: argparse.Namespace) -> int:
     if not scope:
         print(colored("Error: Missing arguments", Colors.RED))
         print("Usage: python3 task.py set-scope <task-dir> <scope>")
+        return 1
+
+    if not target_dir:
+        print(colored(f"Error: Task not found: {args.dir}", Colors.RED))
         return 1
 
     task_json = target_dir / FILE_TASK_JSON
