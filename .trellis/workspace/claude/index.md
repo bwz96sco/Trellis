@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 7
-- **Last Active**: 2026-08-26
+- **Total Sessions**: 8
+- **Last Active**: 2026-08-27
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~332 | Active |
+| `journal-1.md` | ~356 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 8 | 2026-08-27 | Integrate upstream Trellis into Research fork | `258db082fe31eab593818d43c199b3b1aed9bbe3` | `integrate/research-upstream-64e66369` |
 | 7 | 2026-08-26 | Complete Research Skill migration | `715512230fee792377567c9cbba46319f2569c07`, `8d39c4a8473720467b2e876faac820cdd6875607`, `cacbd39cf8ae30783e2f0383ba9153502ebb12f3`, `9538b3050bfd4cf27009a847262b799ff4d8d504`, `8c2805d30ad69361b327a48d4ad7d1d945b21b20` | `claude-t6-mal1-reviewer-01-m0-correction-2` |
 | 6 | 2026-08-25 | Authenticate guarded Quest writer authority | `1b7ad390421f7ded1122f817d5cadf35bfc368bc` | `claude-t6-mal1-reviewer-01-m0-correction-2` |
 | 5 | 2026-08-25 | C7 Pilot Evaluation Stop | `4a32dd72` | `claude-t6-mal1-reviewer-01-m0-correction-2` |

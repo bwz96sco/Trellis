@@ -332,3 +332,25 @@ Preserved blocked C8-C10 live evidence, deterministically migrated all remaining
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: Integrate upstream Trellis into Research fork
+
+**Date**: 2026-08-27
+**Task**: Integrate upstream Trellis into Research fork
+**Package**: cli
+**Branch**: `integrate/research-upstream-64e66369`
+
+### Summary
+
+Merged pinned upstream Trellis into completed Research migration, preserved Research-only authority and frozen I3 gitlinks, corrected independent test-budget ownership, and passed focused I3 plus full Core/CLI hooks.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `258db082fe31eab593818d43c199b3b1aed9bbe3` | (see git log) |
+
+### Status
+
+[OK] **Completed**
